@@ -37,14 +37,15 @@ const EXTENSION_DSL_TYPES = Extensions.$constants(false).filter((name) => name.e
  */
 function loadAsciiDoc (file, contentCatalog = undefined, config = {}) {
   const { family, relative, extname = path.extname(relative) } = file.src
+  const { moduleRootPath = '' } = file.pub || {}
   const intrinsicAttrs = {
     docname: (family === 'nav' ? 'nav$' : '') + relative.substr(0, relative.length - extname.length),
     docfile: file.path,
     // NOTE docdir implicitly sets base_dir on document; Opal only expands value to absolute path if it starts with ./
     docdir: file.dirname,
     docfilesuffix: extname,
-    imagesdir: path.join(file.pub.moduleRootPath, '_images'),
-    attachmentsdir: path.join(file.pub.moduleRootPath, '_attachments'),
+    imagesdir: path.join(moduleRootPath, '_images'),
+    attachmentsdir: path.join(moduleRootPath, '_attachments'),
     examplesdir: EXAMPLES_DIR_TOKEN,
     partialsdir: PARTIALS_DIR_TOKEN,
   }

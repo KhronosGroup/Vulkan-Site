@@ -177,7 +177,6 @@ function reshapeErrorForLog (err, msg, prettyPrint) {
   let stack
   if ({}.propertyIsEnumerable.call(err, 'name')) Object.defineProperty(err, 'name', { enumerable: false })
   if (msg === undefined) msg = message
-  if (message && message === msg) err.message = undefined
   if ((stack = err.backtrace)) {
     stack = ['Error', ...stack.slice(1)].join('\n')
   } else if ((stack = err.stack || name) && err instanceof SyntaxError && stack.includes('\nSyntaxError: ')) {
@@ -188,8 +187,9 @@ function reshapeErrorForLog (err, msg, prettyPrint) {
   }
   err.stack = (prettyPrint ? 'Cause: ' : '') + (stack === name ? `${name} (no stacktrace)` : stack)
   if (prettyPrint) {
-    const { message: _discard, ...flatErr } = prettyPrint(err)
-    err = Object.assign(flatErr, { type: 'Error' })
+    delete (err = Object.assign(prettyPrint(err), { type: 'Error' })).message
+  } else if (message && message === msg) {
+    err.message = ''
   }
   return [err, msg]
 }

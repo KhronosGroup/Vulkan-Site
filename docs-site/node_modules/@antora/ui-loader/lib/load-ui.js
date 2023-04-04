@@ -175,7 +175,7 @@ function createAgent (url, { httpProxy, httpsProxy, noProxy }) {
 function downloadBundle (url, to, agent) {
   return new Promise((resolve, reject) => {
     get({ url, agent }, (err, response, contents) => {
-      if (err) reject(err)
+      if (err) return reject(err)
       if (response.statusCode !== 200) {
         const message = `Response code ${response.statusCode} (${response.statusMessage})`
         return reject(Object.assign(new Error(message), { name: 'HTTPError' }))

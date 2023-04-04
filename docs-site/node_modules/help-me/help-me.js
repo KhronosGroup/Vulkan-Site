@@ -1,8 +1,9 @@
 'use strict'
 
 const fs = require('fs')
-const { PassThrough, pipeline } = require('readable-stream')
+const { PassThrough, Writable, pipeline } = require('stream')
 const glob = require('glob')
+const process = require('process')
 
 const defaults = {
   ext: '.txt',
@@ -16,6 +17,14 @@ function isDirectory (path) {
   } catch (err) {
     return false
   }
+}
+
+function createDefaultStream () {
+  return new Writable({
+    write (chunk, encoding, callback) {
+      process.stdout.write(chunk, callback)
+    }
+  })
 }
 
 function helpMe (opts) {
@@ -94,7 +103,7 @@ function helpMe (opts) {
 
   function toStdout (args = [], opts) {
     opts = opts || {}
-    const stream = opts.stream || process.stdout
+    const stream = opts.stream || createDefaultStream()
     const _onMissingHelp = opts.onMissingHelp || onMissingHelp
     return new Promise((resolve, reject) => {
       createStream(args)
