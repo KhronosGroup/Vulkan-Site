@@ -28,8 +28,11 @@ SPECREPO = /home/tree/git/Vulkan-Docs
 # GUIDEBRANCH and SPECBRANCH are the branches in those local clones
 # from which to build.
 
-GUIDEBRANCH = antora
-SPECBRANCH = antora
+#GUIDEBRANCH = antora
+#SPECBRANCH = github-main
+
+GUIDEBRANCH = main
+SPECBRANCH = private-main
 
 prepare_components: prepare_guide prepare_spec
 
