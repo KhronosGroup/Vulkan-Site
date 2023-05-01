@@ -11,7 +11,9 @@ function treeProcessor() {
 
     function visitDoc(doc) {
         doc.findBy({'context': 'sidebar'}).forEach((sidebar) => {
-            if (sidebar.hasTitle() && sidebar.getTitle().startsWith('Valid Usage')) {
+            // Get the un-substituted form of the title to avoid complaints
+            // about missing attributes on lines like '.{externsynctitle}'.
+            if (sidebar.hasTitle() && sidebar.title.startsWith('Valid Usage')) {
                 sidebar.findBy({'context': 'list_item'}).forEach((item) => {
                     item.text = item.text.replace(/(\[\[(VUID-[^\]]*)\]\])/, "$1 [vuid]#$2# +\n")
                 })

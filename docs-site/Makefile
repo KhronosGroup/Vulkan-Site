@@ -32,7 +32,8 @@ SPECREPO = /home/tree/git/Vulkan-Docs
 #SPECBRANCH = github-main
 
 GUIDEBRANCH = main
-SPECBRANCH = private-main
+#SPECBRANCH = private-main
+SPECBRANCH = tilde-blocks-to-dashes
 
 prepare_components: prepare_guide prepare_spec
 
