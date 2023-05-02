@@ -11,21 +11,17 @@
 //
 // This allows nesting arbitrary open blocks inside 'refpage' open blocks.
 
-console.log('In refpage.js')
-
 function blockProcessor() {
-    // console.log('In blockProcessor')
-
     var self = this
+
+    // Filter only on appropriately tagged listing blocks
     self.named('open')
     self.onContext('listing')
-
-    // console.log('In blockProcessor, calling process(visit)')
 
     self.process(visit)
 
     function visit(parent, reader, attrs) {
-        // console.log('In blockProcessor.visit()')
+        // Repurpose contents of this block as an open block
         var wrapper = self.createOpenBlock(parent)
         self.parseContent(wrapper, reader)
         return wrapper
@@ -33,8 +29,6 @@ function blockProcessor() {
 }
 
 module.exports.register = function register (registry) {
-    // console.log('module.exports.register: typeof registry.register =', typeof registry.register)
-    // console.log('module.exports.register: typeof this =', typeof this)
     if (typeof registry.register === 'function') {
         registry.register(function () {
             this.block(blockProcessor)
