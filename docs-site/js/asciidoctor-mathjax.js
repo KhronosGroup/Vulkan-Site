@@ -3,7 +3,8 @@
 // const Opal = require('asciidoctor-opal-runtime').Opal
 const mathjax = require('mathjax-full/js/mathjax.js').mathjax
 const AsciiMath = require('mathjax-full/js/input/asciimath.js').AsciiMath
-const AmsConfiguration = require('mathjax-full/js/input/tex/ams/AmsConfiguration.js').AmsConfiguration
+// This returns an object with a .AmsConfiguration member which is not needed
+require('mathjax-full/js/input/tex/ams/AmsConfiguration.js')
 const Tex = require('mathjax-full/js/input/tex.js').TeX
 const SVG = require('mathjax-full/js/output/svg.js').SVG
 const liteAdaptor = require('mathjax-full/js/adaptors/liteAdaptor.js').liteAdaptor
