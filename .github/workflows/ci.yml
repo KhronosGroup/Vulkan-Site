@@ -54,33 +54,30 @@ jobs:
           cache-dependency-path: docs-site/package-lock.json
 
       - name: "run npm install for ui bundle"
-        run: |
-          cd antora-ui-khronos
-          npm install
+        working-directory: antora-ui-khronos
+        run: npm install
 
       - name: "run npm install for docs-site"
-        run: |
-          cd docs-site
-          npm install
+        working-directory: docs-site
+        run: npm install
 
       - name: "run npm install for Vulkan-Docs"
-        run: |
-          cd Vulkan-Docs
-          npm install
+        working-directory: Vulkan-Docs
+        run: npm install
 
 
       - name: "ensure we have all dependencies for building/searching/highlighting"
         run: |
           sudo gem install rouge
           sudo apt-get install -y asciidoctor
+          pip install lxml
 
       - name: "build the ui bundle"
+        working-directory: antora-ui-khronos
         run: |
-          cd antora-ui-khronos
           npx update-browserslist-db@latest
           ./node_modules/gulp/bin/gulp.js --version
           ./node_modules/gulp/bin/gulp.js bundle
-          ls build/
 
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v3
@@ -93,11 +90,11 @@ jobs:
         run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
 
       - name: "prepare repos with make"
+        working-directory: docs-site
         run: |
-          cd docs-site
           make prepare_components
 
       - name: "build (npx) with stacktrace"
+        working-directory: docs-site
         run: |
-          cd docs-site
           npx antora antora-playbook.yml --stacktrace
