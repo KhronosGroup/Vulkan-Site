@@ -1,0 +1,88 @@
+# Copyright 2021 The Khronos Group, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Github CI file for Vulkan Antora Guide
+
+name: CI
+
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or manual dispatch
+  push:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
+      # access it
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v3
+        with:
+          ruby-version: '3.0'
+
+      - uses: actions/checkout@v3
+        with:
+          repository: khronos-group/Vulkan-Guide
+          path: ./Vulkan-Guide
+          submodules: recursive
+
+      - uses: actions/checkout@v3
+        with:
+          repository: khronos-group/Vulkan-Docs
+          path: ./Vulkan-Docs
+          submodules: recursive
+
+#      - uses: actions/checkout@v3
+#        with:
+#          repository: khronos-group/Vulkan-Samples
+#          path: ./Vulkan-Samples
+#          submodules: recursive
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'
+          cache: 'npm'
+
+      - name: "run npm install for ui bundle"
+        run: |
+          cd antora-ui-khronos
+          npm install
+
+      - name: "run npm install for docs-site"
+        run: |
+          cd docs-site
+          npm install
+
+      - name: "ensure we have all dependencies for building/searching/highlighting"
+        run: |
+          sudo gem install rouge
+
+      - name: "build the ui bundle"
+        run: |
+          cd antora-ui-khronos
+          ./node_modules/gulp/bin/gulp.js --version
+          ./node_modules/gulp/bin/gulp.js bundle
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ui-bundle.zip
+          path: antora-ui-khronos/build/ui-bundle-zip
+          retention-days: 5
+
+      - name: "copy ui-bundle.zip to vulkan-site"
+        run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
+
+      - name: "prepare repos with make"
+        run: |
+          cd docs-site
+          run: make prepare_components
+
+      - name: "build (npx) with stacktrace"
+        run: |
+          cd docs-site
+          npx antora antora-playbook.yml --stacktrace
