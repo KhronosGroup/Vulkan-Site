@@ -40,6 +40,14 @@ jobs:
           ref: main
           submodules: recursive
 
+      - uses: actions/checkout@v3
+        with:
+          repository: KhronosGroup/Vulkan-Samples
+          path: ./Vulkan-Samples
+          ref: main
+          submodules: recursive
+
+
 #      - uses: actions/checkout@v3
 #        with:
 #          repository: KhronosGroup/Vulkan-Samples
@@ -91,8 +99,11 @@ jobs:
 
       - name: "prepare repos with make"
         working-directory: docs-site
-        run: |
-          make prepare_components
+        run: make prepare_components
+
+      - name: "prepare samples"
+        working-directory: Vulkan-Samples
+        run: cmake -H"." -B"build/${{ matrix.platform }}" -DVKB_BUILD_TESTS=ON -DVKB_BUILD_SAMPLES=ON
 
       - name: "build (npx) with stacktrace"
         working-directory: docs-site
