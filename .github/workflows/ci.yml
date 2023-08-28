@@ -7,9 +7,7 @@ name: CI
 
 # Controls when the action will run.
 on:
-  # Triggers the workflow on push or manual dispatch
   push:
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -42,12 +40,23 @@ jobs:
           ref: main
           submodules: recursive
 
+        # When this PR https://github.com/KhronosGroup/Vulkan-Samples/pull/787 gets
+        # merged redirect this task to KhronosGroup/Vulkan-Samples and main
       - name: "Checkout Vulkan Samples"
         uses: actions/checkout@v3
         with:
-          repository: KhronosGroup/Vulkan-Samples
+          repository: gpx1000/Vulkan-Samples
           path: ./Vulkan-Samples
-          ref: main
+          ref: antora
+          submodules: recursive
+
+       # When this PR https://github.com/KhronosGroup/VulkanTutorial/pull/5 gets
+       # merged redirect this task to KhronosGroup/VulkanTutorial and main
+      - name: "Checkout Vulkan Tutorial"
+        uses: actions/checkout@v3
+        with:
+          repository: SaschaWillems/VulkanTutorial
+          ref: asciidoc_conversion
           submodules: recursive
 
       - name: "setup npm"
@@ -102,6 +111,10 @@ jobs:
       - name: "prepare samples"
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/${{ matrix.platform }}" -DVKB_BUILD_TESTS=ON -DVKB_BUILD_SAMPLES=ON
+
+      - name: "prepare tutorials"
+        working-directory: VulkanTutorial
+        run: make setup_tutorial
 
       - name: "build (npx) with stacktrace"
         working-directory: docs-site
