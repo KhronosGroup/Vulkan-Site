@@ -22,8 +22,8 @@
 # Vulkan-Guide and Vulkan-Docs repositories, respectively.
 # They must match the paths hardwired into antora-playbook.yml.
 
-GUIDEREPO = /home/tree/git/Vulkan-Guide
-SPECREPO = /home/tree/git/Vulkan-Docs
+GUIDEREPO = ../Vulkan-Guide
+SPECREPO = ../Vulkan-Docs
 
 # GUIDEBRANCH and SPECBRANCH are the branches in those local clones
 # from which to build.
@@ -32,7 +32,7 @@ SPECREPO = /home/tree/git/Vulkan-Docs
 #SPECBRANCH = github-main
 
 GUIDEBRANCH = main
-SPECBRANCH = github-main
+SPECBRANCH = main
 #SPECBRANCH = tilde-blocks-to-dashes
 
 prepare_components: prepare_guide prepare_spec

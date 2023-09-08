@@ -1,0 +1,142 @@
+# Copyright 2021 The Khronos Group, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Github CI file for Vulkan Antora Guide
+
+name: CI
+
+# Controls when the action will run.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
+      # access it
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: "checkout Vulkan Guide"
+        uses: actions/checkout@v3
+        with:
+          repository: KhronosGroup/Vulkan-Guide
+          path: ./Vulkan-Guide
+          ref: main
+          submodules: recursive
+
+      - name: "Checkout Vulkan Docs"
+        uses: actions/checkout@v3
+        with:
+          repository: KhronosGroup/Vulkan-Docs
+          path: ./Vulkan-Docs
+          ref: main
+          submodules: recursive
+
+        # When this PR https://github.com/KhronosGroup/Vulkan-Samples/pull/787 gets
+        # merged redirect this task to KhronosGroup/Vulkan-Samples and main
+      - name: "Checkout Vulkan Samples"
+        uses: actions/checkout@v3
+        with:
+          repository: gpx1000/Vulkan-Samples
+          path: ./Vulkan-Samples
+          ref: antora
+          submodules: recursive
+
+       # When this PR https://github.com/KhronosGroup/VulkanTutorial/pull/5 gets
+       # merged redirect this task to KhronosGroup/VulkanTutorial and main
+#      - name: "Checkout Vulkan Tutorial"
+#        uses: actions/checkout@v3
+#        with:
+#          repository: SaschaWillems/VulkanTutorial
+#          path: ./VulkanTutorial
+#          ref: asciidoc_conversion
+#          submodules: recursive
+
+      - name: "setup npm"
+        uses: actions/setup-node@v3
+        with:
+          node-version: 'latest'
+          cache: 'npm'
+          cache-dependency-path: docs-site/package-lock.json
+
+      - name: "force clear the npm cache"
+        run: npm cache clean --force
+
+      - name: "run npm install for ui bundle"
+        working-directory: antora-ui-khronos
+        run: npm install
+
+      - name: "run npm install for docs-site"
+        working-directory: docs-site
+        run: npm install
+
+      - name: "run npm install for Vulkan-Docs"
+        working-directory: Vulkan-Docs
+        run: npm install
+
+
+      - name: "ensure we have all dependencies for building/searching/highlighting"
+        run: |
+          sudo gem install rouge
+          sudo apt-get update
+          sudo apt install xorg-dev libglu1-mesa-dev
+          sudo apt-get install -y asciidoctor
+          pip install lxml
+
+      - name: "build the ui bundle"
+        working-directory: antora-ui-khronos
+        run: |
+          npx update-browserslist-db@latest
+          ./node_modules/gulp/bin/gulp.js --version
+          ./node_modules/gulp/bin/gulp.js bundle
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ui-bundle.zip
+          path: antora-ui-khronos/build/ui-bundle.zip
+          retention-days: 5
+
+      - name: "copy ui-bundle.zip to vulkan-site"
+        run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
+
+      - name: "prepare repos with make"
+        working-directory: docs-site
+        run: make prepare_components
+
+      - name: "prepare samples"
+        working-directory: Vulkan-Samples
+        run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
+
+#      - name: "prepare tutorials"
+#        working-directory: VulkanTutorial/antora
+#        run: |
+#          make setup_tutorial
+
+      - name: "build (npx) with stacktrace"
+        working-directory: docs-site
+        run: |
+          npx antora antora-playbook.yml --stacktrace
+          touch build/site/.nojekyll
+
+      - name: 'Upload site artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: fullSite
+          path: docs-site/build
+          retention-days: 5
+
+      - name: Publish to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs-site/build/site
