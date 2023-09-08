@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Using 16-bit storage InputOutput feature to reduce bandwidth on tile-based architectures :: Vulkan Documentation Project Demo</title>
+    <meta name="generator" content="Antora 3.1.4">
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <script>var uiRootPath = '../../../../../_'</script>
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../..">Vulkan Documentation Project Demo</a>
+      <div class="navbar-item">
+        <img alt="Vulkan White Label" src="../../../../../_/Vulkan_White_Dec16.svg" height="100%" />
+      </div>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field">
+          <label for="search-input"></label><input id="search-input" type="text" placeholder="Search the docs">
+        </div>
+      </div>
+      <button class="navbar-burger" data-target="topbar-nav">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan 1.3</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Guides</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+          </div>
+        </div>
+            <!--
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Tools</a>
+          <div class="navbar-dropdown">
+            <a class="navbar-item" href="#">TBD</a>
+          </div>
+        </div>
+            -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Tutorial</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Samples</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Help</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://khr.io/khrdiscord">Khronos Discord</a>
+          </div>
+        </div>
+            <!--
+        <div class="navbar-item">
+          <span class="control">
+            <a class="button is-primary" href="#">Download</a>
+          </span>
+        </div>
+            -->
+      </div>
+    </div>
+  </nav>
+</header>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../README.html">Readme</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="#vulkan_basics.adoc">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/README.adoc">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/compute_nbody/README.adoc">Compute N-body❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_compute_nbody/README.adoc">hpp compute nbody❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/dynamic_uniform_buffers/README.adoc">Dynamic uniform buffers❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_dynamic_uniform_buffers/README.adoc">hpp dynamic uniform buffers❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/hdr/README.adoc">HDR❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_hdr/README.adoc">hpp hdr❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/hello_triangle/README.adoc">Hello Triangle❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_hello_triangle/README.adoc">hpp hello triangle❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/hlsl_shaders/README.adoc">HLSL Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_hlsl_shaders/README.adoc">hpp hlsl shaders</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/instancing/README.adoc">Instancing❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_instancing/README.adoc">hpp instancing❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/separate_image_sampler/README.adoc">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_separate_image_sampler/README.adoc">hpp separate image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/terrain_tessellation/README.adoc">Terrain tessellation❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_terrain_tessellation/README.adoc">hpp terrain tessellation❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/texture_loading/README.adoc">Texture loading❕</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_texture_loading/README.adoc">hpp texture loading❕</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/texture_mipmap_generation/README.adoc">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_texture_mipmap_generation/README.adoc">hpp texture mipmap generation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#api/timestamp_queries/README.adoc">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#api/hpp_timestamp_queries/README.adoc">hpp timestamp queries</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#extensions/README.adoc">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/buffer_device_address/README.adoc">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/calibrated_timestamps/README.adoc">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/conditional_rendering/README.adoc">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/conservative_rasterization/README.adoc">Conservative rasterization❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/debug_utils/README.adoc">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/descriptor_buffer_basic/README.adoc">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/descriptor_indexing/README.adoc">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/dynamic_rendering/README.adoc">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/extended_dynamic_state2/README.adoc">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/fragment_shader_barycentric/README.adoc">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/fragment_shading_rate/README.adoc">Fragment shading rate❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/fragment_shading_rate_dynamic/README.adoc">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/full_screen_exclusive/README.adoc">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/graphics_pipeline_library/README.adoc">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/logic_op_dynamic_state/README.adoc">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/memory_budget/README.adoc">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/mesh_shader_culling/README.adoc">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/mesh_shading/README.adoc">Mesh shading❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/open_cl_interop/README.adoc">OpenCL interop (Cross-vendor)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/open_cl_interop_arm/README.adoc">OpenCl interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/open_gl_interop/README.adoc">OpenGL interop❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/portability/README.adoc">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/push_descriptors/README.adoc">Push descriptors❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/raytracing_basic/README.adoc">Raytracing basic❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/raytracing_extended/README.adoc">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/ray_queries/README.adoc">Ray queries❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/ray_tracing_reflection/README.adoc">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/synchronization_2/README.adoc">Synchronization 2❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/timeline_semaphore/README.adoc">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#extensions/vertex_dynamic_state/README.adoc">Vertex dynamic state</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#performance/README.adoc">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/16bit_arithmetic/README.adoc">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/16bit_storage_input_output/README.adoc">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/afbc/README.adoc">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/async_compute/README.adoc">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/command_buffer_usage/README.adoc">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/constant_data/README.adoc">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/descriptor_management/README.adoc">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/layout_transitions/README.adoc">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/msaa/README.adoc">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/multithreading_render_passes/README.adoc">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/multi_draw_indirect/README.adoc">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/pipeline_barriers/README.adoc">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#performance/pipeline_cache/README.adoc">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#performance/hpp_pipeline_cache/README.adoc">hpp pipeline cache</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/render_passes/README.adoc">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/specialization_constants/README.adoc">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/subpasses/README.adoc">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/surface_rotation/README.adoc">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#performance/swapchain_images/README.adoc">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#performance/hpp_swapchain_images/README.adoc">hpp swapchain images</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/texture_compression_basisu/README.adoc">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/texture_compression_comparison/README.adoc">Texture compression comparison❕</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#performance/wait_idle/README.adoc">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#tooling/README.adoc">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#tooling/profiles/README.adoc">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="#docs/README.adoc">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#docs/create_sample.adoc">Creating a new sample</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="#docs/debug_graphs.adoc">Debug graphics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <a class="title" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <a class="title" href="../../../README.html">Vulkan Samples</a>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <a class="title" href="../../../../../spec/latest/index.html">Vulkan Specification and Proposals</a>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="README.html">Using 16-bit storage InputOutput feature to reduce bandwidth on tile-based architectures</a></li>
+  </ul>
+</nav>
+    <!--
+  <div class="edit-this-page"><a href="https://github.com/gpx1000/Vulkan-Samples/edit/antora/antora/modules/ROOT/pages/samples/performance/16bit_storage_input_output/README.adoc">Edit this Page</a></div>
+      -->
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Using 16-bit storage InputOutput feature to reduce bandwidth on tile-based architectures</h1>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>On some tile-based deferred renderers (TBDR), such as Arm Mali GPUs, vertex shading and fragment shading is split into two distinct stages.
+Vertex shaders and the general geometry pipeline will write to memory for each visible vertex:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Position (<code>gl_Position</code>)</p>
+</li>
+<li>
+<p>Vertex output data (<code>layout(location = N) out</code>).</p>
+</li>
+<li>
+<p>GPU specific data structures to accelerate rasterization later.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Then, in fragment stage, the positions and GPU specific data structures are read to rasterize primitives, and for each fragment we invoke, the vertex output data can be read by the fragment shader as input variables.
+All of this consumes bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>As vertex output data is something the application controls (and tends to consume many bytes per vertex), we should attempt to minimize the bandwidth we consume.
+This samples demonstrates real bandwidth saving achieved with a simple sample.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_enabling_the_16_bit_storage_extension"><a class="anchor" href="#_enabling_the_16_bit_storage_extension"></a>Enabling the 16-bit storage extension</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_KHR_16bit_storage</code> is an extension which supports many different features, but this sample in particular will focus on the <code>storageInputOutput16</code> feature.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VK_KHR_16bit_storage</code> is core in Vulkan 1.1, so an extension is not required, but the feature you plan to use must still be enabled.</p>
+</div>
+<div class="paragraph">
+<p>First, add <code>VkPhysicalDevice16BitStorageFeatures</code> as a <code>pNext</code> to <code>vkGetPhysicalDeviceFeatures2</code>.
+Now, you can check which features are supported:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>storageBuffer16BitAccess</code>: Allows you to use true 16-bit values in SSBOs.</p>
+</li>
+<li>
+<p><code>uniformAndStorageBuffer16BitAccess</code>: Allows you to use true 16-bit values in UBOs as well.</p>
+</li>
+<li>
+<p><code>storagePushConstant16</code>: Allows you to use true 16-bit values in push constant blocks (quite handy since push constant space is so tight!)</p>
+</li>
+<li>
+<p><code>storageInputOutput16</code>: A TBDR friendly feature, allows you to use true 16-bit values in shader input and output interfaces.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To use the feature, make sure <code>VkPhysicalDevice16BitStorageFeatures</code> is passed down to <code>vkCreateDevice</code>'s <code>pNext</code> chain.</p>
+</div>
+<div class="sect2">
+<h3 id="_difference_between_storage_and_arithmetic_support"><a class="anchor" href="#_difference_between_storage_and_arithmetic_support"></a>Difference between storage and arithmetic support</h3>
+<div class="paragraph">
+<p>There&#8217;s two aspects to 16-bit support, storage and arithmetic.</p>
+</div>
+<div class="paragraph">
+<p>With storage support, the main goal is to reduce bandwidth and memory requirements.
+With 16-bit arithmetic, we will be able to improve arithmetic throughput.
+This sample focuses on storage only, so the sample takes care not to enable any 16-bit arithmetic features.</p>
+</div>
+<div class="paragraph">
+<p>If a device only supports 16-bit storage, but not arithmetic, we need to be somewhat careful when writing shaders.</p>
+</div>
+<div class="paragraph">
+<p>The native 16-bit types can only be used when storing to the variable, or when loading from the variable.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// GL_EXT_16bit_storage would normally be used here, but that extension does not support input/output.
+// glslang enables SPIR-V capabilities as required.
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : require
+layout(location = 0) out f16vec4 Foo;
+
+vec4 arithmetic = blah(); // Arithmetic happens in FP32.
+Foo = f16vec4(arithmetic); // Narrowing store.</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// GL_EXT_16bit_storage would normally be used here, but that extension does not support input/output.
+// glslang enables SPIR-V capabilities as required.
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : require
+layout(location = 0) in f16vec4 Foo;
+vec4 arithmetic = vec4(Foo); // Expand fp16 -&gt; fp32.
+arithmetic += blah();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In SPIR-V, you can verify what is going on by looking at the enabled capabilities:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">OpCapability Shader
+OpCapability StorageInputOutput16 ; &lt;-- Only needs VK_KHR_16bit_storage
+
+         %51 = OpLoad %v4float %color
+         %52 = OpFConvert %v4half %51 &lt;-- OpFConvert followed by OpStore just requires storage.
+        ; Similarly, OpLoad followed by OpFConvert just requires Storage feature.
+               OpStore %o_color %52</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For example, if you use 16-bit arithmetic, you will see:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">OpCapability Shader
+OpCapability Float16 ; &lt;-- Arithmetic support, needs a different extension.
+OpCapability StorageInputOutput16
+
+         %55 = OpFAdd %v4half %52 %54 &lt;-- This is arithmetic in native FP16
+               OpStore %o_color %55</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The validation layers will catch this if you forget to enable the extensions and features.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_16_bit_inputoutput_storage_sample"><a class="anchor" href="#_the_16_bit_inputoutput_storage_sample"></a>The 16-bit InputOutput storage sample</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the sample, we render a large number of teapot meshes (17 * 9 = 153), each with 9128 triangles and 4689 unique vertices.
+The teapots are not textured, and there is no post-processing happening, meaning that geometry bandwidth is the key contributor to overall bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>As mentioned above, a significant contributor to geometry bandwidth on TBDR is the storage for shader input and output data.
+Vertex shaders which write to <code>layout(location = N) out T variable;</code> consume bandwidth.
+Similarly, fragment shaders which read <code>layout(location = N) in T variable;</code> also consume bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>This sample demonstrates that there can be significant savings in global device bandwidth by ensuring that the types used in vertex output and fragment input interfaces are as narrow as possible.</p>
+</div>
+<div class="paragraph">
+<p>In the first scenario, the vertex shader has 3 vec3 outputs, which is not a lot when considering modern rendering engines.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout (location = 0) out vec3 o_vertex_color;
+layout (location = 1) out vec3 o_normal;
+layout (location = 2) out vec3 o_delta_pos;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For each unique vertex that is visible on screen, we must assume 52 bytes of memory bandwidth is consumed, 16 bytes for <code>gl_Position</code> and 36 bytes for vertex outputs.</p>
+</div>
+<div class="paragraph">
+<p>The shading itself is somewhat contrived, it is mostly there to show something being rendered.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/16bit_storage_input_output/images/fp16_input_output_disable.jpg" alt="16bit-storage InputOutput off">
+</div>
+</div>
+<div class="paragraph">
+<p>In the unoptimized case, we observe ~1.67 GB/s write bandwidth and ~1.16 GB/s read bandwidth on the specific device we tested (see screenshot).
+We can estimate what is going on here using intuition.</p>
+</div>
+<div class="paragraph">
+<p>We are rendering 153 teapots with 4689 vertices.
+717417 unique vertices will be vertex shaded.
+On average, half the vertices are actually visible due to back-face culling (358k).
+VSync is approximately 60 FPS on the test device in the screenshots, so ~21.5M unique vertices / s will need to be written to memory.</p>
+</div>
+<div class="paragraph">
+<p>For each vertex, we have 16 bytes for <code>gl_Position</code> and 36 bytes for output variables, meaning this data accounts for at least ~1.11 GB/s here.
+That&#8217;s about 2/3 of the total write bandwidth we are measuring here.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/performance/16bit_storage_input_output/images/fp16_input_output_enable.jpg" alt="16bit-storage InputOutput on">
+</div>
+</div>
+<div class="paragraph">
+<p>Here, we simply replace the vertex outputs and fragment inputs to be fp16.
+This should theoretically save 18 bytes per vertex, or ~21.5 M/s * 18 B = 387 MB / s of pure write bandwidth, and that seems to be almost spot-on with observed results.
+Similarly, read bandwidth is significantly reduced as well.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_alternative_implementation_mediump"><a class="anchor" href="#_alternative_implementation_mediump"></a>Alternative implementation: <code>mediump</code></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Marking vertex output variables as <code>mediump</code> will generally allow us to achieve the same bandwidth savings as explicit FP16 would, but the caveat is that you cannot be sure unless you know the driver implementation details.
+The snippet below will work on any core Vulkan 1.0 implementation, but it may or may not give you true FP16 vertex outputs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Vertex
+layout(location = 0) out mediump vec3 o_normal;
+
+// Fragment
+layout(location = 0) in mediump vec3 in_normal;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_considering_precision"><a class="anchor" href="#_considering_precision"></a>Considering precision</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>FP16 is not very accurate, and you most likely cannot use FP16 for every vertex output in your application.
+Things which work well with FP16 precision:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Normals / Tangent / Bi-tangent</p>
+</li>
+<li>
+<p>Vertex colors (if you&#8217;re still using those)</p>
+</li>
+<li>
+<p>Any auxillary data which is centered around 0 and doesn&#8217;t need exceptionally high precision.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Use cases which may, or may not work well with FP16 precision:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Local world position.
+Precision can be significantly improved if you use <code>delta_pos = f16vec3(world_position - camera_position);</code>.
+This centers the value around 0, and has the nice property that the closer you get to the camera, the better precision you get.
+Far away from the camera precision is less of a concern anyways.
+On a mobile screen, the precision errors might not be perceptible.</p>
+</li>
+<li>
+<p>Texture coordinates with smaller texture resolutions and constrained UV range.
+If UVs can be kept between <code>[-1, 1]</code>, we have reasonable resolution in FP16, but might not be enough.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Things which almost certainly won&#8217;t work:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Global world position.</p>
+</li>
+<li>
+<p>UI texture coordinates.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practice_summary"><a class="anchor" href="#_best_practice_summary"></a>Best practice summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Do</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Use FP16 vertex outputs when possible and meets quality requirements.</p>
+</li>
+<li>
+<p>If you cannot rely on VK_KHR_16bit_storage being available, at the very least use <code>mediump</code> in lieu of true FP16.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Don&#8217;t</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Ignore bandwidth benefits of FP16 vertex outputs.
+Even if 60 FPS is met, battery life can be extended by saving bandwidth.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Impact</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Not using FP16 vertex outputs where you can will waste bandwidth on TBDR renderers, leading to increased power consumption.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Debugging</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>To observe the impact of any change to vertex output precision, use a profiler such as Streamline to observe external write or read bandwidth.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+    <!--
+  <p>This page was built using the Antora default UI.</p>
+  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
+    -->
+</footer>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/lunr.js"></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css"></script>
+<script async src="../../../../../search-index.js"></script>
+  </body>
+</html>
