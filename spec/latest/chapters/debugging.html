@@ -367,18 +367,18 @@
   </div>
   <ul class="components">
     <li class="component">
-      <a class="title" href="../../../guide/latest/index.html">Vulkan Guide</a>
+      <a class="title" href="../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../guide/latest/index.html">latest</a>
+          <a href="../../../tutorial/latest/00_Introduction.html">latest</a>
         </li>
       </ul>
     </li>
     <li class="component">
-      <a class="title" href="../../../samples/latest/README.html">Vulkan Samples</a>
+      <a class="title" href="../../../guide/latest/index.html">Vulkan Guide</a>
       <ul class="versions">
         <li class="version is-latest">
-          <a href="../../../samples/latest/README.html">latest</a>
+          <a href="../../../guide/latest/index.html">latest</a>
         </li>
       </ul>
     </li>
@@ -6090,6 +6090,203 @@ typedef VkToolPurposeFlags VkToolPurposeFlagsEXT;</code></pre>
 <div class="paragraph">
 <p><a href="#VkToolPurposeFlags">VkToolPurposeFlags</a> is a bitmask type for setting a mask of zero or
 more <a href="#VkToolPurposeFlagBits">VkToolPurposeFlagBits</a>.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_frame_boundary"><a class="anchor" href="#_frame_boundary"></a>Frame Boundary</h2>
+<div class="sectionbody">
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkFrameBoundaryEXT</code> structure is defined as:</p>
+</div>
+<div id="VkFrameBoundaryEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_frame_boundary
+typedef struct VkFrameBoundaryEXT {
+    VkStructureType            sType;
+    const void*                pNext;
+    VkFrameBoundaryFlagsEXT    flags;
+    uint64_t                   frameID;
+    uint32_t                   imageCount;
+    const VkImage*             pImages;
+    uint32_t                   bufferCount;
+    const VkBuffer*            pBuffers;
+    uint64_t                   tagName;
+    size_t                     tagSize;
+    const void*                pTag;
+} VkFrameBoundaryEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="#VkFrameBoundaryFlagBitsEXT">VkFrameBoundaryFlagBitsEXT</a> that can
+flag the last submission of a frame identifier.</p>
+</li>
+<li>
+<p><code>frameID</code> is the frame identifier.</p>
+</li>
+<li>
+<p><code>imageCount</code> is the number of images that store frame results.</p>
+</li>
+<li>
+<p><code>pImages</code> is a pointer to an array of VkImage objects with
+imageCount entries.</p>
+</li>
+<li>
+<p><code>bufferCount</code> is the number of buffers the store the frame results.</p>
+</li>
+<li>
+<p><code>pBuffers</code> is a pointer to an array of VkBuffer objects with
+bufferCount entries.</p>
+</li>
+<li>
+<p><code>tagName</code> is a numerical identifier for tag data.</p>
+</li>
+<li>
+<p><code>tagSize</code> is the number of bytes of tag data.</p>
+</li>
+<li>
+<p><code>pTag</code> is a pointer to an array of <code>tagSize</code> bytes containing
+tag data.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The application <strong>can</strong> associate frame boundary information to a queue
+submission call by adding a <code>VkFrameBoundaryEXT</code> structure to the
+<code>pNext</code> chain of <a href="devsandqueues.html#devsandqueues-submission" class="xref page">queue submission</a>,
+<a href="VK_KHR_surface/wsi.html#VkPresentInfoKHR" class="xref page">VkPresentInfoKHR</a>,
+or <a href="sparsemem.html#VkBindSparseInfo" class="xref page">VkBindSparseInfo</a>.</p>
+</div>
+<div class="paragraph">
+<p>The frame identifier is used to associate one or more queue submission to a
+frame, it is thus meant to be unique within a frame lifetime, i.e. it is
+possible (but not recommended) to reuse frame identifiers, as long as any
+two frames with any chance of having overlapping queue submissions (as in
+the example above) use two different frame identifiers.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Since the concept of frame is application-dependent, there is no way to
+validate the use of frame identifier.
+It is good practice to use a monotonically increasing counter as the frame
+identifier and not reuse identifiers between frames.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The <code>pImages</code> and <code>pBuffers</code> arrays contain a list of images and
+buffers which store the "end result" of the frame.
+As the concept of frame is application-dependent, not all frames <strong>may</strong>
+produce their results in images or buffers, yet this is a sufficiently
+common case to be handled by <code>VkFrameBoundaryEXT</code>.
+Note that no extra information, such as image layout is being provided,
+since the images are meant to be used by tools which would already be
+tracking this required information.
+Having the possibility of passing a list of end-result images makes
+<code>VkFrameBoundaryEXT</code> as expressive as <a href="VK_KHR_surface/wsi.html#vkQueuePresentKHR" class="xref page">vkQueuePresentKHR</a>, which is
+often the default frame boundary delimiter.</p>
+</div>
+<div class="paragraph">
+<p>The application <strong>can</strong> also associate arbitrary extra information via tag data
+using <code>tagName</code>, <code>tagSize</code> and <code>pTag</code>.
+This extra information is typically tool-specific.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkFrameBoundaryEXT-sType-sType" href="#VUID-VkFrameBoundaryEXT-sType-sType"></a> <span class="vuid">VUID-VkFrameBoundaryEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_FRAME_BOUNDARY_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkFrameBoundaryEXT-flags-parameter" href="#VUID-VkFrameBoundaryEXT-flags-parameter"></a> <span class="vuid">VUID-VkFrameBoundaryEXT-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkFrameBoundaryFlagBitsEXT">VkFrameBoundaryFlagBitsEXT</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkFrameBoundaryEXT-pImages-parameter" href="#VUID-VkFrameBoundaryEXT-pImages-parameter"></a> <span class="vuid">VUID-VkFrameBoundaryEXT-pImages-parameter</span><br>
+ If <code>imageCount</code> is not <code>0</code>, and <code>pImages</code> is not <code>NULL</code>, <code>pImages</code> <strong>must</strong> be a valid pointer to an array of <code>imageCount</code> valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-VkFrameBoundaryEXT-pBuffers-parameter" href="#VUID-VkFrameBoundaryEXT-pBuffers-parameter"></a> <span class="vuid">VUID-VkFrameBoundaryEXT-pBuffers-parameter</span><br>
+ If <code>bufferCount</code> is not <code>0</code>, and <code>pBuffers</code> is not <code>NULL</code>, <code>pBuffers</code> <strong>must</strong> be a valid pointer to an array of <code>bufferCount</code> valid <a href="resources.html#VkBuffer" class="xref page">VkBuffer</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-VkFrameBoundaryEXT-commonparent" href="#VUID-VkFrameBoundaryEXT-commonparent"></a> <span class="vuid">VUID-VkFrameBoundaryEXT-commonparent</span><br>
+ Both of the elements of <code>pBuffers</code>, and the elements of <code>pImages</code> that are valid handles of non-ignored parameters <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The bit which <strong>can</strong> be set in <a href="#VkFrameBoundaryEXT">VkFrameBoundaryEXT</a>::<code>flags</code> is:</p>
+</div>
+<div id="VkFrameBoundaryFlagBitsEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_frame_boundary
+typedef enum VkFrameBoundaryFlagBitsEXT {
+    VK_FRAME_BOUNDARY_FRAME_END_BIT_EXT = 0x00000001,
+} VkFrameBoundaryFlagBitsEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_FRAME_BOUNDARY_FRAME_END_BIT_EXT</code> specifies that this queue
+submission is the last one for this frame, i.e. once this queue
+submission has terminated, then the work for this frame is completed.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Note that in the presence of timeline semaphores, the last queue submission
+might not be the last one to be submitted, as timeline semaphores allow for
+wait-before-signal submissions.
+In the context of frame boundary, the queue submission that should be done
+flagged as the last one is the one that is meant to be executed last, even
+if it <strong>may</strong> not be the last one to be submitted.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div id="VkFrameBoundaryFlagsEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_frame_boundary
+typedef VkFlags VkFrameBoundaryFlagsEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><a href="#VkFrameBoundaryFlagsEXT">VkFrameBoundaryFlagsEXT</a> is a bitmask type for setting a mask of zero
+or more <a href="#VkFrameBoundaryFlagBitsEXT">VkFrameBoundaryFlagBitsEXT</a>.</p>
 </div>
 </div>
 </div>
