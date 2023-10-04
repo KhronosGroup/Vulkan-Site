@@ -660,8 +660,10 @@ location in the shader, i.e. if the shader declares an output variable
 decorated with a <code>Location</code> value of <strong>X</strong>, then it uses the attachment
 provided in <code>pColorAttachments</code>[<strong>X</strong>].
 If the <code>imageView</code> member of any element of <code>pColorAttachments</code> is
-<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, writes to the corresponding location by a fragment are
-discarded.</p>
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+and <code>resolveMode</code> is not
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+writes to the corresponding location by a fragment are discarded.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -1266,6 +1268,41 @@ Valid attachments specified by this structure <strong>must</strong> not be bound
 memory locations that are bound to any other valid attachments specified
 by this structure</p>
 </li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pDepthAttachment-09318" href="#VUID-VkRenderingInfo-pDepthAttachment-09318"></a> <span class="vuid">VUID-VkRenderingInfo-pDepthAttachment-09318</span><br>
+
+<code>pDepthAttachment-&gt;resolveMode</code> <strong>must</strong> not be
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pStencilAttachment-09319" href="#VUID-VkRenderingInfo-pStencilAttachment-09319"></a> <span class="vuid">VUID-VkRenderingInfo-pStencilAttachment-09319</span><br>
+
+<code>pStencilAttachment-&gt;resolveMode</code> <strong>must</strong> not be
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-colorAttachmentCount-09320" href="#VUID-VkRenderingInfo-colorAttachmentCount-09320"></a> <span class="vuid">VUID-VkRenderingInfo-colorAttachmentCount-09320</span><br>
+
+If <code>colorAttachmentCount</code> is not <code>1</code>, the <code>resolveMode</code> member
+of any element of <code>pColorAttachments</code> <strong>must</strong> not be
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-resolveMode-09321" href="#VUID-VkRenderingInfo-resolveMode-09321"></a> <span class="vuid">VUID-VkRenderingInfo-resolveMode-09321</span><br>
+
+If the <code>resolveMode</code> of any element of <code>pColorAttachments</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+<a href="#VkRenderingFragmentDensityMapAttachmentInfoEXT">VkRenderingFragmentDensityMapAttachmentInfoEXT</a>::<code>imageView</code>
+<strong>must</strong> be <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-resolveMode-09322" href="#VUID-VkRenderingInfo-resolveMode-09322"></a> <span class="vuid">VUID-VkRenderingInfo-resolveMode-09322</span><br>
+
+If the <code>resolveMode</code> of any element of <code>pColorAttachments</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+<a href="#VkRenderingFragmentShadingRateAttachmentInfoKHR">VkRenderingFragmentShadingRateAttachmentInfoKHR</a>::<code>imageView</code>
+<strong>must</strong> be <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
 </ul>
 </div>
 </div>
@@ -1444,11 +1481,12 @@ rendering.</p>
 </li>
 <li>
 <p><code>resolveMode</code> is a <a href="#VkResolveModeFlagBits">VkResolveModeFlagBits</a> value defining how
-multisampled data written to <code>imageView</code> will be resolved.</p>
+data written to <code>imageView</code> will be resolved into
+<code>resolveImageView</code>.</p>
 </li>
 <li>
-<p><code>resolveImageView</code> is an image view used to write resolved
-multisample data at the end of rendering.</p>
+<p><code>resolveImageView</code> is an image view used to write resolved data at
+the end of rendering.</p>
 </li>
 <li>
 <p><code>resolveImageLayout</code> is the layout that <code>resolveImageView</code> will
@@ -1474,10 +1512,12 @@ to clear <code>imageView</code> when <code>loadOp</code> is
 <code>loadOp</code> and <code>storeOp</code>, within the render area
 for each device
 specified in <a href="#VkRenderingInfo">VkRenderingInfo</a>.
-If <code>imageView</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, other members of this structure
-are ignored; writes to this attachment will be discarded, and no
-<a href="#renderpass-load-operations">load</a>, <a href="#renderpass-store-operations">store</a>, or <a href="#renderpass-resolve-operations">multisample resolve</a>
-operations will be performed.</p>
+If <code>imageView</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+and <code>resolveMode</code> is not
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+other members of this structure are ignored; writes to this attachment will
+be discarded, and no <a href="#renderpass-load-operations">load</a>,
+<a href="#renderpass-store-operations">store</a>, or <a href="#renderpass-resolve-operations">multisample resolve</a> operations will be performed.</p>
 </div>
 <div class="paragraph">
 <p>If <code>resolveMode</code> is <code>VK_RESOLVE_MODE_NONE</code>, then
@@ -1485,7 +1525,11 @@ operations will be performed.</p>
 If <code>resolveMode</code> is not <code>VK_RESOLVE_MODE_NONE</code>, and
 <code>resolveImageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, a
 <a href="#renderpass-resolve-operations">render pass multisample resolve operation</a>
-is defined for the attachment subresource.</p>
+is defined for the attachment subresource.
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>, and the
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page"><code>nullColorAttachmentWithExternalFormatResolve</code></a> limit is <code>VK_TRUE</code>,
+values are only <strong>undefined</strong> once <a href="#renderpass-load-operations">load operations</a> have completed.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1516,6 +1560,18 @@ instance that does not specify the <code>VK_RENDERING_RESUMING_BIT_KHR</code> fl
 <div class="paragraph">
 <p>Image contents at the end of a suspended render pass instance remain defined
 for access by a resuming render pass instance.</p>
+</div>
+<div class="paragraph">
+<p>If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page"><code>nullColorAttachmentWithExternalFormatResolve</code></a> limit is <code>VK_TRUE</code>,
+and <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>, values in the
+color attachment will be loaded from the resolve attachment at the start of
+rendering, and <strong>may</strong> also be reloaded any time after a resolve occurs or the
+resolve attachment is written to; if this occurs it <strong>must</strong> happen-before any
+writes to the color attachment are performed which happen-after the resolve
+that triggers this.
+If any color component in the external format is subsampled, values will be
+read from the nearest sample in the image when they are loaded.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -1674,6 +1730,73 @@ not be <code>VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code></p>
 If <code>imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> and <code>resolveMode</code> is
 not <code>VK_RESOLVE_MODE_NONE</code>, <code>resolveImageLayout</code> <strong>must</strong> not be
 <code>VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-externalFormatResolve-09323" href="#VUID-VkRenderingAttachmentInfo-externalFormatResolve-09323"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-externalFormatResolve-09323</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is not
+enabled, <code>resolveMode</code> <strong>must</strong> not be
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-resolveMode-09324" href="#VUID-VkRenderingAttachmentInfo-resolveMode-09324"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-resolveMode-09324</span><br>
+
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+<code>resolveImageView</code> <strong>must</strong> be a valid image view</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-nullColorAttachmentWithExternalFormatResolve-09325" href="#VUID-VkRenderingAttachmentInfo-nullColorAttachmentWithExternalFormatResolve-09325"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-nullColorAttachmentWithExternalFormatResolve-09325</span><br>
+
+If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
+<code>VK_TRUE</code> and <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+<code>resolveImageView</code> <strong>must</strong> have been created with an image with a
+<code>samples</code> value of <code>VK_SAMPLE_COUNT_1_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-resolveMode-09326" href="#VUID-VkRenderingAttachmentInfo-resolveMode-09326"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-resolveMode-09326</span><br>
+
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+<code>resolveImageView</code> <strong>must</strong> have been created with an external format
+specified by <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-resolveMode-09327" href="#VUID-VkRenderingAttachmentInfo-resolveMode-09327"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-resolveMode-09327</span><br>
+
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>,
+<code>resolveImageView</code> <strong>must</strong> have been created with a
+<code>subresourceRange.layerCount</code> of <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-resolveMode-09328" href="#VUID-VkRenderingAttachmentInfo-resolveMode-09328"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-resolveMode-09328</span><br>
+
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code> and
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> is <code>VK_TRUE</code>,
+<code>imageView</code> <strong>must</strong> be <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-resolveMode-09329" href="#VUID-VkRenderingAttachmentInfo-resolveMode-09329"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-resolveMode-09329</span><br>
+
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code> and
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> is <code>VK_FALSE</code>,
+<code>imageView</code> <strong>must</strong> be a valid <a href="resources.html#VkImageView" class="xref page">VkImageView</a></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingAttachmentInfo-resolveMode-09330" href="#VUID-VkRenderingAttachmentInfo-resolveMode-09330"></a> <span class="vuid">VUID-VkRenderingAttachmentInfo-resolveMode-09330</span><br>
+
+If <code>resolveMode</code> is
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code> and
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> is <code>VK_FALSE</code>,
+<code>imageView</code> <strong>must</strong> have a format equal to the value of
+<a href="memory.html#VkAndroidHardwareBufferFormatResolvePropertiesANDROID" class="xref page">VkAndroidHardwareBufferFormatResolvePropertiesANDROID</a>::<code>colorAttachmentFormat</code>
+as returned by a call to
+<a href="memory.html#vkGetAndroidHardwareBufferPropertiesANDROID" class="xref page">vkGetAndroidHardwareBufferPropertiesANDROID</a> for the Android
+hardware buffer that was used to create <code>resolveImageView</code></p>
 </li>
 </ul>
 </div>
@@ -3652,11 +3775,6 @@ attachments on multiple uses via <code>VK_ATTACHMENT_LOAD_OP_CLEAR</code>.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkAttachmentDescription-format-06698" href="#VUID-VkAttachmentDescription-format-06698"></a> <span class="vuid">VUID-VkAttachmentDescription-format-06698</span><br>
-
-<code>format</code> <strong>must</strong> not be <code>VK_FORMAT_UNDEFINED</code></p>
-</li>
-<li>
 <p><a id="VUID-VkAttachmentDescription-format-06699" href="#VUID-VkAttachmentDescription-format-06699"></a> <span class="vuid">VUID-VkAttachmentDescription-format-06699</span><br>
 
 If <code>format</code> includes a color or depth component and <code>loadOp</code> is
@@ -3816,6 +3934,11 @@ If the <a href="features.html#features-attachmentFeedbackLoopLayout" class="xref
 <code>imageCreateSampleCounts</code> (as defined in
 <a href="resources.html#resources-image-creation-limits" class="xref page">Image Creation Limits</a>) for the given
 <code>format</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAttachmentDescription-format-06698" href="#VUID-VkAttachmentDescription-format-06698"></a> <span class="vuid">VUID-VkAttachmentDescription-format-06698</span><br>
+
+<code>format</code> <strong>must</strong> not be VK_FORMAT_UNDEFINED</p>
 </li>
 <li>
 <p><a id="VUID-VkAttachmentDescription-format-06700" href="#VUID-VkAttachmentDescription-format-06700"></a> <span class="vuid">VUID-VkAttachmentDescription-format-06700</span><br>
@@ -6106,6 +6229,15 @@ structure is either <code>VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL</code> or
 <code>pAttachments</code> with an index equal to <code>attachment</code> <strong>must</strong> not
 have a <code>format</code> that includes only a stencil component</p>
 </li>
+<li>
+<p><a id="VUID-VkRenderPassCreateInfo2-pResolveAttachments-09331" href="#VUID-VkRenderPassCreateInfo2-pResolveAttachments-09331"></a> <span class="vuid">VUID-VkRenderPassCreateInfo2-pResolveAttachments-09331</span><br>
+
+If any element of <code>pResolveAttachments</code> of any element of
+<code>pSubpasses</code> references an attachment description with a format of
+<code>VK_FORMAT_UNDEFINED</code>,
+<a href="#VkRenderPassFragmentDensityMapCreateInfoEXT">VkRenderPassFragmentDensityMapCreateInfoEXT</a>::<code>fragmentDensityMapAttachment-&gt;attachment</code>
+<strong>must</strong> be <code>VK_ATTACHMENT_UNUSED</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -6275,11 +6407,6 @@ in the <code>pNext</code> chain.</p>
 <div class="title">Valid Usage</div>
 <div class="ulist">
 <ul>
-<li>
-<p><a id="VUID-VkAttachmentDescription2-format-06698" href="#VUID-VkAttachmentDescription2-format-06698"></a> <span class="vuid">VUID-VkAttachmentDescription2-format-06698</span><br>
-
-<code>format</code> <strong>must</strong> not be <code>VK_FORMAT_UNDEFINED</code></p>
-</li>
 <li>
 <p><a id="VUID-VkAttachmentDescription2-format-06699" href="#VUID-VkAttachmentDescription2-format-06699"></a> <span class="vuid">VUID-VkAttachmentDescription2-format-06699</span><br>
 
@@ -6496,6 +6623,19 @@ only includes a stencil component, <code>finalLayout</code> <strong>must</strong
 <code>VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL</code> or
 <code>VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL</code></p>
 </li>
+<li>
+<p><a id="VUID-VkAttachmentDescription2-externalFormatResolve-09333" href="#VUID-VkAttachmentDescription2-externalFormatResolve-09333"></a> <span class="vuid">VUID-VkAttachmentDescription2-externalFormatResolve-09333</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is not
+enabled, <code>format</code> <strong>must</strong> not be <code>VK_FORMAT_UNDEFINED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAttachmentDescription2-format-09334" href="#VUID-VkAttachmentDescription2-format-09334"></a> <span class="vuid">VUID-VkAttachmentDescription2-format-09334</span><br>
+
+If <code>format</code> is <code>VK_FORMAT_UNDEFINED</code>, there <strong>must</strong> be a
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a> structure in the <code>pNext</code> chain with a
+<code>externalFormat</code> that is not equal to <code>0</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -6511,7 +6651,7 @@ only includes a stencil component, <code>finalLayout</code> <strong>must</strong
 </li>
 <li>
 <p><a id="VUID-VkAttachmentDescription2-pNext-pNext" href="#VUID-VkAttachmentDescription2-pNext-pNext"></a> <span class="vuid">VUID-VkAttachmentDescription2-pNext-pNext</span><br>
- <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="#VkAttachmentDescriptionStencilLayout">VkAttachmentDescriptionStencilLayout</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkAttachmentDescriptionStencilLayout">VkAttachmentDescriptionStencilLayout</a> or <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a></p>
 </li>
 <li>
 <p><a id="VUID-VkAttachmentDescription2-sType-unique" href="#VUID-VkAttachmentDescription2-sType-unique"></a> <span class="vuid">VUID-VkAttachmentDescription2-sType-unique</span><br>
@@ -6775,6 +6915,74 @@ and its <code>attachment</code> member is not <code>VK_ATTACHMENT_UNUSED</code>,
 identified attachment defines a fragment shading rate attachment for that
 subpass.</p>
 </div>
+<div class="paragraph">
+<p>If any element of <code>pResolveAttachments</code> is an image specified with an
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>, values in the corresponding color attachment
+will be resolved to the resolve attachment in the same manner as specified
+for <a href="#VkResolveModeFlagBits"><code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code></a>.</p>
+</div>
+<div class="paragraph">
+<p>If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page"><code>nullColorAttachmentWithExternalFormatResolve</code></a> limit is <code>VK_TRUE</code>,
+values in the color attachment will be loaded from the resolve attachment at
+the start of rendering, and <strong>may</strong> also be reloaded any time after a resolve
+occurs or the resolve attachment is written to; if this occurs it <strong>must</strong>
+happen-before any writes to the color attachment are performed which
+happen-after the resolve that triggers this.
+If any color component in the external format is subsampled, values will be
+read from the nearest sample in the image when they are loaded.
+If the color attachment is also used as an input attachment, the same
+behavior applies.</p>
+</div>
+<div class="paragraph">
+<p>Setting the color attachment to <code>VK_ATTACHMENT_UNUSED</code> when an external
+resolve attachment is used and the
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page"><code>nullColorAttachmentWithExternalFormatResolve</code></a> limit is <code>VK_TRUE</code>
+will not result in color attachment writes to be discarded for that
+attachment.</p>
+</div>
+<div class="paragraph">
+<p>When <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page"><code>nullColorAttachmentWithExternalFormatResolve</code></a> is <code>VK_TRUE</code>, the
+color output from the subpass can still be read via an input attachment; but
+the application cannot bind an image view for the color attachment as there
+is no such image view bound.
+Instead to access the data as an input attachment applications <strong>can</strong> use the
+resolve attachment in its place - using the resolve attachment image for the
+descriptor, and setting the corresponding element of <code>pInputAttachments</code>
+to the index of the resolve attachment.</p>
+</div>
+<div class="paragraph">
+<p>Loads or input attachment reads from the resolve attachment are performed as
+if using a <a href="samplers.html#VkSamplerYcbcrConversionCreateInfo" class="xref page">VkSamplerYcbcrConversionCreateInfo</a> with the following
+parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkSamplerYcbcrConversionCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO,
+    .pNext = NULL,
+    .format = VK_FORMAT_UNDEFINED,
+    .ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY,
+    .ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL,
+    .components = {
+        .r = VK_COMPONENT_SWIZZLE_B
+        .g = VK_COMPONENT_SWIZZLE_R
+        .b = VK_COMPONENT_SWIZZLE_G
+        .a = VK_COMPONENT_SWIZZLE_IDENTITY},
+    .xChromaOffset = properties.chromaOffsetX,
+    .yChromaOffset = properties.chromaOffsetY,
+    .chromaFilter = ename:VK_FILTER_NEAREST,
+    .forceExplicitReconstruction = ... };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <code>properties</code> is equal to
+<a href="limits.html#VkPhysicalDeviceExternalFormatResolvePropertiesANDROID" class="xref page">VkPhysicalDeviceExternalFormatResolvePropertiesANDROID</a> returned by the
+device and <code>forceExplicitReconstruction</code> is effectively ignored as the
+<code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY</code> model is used.
+The applied swizzle is the same effective swizzle that would be applied by
+the <code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_IDENTITY</code> model, but no
+range expansion is applied.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -6912,21 +7120,6 @@ depth/stencil attachment in the same subpass, then <code>loadOp</code> <strong>m
 not be <code>VK_ATTACHMENT_LOAD_OP_CLEAR</code></p>
 </li>
 <li>
-<p><a id="VUID-VkSubpassDescription2-pResolveAttachments-03065" href="#VUID-VkSubpassDescription2-pResolveAttachments-03065"></a> <span class="vuid">VUID-VkSubpassDescription2-pResolveAttachments-03065</span><br>
-
-If <code>pResolveAttachments</code> is not <code>NULL</code>, for each resolve attachment
-that does not have the value <code>VK_ATTACHMENT_UNUSED</code>, the
-corresponding color attachment <strong>must</strong> not have the value
-<code>VK_ATTACHMENT_UNUSED</code></p>
-</li>
-<li>
-<p><a id="VUID-VkSubpassDescription2-pResolveAttachments-03066" href="#VUID-VkSubpassDescription2-pResolveAttachments-03066"></a> <span class="vuid">VUID-VkSubpassDescription2-pResolveAttachments-03066</span><br>
-
-If <code>pResolveAttachments</code> is not <code>NULL</code>, for each resolve attachment
-that is not <code>VK_ATTACHMENT_UNUSED</code>, the corresponding color
-attachment <strong>must</strong> not have a sample count of <code>VK_SAMPLE_COUNT_1_BIT</code></p>
-</li>
-<li>
 <p><a id="VUID-VkSubpassDescription2-pResolveAttachments-03067" href="#VUID-VkSubpassDescription2-pResolveAttachments-03067"></a> <span class="vuid">VUID-VkSubpassDescription2-pResolveAttachments-03067</span><br>
 
 If <code>pResolveAttachments</code> is not <code>NULL</code>, each resolve attachment that
@@ -6934,9 +7127,46 @@ is not <code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have a sample cou
 <code>VK_SAMPLE_COUNT_1_BIT</code></p>
 </li>
 <li>
-<p><a id="VUID-VkSubpassDescription2-pResolveAttachments-03068" href="#VUID-VkSubpassDescription2-pResolveAttachments-03068"></a> <span class="vuid">VUID-VkSubpassDescription2-pResolveAttachments-03068</span><br>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09335" href="#VUID-VkSubpassDescription2-externalFormatResolve-09335"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09335</span><br>
 
-Each element of <code>pResolveAttachments</code> <strong>must</strong> have the same
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is not
+enabled and <code>pResolveAttachments</code> is not <code>NULL</code>, for each resolve
+attachment that does not have the value <code>VK_ATTACHMENT_UNUSED</code>, the
+corresponding color attachment <strong>must</strong> not have the value
+<code>VK_ATTACHMENT_UNUSED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09336" href="#VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09336"></a> <span class="vuid">VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09336</span><br>
+
+If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
+<code>VK_FALSE</code> and <code>pResolveAttachments</code> is not <code>NULL</code>, for each
+resolve attachment that has a format of <code>VK_FORMAT_UNDEFINED</code>, the
+corresponding color attachment <strong>must</strong> not have the value
+<code>VK_ATTACHMENT_UNUSED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09337" href="#VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09337"></a> <span class="vuid">VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09337</span><br>
+
+If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
+<code>VK_TRUE</code> and <code>pResolveAttachments</code> is not <code>NULL</code>, for each
+resolve attachment that has a format of <code>VK_FORMAT_UNDEFINED</code>, the
+corresponding color attachment <strong>must</strong> have the value
+<code>VK_ATTACHMENT_UNUSED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09338" href="#VUID-VkSubpassDescription2-externalFormatResolve-09338"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09338</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is not
+enabled and <code>pResolveAttachments</code> is not <code>NULL</code>, for each resolve
+attachment that is not <code>VK_ATTACHMENT_UNUSED</code>, the corresponding
+color attachment <strong>must</strong> not have a sample count of
+<code>VK_SAMPLE_COUNT_1_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09339" href="#VUID-VkSubpassDescription2-externalFormatResolve-09339"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09339</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is not
+enabled, each element of <code>pResolveAttachments</code> <strong>must</strong> have the same
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> as its corresponding color attachment</p>
 </li>
 <li>
@@ -6949,12 +7179,33 @@ attachments in <code>pColorAttachments</code> that are not
 <code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have the same sample count</p>
 </li>
 <li>
-<p><a id="VUID-VkSubpassDescription2-pInputAttachments-02897" href="#VUID-VkSubpassDescription2-pInputAttachments-02897"></a> <span class="vuid">VUID-VkSubpassDescription2-pInputAttachments-02897</span><br>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09340" href="#VUID-VkSubpassDescription2-externalFormatResolve-09340"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09340</span><br>
 
-All attachments in <code>pInputAttachments</code> that are not
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is not enabled, all attachments in <code>pInputAttachments</code> that
+are not <code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have image formats whose
+<a href="formats.html#potential-format-features" class="xref page">potential format features</a> contain at
+least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> or
+<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09341" href="#VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09341"></a> <span class="vuid">VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09341</span><br>
+
+If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
+<code>VK_FALSE</code>, all attachments in <code>pInputAttachments</code> that are not
 <code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have image formats whose
 <a href="formats.html#potential-format-features" class="xref page">potential format features</a> contain at
 least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> or
+<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-pInputAttachments-09342" href="#VUID-VkSubpassDescription2-pInputAttachments-09342"></a> <span class="vuid">VUID-VkSubpassDescription2-pInputAttachments-09342</span><br>
+
+All attachments in <code>pInputAttachments</code> that are not
+<code>VK_ATTACHMENT_UNUSED</code> and do not have a non-zero value of
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> <strong>must</strong> have image
+formats whose <a href="formats.html#potential-format-features" class="xref page">potential format features</a>
+contain at least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> or
 <code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
 </li>
 <li>
@@ -6966,10 +7217,11 @@ All attachments in <code>pColorAttachments</code> that are not
 <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code></p>
 </li>
 <li>
-<p><a id="VUID-VkSubpassDescription2-pResolveAttachments-02899" href="#VUID-VkSubpassDescription2-pResolveAttachments-02899"></a> <span class="vuid">VUID-VkSubpassDescription2-pResolveAttachments-02899</span><br>
+<p><a id="VUID-VkSubpassDescription2-pResolveAttachments-09343" href="#VUID-VkSubpassDescription2-pResolveAttachments-09343"></a> <span class="vuid">VUID-VkSubpassDescription2-pResolveAttachments-09343</span><br>
 
 All attachments in <code>pResolveAttachments</code> that are not
-<code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have image formats whose
+<code>VK_ATTACHMENT_UNUSED</code> and do not have an image format of
+<code>VK_FORMAT_UNDEFINED</code> <strong>must</strong> have image formats whose
 <a href="formats.html#potential-format-features" class="xref page">potential format features</a> contain
 <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code></p>
 </li>
@@ -7125,6 +7377,55 @@ If the <a href="features.html#features-multiview" class="xref page"><code>multiv
 
 The index of the most significant bit in <code>viewMask</code> <strong>must</strong> be less
 than <a href="devsandqueues.html#limits-maxMultiviewViewCount" class="xref page"><code>maxMultiviewViewCount</code></a></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09344" href="#VUID-VkSubpassDescription2-externalFormatResolve-09344"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09344</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is
+enabled, <code>pResolveAttachments</code> is not <code>NULL</code>, and
+<code>colorAttachmentCount</code> is not <code>1</code>, any element of
+<code>pResolveAttachments</code> that is not <code>VK_ATTACHMENT_UNUSED</code>, <strong>must</strong> not
+have a format of <code>VK_FORMAT_UNDEFINED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09345" href="#VUID-VkSubpassDescription2-externalFormatResolve-09345"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09345</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is
+enabled, <code>pResolveAttachments</code> is not <code>NULL</code>, any element of
+<code>pResolveAttachments</code> is not <code>VK_ATTACHMENT_UNUSED</code> and has a
+format of <code>VK_FORMAT_UNDEFINED</code>, and the corresponding element of
+<code>pColorAttachments</code> is not <code>VK_ATTACHMENT_UNUSED</code>, the color
+attachment <strong>must</strong> have a <code>samples</code> value of <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09346" href="#VUID-VkSubpassDescription2-externalFormatResolve-09346"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09346</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is
+enabled, <code>pResolveAttachments</code> is not <code>NULL</code>, and any element of
+<code>pResolveAttachments</code> is not <code>VK_ATTACHMENT_UNUSED</code> and has a
+format of <code>VK_FORMAT_UNDEFINED</code>, <code>viewMask</code> <strong>must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09347" href="#VUID-VkSubpassDescription2-externalFormatResolve-09347"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09347</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is
+enabled, <code>pResolveAttachments</code> is not <code>NULL</code>, and any element of
+<code>pResolveAttachments</code> is not <code>VK_ATTACHMENT_UNUSED</code> and has a
+format of <code>VK_FORMAT_UNDEFINED</code>,
+<a href="#VkFragmentShadingRateAttachmentInfoKHR">VkFragmentShadingRateAttachmentInfoKHR</a>::<code>pFragmentShadingRateAttachment</code>
+<strong>must</strong> either be <code>NULL</code> or a <a href="#VkAttachmentReference2">VkAttachmentReference2</a> structure with
+a <code>attachment</code> value of <code>VK_ATTACHMENT_UNUSED</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09348" href="#VUID-VkSubpassDescription2-externalFormatResolve-09348"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09348</span><br>
+
+If <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a> is
+enabled, <code>pResolveAttachments</code> is not <code>NULL</code>, and any element of
+<code>pResolveAttachments</code> is not <code>VK_ATTACHMENT_UNUSED</code> and has a
+format of <code>VK_FORMAT_UNDEFINED</code>, elements of <code>pInputAttachments</code>
+referencing either a color attachment or resolve attachment used in this
+subpass <strong>must</strong> not include <code>VK_IMAGE_ASPECT_PLANE<em>_i_</em>BIT_EXT</code> for
+any index <em>i</em> in its <code>aspectMask</code></p>
 </li>
 </ul>
 </div>
@@ -9172,6 +9473,32 @@ attachments used in that subpass which have
 count specified in
 <a href="#VkMultisampledRenderToSingleSampledInfoEXT">VkMultisampledRenderToSingleSampledInfoEXT</a>::<code>rasterizationSamples</code></p>
 </li>
+<li>
+<p><a id="VUID-VkFramebufferCreateInfo-flags-09351" href="#VUID-VkFramebufferCreateInfo-flags-09351"></a> <span class="vuid">VUID-VkFramebufferCreateInfo-flags-09351</span><br>
+
+If <code>flags</code> does not include
+<code>VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT</code> and the
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> is <code>VK_FALSE</code>,
+the format of the color attachment for each subpass in <code>renderPass</code>
+that includes an external format image as a resolve attachment <strong>must</strong>
+have a format equal to the value of
+<a href="memory.html#VkAndroidHardwareBufferFormatResolvePropertiesANDROID" class="xref page">VkAndroidHardwareBufferFormatResolvePropertiesANDROID</a>::<code>colorAttachmentFormat</code>
+as returned by a call to
+<a href="memory.html#vkGetAndroidHardwareBufferPropertiesANDROID" class="xref page">vkGetAndroidHardwareBufferPropertiesANDROID</a> for the Android
+hardware buffer that was used to create the image view used as its
+resolve attachment</p>
+</li>
+<li>
+<p><a id="VUID-VkFramebufferCreateInfo-flags-09352" href="#VUID-VkFramebufferCreateInfo-flags-09352"></a> <span class="vuid">VUID-VkFramebufferCreateInfo-flags-09352</span><br>
+
+If <code>flags</code> does not include
+<code>VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT</code>, each element of
+<code>pAttachments</code> with a format of <code>VK_FORMAT_UNDEFINED</code> <strong>must</strong> have
+been created with a <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code>
+value identical to that provided in the
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> specified by the
+corresponding <a href="#VkAttachmentDescription2">VkAttachmentDescription2</a> in <code>renderPass</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -9877,6 +10204,8 @@ typedef enum VkResolveModeFlagBits {
     VK_RESOLVE_MODE_AVERAGE_BIT = 0x00000002,
     VK_RESOLVE_MODE_MIN_BIT = 0x00000004,
     VK_RESOLVE_MODE_MAX_BIT = 0x00000008,
+  // Provided by VK_KHR_dynamic_rendering with VK_ANDROID_external_format_resolve
+    VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID = 0x00000010,
   // Provided by VK_KHR_depth_stencil_resolve
     VK_RESOLVE_MODE_NONE_KHR = VK_RESOLVE_MODE_NONE,
   // Provided by VK_KHR_depth_stencil_resolve
@@ -9920,11 +10249,51 @@ operation is the minimum of the sample values.</p>
 <p><code>VK_RESOLVE_MODE_MAX_BIT</code> indicates that result of the resolve
 operation is the maximum of the sample values.</p>
 </li>
+<li>
+<p><code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code> indicates that
+rather than a multisample resolve, a single sampled color attachment
+will be downsampled into a Y′C<sub>B</sub>C<sub>R</sub> format image specified by an external
+Android format.
+Unlike other resolve modes, implementations can resolve multiple times
+during rendering, or even bypass writing to the color attachment
+altogether, as long as the final value is resolved to the resolve
+attachment.
+Values in the <span class="eq">G</span>, <span class="eq">B</span>, and <span class="eq">R</span> channels of the color
+attachment will be written to the <span class="eq">Y</span>, <span class="eq">C<sub>B</sub></span>, and <span class="eq">C<sub>R</sub></span>
+channels of the external format image, respectively.
+Chroma values are calculated as if sampling with a linear filter from
+the color attachment at full rate, at the location the chroma values sit
+according to
+<a href="limits.html#VkPhysicalDeviceExternalFormatResolvePropertiesANDROID" class="xref page">VkPhysicalDeviceExternalFormatResolvePropertiesANDROID</a>::<code>chromaOffsetX</code>,
+<a href="limits.html#VkPhysicalDeviceExternalFormatResolvePropertiesANDROID" class="xref page">VkPhysicalDeviceExternalFormatResolvePropertiesANDROID</a>::<code>chromaOffsetY</code>,
+and the chroma sample rate of the resolved image.</p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
-<p>When no resolve mode is specified, <code>VK_RESOLVE_MODE_AVERAGE_BIT</code> is
-used.</p>
+<p>If no resolve mode is otherwise specified, <code>VK_RESOLVE_MODE_AVERAGE_BIT</code>
+is used.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>No range compression or Y′C<sub>B</sub>C<sub>R</sub> model conversion is performed by
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>; applications have
+to do these conversions themselves.
+Value outputs are expected to match those that would be read through a
+<a href="textures.html#textures-sampler-YCbCr-conversion-modelconversion" class="xref page">Y′C<sub>B</sub>C<sub>R</sub> sampler using <code>VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY</code></a>.
+The color space that the values should be in is defined by the platform and
+is not exposed via Vulkan.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -10958,6 +11327,36 @@ structure included in the <code>pNext</code> chain <strong>must</strong> be a <a
 of an image created with a value of
 <a href="resources.html#VkImageViewCreateInfo" class="xref page">VkImageViewCreateInfo</a>::<code>format</code> equal to the corresponding
 value of <a href="#VkAttachmentDescription">VkAttachmentDescription</a>::<code>format</code> in <code>renderPass</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderPassBeginInfo-framebuffer-09353" href="#VUID-VkRenderPassBeginInfo-framebuffer-09353"></a> <span class="vuid">VUID-VkRenderPassBeginInfo-framebuffer-09353</span><br>
+
+If <code>framebuffer</code> was created with a
+<a href="#VkFramebufferCreateInfo">VkFramebufferCreateInfo</a>::<code>flags</code> value that included
+<code>VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT</code>, and the
+<a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> is <code>VK_FALSE</code>,
+the format of the color attachment for each subpass that includes an
+external format image as a resolve attachment <strong>must</strong> have a format equal
+to the value of
+<a href="memory.html#VkAndroidHardwareBufferFormatResolvePropertiesANDROID" class="xref page">VkAndroidHardwareBufferFormatResolvePropertiesANDROID</a>::<code>colorAttachmentFormat</code>
+as returned by a call to
+<a href="memory.html#vkGetAndroidHardwareBufferPropertiesANDROID" class="xref page">vkGetAndroidHardwareBufferPropertiesANDROID</a> for the Android
+hardware buffer that was used to create the image view use as its
+resolve attachment</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderPassBeginInfo-framebuffer-09354" href="#VUID-VkRenderPassBeginInfo-framebuffer-09354"></a> <span class="vuid">VUID-VkRenderPassBeginInfo-framebuffer-09354</span><br>
+
+If <code>framebuffer</code> was created with a
+<a href="#VkFramebufferCreateInfo">VkFramebufferCreateInfo</a>::<code>flags</code> value that included
+<code>VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT</code>, each element of the
+<code>pAttachments</code> member of a <a href="#VkRenderPassAttachmentBeginInfo">VkRenderPassAttachmentBeginInfo</a>
+structure included in the <code>pNext</code> chain <strong>must</strong> be a <a href="resources.html#VkImageView" class="xref page">VkImageView</a>
+of an image created with a value of
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> equal to
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> in the <code>pNext</code>
+chain of the corresponding <a href="#VkAttachmentDescription2">VkAttachmentDescription2</a> structure used
+to create <code>renderPass</code></p>
 </li>
 <li>
 <p><a id="VUID-VkRenderPassBeginInfo-framebuffer-09047" href="#VUID-VkRenderPassBeginInfo-framebuffer-09047"></a> <span class="vuid">VUID-VkRenderPassBeginInfo-framebuffer-09047</span><br>

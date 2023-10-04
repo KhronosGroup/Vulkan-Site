@@ -4551,10 +4551,7 @@ external memory handle types.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>To create an image with an
-<a href="memory.html#memory-external-android-hardware-buffer-external-formats" class="xref page">external format</a>, add a <code>VkExternalFormatANDROID</code> structure in the <code>pNext</code>
-chain of <a href="#VkImageCreateInfo">VkImageCreateInfo</a>.
-<code>VkExternalFormatANDROID</code> is defined as:</p>
+<p><code>VkExternalFormatANDROID</code> is defined as:</p>
 </div>
 <div id="VkExternalFormatANDROID" class="listingblock">
 <div class="content">
@@ -4582,9 +4579,13 @@ external format</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>If <code>externalFormat</code> is zero, the effect is as if the
-<code>VkExternalFormatANDROID</code> structure was not present.
-Otherwise, the <code>image</code> will have the specified external format.</p>
+<p>When included in the <code>pNext</code> chain of another structure, it indicates
+<a href="memory.html#memory-external-android-hardware-buffer-external-formats" class="xref page">additional format information</a> beyond what is provided by <code>VkFormat</code> values for an
+Android hardware buffer.
+If <code>externalFormat</code> is zero, it indicates that no external format is
+used, and implementations should rely only on other format information.
+If this structure is not present, it is equivalent to setting
+<code>externalFormat</code> to zero.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -8488,12 +8489,37 @@ If <code>usage</code> contains
 <code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageViewCreateInfo-usage-08932" href="#VUID-VkImageViewCreateInfo-usage-08932"></a> <span class="vuid">VUID-VkImageViewCreateInfo-usage-08932</span><br>
+<p><a id="VUID-VkImageViewCreateInfo-externalFormatResolve-09358" href="#VUID-VkImageViewCreateInfo-externalFormatResolve-09358"></a> <span class="vuid">VUID-VkImageViewCreateInfo-externalFormatResolve-09358</span><br>
 
-If <code>usage</code> contains <code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code>, then
-the image view&#8217;s <a href="#resources-image-view-format-features">format    features</a> <strong>must</strong> contain at least one of
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is not enabled and <code>usage</code> contains
+<code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code>, then the image view&#8217;s
+<a href="#resources-image-view-format-features">format features</a> <strong>must</strong> contain
+at least one of <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>,
+<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, or
+<code>VK_FORMAT_FEATURE_2_LINEAR_COLOR_ATTACHMENT_BIT_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageViewCreateInfo-nullColorAttachmentWithExternalFormatResolve-09359" href="#VUID-VkImageViewCreateInfo-nullColorAttachmentWithExternalFormatResolve-09359"></a> <span class="vuid">VUID-VkImageViewCreateInfo-nullColorAttachmentWithExternalFormatResolve-09359</span><br>
+
+If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
+<code>VK_FALSE</code> and <code>usage</code> contains
+<code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code>, then the image view&#8217;s
+<a href="#resources-image-view-format-features">format features</a> <strong>must</strong> contain
+at least one of <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>,
+<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, or
+<code>VK_FORMAT_FEATURE_2_LINEAR_COLOR_ATTACHMENT_BIT_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageViewCreateInfo-image-09360" href="#VUID-VkImageViewCreateInfo-image-09360"></a> <span class="vuid">VUID-VkImageViewCreateInfo-image-09360</span><br>
+
+If <code>image</code> was created with a
+<a href="#VkExternalFormatANDROID">VkExternalFormatANDROID</a>::<code>externalFormat</code> value of 0 and
+<code>usage</code> contains <code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code>, then the
+image view&#8217;s <a href="#resources-image-view-format-features">format features</a>
+<strong>must</strong> contain at least one of
 <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>,
-<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code> or,
+<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code>, or
 <code>VK_FORMAT_FEATURE_2_LINEAR_COLOR_ATTACHMENT_BIT_NV</code></p>
 </li>
 <li>
@@ -15426,7 +15452,7 @@ set.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06416" href="#VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06416"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06416</span><br>
+<p><a id="VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06416" href="#VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06416"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06416</span><br>
 
 The <code>pCreateInfo</code>::<code>pNext</code> chain <strong>must</strong> not contain a
 <a href="#VkImageSwapchainCreateInfoKHR">VkImageSwapchainCreateInfoKHR</a> structure</p>
@@ -15454,14 +15480,14 @@ whose <code>pNext</code> chain includes a <a href="#VkExternalFormatQNX">VkExter
 with non-zero <code>externalFormat</code></p>
 </li>
 <li>
-<p><a id="VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06417" href="#VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06417"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06417</span><br>
+<p><a id="VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06417" href="#VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06417"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06417</span><br>
 
 If <code>pCreateInfo</code>::<code>format</code> specifies a <em>multi-planar</em> format and
 <code>pCreateInfo</code>::<code>flags</code> has <code>VK_IMAGE_CREATE_DISJOINT_BIT</code>
 set then <code>planeAspect</code> <strong>must</strong> not be <code>VK_IMAGE_ASPECT_NONE_KHR</code></p>
 </li>
 <li>
-<p><a id="VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06419" href="#VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06419"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06419</span><br>
+<p><a id="VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06419" href="#VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06419"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06419</span><br>
 
 If <code>pCreateInfo</code>::<code>flags</code> has <code>VK_IMAGE_CREATE_DISJOINT_BIT</code>
 set and if the <code>pCreateInfo</code>::<code>tiling</code> is
@@ -15470,7 +15496,7 @@ set and if the <code>pCreateInfo</code>::<code>tiling</code> is
 <a href="formats.html#formats-planes-image-aspect" class="xref page">multi-planar aspect mask</a> bit</p>
 </li>
 <li>
-<p><a id="VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06420" href="#VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06420"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirementsKHR-pCreateInfo-06420</span><br>
+<p><a id="VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06420" href="#VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06420"></a> <span class="vuid">VUID-VkDeviceImageMemoryRequirements-pCreateInfo-06420</span><br>
 
 If <code>pCreateInfo</code>::<code>tiling</code> is
 <code>VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT</code>, then <code>planeAspect</code>

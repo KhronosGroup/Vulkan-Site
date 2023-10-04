@@ -1184,13 +1184,6 @@ variable <strong>must</strong> not have an array size greater than
 <code>VkPhysicalDeviceLimits</code>::<code>maxSampleMaskWords</code></p>
 </li>
 <li>
-<p><a id="VUID-VkPipelineShaderStageCreateInfo-stage-00712" href="#VUID-VkPipelineShaderStageCreateInfo-stage-00712"></a> <span class="vuid">VUID-VkPipelineShaderStageCreateInfo-stage-00712</span><br>
-
-If <code>stage</code> is <code>VK_SHADER_STAGE_VERTEX_BIT</code>, the identified entry
-point <strong>must</strong> not include any input variable in its interface that is
-decorated with <code>CullDistance</code></p>
-</li>
-<li>
 <p><a id="VUID-VkPipelineShaderStageCreateInfo-stage-00713" href="#VUID-VkPipelineShaderStageCreateInfo-stage-00713"></a> <span class="vuid">VUID-VkPipelineShaderStageCreateInfo-stage-00713</span><br>
 
 If <code>stage</code> is <code>VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT</code> or
@@ -1235,13 +1228,6 @@ If <code>stage</code> is either <code>VK_SHADER_STAGE_VERTEX_BIT</code>,
 <code>VK_SHADER_STAGE_GEOMETRY_BIT</code>, and the identified entry point
 writes to <code>ViewportIndex</code> for any primitive, it <strong>must</strong> write the same
 value to <code>ViewportIndex</code> for all vertices of a given primitive</p>
-</li>
-<li>
-<p><a id="VUID-VkPipelineShaderStageCreateInfo-stage-00718" href="#VUID-VkPipelineShaderStageCreateInfo-stage-00718"></a> <span class="vuid">VUID-VkPipelineShaderStageCreateInfo-stage-00718</span><br>
-
-If <code>stage</code> is <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>, the identified
-entry point <strong>must</strong> not include any output variables in its interface
-decorated with <code>CullDistance</code></p>
 </li>
 <li>
 <p><a id="VUID-VkPipelineShaderStageCreateInfo-stage-06685" href="#VUID-VkPipelineShaderStageCreateInfo-stage-06685"></a> <span class="vuid">VUID-VkPipelineShaderStageCreateInfo-stage-06685</span><br>
@@ -3298,6 +3284,9 @@ any way, that pipeline <strong>must</strong> specify this state directly.</p>
 <p><a href="cmdbuffers.html#VkAttachmentSampleCountInfoNV" class="xref page">VkAttachmentSampleCountInfoNV</a></p>
 </li>
 <li>
+<p><a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a></p>
+</li>
+<li>
 <p>Inclusion/omission of the
 <code>VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT</code> and
 <code>VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT</code>
@@ -5281,6 +5270,13 @@ been created with
 <code>VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT</code></p>
 </li>
 <li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-flags-09245" href="#VUID-VkGraphicsPipelineCreateInfo-flags-09245"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-flags-09245</span><br>
+
+If <code>flags</code> includes
+<code>VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT</code>,
+<code>flags</code> <strong>must</strong> also include <code>VK_PIPELINE_CREATE_LIBRARY_BIT_KHR</code></p>
+</li>
+<li>
 <p><a id="VUID-VkGraphicsPipelineCreateInfo-flags-06610" href="#VUID-VkGraphicsPipelineCreateInfo-flags-06610"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-flags-06610</span><br>
 
 If <code>flags</code> includes
@@ -5812,8 +5808,9 @@ and any library was created with
 <li>
 <p><a id="VUID-VkGraphicsPipelineCreateInfo-None-07826" href="#VUID-VkGraphicsPipelineCreateInfo-None-07826"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-None-07826</span><br>
 
-If the pipeline includes a <a href="#pipelines-graphics-subsets-complete">    complete set of state</a>, <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> <strong>must</strong> be a valid
-pipeline layout</p>
+If the pipeline includes a <a href="#pipelines-graphics-subsets-complete">    complete set of state</a>, and there are no libraries included in
+<a href="#VkPipelineLibraryCreateInfoKHR">VkPipelineLibraryCreateInfoKHR</a>::<code>pLibraries</code>, then
+<a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> <strong>must</strong> be a valid pipeline layout</p>
 </li>
 <li>
 <p><a id="VUID-VkGraphicsPipelineCreateInfo-layout-07827" href="#VUID-VkGraphicsPipelineCreateInfo-layout-07827"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-layout-07827</span><br>
@@ -6327,6 +6324,152 @@ of the corresponding element of <code>pColorBlendState-&gt;pAttachments</code>
 <code>VK_COLOR_COMPONENT_G_BIT</code>, and <code>VK_COLOR_COMPONENT_B_BIT</code>, or
 none of them</p>
 </li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09301" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09301"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09301</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>,
+<a href="#VkPipelineRenderingCreateInfo">VkPipelineRenderingCreateInfo</a>::<code>viewMask</code> <strong>must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09304" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09304"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09304</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT</code>,
+<a href="primsrast.html#VkPipelineMultisampleStateCreateInfo" class="xref page">VkPipelineMultisampleStateCreateInfo</a>::<code>rasterizationSamples</code>
+<strong>must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09305" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09305"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09305</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT</code>, the <code>blendEnable</code>
+member of each element of <code>pColorBlendState-&gt;pAttachments</code> <strong>must</strong> be
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09306" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09306"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09306</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</code>,
+<a href="primsrast.html#VkPipelineFragmentShadingRateStateCreateInfoKHR" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>::<code>width</code> <strong>must</strong>
+be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09307" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09307"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09307</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</code>,
+<a href="primsrast.html#VkPipelineFragmentShadingRateStateCreateInfoKHR" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>::<code>height</code>
+<strong>must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09308" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09308"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09308</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">pre-rasterization shader    state</a> and <a href="#pipelines-graphics-subsets-fragment-output">fragment    output interface state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>, the last
+<a href="#pipelines-graphics-subsets-pre-rasterization">pre-rasterization shader    stage</a> <strong>must</strong> not statically use a variable with the
+<code>PrimitiveShadingRateKHR</code> built-in</p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09309" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09309"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09309</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>,
+<a href="#VkPipelineRenderingCreateInfo">VkPipelineRenderingCreateInfo</a>::<code>colorAttachmentCount</code> <strong>must</strong> be
+<code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09310" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09310"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09310</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-shader">fragment shader state</a>
+and <a href="#pipelines-graphics-subsets-fragment-output">fragment output    interface state</a>, <code>renderPass</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> is not <code>0</code>, the
+fragment shader <strong>must</strong> not declare the <code>DepthReplacing</code> or
+<code>StencilRefReplacingEXT</code> execution modes</p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09313" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09313"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09313</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>subpass</code>
+includes an external format resolve attachment, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT</code>,
+<a href="primsrast.html#VkPipelineMultisampleStateCreateInfo" class="xref page">VkPipelineMultisampleStateCreateInfo</a>::<code>rasterizationSamples</code>
+<strong>must</strong> be <code>VK_SAMPLE_COUNT_1_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09314" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09314"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09314</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>subpass</code>
+includes an external format resolve attachment, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT</code>, the <code>blendEnable</code>
+member of each element of <code>pColorBlendState-&gt;pAttachments</code> <strong>must</strong> be
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09315" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09315"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09315</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>subpass</code>
+includes an external format resolve attachment, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</code>,
+<a href="primsrast.html#VkPipelineFragmentShadingRateStateCreateInfoKHR" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>::<code>width</code> <strong>must</strong>
+be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09316" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09316"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09316</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">fragment output interface    state</a>, <code>renderPass</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>subpass</code>
+includes an external format resolve attachment, and
+<code>pDynamicState-&gt;pDynamicStates</code> does not include
+<code>VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</code>,
+<a href="primsrast.html#VkPipelineFragmentShadingRateStateCreateInfoKHR" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>::<code>height</code>
+<strong>must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09317" href="#VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09317"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-externalFormatResolve-09317</span><br>
+
+If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is enabled, the pipeline requires
+<a href="#pipelines-graphics-subsets-fragment-output">pre-rasterization shader    state</a> and <a href="#pipelines-graphics-subsets-fragment-output">fragment    output interface state</a>, <code>renderPass</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+and <code>subpass</code> includes an external format resolve attachment, the
+last <a href="#pipelines-graphics-subsets-pre-rasterization">pre-rasterization    shader stage</a> <strong>must</strong> not statically use a variable with the
+<code>PrimitiveShadingRateKHR</code> built-in</p>
+</li>
 </ul>
 </div>
 </div>
@@ -6342,7 +6485,7 @@ none of them</p>
 </li>
 <li>
 <p><a id="VUID-VkGraphicsPipelineCreateInfo-pNext-pNext" href="#VUID-VkGraphicsPipelineCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-pNext-pNext</span><br>
- Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="cmdbuffers.html#VkAttachmentSampleCountInfoAMD" class="xref page">VkAttachmentSampleCountInfoAMD</a>, <a href="#VkGraphicsPipelineLibraryCreateInfoEXT">VkGraphicsPipelineLibraryCreateInfoEXT</a>, <a href="#VkGraphicsPipelineShaderGroupsCreateInfoNV">VkGraphicsPipelineShaderGroupsCreateInfoNV</a>, <a href="renderpass.html#VkMultiviewPerViewAttributesInfoNVX" class="xref page">VkMultiviewPerViewAttributesInfoNVX</a>, <a href="#VkPipelineCompilerControlCreateInfoAMD">VkPipelineCompilerControlCreateInfoAMD</a>, <a href="#VkPipelineCreateFlags2CreateInfoKHR">VkPipelineCreateFlags2CreateInfoKHR</a>, <a href="#VkPipelineCreationFeedbackCreateInfo">VkPipelineCreationFeedbackCreateInfo</a>, <a href="fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a>, <a href="primsrast.html#VkPipelineFragmentShadingRateEnumStateCreateInfoNV" class="xref page">VkPipelineFragmentShadingRateEnumStateCreateInfoNV</a>, <a href="primsrast.html#VkPipelineFragmentShadingRateStateCreateInfoKHR" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>, <a href="#VkPipelineLibraryCreateInfoKHR">VkPipelineLibraryCreateInfoKHR</a>, <a href="#VkPipelineRenderingCreateInfo">VkPipelineRenderingCreateInfo</a>, <a href="fragops.html#VkPipelineRepresentativeFragmentTestStateCreateInfoNV" class="xref page">VkPipelineRepresentativeFragmentTestStateCreateInfoNV</a>, or <a href="#VkPipelineRobustnessCreateInfoEXT">VkPipelineRobustnessCreateInfoEXT</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="cmdbuffers.html#VkAttachmentSampleCountInfoAMD" class="xref page">VkAttachmentSampleCountInfoAMD</a>, <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>, <a href="#VkGraphicsPipelineLibraryCreateInfoEXT">VkGraphicsPipelineLibraryCreateInfoEXT</a>, <a href="#VkGraphicsPipelineShaderGroupsCreateInfoNV">VkGraphicsPipelineShaderGroupsCreateInfoNV</a>, <a href="renderpass.html#VkMultiviewPerViewAttributesInfoNVX" class="xref page">VkMultiviewPerViewAttributesInfoNVX</a>, <a href="#VkPipelineCompilerControlCreateInfoAMD">VkPipelineCompilerControlCreateInfoAMD</a>, <a href="#VkPipelineCreateFlags2CreateInfoKHR">VkPipelineCreateFlags2CreateInfoKHR</a>, <a href="#VkPipelineCreationFeedbackCreateInfo">VkPipelineCreationFeedbackCreateInfo</a>, <a href="fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a>, <a href="primsrast.html#VkPipelineFragmentShadingRateEnumStateCreateInfoNV" class="xref page">VkPipelineFragmentShadingRateEnumStateCreateInfoNV</a>, <a href="primsrast.html#VkPipelineFragmentShadingRateStateCreateInfoKHR" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>, <a href="#VkPipelineLibraryCreateInfoKHR">VkPipelineLibraryCreateInfoKHR</a>, <a href="#VkPipelineRenderingCreateInfo">VkPipelineRenderingCreateInfo</a>, <a href="fragops.html#VkPipelineRepresentativeFragmentTestStateCreateInfoNV" class="xref page">VkPipelineRepresentativeFragmentTestStateCreateInfoNV</a>, or <a href="#VkPipelineRobustnessCreateInfoEXT">VkPipelineRobustnessCreateInfoEXT</a></p>
 </li>
 <li>
 <p><a id="VUID-VkGraphicsPipelineCreateInfo-sType-unique" href="#VUID-VkGraphicsPipelineCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-sType-unique</span><br>
@@ -6442,6 +6585,12 @@ indicates that the corresponding attachment is unused within the render
 pass.
 Valid formats indicate that an attachment <strong>can</strong> be used - but it is still
 valid to set the attachment to <code>NULL</code> when beginning rendering.</p>
+</div>
+<div class="paragraph">
+<p>If the render pass is going to be used with an external format resolve
+attachment, a <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a> structure <strong>must</strong> also be included
+in the <code>pNext</code> chain of <a href="#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a>, defining the
+external format of the resolve attachment that will be used.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">

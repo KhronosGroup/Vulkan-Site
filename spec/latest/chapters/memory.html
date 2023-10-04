@@ -5781,7 +5781,7 @@ as.</p>
 </li>
 <li>
 <p><a id="VUID-VkAndroidHardwareBufferPropertiesANDROID-pNext-pNext" href="#VUID-VkAndroidHardwareBufferPropertiesANDROID-pNext-pNext"></a> <span class="vuid">VUID-VkAndroidHardwareBufferPropertiesANDROID-pNext-pNext</span><br>
- Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkAndroidHardwareBufferFormatProperties2ANDROID">VkAndroidHardwareBufferFormatProperties2ANDROID</a> or <a href="#VkAndroidHardwareBufferFormatPropertiesANDROID">VkAndroidHardwareBufferFormatPropertiesANDROID</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkAndroidHardwareBufferFormatProperties2ANDROID">VkAndroidHardwareBufferFormatProperties2ANDROID</a>, <a href="#VkAndroidHardwareBufferFormatPropertiesANDROID">VkAndroidHardwareBufferFormatPropertiesANDROID</a>, or <a href="#VkAndroidHardwareBufferFormatResolvePropertiesANDROID">VkAndroidHardwareBufferFormatResolvePropertiesANDROID</a></p>
 </li>
 <li>
 <p><a id="VUID-VkAndroidHardwareBufferPropertiesANDROID-sType-unique" href="#VUID-VkAndroidHardwareBufferPropertiesANDROID-sType-unique"></a> <span class="vuid">VUID-VkAndroidHardwareBufferPropertiesANDROID-sType-unique</span><br>
@@ -5897,8 +5897,8 @@ from <a href="formats.html#vkGetPhysicalDeviceFormatProperties2" class="xref pag
 <a href="capabilities.html#vkGetPhysicalDeviceImageFormatProperties2" class="xref page">vkGetPhysicalDeviceImageFormatProperties2</a> with appropriate parameters.
 These sets of features are independent of each other, e.g. the external
 format will support sampler Y′C<sub>B</sub>C<sub>R</sub> conversion even if the non-external
-format does not, and writing to non-external format images is possible but
-writing to external format images is not.</p>
+format does not, and rendering directly to the external format will not be
+supported even if the non-external format does support this.</p>
 </div>
 </td>
 </tr>
@@ -6061,6 +6061,79 @@ the corresponding fields of
 <li>
 <p><a id="VUID-VkAndroidHardwareBufferFormatProperties2ANDROID-sType-sType" href="#VUID-VkAndroidHardwareBufferFormatProperties2ANDROID-sType-sType"></a> <span class="vuid">VUID-VkAndroidHardwareBufferFormatProperties2ANDROID-sType-sType</span><br>
  <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_2_ANDROID</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkAndroidHardwareBufferFormatResolvePropertiesANDROID">VkAndroidHardwareBufferFormatResolvePropertiesANDROID</a> structure is
+defined as:</p>
+</div>
+<div id="VkAndroidHardwareBufferFormatResolvePropertiesANDROID" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ANDROID_external_format_resolve
+typedef struct VkAndroidHardwareBufferFormatResolvePropertiesANDROID {
+    VkStructureType    sType;
+    void*              pNext;
+    VkFormat           colorAttachmentFormat;
+} VkAndroidHardwareBufferFormatResolvePropertiesANDROID;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>colorAttachmentFormat</code> is a <a href="formats.html#VkFormat" class="xref page">VkFormat</a> specifying the format of
+color attachment images that <strong>must</strong> be used for color attachments when
+resolving to the specified external format.
+If the implementation supports external format resolves for the
+specified external format, this value will be set to a color format
+supporting the <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> in
+<a href="formats.html#VkFormatProperties" class="xref page">VkFormatProperties</a>::<code>optimalTilingFeatures</code> as returned by
+<a href="formats.html#vkGetPhysicalDeviceFormatProperties" class="xref page">vkGetPhysicalDeviceFormatProperties</a> with <code>format</code> equal to
+<code>colorAttachmentFormat</code> If external format resolves are not
+supported, this value will be set to <code>VK_FORMAT_UNDEFINED</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Any Android hardware buffer created with the <code>GRALLOC_USAGE_HW_RENDER</code>
+flag <strong>must</strong> be renderable in some way in Vulkan, either:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#VkAndroidHardwareBufferFormatPropertiesANDROID">VkAndroidHardwareBufferFormatPropertiesANDROID</a>::<code>format</code> <strong>must</strong>
+be a format that supports <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>
+or <code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code> in
+<a href="formats.html#VkFormatProperties" class="xref page">VkFormatProperties</a>::<code>optimalTilingFeatures</code>; or</p>
+</li>
+<li>
+<p><code>colorAttachmentFormat</code> <strong>must</strong> be a format that supports
+<code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> in
+<a href="formats.html#VkFormatProperties" class="xref page">VkFormatProperties</a>::<code>optimalTilingFeatures</code>.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkAndroidHardwareBufferFormatResolvePropertiesANDROID-sType-sType" href="#VUID-VkAndroidHardwareBufferFormatResolvePropertiesANDROID-sType-sType"></a> <span class="vuid">VUID-VkAndroidHardwareBufferFormatResolvePropertiesANDROID-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_RESOLVE_PROPERTIES_ANDROID</code></p>
 </li>
 </ul>
 </div>
@@ -10235,9 +10308,11 @@ Such <em>external formats</em> are commonly used by external image sources such 
 video decoders or cameras.
 Vulkan <strong>can</strong> import Android hardware buffers that have external formats, but
 since the image contents are in an undiscoverable and possibly proprietary
-representation, images with external formats <strong>must</strong> only be used as sampled
-images, <strong>must</strong> only be sampled with a sampler that has Y′C<sub>B</sub>C<sub>R</sub> conversion
-enabled, and <strong>must</strong> have optimal tiling.</p>
+representation, images with external formats <strong>must</strong> only be used as
+resolve images or
+sampled images, and <strong>must</strong> have optimal tiling.
+Images with external formats <strong>must</strong> only be sampled with a sampler that has
+Y′C<sub>B</sub>C<sub>R</sub> conversion enabled.</p>
 </div>
 <div class="paragraph">
 <p>Images that will be backed by an Android hardware buffer <strong>can</strong> use an
