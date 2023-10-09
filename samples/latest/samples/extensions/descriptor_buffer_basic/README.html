@@ -6,13 +6,20 @@
     <title>Descriptor buffers :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/static/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <meta name="theme-color" content="#ffffff">
     <script>var uiRootPath = '../../../../../_'</script>
   </head>
   <body class="article">
 <header class="header">
   <nav class="navbar">
     <div class="navbar-brand">
-      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_White_Dec16.svg" /></a>
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
       <div class="navbar-item search hide-for-print">
         <div id="search-field" class="field">
           <label for="search-input"></label><input id="search-input" type="text" placeholder="Search the docs">
@@ -245,6 +252,9 @@
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../open_gl_interop/README.html">OpenGL interop</a>
@@ -560,18 +570,33 @@ layout (set = 2, binding = 0) uniform sampler2D samplerColorMap;</code></pre>
 In this sample we&#8217;ll be using both types, so we create two different buffers.</p>
 </div>
 <div class="paragraph">
-<p>As is usual in Vulkan, implementations have different size and alignment requirements.
-So to calculate the actual buffer sizes required to store the descriptors, we need to get the sizes that match our descriptor set layouts first:</p>
+<p>As is usual in Vulkan, implementations have different size and alignment requirements. Alignment requirements for setting offsets in the descriptor buffer with <code>vkCmdSetDescriptorBufferOffsetsEXT</code> are defined by <code>VkPhysicalDeviceDescriptorBufferPropertiesEXT::descriptorBufferOffsetAlignment</code>. At the start of the example we fetch that information into <code>descriptor_buffer_properties</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::array&lt;VkDeviceSize, 2&gt; descriptorLayoutSizes{};
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkPhysicalDeviceProperties2KHR device_properties{};
+descriptor_buffer_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT;
+device_properties.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+device_properties.pNext            = &amp;descriptor_buffer_properties;
+vkGetPhysicalDeviceProperties2KHR(get_device().get_gpu().get_handle(), &amp;device_properties);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>So to calculate the actual buffer sizes required to store the descriptors, we need to get the sizes of set layouts and also align them to <code>VkPhysicalDeviceDescriptorBufferPropertiesEXT::descriptorBufferOffsetAlignment</code>. We also need to fetch offsets of the descriptor bindings of a set layout as by the Vulkan specs size of the set layout is at least a sum of sizes of descriptor bindings of this layout but it can be higher than that and there are no guarantees about the layout of descriptor bindings in a descriptor set layout, meaning that first descriptor binding of a set can start exactly a the beginning of a set layout memory or it can start with non 0 offset if driver implementation puts some metadata there.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Get set layout descriptor sizes.
+vkGetDescriptorSetLayoutSizeEXT(get_device().get_handle(), uniform_binding_descriptor.layout, &amp;uniform_binding_descriptor.size);
+vkGetDescriptorSetLayoutSizeEXT(get_device().get_handle(), image_binding_descriptor.layout, &amp;image_binding_descriptor.size);
 
-// Buffers
-vkGetDescriptorSetLayoutSizeEXT(get_device().get_handle(), descriptor_set_layout_buffer, &amp;descriptorLayoutSizes[0]);
+// Adjust set layout sizes to satisfy alignment requirements.
+uniform_binding_descriptor.size = aligned_size(uniform_binding_descriptor.size, descriptor_buffer_properties.descriptorBufferOffsetAlignment);
+image_binding_descriptor.size = aligned_size(image_binding_descriptor.size, descriptor_buffer_properties.descriptorBufferOffsetAlignment);
 
-// Combined image samplers
-vkGetDescriptorSetLayoutSizeEXT(get_device().get_handle(), descriptor_set_layout_image, &amp;descriptorLayoutSizes[1]);</code></pre>
+// Get descriptor bindings offsets as descriptors are placed inside set layout by those offsets.
+vkGetDescriptorSetLayoutBindingOffsetEXT(get_device().get_handle(), uniform_binding_descriptor.layout, 0u, &amp;uniform_binding_descriptor.offset);
+vkGetDescriptorSetLayoutBindingOffsetEXT(get_device().get_handle(), image_binding_descriptor.layout, 0u, &amp;image_binding_descriptor.offset);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -579,11 +604,10 @@ vkGetDescriptorSetLayoutSizeEXT(get_device().get_handle(), descriptor_set_layout
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">resource_descriptor_buffer =
-    std::make_unique&lt;vkb::core::Buffer&gt;(get_device(),
-                                        (static_cast&lt;uint32_t&gt;(cubes.size()) + 1) * descriptorLayoutSizes[0],
-                                        VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                        VMA_MEMORY_USAGE_CPU_TO_GPU);</code></pre>
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uniform_binding_descriptor.buffer = std::make_unique&lt;vkb::core::Buffer&gt;(get_device(),
+	                                                                    (static_cast&lt;uint32_t&gt;(cubes.size()) + 1) * uniform_binding_descriptor.size,
+	                                                                    VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+	                                                                    VMA_MEMORY_USAGE_CPU_TO_GPU);</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -591,11 +615,10 @@ vkGetDescriptorSetLayoutSizeEXT(get_device().get_handle(), descriptor_set_layout
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">image_descriptor_buffer =
-    std::make_unique&lt;vkb::core::Buffer&gt;(get_device(),
-                                        static_cast&lt;uint32_t&gt;(cubes.size()) * descriptorLayoutSizes[1],
-                                        VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
-                                        VMA_MEMORY_USAGE_CPU_TO_GPU);</code></pre>
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">image_binding_descriptor.buffer = std::make_unique&lt;vkb::core::Buffer&gt;(get_device(),
+	                                                                  static_cast&lt;uint32_t&gt;(cubes.size()) * image_binding_descriptor.size,
+	                                                                  VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT,
+	                                                                  VMA_MEMORY_USAGE_CPU_TO_GPU);</code></pre>
 </div>
 </div>
 </div>
@@ -607,23 +630,6 @@ This is done with the <code>vkGetDescriptorEXT</code> function.</p>
 </div>
 <div class="paragraph">
 <p>The sample uses one global uniform buffer that stores the scene matrices, one uniform buffer per object displayed and one combined image sampler per object.</p>
-</div>
-<div class="paragraph">
-<p>As usual we need to adhere to the size and alignment requirements of the implementation defined in <code>VkPhysicalDeviceDescriptorBufferPropertiesEXT</code>.
-At the start of the example we fetch that information into <code>descriptor_buffer_properties</code> so we can access it in the following code:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkPhysicalDeviceProperties2KHR device_properties{};
-descriptor_buffer_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT;
-device_properties.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-device_properties.pNext            = &amp;descriptor_buffer_properties;
-vkGetPhysicalDeviceProperties2KHR(get_device().get_gpu().get_handle(), &amp;device_properties);
-...
-// Get required alignments based implementation dependant values
-uniform_descriptor_offset = aligned_size(descriptor_buffer_properties.uniformBufferDescriptorSize, descriptor_buffer_properties.descriptorBufferOffsetAlignment);
-image_descriptor_offset   = aligned_size(descriptor_buffer_properties.combinedImageSamplerDescriptorSize, descriptor_buffer_properties.descriptorBufferOffsetAlignment);</code></pre>
-</div>
 </div>
 <div class="paragraph">
 <p>For resource descriptor buffers, we can simply put buffer device addresses into it.
@@ -648,13 +654,13 @@ vkGetDescriptorEXT(get_device().get_handle(), &amp;buffer_descriptor_info, descr
 // We use pointers to offset and align the data we put into the descriptor buffers
 for (size_t i = 0; i &lt; cubes.size(); i++)
 {
-    VkDescriptorAddressInfoEXT cube_addr_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT};
-    cube_addr_info.address                    = cubes[i].uniform_buffer-&gt;get_device_address();
-    cube_addr_info.range                      = cubes[i].uniform_buffer-&gt;get_size();
-    cube_addr_info.format                     = VK_FORMAT_UNDEFINED;
+	VkDescriptorAddressInfoEXT cube_addr_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT};
+	cube_addr_info.address                    = cubes[i].uniform_buffer-&gt;get_device_address();
+	cube_addr_info.range                      = cubes[i].uniform_buffer-&gt;get_size();
+	cube_addr_info.format                     = VK_FORMAT_UNDEFINED;
 
-    buffer_descriptor_info.data.pUniformBuffer = &amp;cube_addr_info;
-    vkGetDescriptorEXT(get_device().get_handle(), &amp;buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize, uniform_descriptor_buf_ptr + (i + 1) * uniform_descriptor_offset);
+	buffer_descriptor_info.data.pUniformBuffer = &amp;cube_addr_info;
+	vkGetDescriptorEXT(get_device().get_handle(), &amp;buffer_descriptor_info, descriptor_buffer_properties.uniformBufferDescriptorSize, uniform_descriptor_buf_ptr + (i + 1) * uniform_binding_descriptor.size + uniform_binding_descriptor.offset);
 }</code></pre>
 </div>
 </div>
@@ -665,15 +671,15 @@ for (size_t i = 0; i &lt; cubes.size(); i++)
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// For combined images we need to put descriptors into the descriptor buffers
 // We use pointers to offset and align the data we put into the descriptor buffers
-char *image_descriptor_buf_ptr = (char *) image_descriptor_buffer-&gt;get_data();
+char *image_descriptor_buf_ptr = (char *) image_binding_descriptor.buffer-&gt;get_data();
 for (size_t i = 0; i &lt; cubes.size(); i++)
 {
-    VkDescriptorImageInfo image_descriptor = create_descriptor(cubes[i].texture);
+	VkDescriptorImageInfo image_descriptor = create_descriptor(cubes[i].texture);
 
-    VkDescriptorGetInfoEXT image_descriptor_info{VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT};
-    image_descriptor_info.type                       = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    image_descriptor_info.data.pCombinedImageSampler = &amp;image_descriptor;
-    vkGetDescriptorEXT(get_device().get_handle(), &amp;image_descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize, image_descriptor_buf_ptr + i * image_descriptor_offset);
+	VkDescriptorGetInfoEXT image_descriptor_info{VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT};
+	image_descriptor_info.type                       = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	image_descriptor_info.data.pCombinedImageSampler = &amp;image_descriptor;
+	vkGetDescriptorEXT(get_device().get_handle(), &amp;image_descriptor_info, descriptor_buffer_properties.combinedImageSamplerDescriptorSize, image_descriptor_buf_ptr + i * uniform_binding_descriptor.size + uniform_binding_descriptor.offset);
 }</code></pre>
 </div>
 </div>
@@ -706,13 +712,14 @@ vkCmdSetDescriptorBufferOffsetsEXT(draw_cmd_buffers[i], VK_PIPELINE_BIND_POINT_G
 // Set and offset into descriptor for each model
 for (size_t j = 0; j &lt; cubes.size(); j++)
 {
-    // Uniform buffer (set 1)
-    // Model ubos start at offset * 1 (slot 0 is global matrices)
-    buffer_offset = (j + 1) * uniform_descriptor_offset;
-    vkCmdSetDescriptorBufferOffsetsEXT(draw_cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 1, 1, &amp;buffer_index_ubo, &amp;buffer_offset);
-    // Image (set 2)
-    vkCmdSetDescriptorBufferOffsetsEXT(draw_cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 2, 1, &amp;buffer_index_image, &amp;buffer_offset);
-    draw_model(models.cube, draw_cmd_buffers[i]);
+	// Uniform buffer (set 1)
+	// Model ubos start at offset * (j + 1) (+1 as slot 0 is global matrices)
+	buffer_offset = (j + 1) * uniform_binding_descriptor.size;
+	vkCmdSetDescriptorBufferOffsetsEXT(draw_cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 1, 1, &amp;buffer_index_ubo, &amp;buffer_offset);
+	// Image (set 2)
+	buffer_offset = j * image_binding_descriptor.size;
+	vkCmdSetDescriptorBufferOffsetsEXT(draw_cmd_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout, 2, 1, &amp;buffer_index_image, &amp;buffer_offset);
+	draw_model(models.cube, draw_cmd_buffers[i]);
 }</code></pre>
 </div>
 </div>
