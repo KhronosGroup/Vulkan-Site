@@ -2078,8 +2078,9 @@ If this is a primary command buffer, then this bit is ignored.</p>
 </li>
 <li>
 <p><code>VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code> specifies that a
-command buffer <strong>can</strong> be resubmitted to a queue while it is in the
-<em>pending state</em>, and recorded into multiple primary command buffers.</p>
+command buffer <strong>can</strong> be resubmitted to any queue of the same queue family
+while it is in the <em>pending state</em>, and recorded into multiple primary
+command buffers.</p>
 </li>
 </ul>
 </div>
@@ -5571,6 +5572,11 @@ into any other primary command buffer which is currently in the
 <a href="#commandbuffers-lifecycle">executable or recording state</a>, that primary
 command buffer becomes <a href="#commandbuffers-lifecycle">invalid</a>.</p>
 </div>
+<div class="paragraph">
+<p>If the <a href="features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a> feature
+is enabled it is valid usage for <code>vkCmdExecuteCommands</code> to also be
+recorded to a <a href="../appendices/glossary.html#glossary" class="xref page">secondary command buffer</a>.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -5635,10 +5641,11 @@ instance, and any element of <code>pCommandBuffers</code> was recorded with
 <li>
 <p><a id="VUID-vkCmdExecuteCommands-contents-06018" href="#VUID-vkCmdExecuteCommands-contents-06018"></a> <span class="vuid">VUID-vkCmdExecuteCommands-contents-06018</span><br>
 
-If <code>vkCmdExecuteCommands</code> is being called within a render pass
-instance begun with <a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">vkCmdBeginRenderPass</a>, its <code>contents</code>
-parameter <strong>must</strong> have been set to
-<code>VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS</code></p>
+    If <code>vkCmdExecuteCommands</code> is being called within a render pass
+    instance begun with <a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">vkCmdBeginRenderPass</a>, its <code>contents</code>
+    parameter <strong>must</strong> have been set to
+    <code>VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS</code>
+, or <code>VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_EXT</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06019" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06019"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06019</span><br>
@@ -6089,6 +6096,29 @@ include a <a href="#VkAttachmentSampleCountInfoAMD">VkAttachmentSampleCountInfoA
 <a href="#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
 <strong>must</strong> be <code>VK_SAMPLE_COUNT_1_BIT</code></p>
 </li>
+<li>
+<p><code>commandBuffer</code> <strong>must</strong> not be a <a href="../appendices/glossary.html#glossary" class="xref page">secondary command    buffer</a>
+unless the <a href="features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a>
+feature is enabled</p>
+</li>
+<li>
+<p>If the <a href="features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a>
+feature is enabled, the <a href="../appendices/glossary.html#glossary" class="xref page">command buffer nesting level</a> of
+each element of <code>pCommandBuffers</code> <strong>must</strong> be less than
+<a href="limits.html#limits-maxCommandBufferNestingLevel" class="xref page">    <code>maxCommandBufferNestingLevel</code></a></p>
+</li>
+<li>
+<p>If the <a href="features.html#features-nestedCommandBufferRendering" class="xref page">    <code>nestedCommandBufferRendering</code></a> feature is not enabled, and
+<code>commandBuffer</code> is a <a href="../appendices/glossary.html#glossary" class="xref page">secondary command buffer</a>,
+<code>commandBuffer</code> <strong>must</strong> not have been recorded with
+<code>VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</code></p>
+</li>
+<li>
+<p>If the <a href="features.html#features-nestedCommandBufferSimultaneousUse" class="xref page">    <code>nestedCommandBufferSimultaneousUse</code></a> feature is not enabled, and
+<code>commandBuffer</code> is a <a href="../appendices/glossary.html#glossary" class="xref page">secondary command buffer</a>, each
+element of <code>pCommandBuffers</code> <strong>must</strong> not have been recorded with
+<code>VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -6117,10 +6147,6 @@ include a <a href="#VkAttachmentSampleCountInfoAMD">VkAttachmentSampleCountInfoA
 <li>
 <p><a id="VUID-vkCmdExecuteCommands-videocoding" href="#VUID-vkCmdExecuteCommands-videocoding"></a> <span class="vuid">VUID-vkCmdExecuteCommands-videocoding</span><br>
  This command <strong>must</strong> only be called outside of a video coding scope</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdExecuteCommands-bufferlevel" href="#VUID-vkCmdExecuteCommands-bufferlevel"></a> <span class="vuid">VUID-vkCmdExecuteCommands-bufferlevel</span><br>
- <code>commandBuffer</code> <strong>must</strong> be a primary <code>VkCommandBuffer</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteCommands-commandBufferCount-arraylength" href="#VUID-vkCmdExecuteCommands-commandBufferCount-arraylength"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBufferCount-arraylength</span><br>
@@ -6171,7 +6197,8 @@ include a <a href="#VkAttachmentSampleCountInfoAMD">VkAttachmentSampleCountInfoA
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Primary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Transfer<br>
@@ -6184,6 +6211,60 @@ Compute</p></td>
 </div>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="commandbuffers-nested"><a class="anchor" href="#commandbuffers-nested"></a>Nested Command Buffers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In addition to secondary command buffer execution from primary command
+buffers, an implementation <strong>may</strong> support <a href="../appendices/glossary.html#glossary" class="xref page">nested command buffers</a>, which enable secondary command buffers to be executed from other
+secondary command buffers.
+If the <a href="features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a> feature
+is enabled, the implementation supports <a href="../appendices/glossary.html#glossary" class="xref page">nested command buffers</a>.</p>
+</div>
+<div class="paragraph">
+<p>Nested command buffer execution works the same as primary-to-secondary
+execution, except that it is subject to some additional
+implementation-defined limits.</p>
+</div>
+<div class="paragraph">
+<p>Each secondary command buffer has a <a href="../appendices/glossary.html#glossary" class="xref page">command buffer nesting level</a>, which is determined at <a href="#vkEndCommandBuffer">vkEndCommandBuffer</a> time and evaluated
+at <a href="#vkCmdExecuteCommands">vkCmdExecuteCommands</a> time.
+A secondary command buffer that executes no other secondary command buffers
+has a <a href="../appendices/glossary.html#glossary" class="xref page">command buffer nesting level</a> of zero.
+Otherwise, the <a href="../appendices/glossary.html#glossary" class="xref page">command buffer nesting level</a> of a secondary
+command buffer is equal to the maximum nesting level of all secondary
+command buffers executed by that command buffer plus one.
+Some implementations <strong>may</strong> have a limit on the maximum nesting level of
+secondary command buffers that <strong>can</strong> be recorded.
+This limit is advertised in <a href="limits.html#limits-maxCommandBufferNestingLevel" class="xref page"><code>maxCommandBufferNestingLevel</code></a>.</p>
+</div>
+<div class="paragraph">
+<p>If the <a href="features.html#features-nestedCommandBufferRendering" class="xref page"><code>nestedCommandBufferRendering</code></a> feature is enabled, the implementation
+supports calling <a href="#vkCmdExecuteCommands">vkCmdExecuteCommands</a> inside secondary command buffers
+recorded with <code>VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</code>.
+If the <a href="features.html#features-nestedCommandBufferSimultaneousUse" class="xref page"><code>nestedCommandBufferSimultaneousUse</code></a> feature is enabled, the
+implementation supports calling <a href="#vkCmdExecuteCommands">vkCmdExecuteCommands</a> with secondary
+command buffers recorded with
+<code>VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>Whenever <a href="#vkCmdExecuteCommands">vkCmdExecuteCommands</a> is recorded inside a secondary command
+buffer recorded with <code>VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</code>,
+each member of <code>pCommandBuffers</code> <strong>must</strong> have been recorded with a
+<a href="#VkCommandBufferBeginInfo">VkCommandBufferBeginInfo</a> with <a href="#VkCommandBufferInheritanceInfo">VkCommandBufferInheritanceInfo</a>
+compatible with the <a href="#VkCommandBufferInheritanceInfo">VkCommandBufferInheritanceInfo</a> of the command
+buffer into which the <a href="#vkCmdExecuteCommands">vkCmdExecuteCommands</a> call is being recorded.
+The <a href="#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo</a> structures are compatible
+when the <code>VkCommandBufferInheritanceRenderingInfo</code>::<code>renderpass</code> are
+<a href="renderpass.html#renderpass-compatibility" class="xref page">compatible</a>, or if they are
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> then the <a href="#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo</a>
+members match, and all other members of
+<code>VkCommandBufferInheritanceRenderingInfo</code> match.
+This requirement applies recursively, down to the most nested command buffer
+and up to the command buffer where the render pass was originally begun.</p>
 </div>
 </div>
 </div>
