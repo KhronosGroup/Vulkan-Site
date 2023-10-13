@@ -1284,7 +1284,9 @@ memory locations that are bound to any other valid attachments specified
 by this structure</p>
 </li>
 <li>
-<p>If <code>flags</code> includes <code>VK_RENDERING_CONTENTS_INLINE_BIT_EXT</code> then
+<p><a id="VUID-VkRenderingInfo-flags-09381" href="#VUID-VkRenderingInfo-flags-09381"></a> <span class="vuid">VUID-VkRenderingInfo-flags-09381</span><br>
+
+If <code>flags</code> includes <code>VK_RENDERING_CONTENTS_INLINE_BIT_EXT</code> then
 the <a href="features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a> feature
 <strong>must</strong> be enabled</p>
 </li>
@@ -6169,6 +6171,13 @@ attachment in any subpass, it <strong>must</strong> not be used as any other att
 in the render pass</p>
 </li>
 <li>
+<p><a id="VUID-VkRenderPassCreateInfo2-pAttachments-09387" href="#VUID-VkRenderPassCreateInfo2-pAttachments-09387"></a> <span class="vuid">VUID-VkRenderPassCreateInfo2-pAttachments-09387</span><br>
+
+If any element of <code>pAttachments</code> is used as a fragment shading rate
+attachment, the <code>loadOp</code> for that attachment <strong>must</strong> not be
+<code>VK_ATTACHMENT_LOAD_OP_CLEAR</code></p>
+</li>
+<li>
 <p><a id="VUID-VkRenderPassCreateInfo2-flags-04521" href="#VUID-VkRenderPassCreateInfo2-flags-04521"></a> <span class="vuid">VUID-VkRenderPassCreateInfo2-flags-04521</span><br>
 
 If <code>flags</code> includes <code>VK_RENDER_PASS_CREATE_TRANSFORM_BIT_QCOM</code>,
@@ -6435,6 +6444,15 @@ present.</p>
 application <strong>must</strong> specify the initial and final layouts of the stencil
 aspect by including a <a href="#VkAttachmentDescriptionStencilLayout">VkAttachmentDescriptionStencilLayout</a> structure
 in the <code>pNext</code> chain.</p>
+</div>
+<div class="paragraph">
+<p><code>loadOp</code> and <code>storeOp</code> are ignored for fragment shading rate
+attachments.
+No access to the shading rate attachment is performed in <code>loadOp</code> and
+<code>storeOp</code>.
+Instead, access to
+<code>VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR</code> is performed
+as fragments are rasterized.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -7214,34 +7232,31 @@ attachments in <code>pColorAttachments</code> that are not
 <code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have the same sample count</p>
 </li>
 <li>
-<p><a id="VUID-VkSubpassDescription2-externalFormatResolve-09340" href="#VUID-VkSubpassDescription2-externalFormatResolve-09340"></a> <span class="vuid">VUID-VkSubpassDescription2-externalFormatResolve-09340</span><br>
-
-If the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
-feature is not enabled, all attachments in <code>pInputAttachments</code> that
-are not <code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have image formats whose
-<a href="formats.html#potential-format-features" class="xref page">potential format features</a> contain at
-least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> or
-<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
-</li>
-<li>
-<p><a id="VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09341" href="#VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09341"></a> <span class="vuid">VUID-VkSubpassDescription2-nullColorAttachmentWithExternalFormatResolve-09341</span><br>
-
-If the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">    <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
-<code>VK_FALSE</code>, all attachments in <code>pInputAttachments</code> that are not
-<code>VK_ATTACHMENT_UNUSED</code> <strong>must</strong> have image formats whose
-<a href="formats.html#potential-format-features" class="xref page">potential format features</a> contain at
-least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> or
-<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
-</li>
-<li>
-<p><a id="VUID-VkSubpassDescription2-pInputAttachments-09342" href="#VUID-VkSubpassDescription2-pInputAttachments-09342"></a> <span class="vuid">VUID-VkSubpassDescription2-pInputAttachments-09342</span><br>
+<p><a id="VUID-VkSubpassDescription2-pInputAttachments-02897" href="#VUID-VkSubpassDescription2-pInputAttachments-02897"></a> <span class="vuid">VUID-VkSubpassDescription2-pInputAttachments-02897</span><br>
 
 All attachments in <code>pInputAttachments</code> that are not
-<code>VK_ATTACHMENT_UNUSED</code> and do not have a non-zero value of
-<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code> <strong>must</strong> have image
-formats whose <a href="formats.html#potential-format-features" class="xref page">potential format features</a>
-contain at least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code> or
-<code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+<code>VK_ATTACHMENT_UNUSED</code>
+and any of the following is true:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>the <a href="features.html#features-externalFormatResolve" class="xref page"><code>externalFormatResolve</code></a>
+feature is not enabled</p>
+</li>
+<li>
+<p>the <a href="limits.html#limits-nullColorAttachmentWithExternalFormatResolve" class="xref page">     <code>nullColorAttachmentWithExternalFormatResolve</code></a> property is
+<code>VK_FALSE</code></p>
+</li>
+<li>
+<p>does not have a non-zero value of
+<a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>::<code>externalFormat</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>must</strong> have image formats whose <a href="formats.html#potential-format-features" class="xref page">potential format    features</a> contain at least <code>VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT</code>
+    or <code>VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</div>
 </li>
 <li>
 <p><a id="VUID-VkSubpassDescription2-pColorAttachments-02898" href="#VUID-VkSubpassDescription2-pColorAttachments-02898"></a> <span class="vuid">VUID-VkSubpassDescription2-pColorAttachments-02898</span><br>
@@ -11839,7 +11854,9 @@ commands in the next subpass will be provided.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>If <code>contents</code> is
+<p><a id="VUID-VkSubpassBeginInfo-contents-09382" href="#VUID-VkSubpassBeginInfo-contents-09382"></a> <span class="vuid">VUID-VkSubpassBeginInfo-contents-09382</span><br>
+
+If <code>contents</code> is
 <code>VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_EXT</code>, then
 <a href="features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a> <strong>must</strong> be
 enabled</p>
@@ -13598,7 +13615,7 @@ This section indicates a number of the more common cases as guidelines to
 help avoid them.</p>
 </div>
 <div class="sect2">
-<h3 id="_sampling_from_a_read_only_attachment"><a class="anchor" href="#_sampling_from_a_read_only_attachment"></a>Sampling from a read-only attachment</h3>
+<h3 id="_sampling_from_a_read_only_attachment"><a class="anchor" href="#_sampling_from_a_read_only_attachment"></a>Sampling From a Read-only Attachment</h3>
 <div class="paragraph">
 <p>Vulkan includes read-only layouts for depth/stencil images, that allow the
 images to be both read during a render pass for the purposes of
@@ -13629,7 +13646,7 @@ operation that also performs no writes.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_non_overlapping_access_between_resources"><a class="anchor" href="#_non_overlapping_access_between_resources"></a>Non-overlapping access between resources</h3>
+<h3 id="_non_overlapping_access_between_resources"><a class="anchor" href="#_non_overlapping_access_between_resources"></a>Non-overlapping Access Between Resources</h3>
 <div class="paragraph">
 <p>When relying on non-overlapping accesses between attachments and other
 resources, it is important to note that <a href="#renderpass-load-operations">load</a>
@@ -13649,7 +13666,7 @@ introducing a data race.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_depthstencil_and_input_attachments"><a class="anchor" href="#_depthstencil_and_input_attachments"></a>Depth/stencil and input attachments</h3>
+<h3 id="_depthstencil_and_input_attachments"><a class="anchor" href="#_depthstencil_and_input_attachments"></a>Depth/Stencil and Input Attachments</h3>
 <div class="paragraph">
 <p>When rendering to only the depth OR stencil aspect of an image, an input
 attachment accessing the other aspect will
