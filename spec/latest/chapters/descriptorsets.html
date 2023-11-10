@@ -4156,6 +4156,14 @@ If <code>pPoolSizes</code> contains a <code>descriptorType</code> of
 <code>VK_DESCRIPTOR_TYPE_MUTABLE_EXT</code> element in <code>pPoolSizes</code> <strong>must</strong>
 not have sets of supported descriptor types which partially overlap</p>
 </li>
+<li>
+<p><a id="VUID-VkDescriptorPoolCreateInfo-pPoolSizes-09424" href="#VUID-VkDescriptorPoolCreateInfo-pPoolSizes-09424"></a> <span class="vuid">VUID-VkDescriptorPoolCreateInfo-pPoolSizes-09424</span><br>
+
+If <code>pPoolSizes</code> contains a <code>descriptorType</code> of
+<code>VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK</code>, the <code>pNext</code> chain
+<strong>must</strong> include a <a href="#VkDescriptorPoolInlineUniformBlockCreateInfo">VkDescriptorPoolInlineUniformBlockCreateInfo</a>
+structure whose <code>maxInlineUniformBlockBindings</code> member is not zero</p>
+</li>
 </ul>
 </div>
 </div>
@@ -6439,6 +6447,29 @@ If <code>imageView</code> is created from a depth/stencil image, the
 not both</p>
 </li>
 <li>
+<p><a id="VUID-VkDescriptorImageInfo-imageLayout-09425" href="#VUID-VkDescriptorImageInfo-imageLayout-09425"></a> <span class="vuid">VUID-VkDescriptorImageInfo-imageLayout-09425</span><br>
+
+If <code>imageLayout</code> is <code>VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</code>,
+then the <code>aspectMask</code> used to create <code>imageView</code> <strong>must</strong> not
+include either <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDescriptorImageInfo-imageLayout-09426" href="#VUID-VkDescriptorImageInfo-imageLayout-09426"></a> <span class="vuid">VUID-VkDescriptorImageInfo-imageLayout-09426</span><br>
+
+If <code>imageLayout</code> is
+<code>VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL</code>,
+<code>VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL</code>,
+<code>VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL</code>,
+<code>VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL</code>,
+<code>VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL</code>,
+<code>VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL</code>,
+<code>VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL</code> or
+<code>VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL</code>, then the
+<code>aspectMask</code> used to create <code>imageView</code> <strong>must</strong> not include
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code></p>
+</li>
+<li>
 <p><a id="VUID-VkDescriptorImageInfo-imageLayout-00344" href="#VUID-VkDescriptorImageInfo-imageLayout-00344"></a> <span class="vuid">VUID-VkDescriptorImageInfo-imageLayout-00344</span><br>
 
 <code>imageLayout</code> <strong>must</strong> match the actual <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> of each
@@ -8115,13 +8146,6 @@ If <a href="features.html#features-graphicsPipelineLibrary" class="xref page"><c
 is not enabled, each
 element of <code>pDescriptorSets</code> <strong>must</strong> be a valid <a href="#VkDescriptorSet">VkDescriptorSet</a></p>
 </li>
-<li>
-<p><a id="VUID-vkCmdBindDescriptorSets-pDescriptorSets-08010" href="#VUID-vkCmdBindDescriptorSets-pDescriptorSets-08010"></a> <span class="vuid">VUID-vkCmdBindDescriptorSets-pDescriptorSets-08010</span><br>
-
-Each element of <code>pDescriptorSets</code> <strong>must</strong> have been allocated with a
-<code>VkDescriptorSetLayout</code> which was not created with
-<code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
-</li>
 </ul>
 </div>
 </div>
@@ -9785,6 +9809,28 @@ If <code>type</code> is <code>VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</code>,
 <code>pStorageBuffer</code> is not <code>NULL</code> and <code>pStorageBuffer-&gt;address</code> is
 not zero, <code>pStorageBuffer-&gt;address</code> must be an address within a
 <a href="resources.html#VkBuffer" class="xref page">VkBuffer</a> created on <code>device</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDescriptorGetInfoEXT-type-09427" href="#VUID-VkDescriptorGetInfoEXT-type-09427"></a> <span class="vuid">VUID-VkDescriptorGetInfoEXT-type-09427</span><br>
+
+If <code>type</code> is <code>VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</code>,
+<code>pUniformBuffer</code> is not <code>NULL</code> , the number of texel buffer elements
+given by <span class="eq">(⌊<code>pUniformBuffer-&gt;range</code> / (texel block
+size)⌋ × (texels per block))</span> where texel block size and
+texels per block are as defined in the <a href="formats.html#formats-compatibility" class="xref page">    Compatible Formats</a> table for <code>pUniformBuffer-&gt;format</code>, <strong>must</strong> be
+less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxTexelBufferElements</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDescriptorGetInfoEXT-type-09428" href="#VUID-VkDescriptorGetInfoEXT-type-09428"></a> <span class="vuid">VUID-VkDescriptorGetInfoEXT-type-09428</span><br>
+
+If <code>type</code> is <code>VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code>,
+<code>pStorageBuffer</code> is not <code>NULL</code> , the number of texel buffer elements
+given by <span class="eq">(⌊<code>pStorageBuffer-&gt;range</code> / (texel block
+size)⌋ × (texels per block))</span> where texel block size and
+texels per block are as defined in the <a href="formats.html#formats-compatibility" class="xref page">    Compatible Formats</a> table for <code>pStorageBuffer-&gt;format</code>, <strong>must</strong> be
+less than or equal to
+<code>VkPhysicalDeviceLimits</code>::<code>maxTexelBufferElements</code></p>
 </li>
 <li>
 <p><a id="VUID-VkDescriptorGetInfoEXT-type-08028" href="#VUID-VkDescriptorGetInfoEXT-type-08028"></a> <span class="vuid">VUID-VkDescriptorGetInfoEXT-type-08028</span><br>
