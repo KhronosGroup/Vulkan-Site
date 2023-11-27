@@ -950,7 +950,6 @@ occurs.</p>
 void vkGetLatencyTimingsNV(
     VkDevice                                    device,
     VkSwapchainKHR                              swapchain,
-    uint32_t*                                   pTimingCount,
     VkGetLatencyMarkerInfoNV*                   pLatencyMarkerInfo);</code></pre>
 </div>
 </div>
@@ -963,11 +962,6 @@ void vkGetLatencyTimingsNV(
 <p><code>swapchain</code> is the swapchain to return data from.</p>
 </li>
 <li>
-<p><code>pTimingCount</code> is a pointer to an integer related to the number of
-of previous frames of latency data available or queried, as described
-below.</p>
-</li>
-<li>
 <p><code>pGetLatencyMarkerInfo</code> is a pointer to a
 <a href="#VkGetLatencyMarkerInfoNV">VkGetLatencyMarkerInfoNV</a> structure specifying the parameters for
 returning latency information.</p>
@@ -978,13 +972,7 @@ returning latency information.</p>
 <p>The timings returned by <code>vkGetLatencyTimingsNV</code> contain the timestamps
 requested from <a href="#vkSetLatencyMarkerNV">vkSetLatencyMarkerNV</a> and additional
 implementation-specific markers defined in
-<a href="#VkLatencyTimingsFrameReportNV">VkLatencyTimingsFrameReportNV</a>.
-If <code>pTimings</code> is <code>NULL</code>, then the maximum number of queryable frame data
-is returned in <code>pTimingCount</code>.
-Otherwise, <code>pTimingCount</code> <strong>must</strong> point to a variable set by the user to
-the number of elements in the <code>pTimings</code> array in
-<code>pGetLatencyMarkerInfo</code>, and on return the variable is overwritten with
-the number of values actually written to <code>pTimings</code>.</p>
+<a href="#VkLatencyTimingsFrameReportNV">VkLatencyTimingsFrameReportNV</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -998,10 +986,6 @@ the number of values actually written to <code>pTimings</code>.</p>
 <li>
 <p><a id="VUID-vkGetLatencyTimingsNV-swapchain-parameter" href="#VUID-vkGetLatencyTimingsNV-swapchain-parameter"></a> <span class="vuid">VUID-vkGetLatencyTimingsNV-swapchain-parameter</span><br>
  <code>swapchain</code> <strong>must</strong> be a valid <a href="../VK_KHR_surface/wsi.html#VkSwapchainKHR" class="xref page">VkSwapchainKHR</a> handle</p>
-</li>
-<li>
-<p><a id="VUID-vkGetLatencyTimingsNV-pTimingCount-parameter" href="#VUID-vkGetLatencyTimingsNV-pTimingCount-parameter"></a> <span class="vuid">VUID-vkGetLatencyTimingsNV-pTimingCount-parameter</span><br>
- <code>pTimingCount</code> <strong>must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
 </li>
 <li>
 <p><a id="VUID-vkGetLatencyTimingsNV-pLatencyMarkerInfo-parameter" href="#VUID-vkGetLatencyTimingsNV-pLatencyMarkerInfo-parameter"></a> <span class="vuid">VUID-vkGetLatencyTimingsNV-pLatencyMarkerInfo-parameter</span><br>
@@ -1028,6 +1012,7 @@ the number of values actually written to <code>pTimings</code>.</p>
 typedef struct VkGetLatencyMarkerInfoNV {
     VkStructureType                   sType;
     const void*                       pNext;
+    uint32_t                          timingCount;
     VkLatencyTimingsFrameReportNV*    pTimings;
 } VkGetLatencyMarkerInfoNV;</code></pre>
 </div>
@@ -1042,13 +1027,22 @@ typedef struct VkGetLatencyMarkerInfoNV {
 structure.</p>
 </li>
 <li>
+<p><code>timingCount</code> is an integer related to the number of of previous
+frames of latency data available or queried, as described below.</p>
+</li>
+<li>
 <p><code>pTimings</code> is either <code>NULL</code> or a pointer to an array of
 <a href="#VkLatencyTimingsFrameReportNV">VkLatencyTimingsFrameReportNV</a> structures.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>The elements of <code>pTimings</code> are arranged in the order they were requested
+<p>If <code>pTimings</code> is <code>NULL</code> then the maximum number of queryable frame data
+is returned in <code>timingCount</code>.
+Otherwise, <code>timingCount</code> <strong>must</strong> be set by the user to the number of
+elements in the <code>pTimings</code> array, and on return the variable is
+overwritten with the number of values actually written to <code>pTimings</code>.
+The elements of <code>pTimings</code> are arranged in the order they were requested
 in, with the oldest data in the first entry.</p>
 </div>
 <div class="sidebarblock">
@@ -1062,7 +1056,7 @@ in, with the oldest data in the first entry.</p>
 </li>
 <li>
 <p><a id="VUID-VkGetLatencyMarkerInfoNV-pTimings-parameter" href="#VUID-VkGetLatencyMarkerInfoNV-pTimings-parameter"></a> <span class="vuid">VUID-VkGetLatencyMarkerInfoNV-pTimings-parameter</span><br>
- <code>pTimings</code> <strong>must</strong> be a valid pointer to a <a href="#VkLatencyTimingsFrameReportNV">VkLatencyTimingsFrameReportNV</a> structure</p>
+ If <code>timingCount</code> is not <code>0</code>, and <code>pTimings</code> is not <code>NULL</code>, <code>pTimings</code> <strong>must</strong> be a valid pointer to an array of <code>timingCount</code> <a href="#VkLatencyTimingsFrameReportNV">VkLatencyTimingsFrameReportNV</a> structures</p>
 </li>
 </ul>
 </div>

@@ -6673,8 +6673,8 @@ resulting CUDA module object is returned.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Once a CUDA module has been created, you <strong>may</strong> create the function entry
-point that <strong>must</strong> refer to one function in the module.</p>
+<p>Once a CUDA module has been created, the application <strong>may</strong> create the
+function entry point, which <strong>must</strong> refer to one function in the module.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -6944,11 +6944,11 @@ typedef struct VkCudaFunctionCreateInfoNV {
 <p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
 </li>
 <li>
-<p><code>pNext</code> <strong>may</strong> be <code>NULL</code> or <strong>may</strong> be a pointer to a structure extending
-this structure.</p>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
 </li>
 <li>
-<p><code>module</code> <strong>must</strong> be the CUDA <a href="#VkCudaModuleNV">VkCudaModuleNV</a> module in which the
+<p><code>module</code> is the CUDA <a href="#VkCudaModuleNV">VkCudaModuleNV</a> module in which the
 function resides.</p>
 </li>
 <li>
@@ -7143,33 +7143,50 @@ cache</p>
 </li>
 </ul>
 </div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Valid Usage</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a id="VUID-vkGetCudaModuleCacheNV-pCacheSize-09414" href="#VUID-vkGetCudaModuleCacheNV-pCacheSize-09414"></a> <span class="vuid">VUID-vkGetCudaModuleCacheNV-pCacheSize-09414</span><br>
-
-<code>pCacheSize</code> <strong>must</strong> be a pointer containing the amount of bytes to be
-copied in <code>pCacheData</code>.
-If <code>pCacheData</code> is NULL, the function will return in this pointer
-the total amount of bytes required to later perform the copy into
-<code>pCacheData</code>.</p>
-</li>
-<li>
-<p><a id="VUID-vkGetCudaModuleCacheNV-pCacheData-09415" href="#VUID-vkGetCudaModuleCacheNV-pCacheData-09415"></a> <span class="vuid">VUID-vkGetCudaModuleCacheNV-pCacheData-09415</span><br>
-
-<code>pCacheData</code> <strong>may</strong> be a pointer to a buffer in which the binary cache
-will be copied.
-The amount of bytes copied is defined by the value in <code>pCacheSize</code>.
-This pointer <strong>may</strong> be NULL.
-In this case, the function will write the total amount of required data
-in <code>pCacheSize</code>.</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>If <code>pCacheData</code> is <code>NULL</code>, then the size of the binary cache, in bytes,
+is returned in <code>pCacheSize</code>.
+Otherwise, <code>pCacheSize</code> <strong>must</strong> point to a variable set by the user to the
+size of the buffer, in bytes, pointed to by <code>pCacheData</code>, and on return
+the variable is overwritten with the amount of data actually written to
+<code>pCacheData</code>.
+If <code>pCacheSize</code> is less than the size of the binary shader code, nothing
+is written to <code>pCacheData</code>, and <code>VK_INCOMPLETE</code> will be returned
+instead of <code>VK_SUCCESS</code>.</p>
 </div>
+<div class="paragraph">
+<p>The returned cache <strong>may</strong> then be used later for further initialization of the
+CUDA module, by sending this cache <em>instead</em> of the PTX code when using
+<a href="#vkCreateCudaModuleNV">vkCreateCudaModuleNV</a>.</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Using the binary cache instead of the original PTX code <strong>should</strong>
+significantly speed up initialization of the CUDA module, given that the
+whole compilation and validation will not be necessary.</p>
+</div>
+<div class="paragraph">
+<p>As with <a href="pipelines.html#VkPipelineCache" class="xref page">VkPipelineCache</a>, the binary cache depends on the specific
+implementation.
+The application <strong>must</strong> assume the cache upload might fail in many
+circumstances and thus <strong>may</strong> have to get ready for falling back to the
+original PTX code if necessary.
+Most often, the cache <strong>may</strong> succeed if the same device driver and
+architecture is used between the cache generation from PTX and the use of
+this cache.
+In the event of a new driver version or if using a different device
+architecture, this cache <strong>may</strong> become invalid.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -7234,50 +7251,12 @@ in <code>pCacheSize</code>.</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p>A typical use of vkGetCudaModuleCacheNV happens in two steps:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>First call it without with <code>pCacheData</code> set to NULL and with a valid
-pointer <code>pCacheSize</code>.</p>
-</li>
-<li>
-<p>Another call with a valid <code>pCacheData</code> pointing to the expected size
-returned by <code>pCacheSize</code>, and <code>pCacheSize</code> containing the amount
-in bytes to copy.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>The returned cache <strong>may</strong> then be used later for further initialization of the
-CUDA module, by sending this cache <em>instead</em> of the PTX code, when using
-<a href="#vkCreateCudaModuleNV">vkCreateCudaModuleNV</a>.</p>
-</div>
-<div class="paragraph">
-<p>Using the binary cache instead of the original PTX code <strong>should</strong>
-significantly speed up initialization of the CUDA module, given that the
-whole compilation and validation will not be necessary.</p>
-</div>
-<div class="paragraph">
-<p>As with <a href="pipelines.html#VkPipelineCache" class="xref page">VkPipelineCache</a>, the binary cache depends on the specific
-implementation.
-Therefore the application <strong>must</strong> assume the cache upload might fail in many
-circumstances and thus <strong>may</strong> have to get ready for falling back to the
-original PTX code if necessary.
-Most often, the cache <strong>may</strong> succeed if the same device driver and
-architecture is used between the cache generation from PTX and the use of
-this cache.
-But most of the time, in the event of a new driver version or a if using a
-different device architecture, this cache <strong>may</strong> become invalid.</p>
-</div>
 </div>
 <div class="sect2">
 <h3 id="cuda-modules-limitations"><a class="anchor" href="#cuda-modules-limitations"></a>Limitations</h3>
 <div class="paragraph">
-<p>CUDA and Vulkan do not use the device in the same configuration, therefore,
-few limitations must be taken into account:</p>
+<p>CUDA and Vulkan do not use the device in the same configuration.
+The following limitations <strong>must</strong> be taken into account:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -7288,28 +7267,28 @@ pass them as arguments of the function.
 See <a href="dispatch.html#cudadispatch_sharing_resources" class="xref page">Resources sharing between CUDA    Kernel and Vulkan</a> for more details.</p>
 </li>
 <li>
-<p>No calls to functions external to the module PTX are supported</p>
+<p>No calls to functions external to the module PTX are supported.</p>
 </li>
 <li>
 <p>Vulkan disables some shader/kernel exceptions, which could break CUDA
-kernels relying on exceptions</p>
+kernels relying on exceptions.</p>
 </li>
 <li>
 <p>CUDA kernels submitted to Vulkan are limited to the amount of shared
-memory you can query from physical capabilities.
-It may be less than what CUDA can offer</p>
+memory, which can be queried from the physical capabilities.
+It may be less than what CUDA can offer.</p>
 </li>
 <li>
-<p>CUDA instruction-level preemption (CILP) does not work</p>
+<p>CUDA instruction-level preemption (CILP) does not work.</p>
 </li>
 <li>
 <p>CUDA Unified Memory will not work in this extension.</p>
 </li>
 <li>
-<p>CUDA Dynamic parallelism is not supported</p>
+<p>CUDA Dynamic parallelism is not supported.</p>
 </li>
 <li>
-<p>DispatchIndirect not available</p>
+<p><code>vk*DispatchIndirect</code> is not available.</p>
 </li>
 </ul>
 </div>

@@ -3656,6 +3656,26 @@ corresponding to the arguments of <code>function</code>.</p>
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>Kernel parameters of <code>function</code> are specified via <code>pParams</code>, very
+much the same way as described in
+<a href="https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__EXEC.html#group__CUDA__EXEC_1gb8f3dc3031b40da29d5f9a7139e52e15">cuLaunchKernel</a></p>
+</div>
+<div class="paragraph">
+<p>If <code>function</code> has N parameters, then <code>pParams</code> <strong>must</strong> be an array of
+N pointers and <code>paramCount</code> <strong>must</strong> be set to N. Each of
+<code>kernelParams</code>[0] through <code>kernelParams</code>[N-1] <strong>must</strong> point to a
+region of memory from which the actual kernel parameter will be copied.
+The number of kernel parameters and their offsets and sizes are not
+specified here as that information is stored in the <a href="shaders.html#VkCudaFunctionNV" class="xref page">VkCudaFunctionNV</a>
+object.</p>
+</div>
+<div class="paragraph">
+<p>The application-owned memory pointed to by <code>pParams</code> and
+<code>kernelParams</code>[0] through <code>kernelParams</code>[N-1] are consumed
+immediately, and <strong>may</strong> be altered or freed after
+<a href="#vkCmdCudaLaunchKernelNV">vkCmdCudaLaunchKernelNV</a> has returned.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -3736,29 +3756,9 @@ parameters, corresponding to the arguments of <code>function</code>.</p>
 </div>
 </div>
 </div>
-<div class="paragraph">
-<p>Kernel parameters of <code>function</code> are specified via <code>pParams</code>, very
-much the same way as described in
-<a href="https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__EXEC.html#group__CUDA__EXEC_1gb8f3dc3031b40da29d5f9a7139e52e15">cuLaunchKernel</a></p>
-</div>
-<div class="paragraph">
-<p>If <code>function</code> has N parameters, then <code>pParams</code> <strong>must</strong> be an array of
-N pointers and <code>paramCount</code> <strong>must</strong> be set to N. Each of
-<code>kernelParams</code>[0] through <code>kernelParams</code>[N-1] <strong>must</strong> point to a
-region of memory from which the actual kernel parameter will be copied.
-The number of kernel parameters and their offsets and sizes are not
-specified here as that information is stored in the <a href="shaders.html#VkCudaFunctionNV" class="xref page">VkCudaFunctionNV</a>
-object.</p>
-</div>
-<div class="paragraph">
-<p>The application-owned memory pointed to by <code>pParams</code> and
-<code>kernelParams</code>[0] through <code>kernelParams</code>[N-1] are consumed
-immediately, and <strong>may</strong> be altered or freed after
-<a href="#vkCmdCudaLaunchKernelNV">vkCmdCudaLaunchKernelNV</a> has returned.</p>
-</div>
 </div>
 <div class="sect2">
-<h3 id="cudadispatch_sharing_resources"><a class="anchor" href="#cudadispatch_sharing_resources"></a>Resources sharing from Vulkan to the CUDA Kernel</h3>
+<h3 id="cudadispatch_sharing_resources"><a class="anchor" href="#cudadispatch_sharing_resources"></a>Resource Sharing from Vulkan to the CUDA Kernel</h3>
 <div class="paragraph">
 <p>Given that one key limitation of this extension is that Vulkan <strong>cannot</strong>
 access, nor bind any global resource of CUDA modules, the only way to
@@ -3768,16 +3768,15 @@ of the function</em>.</p>
 <div class="paragraph">
 <p>You can use <a href="../appendices/extensions.html#VK_KHR_buffer_device_address" class="xref page">VK_KHR_buffer_device_address</a> to write/read to/from a
 <a href="resources.html#VkBuffer" class="xref page">VkBuffer</a> object.
-<a href="../appendices/extensions.html#VK_KHR_buffer_device_address" class="xref page">VK_KHR_buffer_device_address</a> allows you to get the device address of the
-buffer to pass it as an argument into <code>pParams</code>.
+<a href="../appendices/extensions.html#VK_KHR_buffer_device_address" class="xref page">VK_KHR_buffer_device_address</a> allows you to get the device address of
+the buffer to pass it as an argument into <code>pParams</code>.
 Application-side pointer arithmetic on the device address is legal, but will
 not be bounds-checked on the device.</p>
 </div>
 <div class="paragraph">
 <p>The corresponding argument of the CUDA function <strong>should</strong> be declared as a
 pointer of the same type as the referenced buffer.
-And the CUDA code <strong>may</strong> simply read or write to this buffer in the typical C
-way.</p>
+CUDA code <strong>may</strong> simply read or write to this buffer in the typical C way.</p>
 </div>
 <div class="paragraph">
 <p>You <strong>may</strong> also use <a href="../appendices/extensions.html#VK_NVX_image_view_handle" class="xref page">VK_NVX_image_view_handle</a> as another convenient way
@@ -3790,12 +3789,12 @@ to read/write from/to a <a href="resources.html#VkImage" class="xref page">VkIma
 <div class="ulist">
 <ul>
 <li>
-<p>You <strong>may</strong> then read from it by using the CUDA surface-read functions such
-as <code>surf3Dread</code>/<code>surf2Dread</code>/<code>surf1Dread</code></p>
+<p>You <strong>may</strong> read from it by using CUDA surface-read functions such as
+<code>surf3Dread</code>, <code>surf2Dread</code>, and <code>surf1Dread</code></p>
 </li>
 <li>
-<p>You <strong>may</strong> then write to it by using the CUDA surface-write functions such
-as <code>surf3Dwrite</code>/<code>surf2Dwrite</code>/<code>surf1Dwrite</code></p>
+<p>You <strong>may</strong> write to it by using CUDA surface-write functions such as
+<code>surf3Dwrite</code>, <code>surf2Dwrite</code>, and <code>surf1Dwrite</code></p>
 </li>
 </ul>
 </div>
