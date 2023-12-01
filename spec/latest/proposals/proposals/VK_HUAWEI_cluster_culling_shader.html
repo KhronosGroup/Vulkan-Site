@@ -444,7 +444,7 @@
 <h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution space</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Provide a new extension to connect the output of the compute shader to the existing rednering pipeline, developers who originally used compute shader for culling can easily migrate to this new extension and have better performance.</p>
+<p>Provide a new extension to connect the output of the compute shader to the existing rendering pipeline, in addition, when drawing a visible cluster, an appropriately shading rate can also be configured. developers who originally used compute shader for culling can easily migrate to this new extension and have better performance.</p>
 </div>
 </div>
 </div>
@@ -457,7 +457,13 @@
 <p>This extension allowing application to use a new programmable shader type&#8201;&#8212;&#8201;Cluster Culling Shader&#8201;&#8212;&#8201;to execute geometry culling on GPU. This mechanism does not require pipeline barrier between compute shader and other rendering pipeline.</p>
 </div>
 <div class="paragraph">
-<p>This new shader type have execution environments similar to that of compute shaders, where a collection of shader invocations form a workgroup and cooperate to perform coarse level culling and level-of-detail selection, shader invocation can emit a set of built-in output variables to the subsequent rendering pipeline via a new built-in function, these emitted variables form a drawing command used to draw geometries of cluster.</p>
+<p>This new shader type have execution environments similar to that of compute shaders, where a collection of shader invocations form a workgroup and cooperate to perform cluster based culling and level-of-detail selection, a shader invocation can emit a group of built-in output variables treated as a drawing command which can drives subsequent rendering pipeline to draw geometries of cluster with a specific shading rate, e.g. the distance between a cluster and the view point can be used to determine the shading rate of the cluster. These capabilities enables the cluster culling shader to reduce the rendering loading more effectively.</p>
+</div>
+<div class="paragraph">
+<p>It should be noted that the usage of per-cluster shading rate has the following restrictions:
+1. CCS and Vertex Shader cannot output shading rate at the same time.
+2. The per-cluster shading rate output by CCS will be regarded as per-primitive shading rate in combiner operation.
+3. If CCS does not output per-cluster shading rate, the rules of combiner operation remain unchanged.</p>
 </div>
 </div>
 <div class="sect2">
@@ -571,6 +577,7 @@ When the command is executed, a global workgroup consisting of  <code>groupCount
     void*                       pNext;
     VkBool32                    clustercullingShader;
     VkBool32                    multiviewClusterCullingShader;
+    VkBool32                    clusterShadingRate;
 }VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI;</code></pre>
 </div>
 </div>
@@ -588,11 +595,46 @@ When the command is executed, a global workgroup consisting of  <code>groupCount
 <li>
 <p><code>multiviewClusterCullingShader</code> indicates whether multiview can be used with cluster culling shader.</p>
 </li>
+<li>
+<p><code>clusterShadingRate</code> specifies whether the per-cluster shading rate is supported.</p>
+</li>
 </ul>
 </div>
 <div class="paragraph">
 <p>If the <code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> structure is included in the <code>pNext</code> chain of the <code>VkPhysicalDeviceFeature2</code> structure passed to <code>vkPhysicalDeviceFeature2</code>, it is filled in to indicate whether each corresponding feature is supported.
 <code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> can also be used in the <code>pNext</code> chain of <code>VkDeviceCreateInfo</code> to selectively enable these features.</p>
+</div>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI</code> - Structure describing whether cluster culling shading supported per-cluster shading rate.</p>
+</div>
+<div class="paragraph">
+<p><code>VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI</code> structure is defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">Typedef struct VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI {
+    VkStructureType		sType;
+    void*				pNext;
+    VkBool32            clusterShadingRate;
+}VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is the type of this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is NULL or a pointer to a structure extending this structure.</p>
+</li>
+<li>
+<p><code>clusterShadingRate</code> specifies whether the per-cluster shading rate is supported.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To query whether Cluster Culling Shader support per-cluster shading rate, include a <code>VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI</code> structure in the pNext chain of the
+<code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</code> structure passed to <code>vkPhysicalDeviceFeature2</code>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -680,6 +722,9 @@ When the command is executed, a global workgroup consisting of  <code>groupCount
 <li>
 <p><code>ClusterIdHUAWEI</code> is the index of cluster being rendered by this drawing command. Cluster Culling Shader passes this id to vertex shader for cluster related information fetching. When cluster culling shader enable, gl_DrawID will be replaced by gl_ClusterIDHUAWEI in Vertex Shader.</p>
 </li>
+<li>
+<p><code>ClusterShadingRateHUAWEI</code> is the shading rate of cluster being rendering by this drawing command. if <code>VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI::clusterShadingRate</code> is enabled, ClusterShadingRateHUAWEI is settable from Cluster Culling Shader which support coarse shading.</p>
+</li>
 </ul>
 </div>
 </div>
@@ -712,6 +757,7 @@ out gl_PerClusterHUAWEI
     uint gl_FirstVertexHUAWEI;
     uint gl_FirstInstanceHUAWEI;
     uint gl_ClusterIdHUAWEI;
+    uint gl_ClusterShadingRateHUAWEI;
 }</code></pre>
 </div>
 </div>
@@ -726,6 +772,7 @@ out gl_PerClusterHUAWEI
     int  gl_VertexOffsetHUAWEI;
     uint gl_FirstInstanceHUAWEI;
     uint gl_ClusterIdHUAWEI;
+    uint gl_ClusterShadingRateHUAWEI;
 }</code></pre>
 </div>
 </div>

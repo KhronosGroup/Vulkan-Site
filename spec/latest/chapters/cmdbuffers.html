@@ -4066,6 +4066,24 @@ corresponding to valid devices in the group to <code>1</code>.</p>
 
 If <code>deviceMask</code> is not <code>0</code>, it <strong>must</strong> be a valid device mask</p>
 </li>
+<li>
+<p><a id="VUID-VkCommandBufferSubmitInfo-commandBuffer-09445" href="#VUID-VkCommandBufferSubmitInfo-commandBuffer-09445"></a> <span class="vuid">VUID-VkCommandBufferSubmitInfo-commandBuffer-09445</span><br>
+
+If any render pass instance in <code>commandBuffer</code> was recorded with a
+<a href="renderpass.html#VkRenderPassStripeBeginInfoARM" class="xref page">VkRenderPassStripeBeginInfoARM</a> structure in its pNext chain, a
+<a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM</a> <strong>must</strong> be included in the
+<code>pNext</code> chain</p>
+</li>
+<li>
+<p><a id="VUID-VkCommandBufferSubmitInfo-pNext-09446" href="#VUID-VkCommandBufferSubmitInfo-pNext-09446"></a> <span class="vuid">VUID-VkCommandBufferSubmitInfo-pNext-09446</span><br>
+
+If a <a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM</a> is included in the
+<code>pNext</code> chain, the value of
+<a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM</a>::<code>stripeSemaphoreInfoCount</code>
+<strong>must</strong> be equal to the sum of the
+<a href="renderpass.html#VkRenderPassStripeBeginInfoARM" class="xref page">VkRenderPassStripeBeginInfoARM</a>::<code>stripeInfoCount</code> parameters
+provided to render pass instances recorded in <code>commandBuffer</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -4081,11 +4099,107 @@ If <code>deviceMask</code> is not <code>0</code>, it <strong>must</strong> be a 
 </li>
 <li>
 <p><a id="VUID-VkCommandBufferSubmitInfo-pNext-pNext" href="#VUID-VkCommandBufferSubmitInfo-pNext-pNext"></a> <span class="vuid">VUID-VkCommandBufferSubmitInfo-pNext-pNext</span><br>
- <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkCommandBufferSubmitInfo-sType-unique" href="#VUID-VkCommandBufferSubmitInfo-sType-unique"></a> <span class="vuid">VUID-VkCommandBufferSubmitInfo-sType-unique</span><br>
+ The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
 </li>
 <li>
 <p><a id="VUID-VkCommandBufferSubmitInfo-commandBuffer-parameter" href="#VUID-VkCommandBufferSubmitInfo-commandBuffer-parameter"></a> <span class="vuid">VUID-VkCommandBufferSubmitInfo-commandBuffer-parameter</span><br>
  <code>commandBuffer</code> <strong>must</strong> be a valid <a href="#VkCommandBuffer">VkCommandBuffer</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkRenderPassStripeSubmitInfoARM</code> structure is defined as:</p>
+</div>
+<div id="VkRenderPassStripeSubmitInfoARM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_ARM_render_pass_striped
+typedef struct VkRenderPassStripeSubmitInfoARM {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    uint32_t                        stripeSemaphoreInfoCount;
+    const VkSemaphoreSubmitInfo*    pStripeSemaphoreInfos;
+} VkRenderPassStripeSubmitInfoARM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>stripeSemaphoreInfoCount</code> is the number of semaphores used to
+signal stripe completion in the render pass instances in the submitted
+command buffer.</p>
+</li>
+<li>
+<p><code>pStripeSemaphoreInfos</code> is a pointer to an array of
+<code>stripeSemaphoreInfoCount</code> <a href="#VkSemaphoreSubmitInfo">VkSemaphoreSubmitInfo</a> structures
+describing the semaphores used to signal stripe completion.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This structure can be included in the <code>pNext</code> chain of
+<a href="#VkCommandBufferSubmitInfo">VkCommandBufferSubmitInfo</a> to provide a set of semaphores to be
+signaled for each striped render pass instance.</p>
+</div>
+<div class="paragraph">
+<p>The elements of <code>pStripeSemaphoreInfos</code> are mapped to render pass
+instances in <a href="#VkCommandBufferSubmitInfo">VkCommandBufferSubmitInfo</a>::<code>commandBuffer</code> in
+submission order and in stripe order within each render pass instance.
+Each semaphore in <code>pStripeSemaphoreInfos</code> is signaled when the
+implementation has completed execution of the associated stripe.
+In a render pass instance that has multiview enabled, the stripe includes
+all views in the view mask.
+In a render pass instance with <code>layerCount</code> greater than 1, the stripe
+includes all layers.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkRenderPassStripeSubmitInfoARM-semaphore-09447" href="#VUID-VkRenderPassStripeSubmitInfoARM-semaphore-09447"></a> <span class="vuid">VUID-VkRenderPassStripeSubmitInfoARM-semaphore-09447</span><br>
+
+The <code>semaphore</code> member of each element of
+<code>pStripeSemaphoreInfos</code> <strong>must</strong> have been created with a
+<a href="synchronization.html#VkSemaphoreType" class="xref page">VkSemaphoreType</a> of <code>VK_SEMAPHORE_TYPE_BINARY</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkRenderPassStripeSubmitInfoARM-sType-sType" href="#VUID-VkRenderPassStripeSubmitInfoARM-sType-sType"></a> <span class="vuid">VUID-VkRenderPassStripeSubmitInfoARM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderPassStripeSubmitInfoARM-pStripeSemaphoreInfos-parameter" href="#VUID-VkRenderPassStripeSubmitInfoARM-pStripeSemaphoreInfos-parameter"></a> <span class="vuid">VUID-VkRenderPassStripeSubmitInfoARM-pStripeSemaphoreInfos-parameter</span><br>
+ <code>pStripeSemaphoreInfos</code> <strong>must</strong> be a valid pointer to an array of <code>stripeSemaphoreInfoCount</code> valid <a href="#VkSemaphoreSubmitInfo">VkSemaphoreSubmitInfo</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderPassStripeSubmitInfoARM-stripeSemaphoreInfoCount-arraylength" href="#VUID-VkRenderPassStripeSubmitInfoARM-stripeSemaphoreInfoCount-arraylength"></a> <span class="vuid">VUID-VkRenderPassStripeSubmitInfoARM-stripeSemaphoreInfoCount-arraylength</span><br>
+ <code>stripeSemaphoreInfoCount</code> <strong>must</strong> be greater than <code>0</code></p>
 </li>
 </ul>
 </div>
