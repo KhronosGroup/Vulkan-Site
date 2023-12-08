@@ -548,6 +548,60 @@ VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkPipeline)</code></pre>
 </div>
 </div>
 <div class="sect1">
+<h2 id="pipelines-multiple"><a class="anchor" href="#pipelines-multiple"></a>Multiple Pipeline Creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Multiple pipelines <strong>can</strong> be created in a single call by commands such as
+<a href="executiongraphs.html#vkCreateExecutionGraphPipelinesAMDX" class="xref page">vkCreateExecutionGraphPipelinesAMDX</a>,
+<a href="#vkCreateRayTracingPipelinesKHR">vkCreateRayTracingPipelinesKHR</a>,
+<a href="#vkCreateRayTracingPipelinesNV">vkCreateRayTracingPipelinesNV</a>,
+<a href="#vkCreateComputePipelines">vkCreateComputePipelines</a>, and <a href="#vkCreateGraphicsPipelines">vkCreateGraphicsPipelines</a>.</p>
+</div>
+<div class="paragraph">
+<p>The creation commands are passed an array <code>pCreateInfos</code> of
+<code>Vk</code>*PipelineCreateInfo structures specifying parameters of each
+pipeline to be created, and return a corresponding array of handles in
+<code>pPipelines</code>.
+Each element index <em>i</em> of <code>pPipelines</code> is created based on the
+corresponding element <em>i</em> of <code>pCreateInfos</code>.</p>
+</div>
+<div class="paragraph">
+<p>Applications <strong>can</strong> group together similar pipelines to be created in a single
+call, and implementations are encouraged to look for reuse opportunities
+when creating a group.</p>
+</div>
+<div class="paragraph">
+<p>When attempting to create many pipelines in a single command, it is possible
+that creation <strong>may</strong> fail for a subset of them.
+In this case, the corresponding elements of <code>pPipelines</code> will be set to
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>.
+If creation fails for a pipeline despite valid arguments (for example, due
+to out of memory errors), the <a href="fundamentals.html#VkResult" class="xref page">VkResult</a> code returned by the pipeline
+creation command will indicate why.
+The implementation will attempt to create all pipelines, and only return
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> values for those that actually failed.</p>
+</div>
+<div class="paragraph">
+<p>If creation fails for a pipeline that has the
+<code>VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT</code> set in its
+<code>Vk</code>*PipelineCreateInfo, pipelines at an index in the <code>pPipelines</code>
+array greater than or equal to that of the failing pipeline will be set to
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>.</p>
+</div>
+<div class="paragraph">
+<p>If creation fails for multiple pipelines, the returned <a href="fundamentals.html#VkResult" class="xref page">VkResult</a> <strong>must</strong>
+be the return value of any one of the pipelines which did not succeed.
+An application <strong>can</strong> reliably clean up from a failed call by iterating over
+the <code>pPipelines</code> array and destroying every element that is not
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>.</p>
+</div>
+<div class="paragraph">
+<p>If the entire command fails and no pipelines are created, all elements of
+<code>pPipelines</code> will be set to <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="pipelines-compute"><a class="anchor" href="#pipelines-compute"></a>Compute Pipelines</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -607,6 +661,9 @@ cache is enabled for the duration of the command.</p>
 which the resulting compute pipeline objects are returned.</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>Pipelines are created and returned as described for <a href="#pipelines-multiple">Multiple Pipeline Creation</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -2755,6 +2812,9 @@ which the resulting graphics pipeline objects are returned.</p>
 <a href="#VkPipelineShaderStageCreateInfo">VkPipelineShaderStageCreateInfo</a> structures for each of the desired
 active shader stages, as well as creation information for all relevant
 fixed-function stages, and a pipeline layout.</p>
+</div>
+<div class="paragraph">
+<p>Pipelines are created and returned as described for <a href="#pipelines-multiple">Multiple Pipeline Creation</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -6847,12 +6907,12 @@ consisting entirely of zeros.</p>
 <li>
 <p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR</code> specifies
 that triangle primitives will be skipped during traversal using
-<code>OpTraceRayKHR</code>.</p>
+<a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_AABBS_BIT_KHR</code> specifies that
 AABB primitives will be skipped during traversal using
-<code>OpTraceRayKHR</code>.</p>
+<a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR</code>
@@ -7204,12 +7264,12 @@ consisting entirely of zeros.</p>
 <li>
 <p><code>VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR</code> specifies
 that triangle primitives will be skipped during traversal using
-<code>OpTraceRayKHR</code>.</p>
+<a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR</code> specifies that
 AABB primitives will be skipped during traversal using
-<code>OpTraceRayKHR</code>.</p>
+<a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR</code>
@@ -8884,6 +8944,9 @@ tracing pipeline objects are returned.</p>
 </li>
 </ul>
 </div>
+<div class="paragraph">
+<p>Pipelines are created and returned as described for <a href="#pipelines-multiple">Multiple Pipeline Creation</a>.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -9060,6 +9123,9 @@ implementation is unable to reuse the shader group handles provided in
 when
 <a href="features.html#VkPhysicalDeviceRayTracingPipelineFeaturesKHR" class="xref page">VkPhysicalDeviceRayTracingPipelineFeaturesKHR</a>::<code>rayTracingPipelineShaderGroupHandleCaptureReplay</code>
 is enabled.</p>
+</div>
+<div class="paragraph">
+<p>Pipelines are created and returned as described for <a href="#pipelines-multiple">Multiple Pipeline Creation</a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -11372,46 +11438,6 @@ created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
 </div>
 </div>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="pipelines-multiple"><a class="anchor" href="#pipelines-multiple"></a>Multiple Pipeline Creation</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Multiple pipelines <strong>can</strong> be created simultaneously by passing an array of
-<a href="#VkGraphicsPipelineCreateInfo">VkGraphicsPipelineCreateInfo</a>,
-<a href="#VkRayTracingPipelineCreateInfoKHR">VkRayTracingPipelineCreateInfoKHR</a>,
-<a href="#VkRayTracingPipelineCreateInfoNV">VkRayTracingPipelineCreateInfoNV</a>,
-or <a href="#VkComputePipelineCreateInfo">VkComputePipelineCreateInfo</a> structures into the
-<a href="#vkCreateGraphicsPipelines">vkCreateGraphicsPipelines</a>,
-<a href="#vkCreateRayTracingPipelinesKHR">vkCreateRayTracingPipelinesKHR</a>,
-<a href="#vkCreateRayTracingPipelinesNV">vkCreateRayTracingPipelinesNV</a>,
-and <a href="#vkCreateComputePipelines">vkCreateComputePipelines</a> commands, respectively.
-Applications <strong>can</strong> group together similar pipelines to be created in a single
-call, and implementations are encouraged to look for reuse opportunities
-within a group-create.</p>
-</div>
-<div class="paragraph">
-<p>When an application attempts to create many pipelines in a single command,
-it is possible that some subset <strong>may</strong> fail creation.
-In that case, the corresponding entries in the <code>pPipelines</code> output array
-will be filled with <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> values.
-If any pipeline fails creation despite valid arguments (for example, due to
-out of memory errors), the <a href="fundamentals.html#VkResult" class="xref page">VkResult</a> code returned by
-<code>vkCreate*Pipelines</code> will indicate why.
-The implementation will attempt to create all pipelines, and only return
-<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> values for those that actually failed.</p>
-</div>
-<div class="paragraph">
-<p>If creation fails for a pipeline that had
-<code>VK_PIPELINE_CREATE_EARLY_RETURN_ON_FAILURE_BIT</code> set, pipelines at an
-index in the <code>pPipelines</code> array greater than or equal to that of the
-failing pipeline <strong>must</strong> be set to <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>.</p>
-</div>
-<div class="paragraph">
-<p>If multiple pipelines fail to be created, the <a href="fundamentals.html#VkResult" class="xref page">VkResult</a> <strong>must</strong> be the
-return value of any of the pipelines which did not return <code>VK_SUCCESS</code>.</p>
 </div>
 </div>
 </div>
