@@ -196,7 +196,7 @@
     <a class="nav-link" href="VK_NV_memory_decompression.html">Memory Decompression</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="video_extensions.html">Video Coding</a>
+    <a class="nav-link" href="videocoding.html">Video Coding</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
@@ -554,7 +554,7 @@ feature is not enabled,
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -864,6 +864,18 @@ that <code>imageView</code> <strong>must</strong> have been created with
 <code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code></p>
 </li>
 <li>
+<p><a id="VUID-VkRenderingInfo-colorAttachmentCount-09476" href="#VUID-VkRenderingInfo-colorAttachmentCount-09476"></a> <span class="vuid">VUID-VkRenderingInfo-colorAttachmentCount-09476</span><br>
+
+If <code>colorAttachmentCount</code> is not <code>0</code> and there is an element of
+<code>pColorAttachments</code> with
+either its <code>resolveMode</code> member set to
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>, or
+its <code>imageView</code> member not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and its
+<code>resolveMode</code> member not set to <code>VK_RESOLVE_MODE_NONE</code>, the
+<code>resolveImageView</code> member of that element of <code>pColorAttachments</code>
+<strong>must</strong> have been created with <code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code></p>
+</li>
+<li>
 <p><a id="VUID-VkRenderingInfo-pDepthAttachment-06547" href="#VUID-VkRenderingInfo-pDepthAttachment-06547"></a> <span class="vuid">VUID-VkRenderingInfo-pDepthAttachment-06547</span><br>
 
 If <code>pDepthAttachment</code> is not <code>NULL</code> and
@@ -877,6 +889,14 @@ that includes a depth component</p>
 If <code>pDepthAttachment</code> is not <code>NULL</code> and
 <code>pDepthAttachment-&gt;imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
 <code>pDepthAttachment-&gt;imageView</code> <strong>must</strong> have been created with
+<code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pDepthAttachment-09477" href="#VUID-VkRenderingInfo-pDepthAttachment-09477"></a> <span class="vuid">VUID-VkRenderingInfo-pDepthAttachment-09477</span><br>
+
+If <code>pDepthAttachment</code> is not <code>NULL</code> and
+<code>pDepthAttachment-&gt;resolveMode</code> is not <code>VK_RESOLVE_MODE_NONE</code>,
+<code>pDepthAttachment-&gt;resolveImageView</code> <strong>must</strong> have been created with
 <code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
 </li>
 <li>
@@ -894,6 +914,14 @@ If <code>pStencilAttachment</code> is not <code>NULL</code> and
 <code>pStencilAttachment-&gt;imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
 <code>pStencilAttachment-&gt;imageView</code> <strong>must</strong> have been created with a
 stencil usage including
+<code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pStencilAttachment-09478" href="#VUID-VkRenderingInfo-pStencilAttachment-09478"></a> <span class="vuid">VUID-VkRenderingInfo-pStencilAttachment-09478</span><br>
+
+If <code>pStencilAttachment</code> is not <code>NULL</code> and
+<code>pStencilAttachment-&gt;resolveMode</code> is not <code>VK_RESOLVE_MODE_NONE</code>,
+<code>pStencilAttachment-&gt;resolveImageView</code> <strong>must</strong> have been created with
 <code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
 </li>
 <li>
@@ -1357,6 +1385,75 @@ If the <code>pNext</code> chain contains a <a href="#VkRenderPassStripeBeginInfo
 structure, the union of stripe areas defined by the elements of
 <a href="#VkRenderPassStripeInfoARM">VkRenderPassStripeInfoARM</a>::<code>pStripeInfos</code> <strong>must</strong> cover the
 <code>renderArea</code></p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-colorAttachmentCount-09479" href="#VUID-VkRenderingInfo-colorAttachmentCount-09479"></a> <span class="vuid">VUID-VkRenderingInfo-colorAttachmentCount-09479</span><br>
+
+If <code>colorAttachmentCount</code> is not <code>0</code> and the <code>imageView</code> member
+of an element of <code>pColorAttachments</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+that <code>imageView</code> <strong>must</strong> have been created with the identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-colorAttachmentCount-09480" href="#VUID-VkRenderingInfo-colorAttachmentCount-09480"></a> <span class="vuid">VUID-VkRenderingInfo-colorAttachmentCount-09480</span><br>
+
+If <code>colorAttachmentCount</code> is not <code>0</code>, and there is an element of
+<code>pColorAttachments</code> with
+either its <code>resolveMode</code> member set to
+<code>VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID</code>, or
+its <code>imageView</code> member not set to <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> and its
+<code>resolveMode</code> member not set to <code>VK_RESOLVE_MODE_NONE</code>, the
+<code>resolveImageView</code> member of that element of <code>pColorAttachments</code>
+<strong>must</strong> have been created with the identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pDepthAttachment-09481" href="#VUID-VkRenderingInfo-pDepthAttachment-09481"></a> <span class="vuid">VUID-VkRenderingInfo-pDepthAttachment-09481</span><br>
+
+If <code>pDepthAttachment</code> is not <code>NULL</code> and
+<code>pDepthAttachment-&gt;imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+<code>pDepthAttachment-&gt;imageView</code> <strong>must</strong> have been created with the
+identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pDepthAttachment-09482" href="#VUID-VkRenderingInfo-pDepthAttachment-09482"></a> <span class="vuid">VUID-VkRenderingInfo-pDepthAttachment-09482</span><br>
+
+If <code>pDepthAttachment</code> is not <code>NULL</code>,
+<code>pDepthAttachment-&gt;imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<code>pDepthAttachment-&gt;resolveMode</code> is not <code>VK_RESOLVE_MODE_NONE</code>,
+<code>pDepthAttachment-&gt;resolveImageView</code> <strong>must</strong> have been created with
+the identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pStencilAttachment-09483" href="#VUID-VkRenderingInfo-pStencilAttachment-09483"></a> <span class="vuid">VUID-VkRenderingInfo-pStencilAttachment-09483</span><br>
+
+If <code>pStencilAttachment</code> is not <code>NULL</code> and
+<code>pStencilAttachment-&gt;imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>,
+<code>pStencilAttachment-&gt;imageView</code> <strong>must</strong> have been created with the
+identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-pStencilAttachment-09484" href="#VUID-VkRenderingInfo-pStencilAttachment-09484"></a> <span class="vuid">VUID-VkRenderingInfo-pStencilAttachment-09484</span><br>
+
+If <code>pStencilAttachment</code> is not <code>NULL</code>,
+<code>pStencilAttachment-&gt;imageView</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, and
+<code>pStencilAttachment-&gt;resolveMode</code> is not <code>VK_RESOLVE_MODE_NONE</code>,
+<code>pStencilAttachment-&gt;resolveImageView</code> <strong>must</strong> have been created with
+the identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-imageView-09485" href="#VUID-VkRenderingInfo-imageView-09485"></a> <span class="vuid">VUID-VkRenderingInfo-imageView-09485</span><br>
+
+If the <code>imageView</code> member of a
+<a href="#VkRenderingFragmentShadingRateAttachmentInfoKHR">VkRenderingFragmentShadingRateAttachmentInfoKHR</a> structure included
+in the <code>pNext</code> chain is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, it <strong>must</strong> have been
+created with the identity swizzle</p>
+</li>
+<li>
+<p><a id="VUID-VkRenderingInfo-imageView-09486" href="#VUID-VkRenderingInfo-imageView-09486"></a> <span class="vuid">VUID-VkRenderingInfo-imageView-09486</span><br>
+
+If the <code>imageView</code> member of a
+<a href="#VkRenderingFragmentDensityMapAttachmentInfoEXT">VkRenderingFragmentDensityMapAttachmentInfoEXT</a> structure included
+in the <code>pNext</code> chain is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, it <strong>must</strong> have been
+created with the identity swizzle</p>
 </li>
 </ul>
 </div>
@@ -2662,7 +2759,7 @@ within the same subpass</p>
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -6035,7 +6132,7 @@ If the <a href="features.html#features-attachmentFeedbackLoopLayout" class="xref
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -10954,7 +11051,7 @@ created with a <code>usage</code> value the
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -11292,7 +11389,7 @@ created with a <code>usage</code> value the
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -12843,7 +12940,7 @@ This command <strong>must</strong> not be recorded when transform feedback is ac
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -13004,7 +13101,7 @@ This command <strong>must</strong> not be recorded when transform feedback is ac
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -13146,7 +13243,7 @@ subsequently within the same subpass</p>
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>
@@ -13308,7 +13405,7 @@ subsequently within the same subpass</p>
 <tr>
 <th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
 <th class="tableblock halign-left valign-top"><a href="#vkCmdBeginRenderPass">Render Pass Scope</a></th>
-<th class="tableblock halign-left valign-top"><a href="video_extensions.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
 <th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
 <th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
 </tr>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>NeRF :: Vulkan Documentation Project</title>
+    <title>Mobile NeRF :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../../../_/css/site.css">
     <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
@@ -284,6 +284,9 @@
     <a class="nav-link" href="../../extensions/shader_object/README.html">Shader Object</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../../extensions/synchronization_2/README.html">Synchronization 2</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -389,7 +392,7 @@
     <a class="nav-link" href="#samples/general/README.adoc">General samples</a>
 <ul class="nav-list">
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="README.html">NeRF</a>
+    <a class="nav-link" href="README.html">Mobile NeRF</a>
   </li>
 </ul>
   </li>
@@ -464,11 +467,11 @@
   <ul>
     <li><a href="../../../README.html">Vulkan Samples</a></li>
     <li><a href="#samples/general/README.adoc">General samples</a></li>
-    <li><a href="README.html">NeRF</a></li>
+    <li><a href="README.html">Mobile NeRF</a></li>
   </ul>
 </nav>
     <!--
-  <div class="edit-this-page"><a href="https://github.com/KhronosGroup/Vulkan-Samples/edit/main/antora/modules/ROOT/pages/samples/general/nerf/README.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/KhronosGroup/Vulkan-Samples/edit/main/antora/modules/ROOT/pages/samples/general/mobile_nerf/README.adoc">Edit this Page</a></div>
       -->
 </div>
   <div class="content">
@@ -476,7 +479,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">NeRF</h1>
+<h1 class="page">Mobile NeRF</h1>
 <div id="preamble">
 <div class="sectionbody">
 <div class="admonitionblock tip">
@@ -486,14 +489,24 @@
 <i class="fa icon-tip" title="Tip"></i>
 </td>
 <td class="content">
-The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/general/nerf">Khronos Vulkan samples github repository</a>.
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/general/mobile_nerf">Khronos Vulkan samples github repository</a>.
 </td>
 </tr>
 </table>
 </div>
 <div class="paragraph">
 <p>This sample is a modified version of the <a href="https://mobile-nerf.github.io/">Mobile Nerf</a> developed by Google.
-It&#8217;s based on its original <a href="https://github.com/google-research/jax3d/tree/main/jax3d/projects/mobilenerf">source code</a> but optimized for Vulkan.</p>
+It&#8217;s based on its original <a href="https://github.com/google-research/jax3d/tree/main/jax3d/projects/mobilenerf">source code</a> but optimized for Vulkan.
+This is a different version from traditional NeRF rendering, which normally requires tracing rays (usually done via ray-marching) and querying a MLP multiple times for each ray. These many queries result in non-interactive frame rates on most of the GPUs.
+The mobile version uses the rasterization pipeline to render the final image; this is done via a triangle mesh and a feature texture, where each of its visible pixels are run through a small MLP (executed in the fragment shader) that converts the feature data and view direction to the corresponding output pixel color. This technique enables interactive FPS even on mobile GPUs (thus the name).</p>
+</div>
+<div class="paragraph">
+<p>just rendering the standard NeRF in realtime is not feasible on commodity hardware. Rendering
+views from a trained NeRF requires querying a multi-layer
+perception (MLP) hundreds of times per ray. It requires
+about 100 teraflops to render a single 800∗800 frame, which
+results in a best-case rendering time of 10 seconds per frame
+on a NVIDIA RTX 2080 GPU with full GPU utilization.</p>
 </div>
 </div>
 </div>

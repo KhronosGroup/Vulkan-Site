@@ -196,7 +196,7 @@
     <a class="nav-link" href="../../chapters/VK_NV_memory_decompression.html">Memory Decompression</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../../chapters/video_extensions.html">Video Coding</a>
+    <a class="nav-link" href="../../chapters/videocoding.html">Video Coding</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="../../chapters/VK_NV_optical_flow/optical_flow.html">Optical Flow</a>
@@ -433,8 +433,8 @@
 <li><a href="#_select_queue_family_with_h_264_decode_support">4.1. Select queue family with H.264 decode support</a></li>
 <li><a href="#_check_support_and_query_the_capabilities_for_an_h_264_decode_profile">4.2. Check support and query the capabilities for an H.264 decode profile</a></li>
 <li><a href="#_create_and_update_h_264_video_session_parameters_objects">4.3. Create and update H.264 video session parameters objects</a></li>
-<li><a href="#_record_h_264_decode_operation_without_reconstructed_picture_setup_or_reference_pictures">4.4. Record H.264 decode operation (without reconstructed picture setup or reference pictures)</a></li>
-<li><a href="#_record_h_264_decode_operation_with_reconstructed_picture_setup">4.5. Record H.264 decode operation with reconstructed picture setup</a></li>
+<li><a href="#_record_h_264_decode_operation_video_session_without_dpb_slots">4.4. Record H.264 decode operation (video session without DPB slots)</a></li>
+<li><a href="#_record_h_264_decode_operation_with_optional_reference_picture_setup">4.5. Record H.264 decode operation with optional reference picture setup</a></li>
 <li><a href="#_record_h_264_decode_operation_with_reference_picture_list">4.6. Record H.264 decode operation with reference picture list</a></li>
 </ul>
 </li>
@@ -450,6 +450,7 @@
 <li><a href="#_resolved_how_should_both_fields_of_an_interlaced_frame_be_specified_as_part_of_the_active_reference_picture_list">5.8. RESOLVED: How should both fields of an interlaced frame be specified as part of the active reference picture list?</a></li>
 <li><a href="#_resolved_is_h_264_multiview_content_supported">5.9. RESOLVED: Is H.264 Multiview content supported?</a></li>
 <li><a href="#_resolved_why_are_h_264_level_indicator_values_specified_differently_than_the_way_they_are_defined_in_the_codec_specification">5.10. RESOLVED: Why are H.264 level indicator values specified differently than the way they are defined in the codec specification?</a></li>
+<li><a href="#_resolved_how_is_reference_picture_setup_requested_for_h_264_decode_operations">5.11. RESOLVED: How is reference picture setup requested for H.264 decode operations?</a></li>
 </ul>
 </li>
 <li><a href="#_further_functionality">6. Further Functionality</a></li>
@@ -939,7 +940,7 @@ vkUpdateVideoSessionParametersKHR(device, &amp;videoSessionParams, &amp;updateIn
 </div>
 </div>
 <div class="sect2">
-<h3 id="_record_h_264_decode_operation_without_reconstructed_picture_setup_or_reference_pictures"><a class="anchor" href="#_record_h_264_decode_operation_without_reconstructed_picture_setup_or_reference_pictures"></a>4.4. Record H.264 decode operation (without reconstructed picture setup or reference pictures)</h3>
+<h3 id="_record_h_264_decode_operation_video_session_without_dpb_slots"><a class="anchor" href="#_record_h_264_decode_operation_video_session_without_dpb_slots"></a>4.4. Record H.264 decode operation (video session without DPB slots)</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
@@ -960,6 +961,10 @@ VkVideoDecodeInfoKHR decodeInfo = {
     .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
     .pNext = &amp;decodeH264PictureInfo,
     ...
+    // reconstructed picture is not needed if video session was created without DPB slots
+    .pSetupReferenceSlot = NULL,
+    .referenceSlotCount = 0,
+    .pReferenceSlots = NULL
 };
 
 vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
@@ -969,7 +974,7 @@ vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_record_h_264_decode_operation_with_reconstructed_picture_setup"><a class="anchor" href="#_record_h_264_decode_operation_with_reconstructed_picture_setup"></a>4.5. Record H.264 decode operation with reconstructed picture setup</h3>
+<h3 id="_record_h_264_decode_operation_with_optional_reference_picture_setup"><a class="anchor" href="#_record_h_264_decode_operation_with_optional_reference_picture_setup"></a>4.5. Record H.264 decode operation with optional reference picture setup</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">vkCmdBeginVideoCodingKHR(commandBuffer, ...);
@@ -990,8 +995,26 @@ VkVideoReferenceSlotInfoKHR setupSlotInfo = {
     ...
 };
 
+StdVideoDecodeH264PictureInfo stdPictureInfo = {};
+// parse and populate picture info from frame header data
+...
+if (stdPictureInfo.flags.is_reference) {
+    // reconstructed picture will be used for reference picture setup and DPB slot activation
+} else {
+    // reconstructed picture and slot may only be used by implementations as transient resource
+}
+
+VkVideoDecodeH264PictureInfoKHR decodeH264PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .pStdPictureInfo = &amp;stdPictureInfo,
+    .sliceCount = ... // number of slices
+    .pSliceOffsets = ... // array of slice offsets relative to the bitstream buffer range
+};
+
 VkVideoDecodeInfoKHR decodeInfo = {
     .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = &amp;decodeH264PictureInfo,
     ...
     .pSetupReferenceSlot = &amp;setupSlotInfo,
     ...
@@ -1042,8 +1065,27 @@ VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
     ...
 };
 
+
+StdVideoDecodeH264PictureInfo stdPictureInfo = {};
+// parse and populate picture info from frame header data
+...
+if (stdPictureInfo.flags.is_reference) {
+    // reconstructed picture will be used for reference picture setup and DPB slot activation
+} else {
+    // reconstructed picture and slot may only be used by implementations as transient resource
+}
+
+VkVideoDecodeH264PictureInfoKHR decodeH264PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR,
+    .pNext = NULL,
+    .pStdPictureInfo = &amp;stdPictureInfo,
+    .sliceCount = ... // number of slices
+    .pSliceOffsets = ... // array of slice offsets relative to the bitstream buffer range
+};
+
 VkVideoDecodeInfoKHR decodeInfo = {
     .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = &amp;decodeH264PictureInfo,
     ...
     .referenceSlotCount = sizeof(referenceSlotInfo) / sizeof(referenceSlotInfo[0]),
     .pReferenceSlots = &amp;referenceSlotInfo[0]
@@ -1127,6 +1169,15 @@ vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
 <h3 id="_resolved_why_are_h_264_level_indicator_values_specified_differently_than_the_way_they_are_defined_in_the_codec_specification"><a class="anchor" href="#_resolved_why_are_h_264_level_indicator_values_specified_differently_than_the_way_they_are_defined_in_the_codec_specification"></a>5.10. RESOLVED: Why are H.264 level indicator values specified differently than the way they are defined in the codec specification?</h3>
 <div class="paragraph">
 <p>For historical reasons, the <code>StdVideoH264Level</code> type is defined with ordinal enum constant values, which does not match the decimal encoding used by the H.264/AVC video compression standard specification. All APIs defined by this extension and the used video std headers accept and report H.264 levels using the enum constants <code>STD_VIDEO_H264_LEVEL_&lt;major&gt;.&lt;minor&gt;</code>, not the decimal encoding used within raw H.264/AVC bitstreams.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_how_is_reference_picture_setup_requested_for_h_264_decode_operations"><a class="anchor" href="#_resolved_how_is_reference_picture_setup_requested_for_h_264_decode_operations"></a>5.11. RESOLVED: How is reference picture setup requested for H.264 decode operations?</h3>
+<div class="paragraph">
+<p>As specifying a reconstructed picture DPB slot and resource is always required per the latest revision of the video extensions, additional codec syntax controls whether reference picture setup is requested and, in response, the DPB slot is activated with the reconstructed picture.</p>
+</div>
+<div class="paragraph">
+<p>For H.264 decode, reference picture setup is requested and the DPB slot specified for the reconstructed picture is activated with the picture if and only if the <code>StdVideoDecodeH264PictureInfo::flags.is_reference</code> flag is set.</p>
 </div>
 </div>
 </div>
