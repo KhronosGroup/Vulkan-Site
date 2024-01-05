@@ -341,96 +341,39 @@
 <div class="paragraph">
 <p>Sometimes not everything an application does related to the GPU is done in Vulkan. There are various situations where memory is written or read outside the scope of Vulkan. To support these use cases a set of external memory and synchronization functions was created</p>
 </div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_extension_breakdown"><a class="anchor" href="#_extension_breakdown"></a>Extension breakdown</h2>
+<div class="sectionbody">
 <div class="paragraph">
-<p>The list of extensions involved are:</p>
+<p>While there may seem to be a lot of <code>VK_KHR_external_*</code> extensions, they are in practice, just nicely separating the logic apart.</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>VK_KHR_external_fence</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Promoted to core in 1.1</p>
-</li>
-</ul>
 </div>
-</li>
-<li>
-<p><code>VK_KHR_external_fence_capabilities</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Promoted to core in 1.1</p>
-</li>
-</ul>
 </div>
-</li>
-<li>
-<p><code>VK_KHR_external_memory</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Promoted to core in 1.1</p>
-</li>
-</ul>
+<div class="sect1">
+<h2 id="_memory_vs_synchronization"><a class="anchor" href="#_memory_vs_synchronization"></a>Memory vs Synchronization</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="../_images/extensions/external_extensions_2.png" alt="external_extensions_2.png">
 </div>
-</li>
-<li>
-<p><code>VK_KHR_external_memory_capabilities</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Promoted to core in 1.1</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><code>VK_KHR_external_semaphore</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Promoted to core in 1.1</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><code>VK_KHR_external_semaphore_capabilities</code></p>
-<div class="ulist">
-<ul>
-<li>
-<p>Promoted to core in 1.1</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p><code>VK_KHR_external_fence_fd</code></p>
-</li>
-<li>
-<p><code>VK_KHR_external_fence_win32</code></p>
-</li>
-<li>
-<p><code>VK_KHR_external_memory_fd</code></p>
-</li>
-<li>
-<p><code>VK_KHR_external_memory_win32</code></p>
-</li>
-<li>
-<p><code>VK_KHR_external_semaphore_fd</code></p>
-</li>
-<li>
-<p><code>VK_KHR_external_semaphore_win32</code></p>
-</li>
-<li>
-<p><code>VK_ANDROID_external_memory_android_hardware_buffer</code></p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
-<p>This seems like a lot so let&#8217;s break it down little by little.</p>
+<p>There is a set of extensions to handle the importing/exporting of just the memory itself. The other set extensions are for the synchronization primitives (<code>VkFence</code> and <code>VkSemaphore</code>) used to control internal Vulkan commands. It is common practice that for each piece of memory imported/exported there is also a matching fence/semaphore to manage the memory access.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_handle_types"><a class="anchor" href="#_handle_types"></a>Handle Types</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="../_images/extensions/external_extensions_1.png" alt="external_extensions_1.png">
+</div>
+</div>
+<div class="paragraph">
+<p>Depending on the platform there will be a specific handle used to communicate between Vulkan and the external platform. For example, POSIX <code>fd</code> are used for most non-Windows based platforms.</p>
 </div>
 </div>
 </div>
@@ -443,13 +386,8 @@
 </div>
 </div>
 <div class="sect1">
-<h2 id="_memory_vs_synchronization"><a class="anchor" href="#_memory_vs_synchronization"></a>Memory vs Synchronization</h2>
+<h2 id="_external_memory"><a class="anchor" href="#_external_memory"></a>External Memory</h2>
 <div class="sectionbody">
-<div class="paragraph">
-<p>There is a set of extensions to handle the importing/exporting of just the memory itself. The other set extensions are for the synchronization primitives (<code>VkFence</code> and <code>VkSemaphore</code>) used to control internal Vulkan commands. It is common practice that for each piece of memory imported/exported there is also a matching fence/semaphore to manage the memory access.</p>
-</div>
-<div class="sect2">
-<h3 id="_memory"><a class="anchor" href="#_memory"></a>Memory</h3>
 <div class="paragraph">
 <p>The <code>VK_KHR_external_memory</code> extension is mainly to provide the <code>VkExternalMemoryHandleTypeFlagBits</code> enum which describes the type of memory being used externally.</p>
 </div>
@@ -472,21 +410,60 @@
 <div class="paragraph">
 <p>Each of these methods has their own detailed descriptions about limitations, requirements, ownership, etc.</p>
 </div>
-<div class="sect3">
-<h4 id="_importing_memory"><a class="anchor" href="#_importing_memory"></a>Importing Memory</h4>
+<div class="sect2">
+<h3 id="_importing_memory"><a class="anchor" href="#_importing_memory"></a>Importing Memory</h3>
 <div class="paragraph">
 <p>To import memory, there is a <code>VkImport*Info</code> struct provided by the given external memory extension. This is passed into <code>vkAllocateMemory</code> where Vulkan will now have a <code>VkDeviceMemory</code> handle that maps to the imported memory.</p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_exporting_memory"><a class="anchor" href="#_exporting_memory"></a>Exporting Memory</h4>
-<div class="paragraph">
-<p>To export memory, there is a <code>VkGetMemory*</code> function provided by the given external memory extension. This function will take in a <code>VkDeviceMemory</code> handle and then map that to the extension exposed object.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// some external memory types require dedicated allocation
+VkMemoryDedicatedAllocateInfo dedicated_info;
+dedicated_info.buffer = buffer;
+
+VkImportMemoryFdInfoKHR import_info;
+import_info.pNext = &amp;dedicated_info;
+import_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+import_info.fd = fd;
+
+VkMemoryAllocateInfo allocate_info;
+allocate_info.pNext = &amp;import_info
+
+VkDeviceMemory device_memory;
+vkAllocateMemory(device, &amp;allocate_info, nullptr, device_memory);</code></pre>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_synchronization"><a class="anchor" href="#_synchronization"></a>Synchronization</h3>
+<h3 id="_exporting_memory"><a class="anchor" href="#_exporting_memory"></a>Exporting Memory</h3>
+<div class="paragraph">
+<p>To export memory, there is a <code>VkGetMemory*</code> function provided by the given external memory extension. This function will take in a <code>VkDeviceMemory</code> handle and then map that to the extension exposed object.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkExportMemoryAllocateInfo export_info;
+export_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+VkMemoryAllocateInfo allocate_info;
+allocate_info.pNext = &amp;export_info
+
+VkDeviceMemory device_memory;
+vkAllocateMemory(device, &amp;allocate_info, nullptr, device_memory);
+
+VkMemoryGetFdInfoKHR get_handle_info;
+get_handle_info.memory = device_memory;
+get_handle_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+int fd;
+vkGetMemoryFdKHR(device, &amp;get_handle_info, &amp;fd);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_synchronization"><a class="anchor" href="#_synchronization"></a>Synchronization</h2>
+<div class="sectionbody">
 <div class="paragraph">
 <p>External synchronization can be used in Vulkan for both <code>VkFence</code> and <code>VkSemaphores</code>. There is almost no difference between the two with regards to how it is used to import and export them.</p>
 </div>
@@ -509,17 +486,16 @@
 <div class="paragraph">
 <p>Each extension explains how it manages ownership of the synchronization primitives.</p>
 </div>
-<div class="sect3">
-<h4 id="_importing_and_exporting_synchronization_primitives"><a class="anchor" href="#_importing_and_exporting_synchronization_primitives"></a>Importing and Exporting Synchronization Primitives</h4>
+<div class="sect2">
+<h3 id="_importing_and_exporting_synchronization_primitives"><a class="anchor" href="#_importing_and_exporting_synchronization_primitives"></a>Importing and Exporting Synchronization Primitives</h3>
 <div class="paragraph">
 <p>There is a <code>VkImport*</code> function for importing and a <code>VkGet*</code> function for exporting. These both take the <code>VkFence</code>/<code>VkSemaphores</code> handle passed in along with the extension&#8217;s method of defining the external synchronization object.</p>
 </div>
 </div>
 </div>
 </div>
-</div>
 <div class="sect1">
-<h2 id="_example"><a class="anchor" href="#_example"></a>Example</h2>
+<h2 id="_example_workflow"><a class="anchor" href="#_example_workflow"></a>Example Workflow</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Here is a simple diagram showing the timeline of events between Vulkan and some other API talking to the GPU. This is used to represent a common use case for these external memory and synchronization extensions.</p>
