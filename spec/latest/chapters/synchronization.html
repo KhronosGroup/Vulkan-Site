@@ -10331,6 +10331,12 @@ as described in the <a href="cmdbuffers.html#commandbuffers-submission-progress"
 <code>event</code> <strong>must</strong> not have been created with
 <code>VK_EVENT_CREATE_DEVICE_ONLY_BIT</code></p>
 </li>
+<li>
+<p><a id="VUID-vkSetEvent-event-09543" href="#VUID-vkSetEvent-event-09543"></a> <span class="vuid">VUID-vkSetEvent-event-09543</span><br>
+
+<code>event</code> <strong>must</strong> not be waited on by a command buffer in the
+<a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">pending state</a></p>
+</li>
 </ul>
 </div>
 </div>
@@ -12646,7 +12652,7 @@ destination stage masks of all memory barriers <strong>must</strong> only includ
 <li>
 <p><a id="VUID-vkCmdPipelineBarrier2-dependencyFlags-07891" href="#VUID-vkCmdPipelineBarrier2-dependencyFlags-07891"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-dependencyFlags-07891</span><br>
 
-If <code>vkCmdPipelineBarrier2</code> is called within a render pass instance, and and the
+If <code>vkCmdPipelineBarrier2</code> is called within a render pass instance, and the
 source stage masks of any memory barriers include
 <a href="#synchronization-framebuffer-regions">framebuffer-space stages</a>, then
 <code>dependencyFlags</code> <strong>must</strong> include <code>VK_DEPENDENCY_BY_REGION_BIT</code></p>
@@ -12672,21 +12678,43 @@ more than one view in the current subpass, dependency flags <strong>must</strong
 include <code>VK_DEPENDENCY_VIEW_LOCAL_BIT</code></p>
 </li>
 <li>
-<p><a id="VUID-vkCmdPipelineBarrier2-shaderTileImageColorReadAccess-08718" href="#VUID-vkCmdPipelineBarrier2-shaderTileImageColorReadAccess-08718"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-shaderTileImageColorReadAccess-08718</span><br>
+<p><a id="VUID-vkCmdPipelineBarrier2-None-09553" href="#VUID-vkCmdPipelineBarrier2-None-09553"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-None-09553</span><br>
 
-If <code>vkCmdPipelineBarrier2</code> is called within a render pass instance
-and none of the <a href="features.html#features-shaderTileImageColorReadAccess" class="xref page">    <code>shaderTileImageColorReadAccess</code></a>,
-<a href="features.html#features-shaderTileImageDepthReadAccess" class="xref page">    <code>shaderTileImageDepthReadAccess</code></a>,
-<a href="features.html#features-shaderTileImageStencilReadAccess" class="xref page">    <code>shaderTileImageStencilReadAccess</code></a> features are enabled,
-the render pass <strong>must</strong> not have been started with
-<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a></p>
+    
+    If
+    neither the <a href="features.html#features-shaderTileImageColorReadAccess" class="xref page">    <code>shaderTileImageColorReadAccess</code></a> nor
+    <a href="features.html#features-shaderTileImageDepthReadAccess" class="xref page">    <code>shaderTileImageDepthReadAccess</code></a> features are enabled,
+and
+    the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled,
+    <code>vkCmdPipelineBarrier2</code> <strong>must</strong> not be called within a render pass instance
+    started with <a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a></p>
 </li>
 <li>
-<p><a id="VUID-vkCmdPipelineBarrier2-None-08719" href="#VUID-vkCmdPipelineBarrier2-None-08719"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-None-08719</span><br>
+<p><a id="VUID-vkCmdPipelineBarrier2-None-09554" href="#VUID-vkCmdPipelineBarrier2-None-09554"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-None-09554</span><br>
+
+If
+the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled, and
+<code>vkCmdPipelineBarrier2</code> is called within a render pass instance started with
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, there <strong>must</strong> be no buffer or image memory
+barriers specified by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdPipelineBarrier2-image-09555" href="#VUID-vkCmdPipelineBarrier2-image-09555"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-image-09555</span><br>
 
 If <code>vkCmdPipelineBarrier2</code> is called within a render pass instance started with
-<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, it <strong>must</strong> adhere to the restrictions in
-<a href="#synchronization-pipeline-barriers-explicit-renderpass-tileimage">    Explicit Render Pass Tile Image Access Synchronization</a></p>
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, and the <code>image</code> member of any image
+memory barrier is used as an attachment in the current render pass
+instance, it <strong>must</strong> be in the
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code> or
+<code>VK_IMAGE_LAYOUT_GENERAL</code> layout</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdPipelineBarrier2-srcStageMask-09556" href="#VUID-vkCmdPipelineBarrier2-srcStageMask-09556"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-srcStageMask-09556</span><br>
+
+If <code>vkCmdPipelineBarrier2</code> is called within a render pass instance started with
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, this command <strong>must</strong> only specify
+<a href="#synchronization-framebuffer-regions">framebuffer-space stages</a> in
+<code>srcStageMask</code> and <code>dstStageMask</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdPipelineBarrier2-synchronization2-03848" href="#VUID-vkCmdPipelineBarrier2-synchronization2-03848"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-synchronization2-03848</span><br>
@@ -13256,7 +13284,7 @@ destination stage masks of all memory barriers <strong>must</strong> only includ
 <li>
 <p><a id="VUID-vkCmdPipelineBarrier-dependencyFlags-07891" href="#VUID-vkCmdPipelineBarrier-dependencyFlags-07891"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-dependencyFlags-07891</span><br>
 
-If <code>vkCmdPipelineBarrier</code> is called within a render pass instance, and and the
+If <code>vkCmdPipelineBarrier</code> is called within a render pass instance, and the
 source stage masks of any memory barriers include
 <a href="#synchronization-framebuffer-regions">framebuffer-space stages</a>, then
 <code>dependencyFlags</code> <strong>must</strong> include <code>VK_DEPENDENCY_BY_REGION_BIT</code></p>
@@ -13282,21 +13310,43 @@ more than one view in the current subpass, dependency flags <strong>must</strong
 include <code>VK_DEPENDENCY_VIEW_LOCAL_BIT</code></p>
 </li>
 <li>
-<p><a id="VUID-vkCmdPipelineBarrier-shaderTileImageColorReadAccess-08718" href="#VUID-vkCmdPipelineBarrier-shaderTileImageColorReadAccess-08718"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-shaderTileImageColorReadAccess-08718</span><br>
+<p><a id="VUID-vkCmdPipelineBarrier-None-09553" href="#VUID-vkCmdPipelineBarrier-None-09553"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-None-09553</span><br>
 
-If <code>vkCmdPipelineBarrier</code> is called within a render pass instance
-and none of the <a href="features.html#features-shaderTileImageColorReadAccess" class="xref page">    <code>shaderTileImageColorReadAccess</code></a>,
-<a href="features.html#features-shaderTileImageDepthReadAccess" class="xref page">    <code>shaderTileImageDepthReadAccess</code></a>,
-<a href="features.html#features-shaderTileImageStencilReadAccess" class="xref page">    <code>shaderTileImageStencilReadAccess</code></a> features are enabled,
-the render pass <strong>must</strong> not have been started with
-<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a></p>
+    
+    If
+    neither the <a href="features.html#features-shaderTileImageColorReadAccess" class="xref page">    <code>shaderTileImageColorReadAccess</code></a> nor
+    <a href="features.html#features-shaderTileImageDepthReadAccess" class="xref page">    <code>shaderTileImageDepthReadAccess</code></a> features are enabled,
+and
+    the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled,
+    <code>vkCmdPipelineBarrier</code> <strong>must</strong> not be called within a render pass instance
+    started with <a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a></p>
 </li>
 <li>
-<p><a id="VUID-vkCmdPipelineBarrier-None-08719" href="#VUID-vkCmdPipelineBarrier-None-08719"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-None-08719</span><br>
+<p><a id="VUID-vkCmdPipelineBarrier-None-09554" href="#VUID-vkCmdPipelineBarrier-None-09554"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-None-09554</span><br>
+
+If
+the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled, and
+<code>vkCmdPipelineBarrier</code> is called within a render pass instance started with
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, there <strong>must</strong> be no buffer or image memory
+barriers specified by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdPipelineBarrier-image-09555" href="#VUID-vkCmdPipelineBarrier-image-09555"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-image-09555</span><br>
 
 If <code>vkCmdPipelineBarrier</code> is called within a render pass instance started with
-<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, it <strong>must</strong> adhere to the restrictions in
-<a href="#synchronization-pipeline-barriers-explicit-renderpass-tileimage">    Explicit Render Pass Tile Image Access Synchronization</a></p>
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, and the <code>image</code> member of any image
+memory barrier is used as an attachment in the current render pass
+instance, it <strong>must</strong> be in the
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code> or
+<code>VK_IMAGE_LAYOUT_GENERAL</code> layout</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdPipelineBarrier-srcStageMask-09556" href="#VUID-vkCmdPipelineBarrier-srcStageMask-09556"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-srcStageMask-09556</span><br>
+
+If <code>vkCmdPipelineBarrier</code> is called within a render pass instance started with
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, this command <strong>must</strong> only specify
+<a href="#synchronization-framebuffer-regions">framebuffer-space stages</a> in
+<code>srcStageMask</code> and <code>dstStageMask</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdPipelineBarrier-srcStageMask-06461" href="#VUID-vkCmdPipelineBarrier-srcStageMask-06461"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-srcStageMask-06461</span><br>
@@ -17621,6 +17671,34 @@ If the <a href="features.html#features-attachmentFeedbackLoopLayout" class="xref
 <code>newLayout</code> <strong>must</strong> not be
 <code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code></p>
 </li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-srcQueueFamilyIndex-09550" href="#VUID-VkImageMemoryBarrier2-srcQueueFamilyIndex-09550"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-srcQueueFamilyIndex-09550</span><br>
+
+If <code>srcQueueFamilyIndex</code> and <code>dstQueueFamilyIndex</code> define a
+<a href="#synchronization-queue-transfers">queue family ownership transfer</a> or
+<code>oldLayout</code> and <code>newLayout</code> define an
+<a href="#synchronization-image-layout-transitions">image layout transition</a>,
+and <code>oldLayout</code> or <code>newLayout</code> is
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code> then <code>image</code> <strong>must</strong>
+have been created with either <code>VK_IMAGE_USAGE_STORAGE_BIT</code>, or with
+both <code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> and either of
+<code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> or
+<code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-dynamicRenderingLocalRead-09551" href="#VUID-VkImageMemoryBarrier2-dynamicRenderingLocalRead-09551"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-dynamicRenderingLocalRead-09551</span><br>
+
+If the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled,
+<code>oldLayout</code> <strong>must</strong> not be
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-dynamicRenderingLocalRead-09552" href="#VUID-VkImageMemoryBarrier2-dynamicRenderingLocalRead-09552"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-dynamicRenderingLocalRead-09552</span><br>
+
+If the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled,
+<code>newLayout</code> <strong>must</strong> not be
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code></p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -18303,6 +18381,34 @@ and <code>oldLayout</code> or <code>newLayout</code> is
 If the <a href="features.html#features-attachmentFeedbackLoopLayout" class="xref page">    <code>attachmentFeedbackLoopLayout</code></a> feature is not enabled,
 <code>newLayout</code> <strong>must</strong> not be
 <code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier-srcQueueFamilyIndex-09550" href="#VUID-VkImageMemoryBarrier-srcQueueFamilyIndex-09550"></a> <span class="vuid">VUID-VkImageMemoryBarrier-srcQueueFamilyIndex-09550</span><br>
+
+If <code>srcQueueFamilyIndex</code> and <code>dstQueueFamilyIndex</code> define a
+<a href="#synchronization-queue-transfers">queue family ownership transfer</a> or
+<code>oldLayout</code> and <code>newLayout</code> define an
+<a href="#synchronization-image-layout-transitions">image layout transition</a>,
+and <code>oldLayout</code> or <code>newLayout</code> is
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code> then <code>image</code> <strong>must</strong>
+have been created with either <code>VK_IMAGE_USAGE_STORAGE_BIT</code>, or with
+both <code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> and either of
+<code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> or
+<code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier-dynamicRenderingLocalRead-09551" href="#VUID-VkImageMemoryBarrier-dynamicRenderingLocalRead-09551"></a> <span class="vuid">VUID-VkImageMemoryBarrier-dynamicRenderingLocalRead-09551</span><br>
+
+If the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled,
+<code>oldLayout</code> <strong>must</strong> not be
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier-dynamicRenderingLocalRead-09552" href="#VUID-VkImageMemoryBarrier-dynamicRenderingLocalRead-09552"></a> <span class="vuid">VUID-VkImageMemoryBarrier-dynamicRenderingLocalRead-09552</span><br>
+
+If the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled,
+<code>newLayout</code> <strong>must</strong> not be
+<code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code></p>
 </li>
 </ul>
 </div>

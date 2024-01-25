@@ -1153,10 +1153,12 @@ variable <strong>must</strong> not have an array size greater than
 <p><a id="VUID-VkShaderCreateInfoEXT-pCode-08450" href="#VUID-VkShaderCreateInfoEXT-pCode-08450"></a> <span class="vuid">VUID-VkShaderCreateInfoEXT-pCode-08450</span><br>
 
 If <code>codeType</code> is <code>VK_SHADER_CODE_TYPE_SPIRV_EXT</code>, and the
-identified entry point includes any variables in its interface that are
-declared with the <code>ClipDistance</code> or <code>CullDistance</code> <code>BuiltIn</code>
-decoration, those variables <strong>must</strong> not have array sizes which sum to more
-than <code>VkPhysicalDeviceLimits</code>::<code>maxCombinedClipAndCullDistances</code></p>
+identified entry point includes variables in its interface that are
+declared with the <code>ClipDistance</code> <code>BuiltIn</code> decoration and
+variables in its interface that are declared with the <code>CullDistance</code>
+<code>BuiltIn</code> decoration, those variables <strong>must</strong> not have array sizes
+which sum to more than
+<code>VkPhysicalDeviceLimits</code>::<code>maxCombinedClipAndCullDistances</code></p>
 </li>
 <li>
 <p><a id="VUID-VkShaderCreateInfoEXT-pCode-08451" href="#VUID-VkShaderCreateInfoEXT-pCode-08451"></a> <span class="vuid">VUID-VkShaderCreateInfoEXT-pCode-08451</span><br>
@@ -2289,9 +2291,10 @@ have been called in the command buffer prior to drawing:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>If the <code><a href="../appendices/extensions.html#VK_EXT_line_rasterization" class="xref page">VK_EXT_line_rasterization</a></code> extension is enabled on the
-device, and <code>rasterizerDiscardEnable</code> is <code>VK_FALSE</code>, and if
-<code>polygonMode</code> is <code>VK_POLYGON_MODE_LINE</code> or a shader is bound to the
+<p>If the <code><a href="../appendices/extensions.html#VK_KHR_line_rasterization" class="xref page">VK_KHR_line_rasterization</a></code> or
+<code><a href="../appendices/extensions.html#VK_EXT_line_rasterization" class="xref page">VK_EXT_line_rasterization</a></code> extension is enabled on the device, and
+<code>rasterizerDiscardEnable</code> is <code>VK_FALSE</code>, and if <code>polygonMode</code> is
+<code>VK_POLYGON_MODE_LINE</code> or a shader is bound to the
 <code>VK_SHADER_STAGE_VERTEX_BIT</code> stage and <code>primitiveTopology</code> is a line
 topology or a shader which outputs line primitives is bound to the
 <code>VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT</code> or
@@ -2307,7 +2310,7 @@ been called in the command buffer prior to drawing:</p>
 <p><a href="primsrast.html#vkCmdSetLineStippleEnableEXT" class="xref page">vkCmdSetLineStippleEnableEXT</a></p>
 </li>
 <li>
-<p><a href="primsrast.html#vkCmdSetLineStippleEXT" class="xref page">vkCmdSetLineStippleEXT</a>, if <code>stippledLineEnable</code> is
+<p><a href="primsrast.html#vkCmdSetLineStippleKHR" class="xref page">vkCmdSetLineStippleKHR</a>, if <code>stippledLineEnable</code> is
 <code>VK_TRUE</code></p>
 </li>
 </ul>
@@ -2585,7 +2588,7 @@ created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
 <p><a id="VUID-vkDestroyShaderEXT-shader-parameter" href="#VUID-vkDestroyShaderEXT-shader-parameter"></a> <span class="vuid">VUID-vkDestroyShaderEXT-shader-parameter</span><br>
- <code>shader</code> <strong>must</strong> be a valid <a href="#VkShaderEXT">VkShaderEXT</a> handle</p>
+ If <code>shader</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>shader</code> <strong>must</strong> be a valid <a href="#VkShaderEXT">VkShaderEXT</a> handle</p>
 </li>
 <li>
 <p><a id="VUID-vkDestroyShaderEXT-pAllocator-parameter" href="#VUID-vkDestroyShaderEXT-pAllocator-parameter"></a> <span class="vuid">VUID-vkDestroyShaderEXT-pAllocator-parameter</span><br>
@@ -2593,7 +2596,7 @@ created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
 <p><a id="VUID-vkDestroyShaderEXT-shader-parent" href="#VUID-vkDestroyShaderEXT-shader-parent"></a> <span class="vuid">VUID-vkDestroyShaderEXT-shader-parent</span><br>
- <code>shader</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
+ If <code>shader</code> is a valid handle, it <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
 </li>
 </ul>
 </div>
@@ -4991,6 +4994,21 @@ creation time.
 The operations supported are add, mul, min, max, and, or, xor.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="shaders-group-operations-rotate"><a class="anchor" href="#shaders-group-operations-rotate"></a>Rotate Group Operations</h3>
+<div class="paragraph">
+<p>The rotate group operations allow invocations to read values from other
+invocations within the group relative to the current invocation and modulo
+the size of the group.
+Clustered rotate group operations perform the same operation within
+individual partitions of a group.</p>
+</div>
+<div class="paragraph">
+<p>The partitions for clustered rotate group operations are consecutive
+power-of-two size groups of invocations and the cluster size <strong>must</strong> be known
+at pipeline creation time.</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -5005,8 +5023,9 @@ always overridden; only the <a href="#shaders-scope-quad">quad scope instance</a
 included in its execution scope.</p>
 </div>
 <div class="paragraph">
-<p>Fragment shaders that statically execute quad group operations <strong>must</strong> launch
-sufficient invocations to ensure their correct operation; additional
+<p>Fragment shaders that statically execute either
+<code>OpGroupNonUniformQuadBroadcast</code> or <code>OpGroupNonUniformQuadSwap</code> <strong>must</strong>
+launch sufficient invocations to ensure their correct operation; additional
 <a href="#shaders-helper-invocations">helper invocations</a> are launched for
 framebuffer locations not covered by rasterized fragments if necessary.</p>
 </div>
@@ -5031,22 +5050,48 @@ used by each participating invocation.</p>
 </div>
 <div class="paragraph">
 <p>Derivative operations operate on a set of invocations known as a <em>derivative
-group</em> as defined in the <a href="introduction.html#spirv-spec" class="xref page">SPIR-V specification</a>.
-A derivative group is equivalent to
-the <a href="#shaders-scope-quad">quad scope instance</a> for a compute shader
-invocation, or
-the <a href="#shaders-scope-primitive">primitive scope instance</a> for a fragment
-shader invocation.</p>
+group</em> as defined in the <a href="introduction.html#spirv-spec" class="xref page">SPIR-V specification</a>.</p>
+</div>
+<div class="paragraph">
+<p>A derivative group in a fragment shader is equivalent to the
+<a href="#shaders-scope-quad">quad scope instance</a> if the <code>QuadDerivativesKHR</code>
+execution mode is specified, otherwise it is equivalent to the
+<a href="#shaders-scope-primitive">primitive scope instance</a>.
+A derivative group in a compute shader is equivalent to the
+<a href="#shaders-scope-quad">quad scope instance</a>.</p>
 </div>
 <div class="paragraph">
 <p>Derivatives are calculated assuming that <span class="eq">P</span> is piecewise linear and
-continuous within the derivative group.
-All dynamic instances of explicit derivative instructions (<code>OpDPdx*</code>,
-<code>OpDPdy*</code>, and <code>OpFwidth*</code>) <strong>must</strong> be executed in control flow that is
-uniform within a derivative group.
-For other derivative operations, results are <strong>undefined</strong> if a dynamic
-instance is executed in control flow that is not uniform within the
-derivative group.</p>
+continuous within the derivative group.</p>
+</div>
+<div class="paragraph">
+<p>The following control-flow restrictions apply to derivative operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If the <code>QuadDerivativesKHR</code> execution mode is specified, dynamic
+instances of any derivative operations <strong>must</strong> be executed in control flow
+that is uniform within the current <a href="#shaders-scope-quad">quad scope    instance</a>.</p>
+</li>
+<li>
+<p>If the <code>QuadDerivativesKHR</code> execution mode is not specified:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>dynamic instances of explicit derivative instructions (<code>OpDPdx*</code>,
+<code>OpDPdy*</code>, and <code>OpFwidth*</code>) <strong>must</strong> be executed in control flow
+that is uniform within a derivative group.</p>
+</li>
+<li>
+<p>dynamic instances of implicit derivative operations <strong>can</strong> be executed in
+control flow that is not uniform within the derivative group, but
+results are <strong>undefined</strong>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>Fragment shaders that statically execute derivative operations <strong>must</strong> launch
@@ -5228,15 +5273,16 @@ invocation.</p>
 </table>
 </div>
 <div class="paragraph">
-<p>For <a href="#shaders-group-operations">group operations</a> other than
-<a href="#shaders-derivative-operations">derivative</a>
-and <a href="#shaders-quad-operations">quad group</a>
-operations, helper invocations <strong>may</strong> be treated as inactive even if they
-would be considered otherwise active.</p>
-</div>
-<div class="paragraph">
-<p>Helper invocations <strong>may</strong> become permanently inactive if all invocations in a
-quad scope instance become helper invocations.</p>
+<p>If the <code>MaximallyReconvergesKHR</code> execution mode is applied to the entry
+point, helper invocations <strong>must</strong> remain active for all instructions for the
+lifetime of the quad scope instance they are a part of.
+If the <code>MaximallyReconvergesKHR</code> execution mode is not applied to the
+entry point, helper
+invocations <strong>may</strong> be considered inactive for <a href="#shaders-group-operations">group operations</a> other than <a href="#shaders-derivative-operations">derivative</a>
+and <a href="#shaders-quad-operations">quad group</a> operations.
+All invocations in a quad scope instance <strong>may</strong> become permanently inactive at
+any point once the only remaining invocations in that quad scope instance
+are helper invocations.</p>
 </div>
 </div>
 </div>
@@ -5589,26 +5635,6 @@ structure.</p>
 <p><a id="VUID-VkCooperativeMatrixPropertiesKHR-pNext-pNext" href="#VUID-VkCooperativeMatrixPropertiesKHR-pNext-pNext"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesKHR-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesKHR-AType-parameter" href="#VUID-VkCooperativeMatrixPropertiesKHR-AType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesKHR-AType-parameter</span><br>
- <code>AType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesKHR-BType-parameter" href="#VUID-VkCooperativeMatrixPropertiesKHR-BType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesKHR-BType-parameter</span><br>
- <code>BType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesKHR-CType-parameter" href="#VUID-VkCooperativeMatrixPropertiesKHR-CType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesKHR-CType-parameter</span><br>
- <code>CType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesKHR-ResultType-parameter" href="#VUID-VkCooperativeMatrixPropertiesKHR-ResultType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesKHR-ResultType-parameter</span><br>
- <code>ResultType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesKHR-scope-parameter" href="#VUID-VkCooperativeMatrixPropertiesKHR-scope-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesKHR-scope-parameter</span><br>
- <code>scope</code> <strong>must</strong> be a valid <a href="#VkScopeKHR">VkScopeKHR</a> value</p>
-</li>
 </ul>
 </div>
 </div>
@@ -5698,26 +5724,6 @@ structure.</p>
 <li>
 <p><a id="VUID-VkCooperativeMatrixPropertiesNV-pNext-pNext" href="#VUID-VkCooperativeMatrixPropertiesNV-pNext-pNext"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesNV-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesNV-AType-parameter" href="#VUID-VkCooperativeMatrixPropertiesNV-AType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesNV-AType-parameter</span><br>
- <code>AType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeNV">VkComponentTypeNV</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesNV-BType-parameter" href="#VUID-VkCooperativeMatrixPropertiesNV-BType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesNV-BType-parameter</span><br>
- <code>BType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeNV">VkComponentTypeNV</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesNV-CType-parameter" href="#VUID-VkCooperativeMatrixPropertiesNV-CType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesNV-CType-parameter</span><br>
- <code>CType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeNV">VkComponentTypeNV</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesNV-DType-parameter" href="#VUID-VkCooperativeMatrixPropertiesNV-DType-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesNV-DType-parameter</span><br>
- <code>DType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeNV">VkComponentTypeNV</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkCooperativeMatrixPropertiesNV-scope-parameter" href="#VUID-VkCooperativeMatrixPropertiesNV-scope-parameter"></a> <span class="vuid">VUID-VkCooperativeMatrixPropertiesNV-scope-parameter</span><br>
- <code>scope</code> <strong>must</strong> be a valid <a href="#VkScopeNV">VkScopeNV</a> value</p>
 </li>
 </ul>
 </div>

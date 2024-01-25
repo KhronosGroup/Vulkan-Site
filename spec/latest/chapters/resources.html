@@ -681,7 +681,7 @@ that structure is used instead of <code>usage</code> from this structure.</p>
 
 If the <code>pNext</code> chain does not include a
 <a href="#VkBufferUsageFlags2CreateInfoKHR">VkBufferUsageFlags2CreateInfoKHR</a> structure,
-<code>usage</code>: must be a valid combination of <a href="#VkBufferUsageFlagBits">VkBufferUsageFlagBits</a>
+<code>usage</code> must be a valid combination of <a href="#VkBufferUsageFlagBits">VkBufferUsageFlagBits</a>
 values</p>
 </li>
 <li>
@@ -690,7 +690,7 @@ values</p>
 
 If the <code>pNext</code> chain does not include a
 <a href="#VkBufferUsageFlags2CreateInfoKHR">VkBufferUsageFlags2CreateInfoKHR</a> structure,
-<code>usage</code>: must not be 0</p>
+<code>usage</code> must not be 0</p>
 </li>
 <li>
 <p><a id="VUID-VkBufferCreateInfo-size-00912" href="#VUID-VkBufferCreateInfo-size-00912"></a> <span class="vuid">VUID-VkBufferCreateInfo-size-00912</span><br>
@@ -4958,6 +4958,21 @@ not included in the <code>pNext</code> chain of <a href="#VkImageCreateInfo">VkI
 </div>
 <div class="sidebarblock">
 <div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkImageFormatListCreateInfo-viewFormatCount-09540" href="#VUID-VkImageFormatListCreateInfo-viewFormatCount-09540"></a> <span class="vuid">VUID-VkImageFormatListCreateInfo-viewFormatCount-09540</span><br>
+
+If <code>viewFormatCount</code> is not 0, each element of <code>pViewFormats</code>
+<strong>must</strong> not be <code>VK_FORMAT_UNDEFINED</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
 <div class="title">Valid Usage (Implicit)</div>
 <div class="ulist">
 <ul>
@@ -7815,6 +7830,8 @@ typedef enum VkImageLayout {
     VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT = 1000218000,
   // Provided by VK_KHR_fragment_shading_rate
     VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR = 1000164003,
+  // Provided by VK_KHR_dynamic_rendering_local_read
+    VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR = 1000232000,
   // Provided by VK_KHR_video_encode_queue
     VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR = 1000299000,
   // Provided by VK_KHR_video_encode_queue
@@ -8036,6 +8053,16 @@ enabled and either the <code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> or
 <code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code> and either the
 <code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> or
 <code>VK_IMAGE_USAGE_SAMPLED_BIT</code> usage bits enabled.</p>
+</li>
+<li>
+<p><code>VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ_KHR</code> <strong>must</strong> only be used as
+either a storage image, or a color or depth/stencil attachment and an
+input attachment.
+This layout is valid only for image subresources of images created with
+either <code>VK_IMAGE_USAGE_STORAGE_BIT</code>, or both
+<code>VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</code> and either of
+<code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> or
+<code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>.</p>
 </li>
 </ul>
 </div>
@@ -11379,6 +11406,22 @@ During capture the tool will use
 </tr>
 </table>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Memory does not need to be bound to the underlying buffer when
+<a href="#vkCreateAccelerationStructureKHR">vkCreateAccelerationStructureKHR</a> is called.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="paragraph">
 <p>The input buffers passed to acceleration structure build commands will be
 referenced by the implementation for the duration of the command.
@@ -13762,6 +13805,20 @@ feature <strong>must</strong> be enabled</p>
 
 If <code>device</code> was created with multiple physical devices, then the
 <a href="features.html#features-bufferDeviceAddressMultiDevice" class="xref page">    <code>bufferDeviceAddressMultiDevice</code></a> feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkGetAccelerationStructureDeviceAddressKHR-pInfo-09541" href="#VUID-vkGetAccelerationStructureDeviceAddressKHR-pInfo-09541"></a> <span class="vuid">VUID-vkGetAccelerationStructureDeviceAddressKHR-pInfo-09541</span><br>
+
+If the buffer on which <code>pInfo-&gt;accelerationStructure</code> was placed is
+non-sparse then it <strong>must</strong> be bound completely and contiguously to a
+single <code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><a id="VUID-vkGetAccelerationStructureDeviceAddressKHR-pInfo-09542" href="#VUID-vkGetAccelerationStructureDeviceAddressKHR-pInfo-09542"></a> <span class="vuid">VUID-vkGetAccelerationStructureDeviceAddressKHR-pInfo-09542</span><br>
+
+The buffer on which <code>pInfo-&gt;accelerationStructure</code> was placed <strong>must</strong>
+have been created with the
+<code>VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT</code> usage flag</p>
 </li>
 </ul>
 </div>
@@ -19971,38 +20028,6 @@ the call to <a href="#vkSetBufferCollectionImageConstraintsFUCHSIA">vkSetBufferC
 <li>
 <p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-pNext-pNext" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-pNext-pNext"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-formatFeatures-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-formatFeatures-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-formatFeatures-parameter</span><br>
- <code>formatFeatures</code> <strong>must</strong> be a valid combination of <a href="formats.html#VkFormatFeatureFlagBits" class="xref page">VkFormatFeatureFlagBits</a> values</p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-formatFeatures-requiredbitmask" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-formatFeatures-requiredbitmask"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-formatFeatures-requiredbitmask</span><br>
- <code>formatFeatures</code> <strong>must</strong> not be <code>0</code></p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-sysmemColorSpaceIndex-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-sysmemColorSpaceIndex-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-sysmemColorSpaceIndex-parameter</span><br>
- <code>sysmemColorSpaceIndex</code> <strong>must</strong> be a valid <a href="#VkSysmemColorSpaceFUCHSIA">VkSysmemColorSpaceFUCHSIA</a> structure</p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-samplerYcbcrConversionComponents-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-samplerYcbcrConversionComponents-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-samplerYcbcrConversionComponents-parameter</span><br>
- <code>samplerYcbcrConversionComponents</code> <strong>must</strong> be a valid <a href="#VkComponentMapping">VkComponentMapping</a> structure</p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYcbcrModel-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYcbcrModel-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYcbcrModel-parameter</span><br>
- <code>suggestedYcbcrModel</code> <strong>must</strong> be a valid <a href="samplers.html#VkSamplerYcbcrModelConversion" class="xref page">VkSamplerYcbcrModelConversion</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYcbcrRange-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYcbcrRange-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYcbcrRange-parameter</span><br>
- <code>suggestedYcbcrRange</code> <strong>must</strong> be a valid <a href="samplers.html#VkSamplerYcbcrRange" class="xref page">VkSamplerYcbcrRange</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedXChromaOffset-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedXChromaOffset-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedXChromaOffset-parameter</span><br>
- <code>suggestedXChromaOffset</code> <strong>must</strong> be a valid <a href="samplers.html#VkChromaLocation" class="xref page">VkChromaLocation</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYChromaOffset-parameter" href="#VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYChromaOffset-parameter"></a> <span class="vuid">VUID-VkBufferCollectionPropertiesFUCHSIA-suggestedYChromaOffset-parameter</span><br>
- <code>suggestedYChromaOffset</code> <strong>must</strong> be a valid <a href="samplers.html#VkChromaLocation" class="xref page">VkChromaLocation</a> value</p>
 </li>
 </ul>
 </div>
