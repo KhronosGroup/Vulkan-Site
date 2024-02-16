@@ -439,6 +439,7 @@
 <li><a href="#_resolved_should_there_be_some_mechanism_for_applications_to_provide_static_state_that_is_known_at_compile_time">5.5. RESOLVED: Should there be some mechanism for applications to provide static state that is known at compile time?</a></li>
 <li><a href="#_resolved_should_this_extension_expose_some_abstraction_for_setting_groups_of_related_state">5.6. RESOLVED: Should this extension expose some abstraction for setting groups of related state?</a></li>
 <li><a href="#_resolved_there_is_currently_no_dynamic_state_setting_functionality_for_sample_shading_how_should_this_be_handled">5.7. RESOLVED: There is currently no dynamic state setting functionality for sample shading. How should this be handled?</a></li>
+<li><a href="#_resolved_is_vk_incompatible_shader_binary_ext_a_success_code_or_an_error_code">5.8. RESOLVED: Is <code>VK_INCOMPATIBLE_SHADER_BINARY_EXT</code> a success code, or an error code?</a></li>
 </ul>
 </li>
 <li><a href="#_further_functionality">6. Further Functionality</a></li>
@@ -642,7 +643,7 @@ typedef struct VkShaderCreateInfoEXT {
 <p>When <code>pData</code> is non-<code>NULL</code>, <code>size</code> points to the application-provided size of <code>pData</code>. If the provided size is large enough then the location pointed to by <code>pData</code> is filled with the shader’s binary code and <code>VK_SUCCESS</code> is returned, otherwise nothing is written to <code>pData</code> and <code>VK_INCOMPLETE</code> is returned.</p>
 </div>
 <div class="paragraph">
-<p>The binary shader code returned in <code>pData</code> can be saved by the application and used in a future <code>vkCreateShadersEXT()</code> call (including on a different <code>VkInstance</code> and/or <code>VkDevice</code>) with a compatible physical device by setting <code>codeType</code> to <code>VK_SHADER_CODE_TYPE_BINARY_EXT</code>. This means that on fixed platforms like game consoles and embedded systems applications need not ship SPIR-V shader code at all. If the binary shader code in any <code>VkShaderCreateInfoEXT</code> passed to <code>vkCreateShadersEXT()</code> is not compatible with the physical device then the <code>vkCreateShadersEXT()</code> call returns <code>VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT</code>.</p>
+<p>The binary shader code returned in <code>pData</code> can be saved by the application and used in a future <code>vkCreateShadersEXT()</code> call (including on a different <code>VkInstance</code> and/or <code>VkDevice</code>) with a compatible physical device by setting <code>codeType</code> to <code>VK_SHADER_CODE_TYPE_BINARY_EXT</code>. This means that on fixed platforms like game consoles and embedded systems applications need not ship SPIR-V shader code at all. If the binary shader code in any <code>VkShaderCreateInfoEXT</code> passed to <code>vkCreateShadersEXT()</code> is not compatible with the physical device then the <code>vkCreateShadersEXT()</code> call returns <code>VK_INCOMPATIBLE_SHADER_BINARY_EXT</code>.</p>
 </div>
 <div class="paragraph">
 <p>Applications must pass the same values of <code>VK_SHADER_CREATE_LINK_STAGE_BIT_EXT</code> to a <code>vkCreateShadersEXT()</code> call with a <code>codeType</code> of <code>VK_SHADER_CODE_TYPE_BINARY_EXT</code> as were passed when those shaders were originally compiled from SPIR-V.</p>
@@ -1489,6 +1490,23 @@ vkCmdBindShadersEXT(commandBuffer, 1, &amp;stage, &amp;shader);</code></pre>
 </div>
 <div class="paragraph">
 <p>Until such an extension is available, applications that need to specify a minSampleShading other than 1.0 should use pipelines.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resolved_is_vk_incompatible_shader_binary_ext_a_success_code_or_an_error_code"><a class="anchor" href="#_resolved_is_vk_incompatible_shader_binary_ext_a_success_code_or_an_error_code"></a>5.8. RESOLVED: Is <code>VK_INCOMPATIBLE_SHADER_BINARY_EXT</code> a success code, or an error code?</h3>
+<div class="paragraph">
+<p>A success code.</p>
+</div>
+<div class="paragraph">
+<p>Initially this token was named <code>VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT</code>,
+but as pointed out in
+<a href="https://github.com/KhronosGroup/Vulkan-Docs/issues/2295" class="bare">https://github.com/KhronosGroup/Vulkan-Docs/issues/2295</a> the numeric value
+assigned to the token was positive.</p>
+</div>
+<div class="paragraph">
+<p>On further discussion we agreed that the return code was a success code,
+much as <code>VK_INCOMPLETE</code> is, and aliased the original name to the current name
+without <code>ERROR</code> in it.</p>
 </div>
 </div>
 </div>

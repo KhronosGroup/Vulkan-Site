@@ -8808,7 +8808,8 @@ memory object.</p>
 allocation.</p>
 </li>
 <li>
-<p><code>flags</code> is reserved for future use.</p>
+<p><code>flags</code> is a bitmask of <a href="#VkMemoryMapFlagBits">VkMemoryMapFlagBits</a> specifying
+additional parameters of the memory map operation.</p>
 </li>
 <li>
 <p><code>ppData</code> is a pointer to a <code>void*</code> variable in which a
@@ -8943,6 +8944,11 @@ less than or equal to the size of the <code>memory</code> minus <code>offset</co
 
 <code>memory</code> <strong>must</strong> not have been allocated with multiple instances</p>
 </li>
+<li>
+<p><a id="VUID-vkMapMemory-flags-09568" href="#VUID-vkMapMemory-flags-09568"></a> <span class="vuid">VUID-vkMapMemory-flags-09568</span><br>
+
+<code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> <strong>must</strong> not be set in <code>flags</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -8961,8 +8967,8 @@ less than or equal to the size of the <code>memory</code> minus <code>offset</co
  <code>memory</code> <strong>must</strong> be a valid <a href="#VkDeviceMemory">VkDeviceMemory</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-vkMapMemory-flags-zerobitmask" href="#VUID-vkMapMemory-flags-zerobitmask"></a> <span class="vuid">VUID-vkMapMemory-flags-zerobitmask</span><br>
- <code>flags</code> <strong>must</strong> be <code>0</code></p>
+<p><a id="VUID-vkMapMemory-flags-parameter" href="#VUID-vkMapMemory-flags-parameter"></a> <span class="vuid">VUID-vkMapMemory-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkMemoryMapFlagBits">VkMemoryMapFlagBits</a> values</p>
 </li>
 <li>
 <p><a id="VUID-vkMapMemory-ppData-parameter" href="#VUID-vkMapMemory-ppData-parameter"></a> <span class="vuid">VUID-vkMapMemory-ppData-parameter</span><br>
@@ -9027,6 +9033,36 @@ less than or equal to the size of the <code>memory</code> minus <code>offset</co
 </div>
 <div class="openblock">
 <div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in <a href="#vkMapMemory">vkMapMemory</a>::<code>flags</code> and
+<a href="#VkMemoryMapInfoKHR">VkMemoryMapInfoKHR</a>::<code>flags</code>, specifying additional properties of a
+memory map, are:</p>
+</div>
+<div id="VkMemoryMapFlagBits" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
+typedef enum VkMemoryMapFlagBits {
+  // Provided by VK_EXT_map_memory_placed
+    VK_MEMORY_MAP_PLACED_BIT_EXT = 0x00000001,
+} VkMemoryMapFlagBits;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> requests that the implementation
+place the memory map at the virtual address specified by the client via
+<a href="#VkMemoryMapPlacedInfoEXT">VkMemoryMapPlacedInfoEXT</a>::<code>pPlacedAddress</code>, replacing any
+existing mapping at that address.
+This flag <strong>must</strong> not be used with <a href="#vkMapMemory">vkMapMemory</a> as there is no way to
+specify the placement address.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
 <div id="VkMemoryMapFlags" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_0
@@ -9034,8 +9070,8 @@ typedef VkFlags VkMemoryMapFlags;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>VkMemoryMapFlags</code> is a bitmask type for setting a mask, but is
-currently reserved for future use.</p>
+<p><code>VkMemoryMapFlags</code> is a bitmask type for setting a mask of zero or more
+<a href="#VkMemoryMapFlagBits">VkMemoryMapFlagBits</a>.</p>
 </div>
 </div>
 </div>
@@ -9163,7 +9199,8 @@ typedef struct VkMemoryMapInfoKHR {
 structure.</p>
 </li>
 <li>
-<p><code>flags</code> is reserved for future use.</p>
+<p><code>flags</code> is a bitmask of <a href="#VkMemoryMapFlagBits">VkMemoryMapFlagBits</a> specifying
+additional parameters of the memory map operation.</p>
 </li>
 <li>
 <p><code>memory</code> is the <a href="#VkDeviceMemory">VkDeviceMemory</a> object to be mapped.</p>
@@ -9217,6 +9254,60 @@ less than or equal to the size of the <code>memory</code> minus <code>offset</co
 
 <code>memory</code> <strong>must</strong> not have been allocated with multiple instances</p>
 </li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09569" href="#VUID-VkMemoryMapInfoKHR-flags-09569"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09569</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code>, the
+<a href="features.html#features-memoryMapPlaced" class="xref page"><code>memoryMapPlaced</code></a> feature <strong>must</strong> be
+enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09570" href="#VUID-VkMemoryMapInfoKHR-flags-09570"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09570</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code>, the
+<code>pNext</code> chain <strong>must</strong> include a <a href="#VkMemoryMapPlacedInfoEXT">VkMemoryMapPlacedInfoEXT</a>
+structure and <code>VkMemoryMapPlacedInfoEXT</code>::<code>pPlacedAddress</code> <strong>must</strong>
+not be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09571" href="#VUID-VkMemoryMapInfoKHR-flags-09571"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09571</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code> and the
+<a href="features.html#features-memoryMapRangePlaced" class="xref page"><code>memoryMapRangePlaced</code></a> feature is
+not enabled, <code>offset</code> <strong>must</strong> be zero</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09572" href="#VUID-VkMemoryMapInfoKHR-flags-09572"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09572</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code> and the
+<a href="features.html#features-memoryMapRangePlaced" class="xref page"><code>memoryMapRangePlaced</code></a> feature is
+not enabled, <code>size</code> <strong>must</strong> be <code>VK_WHOLE_SIZE</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09573" href="#VUID-VkMemoryMapInfoKHR-flags-09573"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09573</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code> and the
+<a href="features.html#features-memoryMapRangePlaced" class="xref page"><code>memoryMapRangePlaced</code></a> feature is
+enabled, <code>offset</code> <strong>must</strong> be aligned to an integer multiple of
+<code>VkPhysicalDeviceMapMemoryPlacedPropertiesEXT</code>::<code>minPlacedMemoryMapAlignment</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09574" href="#VUID-VkMemoryMapInfoKHR-flags-09574"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09574</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code> and the
+<a href="features.html#features-memoryMapRangePlaced" class="xref page"><code>memoryMapRangePlaced</code></a> feature is
+enabled, <code>size</code> <strong>must</strong> be <code>VK_WHOLE_SIZE</code> or be aligned to an
+integer multiple of
+<code>VkPhysicalDeviceMapMemoryPlacedPropertiesEXT</code>::<code>minPlacedMemoryMapAlignment</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-09575" href="#VUID-VkMemoryMapInfoKHR-flags-09575"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-09575</span><br>
+
+If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in <code>flags</code>, the memory
+object <strong>must</strong> not have been imported from a handle type of
+<code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT</code> or
+<code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -9232,11 +9323,15 @@ less than or equal to the size of the <code>memory</code> minus <code>offset</co
 </li>
 <li>
 <p><a id="VUID-VkMemoryMapInfoKHR-pNext-pNext" href="#VUID-VkMemoryMapInfoKHR-pNext-pNext"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-pNext-pNext</span><br>
- <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="#VkMemoryMapPlacedInfoEXT">VkMemoryMapPlacedInfoEXT</a></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryMapInfoKHR-flags-zerobitmask" href="#VUID-VkMemoryMapInfoKHR-flags-zerobitmask"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-zerobitmask</span><br>
- <code>flags</code> <strong>must</strong> be <code>0</code></p>
+<p><a id="VUID-VkMemoryMapInfoKHR-sType-unique" href="#VUID-VkMemoryMapInfoKHR-sType-unique"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-sType-unique</span><br>
+ The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapInfoKHR-flags-parameter" href="#VUID-VkMemoryMapInfoKHR-flags-parameter"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkMemoryMapFlagBits">VkMemoryMapFlagBits</a> values</p>
 </li>
 <li>
 <p><a id="VUID-VkMemoryMapInfoKHR-memory-parameter" href="#VUID-VkMemoryMapInfoKHR-memory-parameter"></a> <span class="vuid">VUID-VkMemoryMapInfoKHR-memory-parameter</span><br>
@@ -9253,6 +9348,101 @@ less than or equal to the size of the <code>memory</code> minus <code>offset</co
 <ul>
 <li>
 <p>Host access to <code>memory</code> <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If <code>VK_MEMORY_MAP_PLACED_BIT_EXT</code> is set in
+<code>VkMemoryMapInfoKHR</code>::<code>flags</code> and the <code>pNext</code> chain of
+<a href="#VkMemoryMapInfoKHR">VkMemoryMapInfoKHR</a> includes a <code>VkMemoryMapPlacedInfoEXT</code>
+structure, then that structure specifies the placement address of the memory
+map.
+The implementation will place the memory map at the specified address,
+replacing any existing maps in the specified memory range.
+Replacing memory maps in this way does not implicitly unmap Vulkan memory
+objects.
+Instead, the client <strong>must</strong> ensure no other Vulkan memory objects are mapped
+anywhere in the specified virtual address range.
+If successful, <code>ppData</code> will be set to the same value as
+<code>VkMemoryMapPlacedInfoEXT</code>::<code>pPlacedAddress</code> and
+<code>vkMapMemory2KHR</code> will return <code>VK_SUCCESS</code>.
+If it cannot place the map at the requested address for any reason, the
+memory object is left unmapped and <code>vkMapMemory2KHR</code> will return
+<code>VK_ERROR_MEMORY_MAP_FAILED</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkMemoryMapPlacedInfoEXT</code> structure is defined as:</p>
+</div>
+<div id="VkMemoryMapPlacedInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_map_memory_placed
+typedef struct VkMemoryMapPlacedInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    void*              pPlacedAddress;
+} VkMemoryMapPlacedInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pPlacedAddress</code> is the virtual address at which to place the
+address.
+If <code>VkMemoryMapInfoKHR</code>::<code>flags</code> does not contain
+<code>VK_MEMORY_MAP_PLACED_BIT_EXT</code>, this value is ignored.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMemoryMapPlacedInfoEXT-flags-09576" href="#VUID-VkMemoryMapPlacedInfoEXT-flags-09576"></a> <span class="vuid">VUID-VkMemoryMapPlacedInfoEXT-flags-09576</span><br>
+
+If <code>VkMemoryMapInfoKHR</code>::<code>flags</code> contains
+<code>VK_MEMORY_MAP_PLACED_BIT_EXT</code>, <code>pPlacedAddress</code> <strong>must</strong> not be
+<code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapPlacedInfoEXT-pPlacedAddress-09577" href="#VUID-VkMemoryMapPlacedInfoEXT-pPlacedAddress-09577"></a> <span class="vuid">VUID-VkMemoryMapPlacedInfoEXT-pPlacedAddress-09577</span><br>
+
+<code>pPlacedAddress</code> <strong>must</strong> be aligned to an integer multiple of
+<code>VkPhysicalDeviceMapMemoryPlacedPropertiesEXT</code>::<code>minPlacedMemoryMapAlignment</code></p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryMapPlacedInfoEXT-pPlacedAddress-09578" href="#VUID-VkMemoryMapPlacedInfoEXT-pPlacedAddress-09578"></a> <span class="vuid">VUID-VkMemoryMapPlacedInfoEXT-pPlacedAddress-09578</span><br>
+
+The address range specified by <code>pPlacedAddress</code> and
+<code>VkMemoryMapInfoKHR</code>::<code>size</code> <strong>must</strong> not overlap any existing
+Vulkan memory object mapping.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkMemoryMapPlacedInfoEXT-sType-sType" href="#VUID-VkMemoryMapPlacedInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkMemoryMapPlacedInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_MEMORY_MAP_PLACED_INFO_EXT</code></p>
 </li>
 </ul>
 </div>
@@ -9809,6 +9999,16 @@ function arguments.</p>
 </ul>
 </div>
 </dd>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_MEMORY_MAP_FAILED</code></p>
+</li>
+</ul>
+</div>
+</dd>
 </dl>
 </div>
 </div>
@@ -9841,7 +10041,8 @@ typedef struct VkMemoryUnmapInfoKHR {
 structure.</p>
 </li>
 <li>
-<p><code>flags</code> is reserved for future use.</p>
+<p><code>flags</code> is a bitmask of <a href="#VkMemoryUnmapFlagBitsKHR">VkMemoryUnmapFlagBitsKHR</a> specifying
+additional parameters of the memory map operation.</p>
 </li>
 <li>
 <p><code>memory</code> is the <a href="#VkDeviceMemory">VkDeviceMemory</a> object to be unmapped.</p>
@@ -9857,6 +10058,21 @@ structure.</p>
 <p><a id="VUID-VkMemoryUnmapInfoKHR-memory-07964" href="#VUID-VkMemoryUnmapInfoKHR-memory-07964"></a> <span class="vuid">VUID-VkMemoryUnmapInfoKHR-memory-07964</span><br>
 
 <code>memory</code> <strong>must</strong> be currently host mapped</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryUnmapInfoKHR-flags-09579" href="#VUID-VkMemoryUnmapInfoKHR-flags-09579"></a> <span class="vuid">VUID-VkMemoryUnmapInfoKHR-flags-09579</span><br>
+
+If <code>VK_MEMORY_UNMAP_RESERVE_BIT_EXT</code> is set in <code>flags</code>, the
+<a href="features.html#features-memoryUnmapReserve" class="xref page"><code>memoryUnmapReserve</code></a> <strong>must</strong> be
+enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryUnmapInfoKHR-flags-09580" href="#VUID-VkMemoryUnmapInfoKHR-flags-09580"></a> <span class="vuid">VUID-VkMemoryUnmapInfoKHR-flags-09580</span><br>
+
+If <code>VK_MEMORY_UNMAP_RESERVE_BIT_EXT</code> is set in <code>flags</code>, the
+memory object <strong>must</strong> not have been imported from a handle type of
+<code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_ALLOCATION_BIT_EXT</code> or
+<code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_HOST_MAPPED_FOREIGN_MEMORY_BIT_EXT</code></p>
 </li>
 </ul>
 </div>
@@ -9876,8 +10092,8 @@ structure.</p>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryUnmapInfoKHR-flags-zerobitmask" href="#VUID-VkMemoryUnmapInfoKHR-flags-zerobitmask"></a> <span class="vuid">VUID-VkMemoryUnmapInfoKHR-flags-zerobitmask</span><br>
- <code>flags</code> <strong>must</strong> be <code>0</code></p>
+<p><a id="VUID-VkMemoryUnmapInfoKHR-flags-parameter" href="#VUID-VkMemoryUnmapInfoKHR-flags-parameter"></a> <span class="vuid">VUID-VkMemoryUnmapInfoKHR-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkMemoryUnmapFlagBitsKHR">VkMemoryUnmapFlagBitsKHR</a> values</p>
 </li>
 <li>
 <p><a id="VUID-VkMemoryUnmapInfoKHR-memory-parameter" href="#VUID-VkMemoryUnmapInfoKHR-memory-parameter"></a> <span class="vuid">VUID-VkMemoryUnmapInfoKHR-memory-parameter</span><br>
@@ -9903,6 +10119,42 @@ structure.</p>
 </div>
 <div class="openblock">
 <div class="content">
+<div class="paragraph">
+<p>Bits which <strong>can</strong> be set in <a href="#VkMemoryUnmapInfoKHR">VkMemoryUnmapInfoKHR</a>::<code>flags</code>,
+specifying additional properties of a memory unmap, are:</p>
+</div>
+<div id="VkMemoryUnmapFlagBitsKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_map_memory2
+typedef enum VkMemoryUnmapFlagBitsKHR {
+  // Provided by VK_EXT_map_memory_placed
+    VK_MEMORY_UNMAP_RESERVE_BIT_EXT = 0x00000001,
+} VkMemoryUnmapFlagBitsKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_MEMORY_UNMAP_RESERVE_BIT_EXT</code> requests that virtual address
+range currently occupied by the memory map remain reserved after the
+<a href="#vkUnmapMemory2KHR">vkUnmapMemory2KHR</a> call completes.
+Future system memory map operations or calls to <a href="#vkMapMemory">vkMapMemory</a> or
+<a href="#vkMapMemory2KHR">vkMapMemory2KHR</a> will not return addresses in that range unless the
+range has since been unreserved by the client or the mapping is
+explicitly placed in that range by calling <a href="#vkMapMemory2KHR">vkMapMemory2KHR</a> with
+<code>VK_MEMORY_MAP_PLACED_BIT_EXT</code>, or doing the system memory map
+equivalent.
+When <code>VK_MEMORY_UNMAP_RESERVE_BIT_EXT</code> is set, the memory unmap
+operation <strong>may</strong> fail, in which case the memory object will remain host
+mapped and <a href="#vkUnmapMemory2KHR">vkUnmapMemory2KHR</a> will return
+<code>VK_ERROR_MEMORY_MAP_FAILED</code>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
 <div id="VkMemoryUnmapFlagsKHR" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_map_memory2
@@ -9910,8 +10162,8 @@ typedef VkFlags VkMemoryUnmapFlagsKHR;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>VkMemoryMapFlagsKHR</code> is a bitmask type for setting a mask, but is
-currently reserved for future use.</p>
+<p><code>VkMemoryUnmapFlagsKHR</code> is a bitmask type for setting a mask of zero or
+more <a href="#VkMemoryUnmapFlagBitsKHR">VkMemoryUnmapFlagBitsKHR</a>.</p>
 </div>
 </div>
 </div>
