@@ -830,21 +830,21 @@ We will therefore expose separate feature bits for color, depth, and stencil acc
 <div class="ulist">
 <ul>
 <li>
-<p>shaderTileImageColorReadAccess</p>
+<p><code>shaderTileImageColorReadAccess</code></p>
 </li>
 <li>
-<p>shaderTileImageDepthReadAccess</p>
+<p><code>shaderTileImageDepthReadAccess</code></p>
 </li>
 <li>
-<p>shaderTileImageStencilReadAccess</p>
+<p><code>shaderTileImageStencilReadAccess</code></p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>shaderTileImageColorReadAccess is mandatory if this extension is supported.</p>
+<p><code>shaderTileImageColorReadAccess</code> is mandatory if this extension is supported.</p>
 </div>
 <div class="paragraph">
-<p>shaderTileImageColorReadAccess provides the ability to access current (rasterization order) color values from tile memory via tile images.
+<p><code>shaderTileImageColorReadAccess</code> provides the ability to access current (rasterization order) color values from tile memory via tile images.
 There is no support for the storage format to be redefined as part of this feature.
 Output data is still written via Fragment Output variables.
 Since the framebuffer format is not re-declared, fixed-function blending works as normal.</p>
@@ -857,13 +857,62 @@ Since the framebuffer format is not re-declared, fixed-function blending works a
 See the spec (Fragment Shader Tile Image Reads) for details on which samples reads qualify for coherent read access.</p>
 </div>
 <div class="paragraph">
-<p>shaderTileImageDepthReadAccess and shaderTileImageStencilReadAccess provide similar ability to read the depth and stencil values of any sample location covered by the fragment.
+<p><code>shaderTileImageDepthReadAccess</code> and <code>shaderTileImageStencilReadAccess</code> provide similar ability to read the depth and stencil values of any sample location covered by the fragment.
 Depth and stencil fetches use implicit tile images.
 If no depth / stencil attachment is present then the values returned by fetches are undefined.
 Early fragment tests are disallowed if depth or stencil fetch is used.</p>
 </div>
 <div class="paragraph">
 <p>Reading depth/stencil values have similar rasterization order and synchronization guarantees as color.</p>
+</div>
+<div class="sect3">
+<h4 id="_explicit_synchronization"><a class="anchor" href="#_explicit_synchronization"></a>3.2.1. Explicit Synchronization</h4>
+<div class="paragraph">
+<p>When non-coherent tile image reads are enabled, writes via color, depth and
+stencil attachments are not automatically made visible to the corresponding
+attachment reads via tile images.
+For the writes to be made visible, an explicit memory dependency must be
+inserted between when the attachment is written to and when it is read from
+by later fragments.
+Such memory dependencies must be inserted every time a fragment will read
+values at a particular sample (x, y, layer, sample) coordinate, if those
+values have been written since the most recent pipeline barrier; or since
+the start of the render pass instance, if there have been no pipeline
+barriers since the start of the render pass instance.
+When such memory dependencies are used the values at all sample locations
+inside the fragment area are made visible, regardless of coverage.</p>
+</div>
+<div class="paragraph">
+<p>To insert a memory dependency for explicit render pass tile image
+synchronization, <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdPipelineBarrier.html">vkCmdPipelineBarrier</a>
+and <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdPipelineBarrier2.html">vkCmdPipelineBarrier2</a>
+can now be called inside a render pass instance started with
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/vkCmdBeginRendering.html">vkCmdBeginRendering</a>.
+The following restrictions apply for such pipeline barriers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>dependencyFlags</code> must include <code>VK_DEPENDENCY_BY_REGION_BIT</code>.</p>
+</li>
+<li>
+<p>The pipeline barriers can include only memory barriers.
+That is, buffer memory barriers and image memory barriers must not be
+used.</p>
+</li>
+<li>
+<p>The stages in the <code>srcStageMask</code> and <code>dstStageMask</code> members of <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkMemoryBarrier2.html">VkMemoryBarrier2</a> are restricted to framebuffer
+space stages.</p>
+</li>
+<li>
+<p>The access types in the <code>srcAccessMask</code> and <code>dstAccessMask</code> members of <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkMemoryBarrier2.html">VkMemoryBarrier2</a> are restricted to the
+following types: <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code>,
+<code>VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT</code>,
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code>, and
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code>.</p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="sect2">

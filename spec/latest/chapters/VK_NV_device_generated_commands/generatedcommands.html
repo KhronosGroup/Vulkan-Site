@@ -634,6 +634,10 @@ of an atomic sequence comprised of command tokens, which are represented by:</p>
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkIndirectCommandsLayoutNV)</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>Each indirect command layout <strong>must</strong> have exactly one action command token and
+it <strong>must</strong> be the last token in the sequence.</p>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -661,7 +665,7 @@ layout.</p>
 </li>
 <li>
 <p><code>pCreateInfo</code> is a pointer to a
-<code>VkIndirectCommandsLayoutCreateInfoNV</code> structure containing
+<a href="#VkIndirectCommandsLayoutCreateInfoNV">VkIndirectCommandsLayoutCreateInfoNV</a> structure containing
 parameters affecting creation of the indirect command layout.</p>
 </li>
 <li>
@@ -883,6 +887,14 @@ first element of the array and there <strong>must</strong> be only a single elem
 such token type</p>
 </li>
 <li>
+<p><a id="VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-09585" href="#VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-09585"></a> <span class="vuid">VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-09585</span><br>
+
+If <code>pTokens</code> contains an entry of
+<code>VK_INDIRECT_COMMANDS_TOKEN_TYPE_PIPELINE_NV</code> it <strong>must</strong> be the first
+element of the array and there <strong>must</strong> be only a single element of such
+token type</p>
+</li>
+<li>
 <p><a id="VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02933" href="#VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02933"></a> <span class="vuid">VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02933</span><br>
 
 If <code>pTokens</code> contains an entry of
@@ -892,7 +904,7 @@ a single element of such token type</p>
 <li>
 <p><a id="VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02934" href="#VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02934"></a> <span class="vuid">VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02934</span><br>
 
-All state tokens in <code>pTokens</code> <strong>must</strong> occur before any work provoking
+All state tokens in <code>pTokens</code> <strong>must</strong> occur before any action command
 tokens (<code>VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_NV</code>,
 <code>VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_INDEXED_NV</code>,
 <code>VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_TASKS_NV</code>,
@@ -903,7 +915,7 @@ tokens (<code>VK_INDIRECT_COMMANDS_TOKEN_TYPE_DRAW_NV</code>,
 <li>
 <p><a id="VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02935" href="#VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02935"></a> <span class="vuid">VUID-VkIndirectCommandsLayoutCreateInfoNV-pTokens-02935</span><br>
 
-The content of <code>pTokens</code> <strong>must</strong> include one single work provoking
+The content of <code>pTokens</code> <strong>must</strong> include one single action command
 token that is compatible with the <code>pipelineBindPoint</code></p>
 </li>
 <li>
@@ -915,7 +927,7 @@ token that is compatible with the <code>pipelineBindPoint</code></p>
 <li>
 <p><a id="VUID-VkIndirectCommandsLayoutCreateInfoNV-pStreamStrides-02937" href="#VUID-VkIndirectCommandsLayoutCreateInfoNV-pStreamStrides-02937"></a> <span class="vuid">VUID-VkIndirectCommandsLayoutCreateInfoNV-pStreamStrides-02937</span><br>
 
-each element of <code>pStreamStrides</code> <strong>must</strong> be greater than `0`and less
+each element of <code>pStreamStrides</code> <strong>must</strong> be greater than <code>0</code> and less
 than or equal to
 <code>VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV</code>::<code>maxIndirectCommandsStreamStride</code>.
 Furthermore the alignment of each token input <strong>must</strong> be ensured</p>
@@ -1600,7 +1612,7 @@ void cmdProcessAllSequences(cmd, pipeline, indirectCommandsLayout, pIndirectComm
 </div>
 <div class="paragraph">
 <p>The processing of each sequence is considered stateless, therefore all state
-changes <strong>must</strong> occur prior work provoking commands within the sequence.
+changes <strong>must</strong> occur before any action command tokens within the sequence.
 A single sequence is strictly targeting the <a href="../pipelines.html#VkPipelineBindPoint" class="xref page">VkPipelineBindPoint</a> it was
 created with.</p>
 </div>
@@ -1739,7 +1751,8 @@ typedef struct VkIndirectCommandsLayoutTokenNV {
 structure.</p>
 </li>
 <li>
-<p><code>tokenType</code> specifies the token command type.</p>
+<p><code>tokenType</code> is a <a href="#VkIndirectCommandsTokenTypeNV">VkIndirectCommandsTokenTypeNV</a> specifying the
+token command type.</p>
 </li>
 <li>
 <p><code>stream</code> is the index of the input stream containing the token
@@ -1773,17 +1786,17 @@ command.</p>
 <p><code>pushconstantSize</code> is the size used for the push constant command.</p>
 </li>
 <li>
-<p><code>indirectStateFlags</code> are the active states for the state flag
-command.</p>
+<p><code>indirectStateFlags</code> is a <a href="#VkIndirectStateFlagsNV">VkIndirectStateFlagsNV</a> bitfield
+indicating the active states for the state flag command.</p>
 </li>
 <li>
 <p><code>indexTypeCount</code> is the optional size of the <code>pIndexTypes</code> and
 <code>pIndexTypeValues</code> array pairings.
 If not zero, it allows to register a custom <code>uint32_t</code> value to be
-treated as specific <code>VkIndexType</code>.</p>
+treated as specific <a href="../drawing.html#VkIndexType" class="xref page">VkIndexType</a>.</p>
 </li>
 <li>
-<p><code>pIndexTypes</code> is the used <code>VkIndexType</code> for the corresponding
+<p><code>pIndexTypes</code> is the used <a href="../drawing.html#VkIndexType" class="xref page">VkIndexType</a> for the corresponding
 <code>uint32_t</code> value entry in <code>pIndexTypeValues</code>.</p>
 </li>
 </ul>
@@ -2072,7 +2085,7 @@ void vkGetGeneratedCommandsMemoryRequirementsNV(
 </li>
 <li>
 <p><code>pInfo</code> is a pointer to a
-<code>VkGeneratedCommandsMemoryRequirementsInfoNV</code> structure containing
+<a href="#VkGeneratedCommandsMemoryRequirementsInfoNV">VkGeneratedCommandsMemoryRequirementsInfoNV</a> structure containing
 parameters required for the memory requirements query.</p>
 </li>
 <li>
@@ -6407,9 +6420,11 @@ actual number of sequences generated.</p>
 preprocessing the input data for execution.
 If this structure is used with <a href="#vkCmdExecuteGeneratedCommandsNV">vkCmdExecuteGeneratedCommandsNV</a>
 with its <code>isPreprocessed</code> set to <code>VK_TRUE</code>, then the
-preprocessing step is skipped and data is only read from this buffer.
-The contents and the layout of this buffer is opaque to applications and
-<strong>must</strong> not be modified or copied to another buffer for reuse.</p>
+preprocessing step is skipped and data in this buffer will not be
+modified.
+The contents and the layout of this buffer are opaque to applications
+and <strong>must</strong> not be modified outside functions related to device-generated
+commands or copied to another buffer for reuse.</p>
 </li>
 <li>
 <p><code>preprocessOffset</code> is the byte offset into <code>preprocessBuffer</code>
@@ -6470,7 +6485,7 @@ If the <code>indirectCommandsLayout</code> uses a token of
 
 If the <code>indirectCommandsLayout</code> uses a token of
 <code>VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_CONSTANT_NV</code>, then the
-<code>pipeline</code>`s <code>VkPipelineLayout</code> <strong>must</strong> match the
+<code>pipeline</code>&#8217;s <code>VkPipelineLayout</code> <strong>must</strong> match the
 <a href="#VkIndirectCommandsLayoutTokenNV">VkIndirectCommandsLayoutTokenNV</a>::<code>pushconstantPipelineLayout</code></p>
 </li>
 <li>
@@ -6640,7 +6655,7 @@ If the <code>indirectCommandsLayout</code> uses a token of
 </li>
 <li>
 <p><a id="VUID-VkGeneratedCommandsInfoNV-pipeline-parameter" href="#VUID-VkGeneratedCommandsInfoNV-pipeline-parameter"></a> <span class="vuid">VUID-VkGeneratedCommandsInfoNV-pipeline-parameter</span><br>
- <code>pipeline</code> <strong>must</strong> be a valid <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handle</p>
+ If <code>pipeline</code> is not <a href="../../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>pipeline</code> <strong>must</strong> be a valid <a href="../pipelines.html#VkPipeline" class="xref page">VkPipeline</a> handle</p>
 </li>
 <li>
 <p><a id="VUID-VkGeneratedCommandsInfoNV-indirectCommandsLayout-parameter" href="#VUID-VkGeneratedCommandsInfoNV-indirectCommandsLayout-parameter"></a> <span class="vuid">VUID-VkGeneratedCommandsInfoNV-indirectCommandsLayout-parameter</span><br>

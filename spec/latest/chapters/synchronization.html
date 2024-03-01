@@ -12721,11 +12721,8 @@ that occurred later in <a href="#synchronization-submission-order">submission or
 </div>
 <div class="paragraph">
 <p>If <code>vkCmdPipelineBarrier2</code> is recorded within a render pass instance,
-the synchronization scopes are limited to operations within the same subpass
-, or <strong>must</strong> follow the restrictions for
-<a href="#synchronization-pipeline-barriers-explicit-renderpass-tileimage">Tile Image Access Synchronization</a> if the render pass instance was started with
-<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>
-.</p>
+the synchronization scopes are limited to a subset of operations within the
+same subpass or render pass instance.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -12851,6 +12848,19 @@ the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page"
 <code>vkCmdPipelineBarrier2</code> is called within a render pass instance started with
 <a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, there <strong>must</strong> be no buffer or image memory
 barriers specified by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdPipelineBarrier2-None-09586" href="#VUID-vkCmdPipelineBarrier2-None-09586"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-None-09586</span><br>
+
+If
+the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled, and
+<code>vkCmdPipelineBarrier2</code> is called within a render pass instance started with
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, memory barriers specified by this command
+<strong>must</strong> only include <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code>,
+<code>VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT</code>,
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code>, or
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code> in their access
+masks.</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdPipelineBarrier2-image-09555" href="#VUID-vkCmdPipelineBarrier2-image-09555"></a> <span class="vuid">VUID-vkCmdPipelineBarrier2-image-09555</span><br>
@@ -13486,6 +13496,19 @@ the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page"
 barriers specified by this command</p>
 </li>
 <li>
+<p><a id="VUID-vkCmdPipelineBarrier-None-09586" href="#VUID-vkCmdPipelineBarrier-None-09586"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-None-09586</span><br>
+
+If
+the <a href="features.html#features-dynamicRenderingLocalRead" class="xref page">    <code>dynamicRenderingLocalRead</code></a> feature is not enabled, and
+<code>vkCmdPipelineBarrier</code> is called within a render pass instance started with
+<a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>, memory barriers specified by this command
+<strong>must</strong> only include <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code>,
+<code>VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT</code>,
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code>, or
+<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code> in their access
+masks.</p>
+</li>
+<li>
 <p><a id="VUID-vkCmdPipelineBarrier-image-09555" href="#VUID-vkCmdPipelineBarrier-image-09555"></a> <span class="vuid">VUID-vkCmdPipelineBarrier-image-09555</span><br>
 
 If <code>vkCmdPipelineBarrier</code> is called within a render pass instance started with
@@ -13685,59 +13708,6 @@ typedef VkFlags VkDependencyFlags;</code></pre>
 <p><code>VkDependencyFlags</code> is a bitmask type for setting a mask of zero or more
 <a href="#VkDependencyFlagBits">VkDependencyFlagBits</a>.</p>
 </div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="synchronization-pipeline-barriers-explicit-renderpass-tileimage"><a class="anchor" href="#synchronization-pipeline-barriers-explicit-renderpass-tileimage"></a>Explicit Render Pass Tile Image Access Synchronization</h3>
-<div class="paragraph">
-<p>A fragment shader <strong>can</strong> declare <code>NonCoherentColorAttachmentReadEXT</code>,
-<code>NonCoherentDepthAttachmentReadEXT</code>, or
-<code>NonCoherentStencilAttachmentReadEXT</code> execution modes to enable
-non-coherent tile image reads for color, depth, or stencil, respectively.
-When non-coherent tile image reads are enabled, writes via color, depth and
-stencil attachments are not automatically made visible to the corresponding
-attachment reads via tile images.
-For the writes to be made visible, an explicit memory dependency <strong>must</strong> be
-inserted between when the attachment is written to and when it is read from
-by later fragments.
-Such memory dependencies <strong>must</strong> be inserted every time a fragment will read
-values at a particular sample (x, y, layer, sample) coordinate, if those
-values have been written since the most recent pipeline barrier; or since
-the start of the render pass instance, if there have been no pipeline
-barriers since the start of the render pass instance.
-When such memory dependencies are used the values at all sample locations
-inside the fragment area are made visible, regardless of coverage.</p>
-</div>
-<div class="paragraph">
-<p>To insert a memory dependency for explicit render pass tile image
-synchronization, call <a href="#vkCmdPipelineBarrier2">vkCmdPipelineBarrier2</a> inside a render pass
-instance started with <a href="renderpass.html#vkCmdBeginRendering" class="xref page">vkCmdBeginRendering</a>.
-The following restrictions apply for such pipeline barriers:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>dependencyFlags</code> <strong>must</strong> include <code>VK_DEPENDENCY_BY_REGION_BIT</code>.</p>
-</li>
-<li>
-<p>The pipeline barriers <strong>can</strong> only include memory barriers.
-That is, buffer memory barriers and image memory barriers <strong>must</strong> not be
-used.</p>
-</li>
-<li>
-<p>The stages in <a href="#VkMemoryBarrier2">VkMemoryBarrier2</a>::<code>srcStageMask</code> and
-<a href="#VkMemoryBarrier2">VkMemoryBarrier2</a>::<code>dstStageMask</code> are restricted to framebuffer
-space stages.</p>
-</li>
-<li>
-<p>The access types in <a href="#VkMemoryBarrier2">VkMemoryBarrier2</a>::<code>srcAccessMask</code> and
-<a href="#VkMemoryBarrier2">VkMemoryBarrier2</a>::<code>dstAccessMask</code> are restricted to the
-following types: <code>VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT</code>,
-<code>VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT</code>,
-<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT</code>, and
-<code>VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT</code>.</p>
-</li>
-</ul>
 </div>
 </div>
 </div>
