@@ -483,6 +483,9 @@
     <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -769,7 +772,7 @@
 <div class="sect2">
 <h3 id="_av1_decode_parameter_sets"><a class="anchor" href="#_av1_decode_parameter_sets"></a>3.4. AV1 Decode Parameter Sets</h3>
 <div class="paragraph">
-<p>The use of video session parameters objects is mandatory when decoding AV1 video streams. Applications need to include the following new structure in the <code>pNext</code> chain of <code>VkVideoSessionParametersCreateInfoKHR</code> when creating video session parameters objects for AV1 decode use, to specify the parameter set capacity of the created objects:</p>
+<p>The use of video session parameters objects is mandatory when decoding AV1 video streams. Applications need to include the following new structure in the <code>pNext</code> chain of <code>VkVideoSessionParametersCreateInfoKHR</code> when creating video session parameters objects for AV1 decode use, to specify the sequence header data of the created object:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -784,7 +787,7 @@
 <p><code>pStdSequenceHeader</code> specifies the AV1 sequence header to store in the created video session parameters object.</p>
 </div>
 <div class="paragraph">
-<p>As AV1 video session parameters objects can only store a single AV1 sequence header, they do not support updates using the <code>vkUpdateVideoSessionParametersKHR</code> command. Applications should create a new video session parameters object for each new sequence header decoded from the incoming bitstream.</p>
+<p>As AV1 decode video session parameters objects can only store a single AV1 sequence header, they do not support updates using the <code>vkUpdateVideoSessionParametersKHR</code> command. Applications should create a new video session parameters object for each new sequence header decoded from the incoming bitstream.</p>
 </div>
 </div>
 <div class="sect2">
@@ -837,7 +840,7 @@
 <p><code>pStdReferenceInfo</code> points to the codec-specific reference picture parameters defined in the <code>vulkan_video_codec_av1std_decode</code> video std header.</p>
 </div>
 <div class="paragraph">
-<p>It is the application&#8217;s responsibility to specify video bitstream buffer data and codec-specific parameters that are compliant to the rules defined by the AV1 video compression standard. While it is not illegal, from the API usage&#8217;s point of view, to specify non-compliant inputs, they may cause the video decode operation to complete unsuccessfully and will cause the output pictures (decode output and reconstructed pictures) to have undefined contents after the execution of the operation.</p>
+<p>It is the application&#8217;s responsibility to specify video bitstream buffer data and codec-specific parameters that are compliant with the rules defined by the AV1 video compression standard. While it is not illegal, from the API usage&#8217;s point of view, to specify non-compliant inputs, they may cause the video decode operation to complete unsuccessfully and will cause the output pictures (decode output and reconstructed pictures) to have undefined contents after the execution of the operation.</p>
 </div>
 <div class="paragraph">
 <p>For more information about how to parse individual AV1 bitstream syntax elements, calculate derived values, and, in general, how to interpret these parameters, please refer to the corresponding sections of the <a href="https://aomediacodec.github.io/av1-spec/av1-spec.pdf">AV1 Specification</a>.</p>
@@ -966,6 +969,14 @@ VkVideoDecodeAV1SessionParametersCreateInfoKHR decodeAV1CreateInfo = {
     .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_SESSION_PARAMETERS_CREATE_INFO_KHR,
     .pNext = NULL,
     .pStdSequenceHeader = &amp;sequenceHeader
+};
+
+VkVideoSessionParametersCreateInfoKHR createInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR,
+    .pNext = &amp;decodeAV1CreateInfo,
+    .flags = 0,
+    .videoSessionParametersTemplate = VK_NULL_HANDLE,
+    .videoSession = videoSession
 };
 
 vkCreateVideoSessionParametersKHR(device, &amp;createInfo, NULL, &amp;videoSessionParams);</code></pre>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Proposal: VK_EXT_frame_boundary :: Vulkan Documentation Project</title>
+    <title>VK_NV_ray_tracing_validation :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../../_/css/site.css">
     <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
@@ -314,7 +314,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -482,7 +482,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -558,11 +558,11 @@
   <ul>
     <li><a href="../../index.html">Vulkan Specification and Proposals</a></li>
     <li>Extension Proposals</li>
-    <li><a href="VK_EXT_frame_boundary.html">Proposal: <code>VK_EXT_frame_boundary</code></a></li>
+    <li><a href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a></li>
   </ul>
 </nav>
     <!--
-  <div class="edit-this-page"><a href="https://github.com/KhronosGroup/Vulkan-Docs/edit/main/antora/modules/proposals/pages/proposals/VK_EXT_frame_boundary.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/KhronosGroup/Vulkan-Docs/edit/main/antora/modules/proposals/pages/proposals/VK_NV_ray_tracing_validation.adoc">Edit this Page</a></div>
       -->
 </div>
   <div class="content">
@@ -570,421 +570,66 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">Proposal: <code>VK_EXT_frame_boundary</code></h1>
+<h1 class="page">VK_NV_ray_tracing_validation</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_problem_statement">Problem Statement</a>
-<ul class="sectlevel2">
-<li><a href="#_graphics_applications_bypassing_the_khronos_swapchain">Graphics applications bypassing the Khronos swapchain</a></li>
-<li><a href="#_compute_only_applications">Compute-only applications</a></li>
-<li><a href="#_overlapping_frames">Overlapping frames</a></li>
-</ul>
-</li>
-<li><a href="#_solution_space">Solution Space</a></li>
-<li><a href="#_proposal">Proposal</a>
-<ul class="sectlevel2">
-<li><a href="#_overview">Overview</a></li>
-<li><a href="#_the_vkframeboundaryext_type">The <code>VkFrameBoundaryEXT</code> type</a></li>
-<li><a href="#_validation">Validation</a></li>
-</ul>
-</li>
-<li><a href="#_examples">Examples</a>
-<ul class="sectlevel2">
-<li><a href="#_compute_only">Compute-only</a></li>
-<li><a href="#_graphics_sequential_frames_not_using_the_khr_swapchain">Graphics, sequential frames, not using the KHR swapchain</a></li>
-<li><a href="#_overlapping_frames_with_wait_after_signal">Overlapping frames with wait-after-signal</a></li>
-</ul>
-</li>
-<li><a href="#_issues">Issues</a>
-<ul class="sectlevel2">
-<li><a href="#_resolved_what_should_this_extension_be_named">RESOLVED: What should this extension be named?</a></li>
-<li><a href="#_resolved_what_information_should_be_included_in_vkframeboundaryext">RESOLVED: What information should be included in VkFrameBoundaryEXT?</a></li>
-<li><a href="#_resolved_how_should_frame_identifiers_be_validated">RESOLVED: How should frame identifiers be validated?</a></li>
-</ul>
-</li>
+<li><a href="#_problem_statement">1. Problem Statement</a></li>
+<li><a href="#_solution_space">2. Solution Space</a></li>
+<li><a href="#_proposal">3. Proposal</a></li>
+<li><a href="#_issues">4. Issues</a></li>
 </ul>
 </div>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><code>VK_EXT_frame_boundary</code> is a device extension that helps <strong>tools</strong> (such as
-debuggers) to group queue submissions per frames in non-trivial scenarios,
-typically when <code>vkQueuePresentKHR</code> is not a relevant frame boundary delimiter.</p>
-</div>
-<div class="paragraph">
-<p>See also the discussion in <a href="https://gitlab.khronos.org/vulkan/vulkan/-/issues/2436" class="bare">https://gitlab.khronos.org/vulkan/vulkan/-/issues/2436</a></p>
+<p>This document details the VK_NV_ray_tracing_validation extension which adds
+support for ray tracing validation at an implementation level.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>Problem Statement</h2>
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Various Vulkan tools (e.g. debuggers) use a layer to monitor all Vulkan
-commands, and need to know where a frame starts and ends. In general,
-<code>vkQueuePresentKHR</code> is a natural frame boundary delimiter: a frame is made by
-all commands between two <code>vkQueuePresentKHR</code>. However, there are scenarios where
-<code>vkQueuePresentKHR</code> is not a suitable frame boundary delimiter. The
-<code>VK_EXT_frame_boundary</code> device extension lets application developers indicate to
-tools where the frames start and end.</p>
-</div>
-<div class="paragraph">
-<p>Note: here, &#8220;frame&#8221; is understood as &#8220;a unit of workload that spans one or more
-queue submissions&#8221;. The notion of frame is application-dependent. In graphical
-applications, a frame is typically the work needed to render into the image that
-is eventually presented. In a compute-only application, a frame could be a set
-of compute kernels dispatches that treat one unit of work.</p>
-</div>
-<div class="paragraph">
-<p>There are a number of cases where <code>vkQueuePresentKHR</code> is not a suitable frame
-boundary delimiter.</p>
-</div>
-<div class="sect2">
-<h3 id="_graphics_applications_bypassing_the_khronos_swapchain"><a class="anchor" href="#_graphics_applications_bypassing_the_khronos_swapchain"></a>Graphics applications bypassing the Khronos swapchain</h3>
-<div class="paragraph">
-<p>Graphics applications are not tied to use the Khronos swapchain, and they may
-interact directly with a platform presentation engine. In this case, they will
-not call <code>vkQueuePresentKHR</code>.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_compute_only_applications"><a class="anchor" href="#_compute_only_applications"></a>Compute-only applications</h3>
-<div class="paragraph">
-<p>Compute-only applications typically do not interact with a presentation engine at
-all, so they would not call <code>vkQueuePresentKHR</code>.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_overlapping_frames"><a class="anchor" href="#_overlapping_frames"></a>Overlapping frames</h3>
-<div class="paragraph">
-<p>A graphics application may pipeline its frame preparation such that work for
-different frames is being submitted in an interleaved way, a scenario we call
-here &#8220;overlapping frames&#8221;.</p>
-</div>
-<div class="paragraph">
-<p>For instance, consider a graphics app where each frame is executed via two
-<code>vkQueueSubmit</code> followed by a <code>vkQueuePresentKHR</code>, and frame preparation is
-pipelined, such that the serialized commands look like:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>vkQueueSubmit();     // 1st submit of Frame N
-vkQueueSubmit();     // 2nd submit of Frame N-1
-vkQueuePresentKHR(); // present Frame N-1
-vkQueueSubmit();     // 1st submit of Frame N+1
-vkQueueSubmit();     // 2nd submit of Frame N
-vkQueuePresentKHR(); // present Frame N</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Here, relying on <code>vkQueuePresentKHR</code> as a frame boundary delimiter would lead to
-the erroneous grouping of queue submissions of different frames as the work of a
-single frame.</p>
-</div>
+<p>Ray tracing issues <strong>can</strong> be hard to debug. Validation layers <strong>can</strong> help root cause
+some of the problems but a more detailed validation requires implementation
+details.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>Solution Space</h2>
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
 <div class="sectionbody">
-<div class="ulist">
-<ul>
-<li>
-<p>Debug utilities: existing debug utilities let us tag Vulkan objects, could we
-use that to identify which work belongs to which frame? We can think of
-tagging the command buffers submitted with a frame identifier. However some
-command buffers may be used concurrently by several frames, so that is not a
-viable approach. In the same vein, queue debug label regions are not
-satisfactory since they cannot handle overlapping frames.</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>Ray tracing validation by a Vulkan implementation performs more thorough checks
+at the implementation level, which helps identify potential problems that
+<strong>cannot</strong> be caught by the validation layers.</p>
 </div>
 <div class="paragraph">
-<p>What we need is a way to associate a frame identifier to the one or more queue
-submissions that submit the work for this frame. This is what the
-VK_EXT_frame_boundary extension does.</p>
+<p>Warnings and errors <strong>can</strong> be delivered straight from a ray tracing implementation
+to the application through a messenger callback registered with the
+implementation, where they <strong>can</strong> be processed through existing application-side
+debugging or logging systems.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>Proposal</h2>
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h3>
 <div class="paragraph">
-<p>We want applications to be able to group queue submissions by frames. To this
-aim, we let applications tag queue submissions with a <code>uint64_t</code> frame
-identifier. However, this is not sufficient: given that a frame may span more
-than one queue submissions, in order to know when a frame ends, tools also need
-to know which queue submission is the last one for a given frame. So in addition
-to the frame identifier, we also want to be able to tag queue submissions with a
-&#8220;frame end&#8221; flag, to mark the last submission for a given frame identifier.</p>
-</div>
-<div class="paragraph">
-<p>There is one clarification left to do: the &#8220;frame end&#8221; submission is the
-&#8220;logical last&#8221; queue submission, but in the presence of timeline semaphores it
-may not be the last one to be submitted. Since timeline semaphores permit queue
-submissions to wait on semaphores whose signal is not yet submitted, the
-semaphore meant to be the last part of work for a given frame may not be the
-last one to be submitted. In this context, we want to mark the &#8220;frame end&#8221;
-submission as the one that is logically the last submission for the frame: if
-this submission waits on semaphores whose signal is not yet submitted, then all
-subsequent submissions with the same frame identifier until the submission that
-signals these semaphores are also associated to that frame.</p>
-</div>
-<div class="paragraph">
-<p>To illustrate this on a small example, considering serialized Vulkan commands:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>// At this point, the latest signal of timeline semaphore TLS set its value to 1
-
-// Logical last submission for frame N, wait on TLS value 2
-vkQueueSubmit( frameID:N, frameEnd, wait:TLS(2) )
-
-// The actual final submission, which unblocks the previous one, is also part
-// of the work for frame N, even if in submit order it comes after the frameEnd
-// submission.
-vkQueueSubmit( frameID:N, signal:TLS(2) )</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>So we want a way to tag queue submissions with a <code>uint64_t</code> frame identifier,
-and a frameEnd flag. To this aim, the <code>VK_EXT_frame_boundary</code> device extension
-defines the new <code>VkFrameBoundaryEXT</code> type that is meant to be passed in queue
-submission pNext chains.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_the_vkframeboundaryext_type"><a class="anchor" href="#_the_vkframeboundaryext_type"></a>The <code>VkFrameBoundaryEXT</code> type</h3>
-<div class="paragraph">
-<p>The <code>VK_EXT_frame_boundary</code> device extension defines a new
-<code>VkFrameBoundaryEXT</code> type that is meant to be added to pNext chains of queue
-submissions, such as <code>VkSubmitInfo</code>, <code>VkSubmitInfo2</code>, <code>VkBindSparseInfo</code>
-or <code>VkPresentInfoKHR</code>. This type looks like:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>// Flags
-typedef enum VkFrameBoundaryFlagBitsEXT {
-  VK_FRAME_BOUNDARY_FRAME_END_BIT_EXT = 0x00000001,
-} VkFrameBoundaryFlagBitsEXT;
-typedef VkFlags VkFrameBoundaryFlagsEXT;
-
-// VkFrameBoundaryEXT can be passed in any queue submission's pNext chain
-typedef struct VkFrameBoundaryEXT {
-    VkStructureType              sType;
-    const void*                  pNext;
-
-    // Necessary members:
-    // flags is necessary to mark the last submission of a frame
-    VkFrameBoundaryFlagsEXT      flags;
-    // frameID is necessary to disambiguate overlapping frames
-    uint64_t                     frameID;
-
-    // Extra members: provide a list of objects which  No need to pass the layout as
-    // trace-replay tools will track the layout anyway.
-    uint32_t                     imageCount;
-    const VkImage*               pImages;
-    uint32_t                     bufferCount;
-    const VkBuffer*              pBuffers;
-
-    // Extra info can be passed with an arbitrary tag payload, typically
-    // a tool-specific struct.
-    uint64_t                     tagName;
-    size_t                       tagSize;
-    const void*                  pTag;
-} VkFrameBoundaryEXT;</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Where:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><code>flags</code> provides a way to tag submissions with a frameEnd flag.</p>
-</li>
-<li>
-<p><code>frameID</code> provides a way to tag submissions with a frame identifier.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>In addition to these two necessary members, we have a few extras:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>a list of VkImage: this makes this extension as expressive as
-<code>vkQueuePresentKHR</code>, the classic frame boundary delimiter. For the classic
-frame-oriented graphics workloads, it is convenient to have a list of images
-storing the final frame renderings. We do not need the image layout as the
-trace-replay tools would have to track image layout already anyway.</p>
-</li>
-<li>
-<p>a list of VkBuffer: which allows applications that do not produce their
-final result as an image (eg. compute applications) to provide the final
-result of the frame.</p>
-</li>
-<li>
-<p>a way to attach a binary payload: this can be used to pass tool-specific
-extra information.</p>
-</li>
-</ol>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_validation"><a class="anchor" href="#_validation"></a>Validation</h3>
-<div class="paragraph">
-<p>Since the concept of a frame is application dependent, there is no way to
-validate relevant use of frame identifier. As such there is no restrictions
-imposed on frame identifiers and is the responsibility of the application
-to use them in a relevant way.</p>
-</div>
-<div class="paragraph">
-<p>In practice it is advised that applications use a single monotonically
-increasing counter to base their frame identifiers on and not to reuse
-identifiers between separate frames.</p>
-</div>
-<div class="paragraph">
-<p>However, there is no way for the validation layer to detect an application
-not adhering to these rules, since the validation layer has no idea which
-submissions should be grouped together, so a valid grouping like this might
-be flagged as invalid because of the application using wait before signal:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>vkQueueSubmit( frame:0 ) // start of a frame
-vkQueueSubmit( frame:0 ) // part of the frame
-vkQueueSubmit( frame:0, frameEnd, wait:TLS(42) ) // logical end, waiting on a not-yet-signaled TLS
-vkQueueSubmit( frame:0, signal:TLS(42) ) // this is still part of the current frame, after the frameEnd marker.</pre>
-</div>
-</div>
+<p>Implementations <strong>may</strong> expose the <code><a href="#appendices/extensions.adoc#VK_NV_ray_tracing_validation" class="xref unresolved">VK_NV_ray_tracing_validation</a></code> extension
+and the
+<a href="#chapters/features.adoc#VkPhysicalDeviceRayTracingValidationFeaturesNV" class="xref unresolved">VkPhysicalDeviceRayTracingValidationFeaturesNV</a>::<code>rayTracingValidation</code>
+feature which allows applications to enable ray tracing validation.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_examples"><a class="anchor" href="#_examples"></a>Examples</h2>
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_compute_only"><a class="anchor" href="#_compute_only"></a>Compute-only</h3>
 <div class="paragraph">
-<p>Compute-only that want to split their work into frames can do so with:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>vkQueueSubmit( frame:N )           // Zero or more submits for frame N
-vkQueueSubmit( frame:N, frameEnd ) // Last submit for frame N
-
-vkQueueSubmit( frame:N+1 )           // Zero or more submits for frame N+1
-vkQueueSubmit( frame:N+1, frameEnd ) // Last submit for frame N+1</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_graphics_sequential_frames_not_using_the_khr_swapchain"><a class="anchor" href="#_graphics_sequential_frames_not_using_the_khr_swapchain"></a>Graphics, sequential frames, not using the KHR swapchain</h3>
-<div class="paragraph">
-<p>A graphics application that prepare frames in sequence (as opposed to
-overlapping frames), but makes no use of the KHR swapchain, can group
-submissions with:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>vkQueueSubmit( frame:N ) // Zero or more submits for frame N
-vkQueueSubmit( frame:N, frameEnd, imageCount:1, pImages:0x12345 ) // Last submit for frame N
-// here code that passes pImages to the presentation engine
-
-vkQueueSubmit( frame:N+1 )           // Zero or more submits for frame N+1
-vkQueueSubmit( frame:N+1, frameEnd, imageCount:1, pImages:0x54321 ) // Last submit for frame N+1
-// here code that passes pImages to the presentation engine</pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_overlapping_frames_with_wait_after_signal"><a class="anchor" href="#_overlapping_frames_with_wait_after_signal"></a>Overlapping frames with wait-after-signal</h3>
-<div class="paragraph">
-<p>A graphics application with overlapping frames and wait-after-signal (that may
-be due to multithreading, here we look at a serialized view of Vulkan commands),
-can group queue submissions per frame with:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>vkQueueSubmit( frame:N ); // 1st submit of frame N
-
-vkQueueSubmit( frame:N-1 ); // Some other submissions for an other frame
-vkQueueSubmit( frame:N+1 ); // Some other submissions for an other frame
-
-// 2nd submit of frame N, logically the last one, but waits on a TLS not yet
-// signalled for that value
-vkQueueSubmit( frame:N, frameEnd, wait:TLS(42) );
-
-vkQueueSubmit( frame:... ); // Some other submissions for other frames
-
-// 3rd submit of frame N, not the logical last one, but the last one in submit
-// order (here serialized) since it signals the TLS on which the logical last
-// submission waits
-vkQueueSubmit( frame:N, signal:TLS(42) );</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_issues"><a class="anchor" href="#_issues"></a>Issues</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_resolved_what_should_this_extension_be_named"><a class="anchor" href="#_resolved_what_should_this_extension_be_named"></a>RESOLVED: What should this extension be named?</h3>
-<div class="paragraph">
-<p>VK_EXT_frame_boundary.</p>
-</div>
-<div class="paragraph">
-<p>&#8220;Frame&#8221; is still the best word to convey the meaning of &#8220;a unit of workload
-spanning one or more queue submissions&#8221;. &#8220;Boundary&#8221; might be seen as too
-specific since this can be seen more generally as tagging queue submissions
-with frame identifiers, but really the goal of this tagging is precisely to
-know when a frame starts and ends, i.e. to know its boundaries.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_resolved_what_information_should_be_included_in_vkframeboundaryext"><a class="anchor" href="#_resolved_what_information_should_be_included_in_vkframeboundaryext"></a>RESOLVED: What information should be included in VkFrameBoundaryEXT?</h3>
-<div class="paragraph">
-<p>Beyond the necessary flags and frameID, we keep only a list of objects that
-contain the end result of the frame, and a binary blob where other extra info
-can be provided.</p>
-</div>
-<div class="paragraph">
-<p>The list of VkImage and VkBuffer objects allow the application to provide the
-end result of the frame. There is no need to provide extra information about
-the object like the layout of these images since capture-replay tools would
-track the Vulkan state whilst the application is running.</p>
-</div>
-<div class="paragraph">
-<p>The list of VkImage lets this extension be as expressive as
-<code>vkQueuePresentKHR</code>, which has a list of swapchain images.</p>
-</div>
-<div class="paragraph">
-<p>A binary blob (called &#8220;tag&#8221; to be homogeneous with
-VkDebugUtilsObjectTagInfoEXT), allows tools to define their own data containing
-any extra information that is required and update this without having to change
-the Vulkan specification.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_resolved_how_should_frame_identifiers_be_validated"><a class="anchor" href="#_resolved_how_should_frame_identifiers_be_validated"></a>RESOLVED: How should frame identifiers be validated?</h3>
-<div class="paragraph">
-<p>Do not impose conditions on frame identifiers.</p>
-</div>
-<div class="paragraph">
-<p>Frame identifiers are just a way to indicate to tools how to group queue
-submissions, and that there is no ground to impose any kind of monotonic
-increase. Frame identifiers may be reused and the application is responsible to
-reuse them in a &#8220;safe&#8221; way. In practice it is advised that applications do not
-reuse frame identifiers, but if the application is not careful when reusing
-frame identifiers, it only makes a difference for tools, so it should not have
-a semantic impact.</p>
-</div>
+<p>None</p>
 </div>
 </div>
 </div>

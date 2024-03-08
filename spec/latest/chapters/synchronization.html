@@ -483,6 +483,9 @@
     <a class="nav-link" href="../proposals/proposals/VK_MSFT_layered_driver.html">VK_MSFT_layered_driver</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../proposals/proposals/VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../proposals/proposals/VK_QCOM_image_processing.html">VK_QCOM_image_processing</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -611,10 +614,10 @@ operations.
 Pipeline barriers <strong>can</strong> be used to control resource access within a
 single queue.</p>
 </dd>
-<dt class="hdlist1"><a href="renderpass.html#renderpass" class="xref page">Render Passes</a></dt>
+<dt class="hdlist1"><a href="renderpass.html#renderpass-objects" class="xref page">Render Pass Objects</a></dt>
 <dd>
-<p>Render passes provide a useful synchronization framework for most
-rendering tasks, built upon the concepts in this chapter.
+<p>Render pass objects provide a synchronization framework for rendering
+tasks, built upon the concepts in this chapter.
 Many cases that would otherwise need an application to use other
 synchronization primitives <strong>can</strong> be expressed more efficiently as part of
 a render pass.
@@ -3760,33 +3763,42 @@ or <a href="cmdbuffers.html#VkSubmitInfo2" class="xref page">VkSubmitInfo2</a>
 from lowest index to highest.</p>
 </li>
 <li>
-<p>The order in which commands were recorded to a command buffer on the
-host, from first to last:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>For commands recorded outside a render pass, this includes all other
-commands recorded outside a render pass, including
-<a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">vkCmdBeginRenderPass</a> and <a href="renderpass.html#vkCmdEndRenderPass" class="xref page">vkCmdEndRenderPass</a> commands; it
-does not directly include commands inside a render pass.</p>
+<p>The order in which commands outside of a render pass were recorded to a
+command buffer on the host, from first to last.</p>
 </li>
 <li>
-<p>For commands recorded inside a render pass, this includes all other
-     commands recorded inside the same subpass, including the
-     <a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">vkCmdBeginRenderPass</a> and <a href="renderpass.html#vkCmdEndRenderPass" class="xref page">vkCmdEndRenderPass</a> commands that
-     delimit the same render pass instance; it does not include commands
-     recorded to other subpasses.
-<a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">State commands</a> do not execute
+<p>The order in which commands inside a single subpass were recorded to a
+command buffer on the host, from first to last.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>When using a <a href="renderpass.html#renderpass-objects" class="xref page">render pass object</a> with multiple
+subpasses, commands in different subpasses have no defined submission order
+relative to each other, regardless of the order in which the subpasses were
+recorded.
+Commands within a subpass are still ordered relative to other commands in
+the same subpass, and those outside of the render pass.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">State commands</a> do not execute
 any operations on the device, instead they set the state of the command
 buffer when they execute on the host, in the order that they are recorded.
 <a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Action commands</a> consume the
 current state of the command buffer when they are recorded, and will execute
 state changes on the device as required to match the recorded state.</p>
-</li>
-</ul>
-</div>
-</li>
-</ol>
 </div>
 <div class="paragraph">
 <p><a href="drawing.html#drawing-primitive-order" class="xref page">The order of primitives passing through the graphics pipeline</a> and
@@ -11013,7 +11025,8 @@ between image subresources.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>This structure defines a set of <a href="#synchronization-dependencies-memory">memory dependencies</a>, as well as <a href="#synchronization-queue-transfers">queue family transfer operations</a> and <a href="#synchronization-image-layout-transitions">image layout transitions</a>.</p>
+<p>This structure defines a set of <a href="#synchronization-dependencies-memory">memory dependencies</a>, as well as <a href="#synchronization-queue-transfers">queue family ownership transfer operations</a> and
+<a href="#synchronization-image-layout-transitions">image layout transitions</a>.</p>
 </div>
 <div class="paragraph">
 <p>Each member of <code>pMemoryBarriers</code>, <code>pBufferMemoryBarriers</code>, and
@@ -14925,8 +14938,7 @@ to the end of the buffer.</p>
 </div>
 <div class="paragraph">
 <p>This structure defines a <a href="#synchronization-dependencies-memory">memory dependency</a> limited to a range of a buffer, and <strong>can</strong> define a
-<a href="#synchronization-queue-transfers">queue family transfer operation</a> for
-that range.</p>
+<a href="#synchronization-queue-transfers">queue family ownership transfer operation</a> for that range.</p>
 </div>
 <div class="paragraph">
 <p>The first <a href="#synchronization-dependencies-scopes">synchronization scope</a> and
@@ -14948,7 +14960,7 @@ limited to only memory accesses to <code>buffer</code> in the range defined by
 <div class="paragraph">
 <p>If <code>buffer</code> was created with <code>VK_SHARING_MODE_EXCLUSIVE</code>, and
 <code>srcQueueFamilyIndex</code> is not equal to <code>dstQueueFamilyIndex</code>, this
-memory barrier defines a <a href="#synchronization-queue-transfers">queue family transfer operation</a>.
+memory barrier defines a <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a>.
 When executed on a queue in the family identified by
 <code>srcQueueFamilyIndex</code>, this barrier defines a
 <a href="#synchronization-queue-transfers-release">queue family release operation</a>
@@ -14961,10 +14973,9 @@ for the specified buffer range, and the first synchronization and access
 scopes do not synchronize operations on that queue.</p>
 </div>
 <div class="paragraph">
-<p>A <a href="#synchronization-queue-transfers">queue family transfer operation</a> is
-also defined if the values are not equal, and either is one of the special
-queue family values reserved for external memory ownership transfers, as
-described in <a href="#synchronization-queue-transfers">Queue Family Ownership Transfer</a>.
+<p>A <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a> is also defined if the values are not equal, and either is one
+of the special queue family values reserved for external memory ownership
+transfers, as described in <a href="#synchronization-queue-transfers">Queue Family Ownership Transfer</a>.
 A <a href="#synchronization-queue-transfers-release">queue family release operation</a> is defined when <code>dstQueueFamilyIndex</code> is one of those
 values, and a <a href="#synchronization-queue-transfers-acquire">queue family acquire operation</a> is defined when <code>srcQueueFamilyIndex</code> is one of
 those values.</p>
@@ -16420,9 +16431,7 @@ included in the <a href="#synchronization-dependencies-access-scopes">second    
 </div>
 <div class="paragraph">
 <p>This structure defines a <a href="#synchronization-dependencies-memory">memory dependency</a> limited to an image subresource range, and <strong>can</strong> define a
-<a href="#synchronization-queue-transfers">queue family transfer operation</a> and
-<a href="#synchronization-image-layout-transitions">image layout transition</a> for
-that subresource range.</p>
+<a href="#synchronization-queue-transfers">queue family ownership transfer operation</a> and <a href="#synchronization-image-layout-transitions">image layout transition</a> for that subresource range.</p>
 </div>
 <div class="paragraph">
 <p>The first <a href="#synchronization-dependencies-scopes">synchronization scope</a> and
@@ -16444,7 +16453,7 @@ defined by <code>subresourceRange</code>.</p>
 <div class="paragraph">
 <p>If <code>image</code> was created with <code>VK_SHARING_MODE_EXCLUSIVE</code>, and
 <code>srcQueueFamilyIndex</code> is not equal to <code>dstQueueFamilyIndex</code>, this
-memory barrier defines a <a href="#synchronization-queue-transfers">queue family transfer operation</a>.
+memory barrier defines a <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a>.
 When executed on a queue in the family identified by
 <code>srcQueueFamilyIndex</code>, this barrier defines a
 <a href="#synchronization-queue-transfers-release">queue family release operation</a>
@@ -16457,10 +16466,9 @@ for the specified image subresource range, and the first synchronization and
 access scopes do not synchronize operations on that queue.</p>
 </div>
 <div class="paragraph">
-<p>A <a href="#synchronization-queue-transfers">queue family transfer operation</a> is
-also defined if the values are not equal, and either is one of the special
-queue family values reserved for external memory ownership transfers, as
-described in <a href="#synchronization-queue-transfers">Queue Family Ownership Transfer</a>.
+<p>A <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a> is also defined if the values are not equal, and either is one
+of the special queue family values reserved for external memory ownership
+transfers, as described in <a href="#synchronization-queue-transfers">Queue Family Ownership Transfer</a>.
 A <a href="#synchronization-queue-transfers-release">queue family release operation</a> is defined when <code>dstQueueFamilyIndex</code> is one of those
 values, and a <a href="#synchronization-queue-transfers-acquire">queue family acquire operation</a> is defined when <code>srcQueueFamilyIndex</code> is one of
 those values.</p>
@@ -16468,8 +16476,8 @@ those values.</p>
 <div class="paragraph">
 <p>If <code>oldLayout</code> is not equal to <code>newLayout</code>, then the memory barrier
 defines an <a href="#synchronization-image-layout-transitions">image layout transition</a> for the specified image subresource range.
-If this memory barrier defines a <a href="#synchronization-queue-transfers">queue family transfer operation</a>, the layout transition is only executed once
-between the queues.</p>
+If this memory barrier defines a <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a>, the layout transition is only
+executed once between the queues.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -17925,6 +17933,12 @@ If the <code>aspectMask</code> member of <code>subresourceRange</code> includes
 <code>VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL</code></p>
 </li>
 <li>
+<p><a id="VUID-VkImageMemoryBarrier2-subresourceRange-09601" href="#VUID-VkImageMemoryBarrier2-subresourceRange-09601"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-subresourceRange-09601</span><br>
+
+<code>subresourceRange.aspectMask</code> <strong>must</strong> be valid for the <code>format</code>
+the <code>image</code> was created with</p>
+</li>
+<li>
 <p><a id="VUID-VkImageMemoryBarrier2-srcStageMask-03854" href="#VUID-VkImageMemoryBarrier2-srcStageMask-03854"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-srcStageMask-03854</span><br>
 
 If either <code>srcStageMask</code> or <code>dstStageMask</code> includes
@@ -18636,6 +18650,12 @@ If the <code>aspectMask</code> member of <code>subresourceRange</code> includes
 <code>VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL</code></p>
 </li>
 <li>
+<p><a id="VUID-VkImageMemoryBarrier-subresourceRange-09601" href="#VUID-VkImageMemoryBarrier-subresourceRange-09601"></a> <span class="vuid">VUID-VkImageMemoryBarrier-subresourceRange-09601</span><br>
+
+<code>subresourceRange.aspectMask</code> <strong>must</strong> be valid for the <code>format</code>
+the <code>image</code> was created with</p>
+</li>
+<li>
 <p><a id="VUID-VkImageMemoryBarrier-None-09052" href="#VUID-VkImageMemoryBarrier-None-09052"></a> <span class="vuid">VUID-VkImageMemoryBarrier-None-09052</span><br>
 
 If
@@ -18987,6 +19007,12 @@ If the <code>aspectMask</code> member of <code>subresourceRange</code> includes
 <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, <code>oldLayout</code> and <code>newLayout</code>
 <strong>must</strong> not be one of <code>VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL</code> or
 <code>VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkHostImageLayoutTransitionInfoEXT-subresourceRange-09601" href="#VUID-VkHostImageLayoutTransitionInfoEXT-subresourceRange-09601"></a> <span class="vuid">VUID-VkHostImageLayoutTransitionInfoEXT-subresourceRange-09601</span><br>
+
+<code>subresourceRange.aspectMask</code> <strong>must</strong> be valid for the <code>format</code>
+the <code>image</code> was created with</p>
 </li>
 <li>
 <p><a id="VUID-VkHostImageLayoutTransitionInfoEXT-oldLayout-09229" href="#VUID-VkHostImageLayoutTransitionInfoEXT-oldLayout-09229"></a> <span class="vuid">VUID-VkHostImageLayoutTransitionInfoEXT-oldLayout-09229</span><br>
