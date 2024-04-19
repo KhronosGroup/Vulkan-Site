@@ -430,7 +430,7 @@
     <a class="nav-link" href="../proposals/proposals/VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../proposals/proposals/VK_KHR_maintenance6.html">Proposal Template</a>
+    <a class="nav-link" href="../proposals/proposals/VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../proposals/proposals/VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
@@ -5301,6 +5301,37 @@ to their payload is <strong>undefined</strong>.
 As such, the application <strong>must</strong> ensure that the imported memory range remains
 valid and accessible for the lifetime of the imported memory object.</p>
 </div>
+<div id="host-memory-import-non-visible-type" class="paragraph">
+<p>Implementations <strong>may</strong> support importing host pointers for memory types which
+are not host-visible.
+In this case, after a successful call to <a href="#vkAllocateMemory">vkAllocateMemory</a>, the memory
+range imported from <code>pHostPointer</code> <strong>must</strong> not be accessed by the
+application until the <a href="#VkDeviceMemory">VkDeviceMemory</a> has been destroyed.
+Memory contents for the host memory becomes <strong>undefined</strong> on import, and is
+left <strong>undefined</strong> after the <a href="#VkDeviceMemory">VkDeviceMemory</a> has been destroyed.
+Applications <strong>must</strong> also not access host memory which is mapped to the same
+physical memory as <code>pHostPointer</code>, but mapped to a different host
+pointer while the <a href="#VkDeviceMemory">VkDeviceMemory</a> handle is valid.
+Implementations running on general-purpose operating systems <strong>should</strong> not
+support importing host pointers for memory types which are not host-visible.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Using host pointers to back non-host visible allocations is a
+platform-specific use case, and applications should not attempt to do this
+unless instructed by the platform.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -5533,8 +5564,12 @@ memory type which the specified host pointer <strong>can</strong> be imported as
 </ul>
 </div>
 <div class="paragraph">
-<p>The value returned by <code>memoryTypeBits</code> <strong>must</strong> only include bits that
-identify memory types which are host visible.</p>
+<p>The value returned by <code>memoryTypeBits</code> <strong>should</strong> only include bits that
+identify memory types which are host visible.
+Implementations <strong>may</strong> include bits that identify memory types which are not
+host visible.
+Behavior for imported pointers of such types is defined by
+<a href="#host-memory-import-non-visible-type"><a href="#VkImportMemoryHostPointerInfoEXT">VkImportMemoryHostPointerInfoEXT</a></a>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">

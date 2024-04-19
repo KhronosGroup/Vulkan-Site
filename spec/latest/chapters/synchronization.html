@@ -430,7 +430,7 @@
     <a class="nav-link" href="../proposals/proposals/VK_KHR_maintenance5.html">VK_KHR_maintenance5</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="../proposals/proposals/VK_KHR_maintenance6.html">Proposal Template</a>
+    <a class="nav-link" href="../proposals/proposals/VK_KHR_maintenance6.html">VK_KHR_maintenance6</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../proposals/proposals/VK_KHR_map_memory2.html">VK_KHR_map_memory2</a>
@@ -14973,13 +14973,13 @@ memory barrier defines a <a href="#synchronization-queue-transfers">queue family
 When executed on a queue in the family identified by
 <code>srcQueueFamilyIndex</code>, this barrier defines a
 <a href="#synchronization-queue-transfers-release">queue family release operation</a>
-for the specified buffer range, and the second synchronization and access
-scopes do not synchronize operations on that queue.
+for the specified buffer range, and the second synchronization scope does
+not apply to this operation.
 When executed on a queue in the family identified by
 <code>dstQueueFamilyIndex</code>, this barrier defines a
 <a href="#synchronization-queue-transfers-acquire">queue family acquire operation</a>
-for the specified buffer range, and the first synchronization and access
-scopes do not synchronize operations on that queue.</p>
+for the specified buffer range, and the first synchronization scope does not
+apply to this operation.</p>
 </div>
 <div class="paragraph">
 <p>A <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a> is also defined if the values are not equal, and either is one
@@ -16157,17 +16157,19 @@ is automatically made available to host domain.</p>
 </tr>
 </table>
 </div>
-<div class="paragraph">
+<div id="buffer-memory-barrier-ownership-transfer" class="paragraph">
 <p>If <code>srcQueueFamilyIndex</code> is not equal to <code>dstQueueFamilyIndex</code>, and
 <code>srcQueueFamilyIndex</code> is equal to the current queue family, then the
 memory barrier defines a <a href="#synchronization-queue-transfers-release">queue family release operation</a> for the specified buffer range, and the second
-access scope includes no access, as if <code>dstAccessMask</code> was <code>0</code>.</p>
+synchronization scope of the calling command does not apply to this
+operation.</p>
 </div>
 <div class="paragraph">
 <p>If <code>dstQueueFamilyIndex</code> is not equal to <code>srcQueueFamilyIndex</code>, and
 <code>dstQueueFamilyIndex</code> is equal to the current queue family, then the
 memory barrier defines a <a href="#synchronization-queue-transfers-acquire">queue family acquire operation</a> for the specified buffer range, and the first
-access scope includes no access, as if <code>srcAccessMask</code> was <code>0</code>.</p>
+synchronization scope of the calling command does not apply to this
+operation.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -16467,12 +16469,12 @@ When executed on a queue in the family identified by
 <code>srcQueueFamilyIndex</code>, this barrier defines a
 <a href="#synchronization-queue-transfers-release">queue family release operation</a>
 for the specified image subresource range, and the second synchronization
-and access scopes do not synchronize operations on that queue.
+scope does not apply to this operation.
 When executed on a queue in the family identified by
 <code>dstQueueFamilyIndex</code>, this barrier defines a
 <a href="#synchronization-queue-transfers-acquire">queue family acquire operation</a>
-for the specified image subresource range, and the first synchronization and
-access scopes do not synchronize operations on that queue.</p>
+for the specified image subresource range, and the first synchronization,
+the first synchronization scope does not apply to this operation.</p>
 </div>
 <div class="paragraph">
 <p>A <a href="#synchronization-queue-transfers">queue family ownership transfer operation</a> is also defined if the values are not equal, and either is one
@@ -18105,19 +18107,19 @@ If <code>dstAccessMask</code> includes <code>VK_ACCESS_HOST_WRITE_BIT</code> or
 to accesses of those types, as those access types are not performed through
 a resource.</p>
 </div>
-<div class="paragraph">
+<div id="image-memory-barrier-ownership-transfer" class="paragraph">
 <p>If <code>srcQueueFamilyIndex</code> is not equal to <code>dstQueueFamilyIndex</code>, and
 <code>srcQueueFamilyIndex</code> is equal to the current queue family, then the
 memory barrier defines a <a href="#synchronization-queue-transfers-release">queue family release operation</a> for the specified image subresource range, and
-the second access scope includes no access, as if <code>dstAccessMask</code> was
-<code>0</code>.</p>
+the second synchronization scope of the calling command does not apply to
+this operation.</p>
 </div>
 <div class="paragraph">
 <p>If <code>dstQueueFamilyIndex</code> is not equal to <code>srcQueueFamilyIndex</code>, and
 <code>dstQueueFamilyIndex</code> is equal to the current queue family, then the
 memory barrier defines a <a href="#synchronization-queue-transfers-acquire">queue family acquire operation</a> for the specified image subresource range, and
-the first access scope includes no access, as if <code>srcAccessMask</code> was
-<code>0</code>.</p>
+the first synchronization scope of the calling command does not apply to
+this operation.</p>
 </div>
 <div class="paragraph">
 <p>If the <a href="features.html#features-synchronization2" class="xref page"><code>synchronization2</code></a> feature is not
@@ -19228,9 +19230,9 @@ the destination queue family index.
 <code>dstAccessMask</code> is ignored for such a barrier, such that no visibility
 operation is executed - the value of this mask does not affect the validity
 of the barrier.
-The release operation happens-after the availability operation, and
-happens-before operations specified in the second synchronization scope of
-the calling command.</p>
+The release operation happens-after the availability operation.
+<code>dstStageMask</code> is also ignored for such a barrier as defined by
+<a href="#buffer-memory-barrier-ownership-transfer">buffer memory ownership transfer</a> and <a href="#image-memory-barrier-ownership-transfer">image memory ownership transfer</a>.</p>
 </div>
 <div class="paragraph">
 <p><a id="synchronization-queue-transfers-acquire"></a> An <em>acquire operation</em> is used
@@ -19271,6 +19273,32 @@ use.
 In an earlier version of the specification, these were required to match on
 both sides - but this was subsequently relaxed.
 These masks <strong>should</strong> be set to 0.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Since a release and acquire operation does not synchronize with second and
+first scopes respectively, the <code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code>
+stage must be used to wait for a release operation to complete.
+Typically, a release and acquire pair is performed by a <a href="#VkSemaphore">VkSemaphore</a>
+signal and wait in their respective queues.
+Signaling a semaphore with <a href="cmdbuffers.html#vkQueueSubmit" class="xref page">vkQueueSubmit</a> waits for
+<code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code>.
+With <a href="cmdbuffers.html#vkQueueSubmit2" class="xref page">vkQueueSubmit2</a>, <code>stageMask</code> for the signal semaphore must be
+<code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code>.
+Similarly, for the acquire operation, waiting for a semaphore must use
+<code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code> to make sure the acquire operation
+is synchronized.</p>
 </div>
 </td>
 </tr>
@@ -19849,7 +19877,7 @@ timestamps on a regular basis.</p>
 <li>
 <p><a id="VUID-vkGetCalibratedTimestampsEXT-timeDomain-09246" href="#VUID-vkGetCalibratedTimestampsEXT-timeDomain-09246"></a> <span class="vuid">VUID-vkGetCalibratedTimestampsEXT-timeDomain-09246</span><br>
 
-The <code>timeDomain</code> value of each <a href="#VkCalibratedTimestampInfoEXT">VkCalibratedTimestampInfoEXT</a> in
+The <code>timeDomain</code> value of each <a href="#VkCalibratedTimestampInfoKHR">VkCalibratedTimestampInfoKHR</a> in
 <code>pTimestampInfos</code> <strong>must</strong> be unique</p>
 </li>
 </ul>
