@@ -1,4 +1,4 @@
-# Copyright 2023 The Khronos Group Inc.
+# Copyright 2023-2024 The Khronos Group Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # Makefile for Vulkan Documentation Project
@@ -42,13 +42,13 @@ prepare_guide:
 	    git checkout $(GUIDEBRANCH) && \
 	    make -f antora/Makefile clean setup
 
-GENPATH = $(SPECREPO)/antora/modules/ROOT/partials/gen
+GENPATH = $(SPECREPO)/antora/spec/modules/ROOT/partials/gen
 prepare_spec:
 	cd $(SPECREPO) && \
 	    git checkout $(SPECBRANCH) && \
 	    make -f antora/Makefile clean setup
 	cp $(GENPATH)/apimap.cjs $(GENPATH)/pageMap.cjs js/
-	cp $(SPECREPO)/antora/xrefMap.cjs js/
+	cp $(SPECREPO)/antora/spec/xrefMap.cjs js/
 
 build_site: clean
 	npx antora antora-playbook.yml $(BUILDARGS)
