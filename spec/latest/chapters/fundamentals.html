@@ -3338,6 +3338,12 @@ a structure) satisfy the alignment requirements of the host processor.</p>
 values terminated by a null character, or if <em>explicitly called out in the
 Specification</em>, <strong>can</strong> be <code>NULL</code>.</p>
 </div>
+<div class="paragraph">
+<p>Strings specified as UTF-8 encoded <strong>must</strong> not contain invalid UTF-8
+sequences.
+See <a href="#fundamentals-strings">String Representation</a> for additional
+information about strings.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="fundamentals-validusage-enums"><a class="anchor" href="#fundamentals-validusage-enums"></a>Valid Usage for Enumerated Types</h4>
@@ -4502,6 +4508,54 @@ be assigned <span class="eq">-(2<sup>b-1</sup> - 1)</span>, 0, or <span class="e
 <p>This equation is used everywhere that floating-point values are converted to
 signed normalized fixed-point.</p>
 </div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="fundamentals-strings"><a class="anchor" href="#fundamentals-strings"></a>String Representation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Strings passed into and returned from Vulkan API commands are usually
+defined to be null-terminated and UTF-8 encoded.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Exceptions to this rule exist only when strings are defined or used by
+operating system APIs where that OS has a different convention.
+For example, <a href="memory.html#VkExportMemoryWin32HandleInfoKHR" class="xref page">VkExportMemoryWin32HandleInfoKHR</a>::<code>name</code> is a
+null-terminated UTF-16 encoded string used in conjunction with Windows
+handles.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>When a UTF-8 string is <strong>returned from</strong> a Vulkan API query, it is returned in
+a fixed-length buffer of C <code>char</code>.
+For example, a string returned in
+<a href="devsandqueues.html#VkPhysicalDeviceProperties" class="xref page">VkPhysicalDeviceProperties</a>::<code>deviceName</code> has maximum length
+<code>VK_MAX_PHYSICAL_DEVICE_NAME_SIZE</code>, and a string returned in
+<a href="extensions.html#VkExtensionProperties" class="xref page">VkExtensionProperties</a>::<code>extensionName</code> has maximum length
+<code>VK_MAX_EXTENSION_NAME_SIZE</code>.
+The string, <strong>including</strong> its null terminator, will always fit completely
+within this buffer.
+If the string is shorter than the buffer size, the contents of <code>char</code> in
+the buffer following the null terminator are <strong>undefined</strong>.</p>
+</div>
+<div class="paragraph">
+<p>When a UTF-8 string is <strong>passed into</strong> a Vulkan API, such as
+<a href="devsandqueues.html#VkDeviceCreateInfo" class="xref page">VkDeviceCreateInfo</a>::<code>ppEnabledExtensionNames</code>, there is no
+explicit limit on the length of that string.
+However, the string <strong>must</strong> contain a valid UTF-8 encoded string and <strong>must</strong> be
+null-terminated.</p>
 </div>
 </div>
 </div>
@@ -6466,6 +6520,12 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_FLOAT16_VECTOR_FEATURES_NV = 1000563000,
   // Provided by VK_NV_ray_tracing_validation
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV = 1000568000,
+  // Provided by VK_MESA_image_alignment_control
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_FEATURES_MESA = 1000575000,
+  // Provided by VK_MESA_image_alignment_control
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ALIGNMENT_CONTROL_PROPERTIES_MESA = 1000575001,
+  // Provided by VK_MESA_image_alignment_control
+    VK_STRUCTURE_TYPE_IMAGE_ALIGNMENT_CONTROL_CREATE_INFO_MESA = 1000575002,
   // Provided by VK_VERSION_1_1
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
   // Provided by VK_VERSION_1_1
