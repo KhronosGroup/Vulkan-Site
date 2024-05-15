@@ -1,0 +1,44 @@
+# Copyright 2022-2023 The Khronos Group Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+site:
+  title: Vulkan Documentation Project
+  start_page: spec::index.adoc
+content:
+# Use worktree for guide and spec - local file URL, HEAD branch, not
+# specifying .git directory
+  sources:
+    - url: ../..
+      branches: HEAD
+      start_path: antora
+antora:
+  extensions:
+    - require: '@antora/lunr-extension'
+      index_latest_only: true
+asciidoc:
+  extensions:
+    # specmacros.js requires './apimap.cjs', 'xrefMap.cjs', and 'pageMap.cjs'.
+    # These are generated in the Vulkan Antora spec source tree in the
+    # `antora/Makefile` `install_maps` target as part of preparing spec
+    # source in that repository, and must be copied to `js/` here before
+    # running the playbook.
+    # Hopefully we can use Antora Collector for all of this preparation
+    # in the future.
+    - ./js/specmacros.js
+    - ./js/vuid-expander.js
+    - ./js/genanchorlinks.js
+    - ./js/open_listing_block.js
+    # We use a slightly modified version of the @djencks/asciidoctor-mathjax
+    # package, adding AMS macro support to the base MathJax configuration.
+    # This has been sent back upstream in
+    #   https://gitlab.com/djencks/asciidoctor-mathjax.js/-/merge_requests/10
+    - ./js/asciidoctor-mathjax.js
+ui:
+  bundle:
+    # We now build our own bundle from the KhronosGroup/antora-ui-khronos
+    # project on github, which is a fork of the Antora default UI.
+    url: ui-bundle.zip
+  # Supplemental UI - everything under this path is overlaid on the default
+  # bundle.
+  # This is only for testing quickly without rebuilding the bundle.
+  # supplemental_files: ./supplemental-ui
