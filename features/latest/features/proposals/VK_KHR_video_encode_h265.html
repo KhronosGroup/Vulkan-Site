@@ -201,6 +201,9 @@
     <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_shader_tile_image.html">VK_EXT_shader_tile_image</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -413,7 +416,7 @@
 <li><a href="#_check_support_and_query_the_capabilities_for_an_h_265_encode_profile">4.2. Check support and query the capabilities for an H.265 encode profile</a></li>
 <li><a href="#_create_and_update_h_265_video_session_parameters_objects">4.3. Create and update H.265 video session parameters objects</a></li>
 <li><a href="#_record_h_265_encode_operation_producing_an_i_frame_that_is_also_set_up_as_a_reference">4.4. Record H.265 encode operation producing an I frame that is also set up as a reference</a></li>
-<li><a href="#_record_h_265_encode_operation_producing_a_p_frame_with_a_single_backward_reference">4.5. Record H.265 encode operation producing a P frame with a single backward reference</a></li>
+<li><a href="#_record_h_265_encode_operation_producing_a_p_frame_with_a_single_forward_reference">4.5. Record H.265 encode operation producing a P frame with a single forward reference</a></li>
 <li><a href="#_record_h_265_encode_operation_producing_a_b_frame_with_a_forward_and_a_backward_reference">4.6. Record H.265 encode operation producing a B frame with a forward and a backward reference</a></li>
 <li><a href="#_change_the_rate_control_configuration_of_an_h_265_encode_session_with_optional_h_265_controls">4.7. Change the rate control configuration of an H.265 encode session with optional H.265 controls</a></li>
 </ul>
@@ -619,7 +622,7 @@
 </ul>
 </div>
 <div class="paragraph">
-<p>The H.265/HEVC video compression standard supports so called generalized B pictures (also known as low delay B pictures) that use both L0 and L1 references referring to only past frames. This can make the use of P pictures moot. Hence, certain implementations may only advertise support for encoding B pictures (but not P pictures). This, however, should not limit applications in encoding backward-reference-only frames.</p>
+<p>The H.265/HEVC video compression standard supports so called generalized B pictures (also known as low delay B pictures) that use both L0 and L1 references referring to only past frames. This can make the use of P pictures moot. Hence, certain implementations may only advertise support for encoding B pictures (but not P pictures). This, however, should not limit applications in encoding frames which use only forward references.</p>
 </div>
 <div class="paragraph">
 <p><code>maxSubLayerCount</code> indicates the number of supported H.265 sub-layers, while <code>expectDyadicTemporalSubLayerPattern</code> indicates whether the multi-layer rate control algorithm of the implementation (if support is indicated by <code>VkVideoEncodeCapabilitiesKHR::maxRateControlLayers</code> being greater than one for the given H.265 encode profile) expects the application to use a dyadic temporal sub-layer pattern for accurate operation.</p>
@@ -1138,36 +1141,36 @@ vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_record_h_265_encode_operation_producing_a_p_frame_with_a_single_backward_reference"><a class="anchor" href="#_record_h_265_encode_operation_producing_a_p_frame_with_a_single_backward_reference"></a>4.5. Record H.265 encode operation producing a P frame with a single backward reference</h3>
+<h3 id="_record_h_265_encode_operation_producing_a_p_frame_with_a_single_forward_reference"><a class="anchor" href="#_record_h_265_encode_operation_producing_a_p_frame_with_a_single_forward_reference"></a>4.5. Record H.265 encode operation producing a P frame with a single forward reference</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include the used reference picture resource
 vkCmdBeginVideoCodingKHR(commandBuffer, ...);
 
-StdVideoEncodeH265ReferenceInfo stdBackwardReferenceInfo = {};
-// Populate H.265 reference picture info for the backward referenced picture
+StdVideoEncodeH265ReferenceInfo stdForwardReferenceInfo = {};
+// Populate H.265 reference picture info for the forward referenced picture
 ...
 
 VkVideoEncodeH265DpbSlotInfoKHR encodeH265DpbSlotInfo = {
     .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
     .pNext = NULL,
-    .pStdReferenceInfo = &amp;stdBackwardReferenceInfo
+    .pStdReferenceInfo = &amp;stdForwardReferenceInfo
 };
 
 VkVideoReferenceSlotInfoKHR referenceSlotInfo = {
     .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
     .pNext = &amp;encodeH265DpbSlotInfo,
-    .slotIndex = ... // DPB slot index of the backward reference picture
+    .slotIndex = ... // DPB slot index of the forward reference picture
     ...
 };
 
 StdVideoEncodeH265ReferenceListsInfo stdRefListInfo = {};
-// Initialize the RefPicLists and add the backward reference to the L0 list
+// Initialize the RefPicLists and add the forward reference to the L0 list
 for (uint32_t i = 0; i &lt; STD_VIDEO_H265_MAX_NUM_LIST_REF; ++i) {
     stdRefListInfo.RefPicList0[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
     stdRefListInfo.RefPicList1[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
 }
-stdRefListInfo.RefPicList0[0] = ... // DPB slot index of the backward reference picture
+stdRefListInfo.RefPicList0[0] = ... // DPB slot index of the forward reference picture
 // Populate other H.265 reference list parameters
 ...
 
@@ -1208,24 +1211,24 @@ vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Bound reference resource list provided has to include the used reference picture resources
 vkCmdBeginVideoCodingKHR(commandBuffer, ...);
 
-StdVideoEncodeH265ReferenceInfo stdBackwardReferenceInfo = {};
-// Populate H.265 reference picture info for the backward referenced picture
-...
-
 StdVideoEncodeH265ReferenceInfo stdForwardReferenceInfo = {};
 // Populate H.265 reference picture info for the forward referenced picture
+...
+
+StdVideoEncodeH265ReferenceInfo stdBackwardReferenceInfo = {};
+// Populate H.265 reference picture info for the backward referenced picture
 ...
 
 VkVideoEncodeH265DpbSlotInfoKHR encodeH265DpbSlotInfo[] = {
     {
         .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
         .pNext = NULL,
-        .pStdReferenceInfo = &amp;stdBackwardReferenceInfo
+        .pStdReferenceInfo = &amp;stdForwardReferenceInfo
     },
     {
         .sType = VK_STRUCTURE_TYPE_VIDEO_ENCODE_H265_DPB_SLOT_INFO_KHR,
         .pNext = NULL,
-        .pStdReferenceInfo = &amp;stdForwardReferenceInfo
+        .pStdReferenceInfo = &amp;stdBackwardReferenceInfo
     }
 };
 
@@ -1233,26 +1236,26 @@ VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
     {
         .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
         .pNext = &amp;encodeH265DpbSlotInfo[0],
-        .slotIndex = ... // DPB slot index of the backward reference picture
+        .slotIndex = ... // DPB slot index of the forward reference picture
         ...
     },
     {
         .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
         .pNext = &amp;encodeH265DpbSlotInfo[1],
-        .slotIndex = ... // DPB slot index of the forward reference picture
+        .slotIndex = ... // DPB slot index of the backward reference picture
         ...
     }
 };
 
 StdVideoEncodeH265ReferenceListsInfo stdRefListInfo = {};
-// Initialize the RefPicLists, add the backward reference to the L0 list,
-// and add the forward reference to the L1 list
+// Initialize the RefPicLists, add the forward reference to the L0 list,
+// and add the backward reference to the L1 list
 for (uint32_t i = 0; i &lt; STD_VIDEO_H265_MAX_NUM_LIST_REF; ++i) {
     stdRefListInfo.RefPicList0[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
     stdRefListInfo.RefPicList1[i] = STD_VIDEO_H265_NO_REFERENCE_PICTURE;
 }
-stdRefListInfo.RefPicList0[0] = ... // DPB slot index of the backward reference picture
-stdRefListInfo.RefPicList1[0] = ... // DPB slot index of the forward reference picture
+stdRefListInfo.RefPicList0[0] = ... // DPB slot index of the forward reference picture
+stdRefListInfo.RefPicList1[0] = ... // DPB slot index of the backward reference picture
 // Populate other H.265 reference list parameters
 ...
 
@@ -1403,7 +1406,7 @@ vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
 <div class="sect2">
 <h3 id="_resolved_are_generalized_p_and_b_frames_aka_low_delay_b_frames_supported"><a class="anchor" href="#_resolved_are_generalized_p_and_b_frames_aka_low_delay_b_frames_supported"></a>5.5. RESOLVED: Are generalized P and B frames (aka low delay B frames) supported?</h3>
 <div class="paragraph">
-<p>Yes, in fact, some implementations do not support encoding P frames but do support encoding B frames with backward-only references. In order to maximize portability, applications should check for B frame support and use low delay B frames to encode frames with backward-only references even when P frame support is not available on a given implementation.</p>
+<p>Yes, in fact, some implementations do not support encoding P frames but do support encoding B frames with forward-only references. In order to maximize portability, applications should check for B frame support and use low delay B frames to encode frames with forward-only references even when P frame support is not available on a given implementation.</p>
 </div>
 </div>
 <div class="sect2">

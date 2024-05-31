@@ -5839,7 +5839,26 @@ parameters.</p>
 <div class="paragraph">
 <p>This command is functionally similar to <a href="#vkCmdCopyBufferToImage2">vkCmdCopyBufferToImage2</a>,
 except it is executed on the host and reads from host memory instead of a
-buffer.</p>
+buffer.
+The memory of <code>pCopyMemoryToImageInfo-&gt;dstImage</code> is accessed by the host
+as if <a href="memory.html#memory-coherent" class="xref page">coherent</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Because queue submissions <a href="synchronization.html#synchronization-submission-host-writes" class="xref page">automatically make host memory visible to the device</a>, there would not be a
+need for a memory barrier before using the results of this copy operation on
+the device.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -6455,7 +6474,29 @@ parameters.</p>
 <div class="paragraph">
 <p>This command is functionally similar to <a href="#vkCmdCopyImageToBuffer2">vkCmdCopyImageToBuffer2</a>,
 except it is executed on the host and writes to host memory instead of a
-buffer.</p>
+buffer.
+The memory of <code>pCopyImageToMemoryInfo-&gt;srcImage</code> is accessed by the host
+as if <a href="memory.html#memory-coherent" class="xref page">coherent</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>If the device has written to the image memory, it is not automatically made
+available to the host.
+Before this copy command can be called, a memory barrier for this image
+<strong>must</strong> have been issued on the device with the second
+<a href="synchronization.html#synchronization-dependencies-scopes" class="xref page">synchronization scope</a> including
+<code>VK_PIPELINE_STAGE_HOST_BIT</code> and <code>VK_ACCESS_HOST_READ_BIT</code>.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -7107,7 +7148,8 @@ VkResult vkCopyImageToImageEXT(
 <ul>
 <li>
 <p><code>device</code> is the device which owns
-<code>pCopyImageToMemoryInfo-&gt;srcImage</code>.</p>
+<code>pCopyImageToImageInfo-&gt;srcImage</code> and
+<code>pCopyImageToImageInfo-&gt;dstImage</code>.</p>
 </li>
 <li>
 <p><code>pCopyImageToImageInfo</code> is a pointer to a
@@ -7118,7 +7160,36 @@ parameters.</p>
 </div>
 <div class="paragraph">
 <p>This command is functionally similar to <a href="#vkCmdCopyImage2">vkCmdCopyImage2</a>, except it is
-executed on the host.</p>
+executed on the host.
+The memory of <code>pCopyImageToImageInfo-&gt;srcImage</code> and
+<code>pCopyImageToImageInfo-&gt;dstImage</code> is accessed by the host as if
+<a href="memory.html#memory-coherent" class="xref page">coherent</a>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>If the device has written to the memory of
+<code>pCopyImageToImageInfo-&gt;srcImage</code>, it is not automatically made
+available to the host.
+Before this copy command can be called, a memory barrier for this image
+<strong>must</strong> have been issued on the device with the second
+<a href="synchronization.html#synchronization-dependencies-scopes" class="xref page">synchronization scope</a> including
+<code>VK_PIPELINE_STAGE_HOST_BIT</code> and <code>VK_ACCESS_HOST_READ_BIT</code>.</p>
+</div>
+<div class="paragraph">
+<p>Because queue submissions <a href="synchronization.html#synchronization-submission-host-writes" class="xref page">automatically make host memory visible to the device</a>, there would not be a
+need for a memory barrier before using the results of this copy operation in
+<code>pCopyMemoryToImageInfo-&gt;dstImage</code> on the device.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="sidebarblock">
 <div class="content">
