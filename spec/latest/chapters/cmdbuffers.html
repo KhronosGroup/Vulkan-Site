@@ -3997,7 +3997,8 @@ If <code>deviceMask</code> is not <code>0</code>, it <strong>must</strong> be a 
 <p><a id="VUID-VkCommandBufferSubmitInfo-commandBuffer-09445" href="#VUID-VkCommandBufferSubmitInfo-commandBuffer-09445"></a> <span class="vuid">VUID-VkCommandBufferSubmitInfo-commandBuffer-09445</span><br>
 
 If any render pass instance in <code>commandBuffer</code> was recorded with a
-<a href="renderpass.html#VkRenderPassStripeBeginInfoARM" class="xref page">VkRenderPassStripeBeginInfoARM</a> structure in its pNext chain, a
+<a href="renderpass.html#VkRenderPassStripeBeginInfoARM" class="xref page">VkRenderPassStripeBeginInfoARM</a> structure in its pNext chain and
+did not specify the <code>VK_RENDERING_RESUMING_BIT</code> flag, a
 <a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM</a> <strong>must</strong> be included in the
 <code>pNext</code> chain</p>
 </li>
@@ -4009,7 +4010,8 @@ If a <a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM<
 <a href="#VkRenderPassStripeSubmitInfoARM">VkRenderPassStripeSubmitInfoARM</a>::<code>stripeSemaphoreInfoCount</code>
 <strong>must</strong> be equal to the sum of the
 <a href="renderpass.html#VkRenderPassStripeBeginInfoARM" class="xref page">VkRenderPassStripeBeginInfoARM</a>::<code>stripeInfoCount</code> parameters
-provided to render pass instances recorded in <code>commandBuffer</code></p>
+provided to render pass instances recorded in <code>commandBuffer</code> that
+did not specify the <code>VK_RENDERING_RESUMING_BIT</code> flag</p>
 </li>
 </ul>
 </div>
@@ -4094,6 +4096,13 @@ In a render pass instance that has multiview enabled, the stripe includes
 all views in the view mask.
 In a render pass instance with <code>layerCount</code> greater than 1, the stripe
 includes all layers.</p>
+</div>
+<div class="paragraph">
+<p>Render pass instances that specify the <code>VK_RENDERING_RESUMING_BIT</code> will
+not have any elements of <code>pStripeSemaphoreInfos</code> mapped to them.
+Instead, for suspending and resuming render pass instances, this mapping is
+done for the first suspending render pass instance, and the per-stripe
+semaphores are only signaled for the last resuming render pass instance.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -5714,7 +5723,7 @@ instance, and any element of <code>pCommandBuffers</code> was recorded with
     instance, the <code>contents</code> parameter of the last call to
     <a href="renderpass.html#vkCmdNextSubpass" class="xref page">vkCmdNextSubpass</a> <strong>must</strong> have been set to
     <code>VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS</code>
-, or <code>VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_EXT</code></p>
+, or <code>VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06019" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06019"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06019</span><br>
