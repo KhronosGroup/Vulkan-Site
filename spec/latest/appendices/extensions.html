@@ -29607,7 +29607,7 @@ such as buffers and images?</p>
 to objects backed by VkDeviceMemory objects.</p>
 </div>
 <div class="paragraph">
-<p>3.) Should reallocation be identified explicitly, or as a unbind/bind pair?</p>
+<p>3.) Should reallocation be identified explicitly, or as an unbind/bind pair?</p>
 </div>
 <div class="paragraph">
 <p><strong>RESOLVED</strong>: Reallocation should be represented as an unbind/bind pair.</p>
@@ -30272,7 +30272,7 @@ like size and heap index reported?</p>
 This fits in well with the callback infrastructure added in this extension,
 and implementation touches the same code and has the same overheads as the
 rest of the extension.
-It could help debugging things like getting an
+It could help debugging things like getting a
 <code>VK_ERROR_OUT_OF_HOST_MEMORY</code> error when ending a command buffer.
 Right now the allocation failure could have happened anywhere during
 recording, and a callback would be really useful to understand where and
@@ -34729,7 +34729,7 @@ bound to a command buffer.</p>
 </dd>
 <dt class="hdlist1"><strong>Revision</strong></dt>
 <dd>
-<p>2</p>
+<p>3</p>
 </dd>
 <dt class="hdlist1"><strong>Ratification Status</strong></dt>
 <dd>
@@ -34763,7 +34763,7 @@ bound to a command buffer.</p>
 <dl>
 <dt class="hdlist1"><strong>Last Modified Date</strong></dt>
 <dd>
-<p>2018-12-19</p>
+<p>2024-03-26</p>
 </dd>
 <dt class="hdlist1"><strong>IP Status</strong></dt>
 <dd>
@@ -34776,6 +34776,12 @@ bound to a command buffer.</p>
 <li>
 <p>Courtney Goeltzenleuchter, Google</p>
 </li>
+<li>
+<p>Sebastian Wick, Red Hat Inc.</p>
+</li>
+<li>
+<p>Tobias Hector, AMD</p>
+</li>
 </ul>
 </div>
 </dd>
@@ -34787,28 +34793,33 @@ bound to a command buffer.</p>
 <div class="paragraph">
 <p>This extension defines two new structures and a function to assign SMPTE
 (the Society of Motion Picture and Television Engineers) 2086 metadata and
-CTA (Consumer Technology Association) 861.3 metadata to a swapchain.
-The metadata includes the color primaries, white point, and luminance range
-of the reference monitor, which all together define the color volume
-containing all the possible colors the reference monitor can produce.
-The reference monitor is the display where creative work is done and
-creative intent is established.
-To preserve such creative intent as much as possible and achieve consistent
-color reproduction on different viewing displays, it is useful for the
-display pipeline to know the color volume of the original reference monitor
-where content was created or tuned.
-This avoids performing unnecessary mapping of colors that are not
-displayable on the original reference monitor.
-The metadata also includes the <code>maxContentLightLevel</code> and
-<code>maxFrameAverageLightLevel</code> as defined by CTA 861.3.</p>
+CTA (Consumer Technology Association) 861.3 metadata to a swapchain.</p>
 </div>
 <div class="paragraph">
-<p>While the intended purpose of the metadata is to assist in the
-transformation between different color volumes of different displays and
-help achieve better color reproduction, it is not in the scope of this
-extension to define how exactly the metadata should be used in such a
-process.
-It is up to the implementation to determine how to make use of the metadata.</p>
+<p>SMPTE 2086 metadata defines the color volume of the display on which the
+content was optimized for viewing and includes the color primaries, white
+point, and luminance range.
+When such content is reproduced on another display, this metadata can be
+used by the presentation engine to improve processing of images.
+For instance, values in the image can first be clamped to the color volume
+described in the metadata, and then what remains can be remapped to the
+color volume of the presentation engine.</p>
+</div>
+<div class="paragraph">
+<p>CTA 861.3 metadata additionally includes the maximum intended luminance for
+the content and the maximum average light level across frames.</p>
+</div>
+<div class="paragraph">
+<p>This extension does not define exactly how this metadata is used, however,
+it simply provides a mechanism to provide it to the presentation engine.
+Presentation engines may process the image based on the metadata before
+displaying it, resulting in the image being modified outside of Vulkan.
+For example, the clamping of colors in the image to the color volume may
+change those values in the image itself.</p>
+</div>
+<div class="paragraph">
+<p>The metadata does not override or otherwise influence the color space and
+color encoding.</p>
 </div>
 </div>
 <div class="sect3">
@@ -34860,17 +34871,18 @@ It is up to the implementation to determine how to make use of the metadata.</p>
 <div class="sect3">
 <h4 id="_issues_57"><a class="anchor" href="#_issues_57"></a>Issues</h4>
 <div class="paragraph">
-<p>1) Do we need a query function?</p>
+<p>1) Do we need a query function for the currently specified metadata?</p>
 </div>
 <div class="paragraph">
-<p><strong>PROPOSED</strong>: No, Vulkan does not provide queries for state that the
-application can track on its own.</p>
+<p>No, Vulkan does not provide queries for state that the application can track
+on its own.</p>
 </div>
 <div class="paragraph">
-<p>2) Should we specify default if not specified by the application?</p>
+<p>2) Should we specify default metadata if not specified by the application?</p>
 </div>
 <div class="paragraph">
-<p><strong>PROPOSED</strong>: No, that leaves the default up to the display.</p>
+<p>No, the metadata is optional and the absence of the metadata is
+well-defined.</p>
 </div>
 </div>
 <div class="sect3">
@@ -34893,6 +34905,16 @@ application can track on its own.</p>
 <ul>
 <li>
 <p>Correct implicit validity for VkHdrMetadataEXT structure</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Revision 3, 2024-03-26 (Tobias Hector &amp; Sebastian Wick)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Clarifications and removal of erroneous "reference monitor" term</p>
 </li>
 </ul>
 </div>
@@ -47134,7 +47156,7 @@ easily switched between without requiring swapchain recreation.</p>
 </dd>
 <dt class="hdlist1"><strong>Revision</strong></dt>
 <dd>
-<p>4</p>
+<p>5</p>
 </dd>
 <dt class="hdlist1"><strong>Ratification Status</strong></dt>
 <dd>
@@ -47337,6 +47359,19 @@ described by separate extension.</p>
 </li>
 <li>
 <p>Clarify DCI-P3 and Display P3 usage.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Revision 5, 2024-03-16 (Zehui Lin)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Fix interchanged concepts of EOTF and OETF.</p>
+</li>
+<li>
+<p>Clarify that the presentation engine can accept the color spaces.</p>
 </li>
 </ul>
 </div>
@@ -56781,7 +56816,7 @@ interpreted by an external application or library.</p>
 </div>
 <div class="paragraph">
 <p>Performance analysis tools such as
-<a href="https://software.intel.com/content/www/us/en/develop/tools/graphics-performance-analyzers.html">Graphics
+<a href="https://www.intel.com/content/www/us/en/developer/tools/graphics-performance-analyzers/overview.html">Graphics
 Performance Analyzers</a> make use of this extension and the metrics-discovery
 library to present the data in a human readable way.</p>
 </div>
@@ -62799,7 +62834,7 @@ following table.</p>
 </div>
 <div class="paragraph">
 <p><strong>RESOLVED</strong>: This is described in <a href="../chapters/geometry.html#geometry-passthrough-interface" class="xref page">Passthrough Interface Matching</a>.
-In GL when using passthough geometry shaders in separable mode, all inputs
+In GL when using passthrough geometry shaders in separable mode, all inputs
 must also be explicitly assigned location layout qualifiers.
 In Vulkan all SPIR-V shader inputs (except built-ins) must also have
 location decorations specified.
@@ -73738,12 +73773,12 @@ significant.
 Performing the &#8220;sRGB degamma&#8221; prior to range expansion can introduce
 artifacts if the content uses <code>VK_SAMPLER_YCBCR_RANGE_ITU_NARROW</code>
 encoding.
-Nevertheless, using sRGB can make sense for certain use-cases where camera
+Nevertheless, using sRGB can make sense for certain use cases where camera
 YCbCr images are known to be encoded with sRGB (or a pure gamma 2.2)
 transfer function and are known to use full-range encoding.</p>
 </div>
 <div class="paragraph">
-<p>For those use-cases, this extension leverages the GPU ability to enable sRGB
+<p>For those use cases, this extension leverages the GPU ability to enable sRGB
 degamma at little cost, and can improve quality because texture filtering is
 able to occur in linear space.</p>
 </div>
