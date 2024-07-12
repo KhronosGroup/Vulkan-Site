@@ -37,17 +37,18 @@ DIRSWITHNODE = antora-ui-khronos docs-site Vulkan-Docs
 # There are no longer any modules
 init: subrepos
 	for repo in $(REPONAMES) ; do \
-	    (cd $$repo && git pull) ; \
+	    (echo Pulling repo $$repo: && cd $$repo && git pull) ; \
 	done
 	# Install various node modules
 	# Don't clean the cache (see 'npm cache clean' output for more)
 	# npm cache clean --force
 	for dir in $(DIRSWITHNODE) ; do \
-	    (cd $$dir && npm install) ; \
+	    (echo Installing node modules in $$dir: && cd $$dir && npm install) ; \
 	done
 
 subrepos: $(REPONAMES)
 	for repo in $(REPONAMES) ; do \
+	    echo Cloning $$repo && \
 	    test -d $$repo || git clone git@github.com:KhronosGroup/$$repo.git ; \
 	done
 
