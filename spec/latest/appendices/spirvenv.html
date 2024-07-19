@@ -215,9 +215,6 @@
     <a class="nav-link" href="../chapters/executiongraphs.html">Execution Graphs</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="../chapters/VK_NV_low_latency2/low_latency2.html">Low Latency 2</a>
-  </li>
-  <li class="nav-item" data-depth="1">
     <a class="nav-link" href="../chapters/extensions.html">Extending Vulkan</a>
   </li>
   <li class="nav-item" data-depth="1">
@@ -1789,7 +1786,7 @@ instructions</p>
 <p><a id="VUID-StandaloneSpirv-Offset-04865" href="#VUID-StandaloneSpirv-Offset-04865"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04865</span><br>
 
 Any image instruction which uses an <code>Offset</code>, <code>ConstOffset</code>, or
-<code>ConstOffsets</code> image operand, must only consume a &#8220;Sampled Image&#8221;
+<code>ConstOffsets</code> image operand, <strong>must</strong> only consume a &#8220;Sampled Image&#8221;
 operand whose type has its &#8220;Sampled&#8221; operand set to 1</p>
 </li>
 <li>
@@ -4264,17 +4261,22 @@ floating-point instructions:</p>
 <li>
 <p>Positive and negative infinities and positive and negative zeros are
 generated as dictated by <a href="../chapters/introduction.html#ieee-754" class="xref page">IEEE 754</a>, but subject to the
-precisions allowed in the following table.</p>
-</li>
-<li>
-<p>Dividing a non-zero by a zero results in the appropriately signed
-<a href="../chapters/introduction.html#ieee-754" class="xref page">IEEE 754</a> infinity.</p>
+precisions allowed in the <a href="#spirvenv-precision-core-table">table below</a>.</p>
 </li>
 <li>
 <p>Signaling <span class="eq">NaN</span>s are not required to be generated and exceptions
 are never raised.
 Signaling <span class="eq">NaN</span> <strong>may</strong> be converted to quiet <span class="eq">NaN</span>s values by
 any floating-point instruction.</p>
+</li>
+<li>
+<p>The set of operations <code>OpPhi</code>, <code>OpSelect</code>, <code>OpFunctionCall</code>,
+<code>OpReturnValue</code>, <code>OpVectorExtractDynamic</code>,
+<code>OpVectorInsertDynamic</code>, <code>OpVectorShuffle</code>,
+<code>OpCompositeConstruct</code>, <code>OpCompositeExtract</code>,
+<code>OpCompositeInsert</code>, <code>OpTranspose</code>, <code>OpCopyObject</code>,
+<code>OpCopyMemory</code>, <code>OpStore</code>, and <code>OpLoad</code> are referred to as
+<em>bit-preserving operations</em>.</p>
 </li>
 <li>
 <p>The floating-point environment used for an instruction can be determined
@@ -4306,13 +4308,9 @@ as follows:</p>
 of the operands or to the result type.</p>
 </li>
 <li>
-<p>The operation is not one of: <code>OpPhi</code>, <code>OpSelect</code>,
-<code>OpReturnValue</code>, <code>OpVectorExtractDynamic</code>,
-<code>OpVectorInsertDynamic</code>, <code>OpVectorShuffle</code>,
-<code>OpCompositeConstruct</code>, <code>OpCompositeExtract</code>,
-<code>OpCompositeInsert</code>, <code>OpCopyObject</code>, <code>OpTranspose</code>,
-<code>OpFConvert</code>, <code>OpFNegate</code>, <code>OpFAdd</code>, <code>OpFSub</code>,
-<code>OpFMul</code>, <code>OpStore</code>, <code>OpLoad</code>.</p>
+<p>The operation is not a bit-preserving operation and is not one of
+<code>OpFConvert</code>, <code>OpFNegate</code>, <code>OpFAdd</code>, <code>OpFSub</code>, or
+<code>OpFMul</code>.</p>
 </li>
 <li>
 <p>The operation is an <code>OpLoad</code> from the <code>Input</code> <code>Storage</code> <code>Class</code> in
@@ -4328,14 +4326,9 @@ the fragment shader stage.</p>
 </div>
 </li>
 <li>
-<p>The following instructions <strong>must</strong> not flush denormalized values:
-<code>OpConstant</code>, <code>OpConstantComposite</code>, <code>OpSpecConstant</code>,
-<code>OpSpecConstantComposite</code>, <code>OpLoad</code>, <code>OpStore</code>, <code>OpBitcast</code>,
-<code>OpPhi</code>, <code>OpSelect</code>, <code>OpFunctionCall</code>, <code>OpReturnValue</code>,
-<code>OpVectorExtractDynamic</code>, <code>OpVectorInsertDynamic</code>,
-<code>OpVectorShuffle</code>, <code>OpCompositeConstruct</code>,
-<code>OpCompositeExtract</code>, <code>OpCompositeInsert</code>, <code>OpCopyMemory</code>,
-<code>OpCopyObject</code>.</p>
+<p>All bit-preserving operations and the following instructions <strong>must</strong> not
+flush denormalized values: <code>OpConstant</code>, <code>OpConstantComposite</code>,
+<code>OpSpecConstant</code>, <code>OpSpecConstantComposite</code>, and <code>OpBitcast</code>.</p>
 </li>
 <li>
 <p>Denormalized values are supported.</p>
@@ -4374,28 +4367,25 @@ following extended instructions for GLSL: <code>Round</code>, <code>RoundEven</c
 <code>FClamp</code>, <code>FMix</code>, <code>Step</code>, <code>SmoothStep</code>, <code>Fma</code>,
 <code>UnpackHalf2x16</code>, <code>Length</code>, <code>Distance</code>, <code>Cross</code>,
 <code>Normalize</code>, <code>FaceForward</code>, <code>Reflect</code>, <code>Refract</code>,
-<code>NMin</code>, <code>NMax</code>, <code>NClamp</code>.
-Other SPIR-V instructions (except those excluded above) <strong>may</strong> also flush
-denormalized values.</p>
+<code>NMin</code>, <code>NMax</code>, and <code>NClamp</code>.</p>
 </li>
 <li>
 <p>The following core SPIR-V instructions <strong>must</strong> respect the
-<code>DenormPreserve</code> <code>Execution</code> <code>Mode</code>: <code>OpTranspose</code>,
-<code>OpSpecConstantOp</code>, <code>OpFConvert</code>, <code>OpFNegate</code>, <code>OpFAdd</code>,
-<code>OpFSub</code>, <code>OpFMul</code>, <code>OpVectorTimesScalar</code>,
-<code>OpMatrixTimesScalar</code>, <code>OpVectorTimesMatrix</code>,
-<code>OpMatrixTimesVector</code>, <code>OpMatrixTimesMatrix</code>,
-<code>OpOuterProduct</code>, <code>OpDot</code>, <code>OpFOrdEqual</code>, <code>OpFUnordEqual</code>,
-<code>OpFOrdNotEqual</code>, <code>OpFUnordNotEqual</code>, <code>OpFOrdLessThan</code>,
-<code>OpFUnordLessThan</code>, <code>OpFOrdGreaterThan</code>,
-<code>OpFUnordGreaterThan</code>, <code>OpFOrdLessThanEqual</code>,
-<code>OpFUnordLessThanEqual</code>, <code>OpFOrdGreaterThanEqual</code>,
-<code>OpFUnordGreaterThanEqual</code>; and the following extended instructions
-for GLSL: <code>FAbs</code>, <code>FSign</code>, <code>Radians</code>, <code>Degrees</code>, <code>FMin</code>,
-<code>FMax</code>, <code>FClamp</code>, <code>FMix</code>, <code>Fma</code>, <code>PackHalf2x16</code>,
-<code>PackDouble2x32</code>, <code>UnpackHalf2x16</code>, <code>UnpackDouble2x32</code>,
-<code>NMin</code>, <code>NMax</code>, <code>NClamp</code>.
-Other SPIR-V instructions <strong>may</strong> also preserve denorm values.</p>
+<code>DenormPreserve</code> <code>Execution</code> <code>Mode</code>: <code>OpSpecConstantOp</code>,
+<code>OpFConvert</code>, <code>OpFNegate</code>, <code>OpFAdd</code>, <code>OpFSub</code>, <code>OpFMul</code>,
+<code>OpVectorTimesScalar</code>, <code>OpMatrixTimesScalar</code>,
+<code>OpVectorTimesMatrix</code>, <code>OpMatrixTimesVector</code>,
+<code>OpMatrixTimesMatrix</code>, <code>OpOuterProduct</code>, <code>OpDot</code>,
+<code>OpFOrdEqual</code>, <code>OpFUnordEqual</code>, <code>OpFOrdNotEqual</code>,
+<code>OpFUnordNotEqual</code>, <code>OpFOrdLessThan</code>, <code>OpFUnordLessThan</code>,
+<code>OpFOrdGreaterThan</code>, <code>OpFUnordGreaterThan</code>,
+<code>OpFOrdLessThanEqual</code>, <code>OpFUnordLessThanEqual</code>,
+<code>OpFOrdGreaterThanEqual</code>, <code>OpFUnordGreaterThanEqual</code>; and the
+following extended instructions for GLSL: <code>FAbs</code>, <code>FSign</code>,
+<code>Radians</code>, <code>Degrees</code>, <code>FMin</code>, <code>FMax</code>, <code>FClamp</code>,
+<code>FMix</code>, <code>Fma</code>, <code>PackHalf2x16</code>, <code>PackDouble2x32</code>,
+<code>UnpackHalf2x16</code>, <code>UnpackDouble2x32</code>, <code>NMin</code>, <code>NMax</code>, and
+<code>NClamp</code>.</p>
 </li>
 </ul>
 </div>
@@ -4435,7 +4425,6 @@ This rearrangement <strong>can</strong> be prevented for particular operations b
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-<div class="title">Note</div>
 <div class="paragraph">
 <p>For example, in the absence of the <code>NoContraction</code> decoration
 implementations are allowed to implement <span class="eq">a + b - a</span> and \({a
@@ -4541,7 +4530,7 @@ then denormals <strong>must</strong> be preserved throughout the formula.</p>
 <p>For half- (16 bit) and single- (32 bit) precision instructions, precisions
 are <strong>required</strong> to be at least as follows:</p>
 </div>
-<table class="tableblock frame-all grid-all stretch">
+<table id="spirvenv-precision-core-table" class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 3. Precision of core SPIR-V Instructions</caption>
 <colgroup>
 <col style="width: 33.3333%;">
@@ -4596,8 +4585,8 @@ are <strong>required</strong> to be at least as follows:</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpFDiv</code>(x,y)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.5 ULP for <span class="eq">|y|</span> in the range [2<sup>-126</sup>, 2<sup>126</sup>].</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.5 ULP for <span class="eq">|y|</span> in the range [2<sup>-14</sup>, 2<sup>14</sup>].</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.5 ULP for <span class="eq">|y| = 0</span> or <span class="eq">|y|</span> in the range [2<sup>-126</sup>, 2<sup>126</sup>].</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.5 ULP for <span class="eq">|y| = 0</span> or <span class="eq">|y|</span> in the range [2<sup>-14</sup>, 2<sup>14</sup>].</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpFRem</code>(x,y)</p></td>
@@ -4624,7 +4613,6 @@ are <strong>required</strong> to be at least as follows:</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-<div class="title">Note</div>
 <div class="paragraph">
 <p>The <code>OpFRem</code> and <code>OpFMod</code> instructions use cheap approximations of
 remainder, and the error can be large due to the discontinuity in trunc()
@@ -4917,7 +4905,6 @@ negative the result is <strong>undefined</strong>.</p>
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-<div class="title">Note</div>
 <div class="paragraph">
 <p>While the <code>OpSRem</code> and <code>OpSMod</code> instructions are supported by the
 Vulkan environment, they require non-negative values and thus do not enable
@@ -4983,7 +4970,6 @@ The signedness <strong>must</strong> match the <a href="#spirvenv-image-signedne
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-<div class="title">Note</div>
 <div class="paragraph">
 <p>Formatted accesses are always converted from a shader readable type to the
 resource&#8217;s format or vice versa via <a href="../chapters/textures.html#textures-format-conversion" class="xref page">Format Conversion</a> for reads
