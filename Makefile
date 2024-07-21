@@ -83,6 +83,9 @@ prep-tutorial:
 	make -C Vulkan-Tutorial/antora setup_tutorial
 
 # Build Antora site
+# CI is needed as an environment variable which helps cause suppression
+# of the "Edit this Page" link otherwise generated.
+export CI = true
 build-site:
 	cd docs-site && npx antora antora-playbook.yml --stacktrace
 
