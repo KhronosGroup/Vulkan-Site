@@ -2728,6 +2728,47 @@ structures.</p>
 </li>
 </ul>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This structure is normally used to bind memory to fully-resident sparse
+images or for mip tail regions of partially resident images.
+However, it <strong>can</strong> also be used to bind memory for the entire binding range of
+partially resident images.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>pBinds</code>[i].flags of an element <em>i</em> of <code>pBinds</code> does not
+contain <code>VK_SPARSE_MEMORY_BIND_METADATA_BIT</code>, the <code>resourceOffset</code>
+is in the range <span class="eq">[0, <a href="resources.html#VkMemoryRequirements" class="xref page">VkMemoryRequirements</a>::<code>size</code>)</span>, This
+range includes data from all aspects of the image, including metadata.
+For most implementations this will probably mean that the
+<code>resourceOffset</code> is a simple device address offset within the resource.
+It is possible for an application to bind a range of memory that includes
+both resource data and metadata.
+However, the application would not know what part of the image the memory is
+used for, or if any range is being used for metadata.</p>
+</div>
+<div class="paragraph">
+<p>If the <code>pBinds</code>[i].flags of an element <em>i</em> of <code>pBinds</code> contains
+<code>VK_SPARSE_MEMORY_BIND_METADATA_BIT</code>, the binding range specified <strong>must</strong>
+be within the mip tail region of the metadata aspect.
+In this case the <code>resourceOffset</code> is not <strong>required</strong> to be a simple device
+address offset within the resource.
+However, it <em>is</em> defined to be within <span class="eq">[<code>imageMipTailOffset</code>,
+<code>imageMipTailOffset</code> +  <code>imageMipTailSize</code>)</span> for the metadata
+aspect.
+See <a href="#VkSparseMemoryBind">VkSparseMemoryBind</a> for the full constraints on binding region with
+this flag present.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -2767,47 +2808,6 @@ If the <code>flags</code> member of any element of <code>pBinds</code> contains
 </div>
 </div>
 </div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>This operation is normally used to bind memory to fully-resident sparse
-images or for mip tail regions of partially resident images.
-However, it <strong>can</strong> also be used to bind memory for the entire binding range of
-partially resident images.</p>
-</div>
-<div class="paragraph">
-<p>In case <code>flags</code> does not contain
-<code>VK_SPARSE_MEMORY_BIND_METADATA_BIT</code>, the <code>resourceOffset</code> is in the
-range <span class="eq">[0, <a href="resources.html#VkMemoryRequirements" class="xref page">VkMemoryRequirements</a>::<code>size</code>)</span>, This range includes
-data from all aspects of the image, including metadata.
-For most implementations this will probably mean that the
-<code>resourceOffset</code> is a simple device address offset within the resource.
-It is possible for an application to bind a range of memory that includes
-both resource data and metadata.
-However, the application would not know what part of the image the memory is
-used for, or if any range is being used for metadata.</p>
-</div>
-<div class="paragraph">
-<p>When <code>flags</code> contains <code>VK_SPARSE_MEMORY_BIND_METADATA_BIT</code>, the
-binding range specified <strong>must</strong> be within the mip tail region of the metadata
-aspect.
-In this case the <code>resourceOffset</code> is not <strong>required</strong> to be a simple device
-address offset within the resource.
-However, it <em>is</em> defined to be within <span class="eq">[<code>imageMipTailOffset</code>,
-<code>imageMipTailOffset</code> +  <code>imageMipTailSize</code>)</span> for the metadata
-aspect.
-See <a href="#VkSparseMemoryBind">VkSparseMemoryBind</a> for the full constraints on binding region with
-this flag present.</p>
-</div>
-</td>
-</tr>
-</table>
 </div>
 <div class="openblock">
 <div class="content">
