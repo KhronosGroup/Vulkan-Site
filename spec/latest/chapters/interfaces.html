@@ -2042,11 +2042,9 @@ decoration of <code>InputAttachmentIndex</code> <strong>must</strong> be declare
 or <code>OpTypeSampledImage</code>.</p>
 </div>
 <div class="paragraph">
-<p>Arrays of any of these types <strong>can</strong> be indexed with <em>constant integral
-expressions</em>.
-The following features <strong>must</strong> be enabled and capabilities <strong>must</strong> be declared
-in order to index such arrays with dynamically uniform or non-uniform
-indices:</p>
+<p>When accessing a resource through such a variable, the resource <strong>must</strong> be
+selected via compile time constant expressions unless features are enabled
+to allow dynamically uniform or non-uniform expressions, as described below:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -2197,24 +2195,26 @@ and <code>UniformTexelBufferArrayDynamicIndexing</code></p>
 </li>
 </ul>
 </div>
+<div class="exampleblock">
+<div class="title">Example 1. Note</div>
+<div class="content">
 <div class="paragraph">
-<p>If an instruction loads from or stores to a resource (including atomics and
-image instructions) and the resource descriptor being accessed is not
-dynamically uniform, then the corresponding non-uniform indexing feature
-<strong>must</strong> be enabled and the capability <strong>must</strong> be declared.
-If an instruction loads from or stores to a resource (including atomics and
-image instructions) and the resource descriptor being accessed is loaded
-from an array element with a non-constant index, then the corresponding
-dynamic
-or non-uniform
-indexing feature <strong>must</strong> be enabled and the capability <strong>must</strong> be declared.</p>
+<p>Implementations must take care when implementing this if subgroups are not
+necessarily a subset of the invocation group for their hardware (e.g. if
+multiple draw calls are packed together).
+If such an implementation needs uniformity across the subgroup for any
+resource access, the implementation is responsible for ensuring that indices
+that are only dynamically uniform across the invocation group still function
+as expected if they advertise the respective feature.</p>
+</div>
+</div>
 </div>
 <div class="paragraph">
-<p>If the combined image sampler enables sampler Y′C<sub>B</sub>C<sub>R</sub>
-conversion or samples a <a href="samplers.html#samplers-subsamplesampler" class="xref page">subsampled image</a>,
-it <strong>must</strong> be indexed only by constant integral expressions when aggregated
-into arrays in shader code, irrespective of the
-<code>shaderSampledImageArrayDynamicIndexing</code> feature.</p>
+<p>A combined image sampler in an array that
+enables sampler Y′C<sub>B</sub>C<sub>R</sub> conversion
+or
+samples a <a href="samplers.html#samplers-subsamplesampler" class="xref page">subsampled image</a>
+<strong>must</strong> only be indexed by constant integral expressions.</p>
 </div>
 <table id="interfaces-resources-correspondence" class="tableblock frame-all grid-all" style="width: 90%;">
 <caption class="title">Table 3. Shader Resource and Descriptor Type Correspondence</caption>
@@ -7963,7 +7963,8 @@ to write the <code>ViewportIndex</code>.</p>
 <p>If the last active
 <a href="pipelines.html#pipelines-graphics-subsets-pre-rasterization" class="xref page">pre-rasterization shader stage</a> shader entry point&#8217;s interface does not include a variable decorated
 with <code>ViewportIndex</code>
-, and if <a href="features.html#features-multiview-per-view-viewports" class="xref page">multiviewPerViewViewports</a> is not enabled,
+, and if <a href="features.html#features-multiviewPerViewViewports" class="xref page">multiviewPerViewViewports</a>
+is not enabled,
 then the first viewport is used.
 If a <a href="pipelines.html#pipelines-graphics-subsets-pre-rasterization" class="xref page">pre-rasterization shader stage</a> shader entry point&#8217;s interface includes a variable decorated with
 <code>ViewportIndex</code>, it <strong>must</strong> write the same value to <code>ViewportIndex</code> for
@@ -7975,7 +7976,8 @@ contains the viewport index of the primitive that the fragment invocation
 belongs to.</p>
 </div>
 <div class="paragraph">
-<p>If <a href="features.html#features-multiview-per-view-viewports" class="xref page"><code>multiviewPerViewViewports</code></a> is enabled, and if the last active
+<p>If <a href="features.html#features-multiviewPerViewViewports" class="xref page"><code>multiviewPerViewViewports</code></a>
+is enabled, and if the last active
 <a href="pipelines.html#pipelines-graphics-subsets-pre-rasterization" class="xref page">pre-rasterization shader stage</a> shader entry point&#8217;s interface does not include a variable decorated
 with <code>ViewportIndex</code>, then the value of <code>ViewIndex</code> is used as an
 index to select the viewport transform and scissor rectangle, and the value

@@ -634,6 +634,49 @@ The source for this sample can be found in the <a href="https://github.com/Khron
     instance_create_info.pNext = &amp;validation_features;</code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p><strong>UPDATE:</strong> This sample now leverages an alternative mechanism provided by the Vulkan Samples framework to simplify enablement of the <code>VK_LAYER_KHRONOS_validation</code> layer and the <code>VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT</code> feature:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">const std::vector&lt;const char *&gt; ShaderDebugPrintf::get_validation_layers()
+{
+	// Initialize validation layer override list to default (empty)
+	std::vector&lt;const char *&gt; validation_layers = ApiVulkanSample::get_validation_layers();
+
+	// Force activation of validation layer for access to debugPrintfEXT feature
+	validation_layers.push_back("VK_LAYER_KHRONOS_validation");
+
+	return validation_layers;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT</code> feature is enabled by the new <code>VK_EXT_layer_settings</code> extension which is supported by the Vulkan Samples framework and used during instance creation. If the layer settings extension is available at runtime, the Vulkan Samples framework will enable the requested <code>debugPrintfEXT</code> feature using the <code>VkLayerSettingEXT</code> structure shown below.  If <code>VK_EXT_layer_settings</code> is not available at runtime, the sample falls back to the custom <code>create_instance()</code> logic described above.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">ShaderDebugPrintf::ShaderDebugPrintf()
+{
+	...
+
+	// If layer settings available, use it to configure validation layer for debugPrintfEXT
+	add_instance_extension(VK_EXT_LAYER_SETTINGS_EXTENSION_NAME, /*optional*/ true);
+
+	VkLayerSettingEXT layerSetting;
+	layerSetting.pLayerName   = "VK_LAYER_KHRONOS_validation";
+	layerSetting.pSettingName = "enables";
+	layerSetting.type         = VK_LAYER_SETTING_TYPE_STRING_EXT;
+	layerSetting.valueCount   = 1;
+
+	// Make this static so layer setting reference remains valid after leaving constructor scope
+	static const char *layerEnables = "VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT";
+	layerSetting.pValues            = &amp;layerEnables;
+
+	add_layer_setting(layerSetting);
+}</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
