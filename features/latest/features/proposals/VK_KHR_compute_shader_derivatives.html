@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>VK_EXT_device_fault :: Vulkan Documentation Project</title>
+    <title>VK_KHR_compute_shader_derivatives :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.4">
     <link rel="stylesheet" href="../../../../_/css/site.css">
     <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
@@ -125,7 +125,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_descriptor_buffer.html">VK_EXT_descriptor_buffer</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_device_fault.html">VK_EXT_device_fault</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -227,7 +227,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_HUAWEI_invocation_mask.html">VK_HUAWEI_invocation_mask</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -398,7 +398,7 @@
   <ul>
     <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
     <li>Feature Descriptions</li>
-    <li><a href="VK_EXT_device_fault.html">VK_EXT_device_fault</a></li>
+    <li><a href="VK_KHR_compute_shader_derivatives.html">VK_KHR_compute_shader_derivatives</a></li>
   </ul>
 </nav>
 </div>
@@ -407,7 +407,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">VK_EXT_device_fault</h1>
+<h1 class="page">VK_KHR_compute_shader_derivatives</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -415,10 +415,10 @@
 <li><a href="#_solution_space">2. Solution Space</a></li>
 <li><a href="#_proposal">3. Proposal</a>
 <ul class="sectlevel2">
-<li><a href="#_api_features">3.1. API Features</a></li>
-<li><a href="#_querying_for_fault_information">3.2. Querying for Fault Information</a></li>
-<li><a href="#_interpreting_gpu_virtual_addresses">3.3. Interpreting GPU Virtual Addresses</a></li>
-<li><a href="#_vendor_binary_crash_dumps">3.4. Vendor Binary Crash Dumps</a></li>
+<li><a href="#_new_spir_v_execution_modes">3.1. New SPIR-V execution modes</a></li>
+<li><a href="#_features">3.2. Features</a></li>
+<li><a href="#_properties">3.3. Properties</a></li>
+<li><a href="#_glsl_mapping">3.4. GLSL mapping</a></li>
 </ul>
 </li>
 <li><a href="#_issues">4. Issues</a></li>
@@ -427,185 +427,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This document outlines functionality to allow applications to query for
-additional diagnostic information following device-loss.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Device-loss errors can be challenging to diagnose. They can be triggered by a
-number of issues, including invalid application behavior, driver bugs, and
-physical failure or removal of hardware. Whilst the Vulkan Validation layers are
-recommended as a first step in diagnosing the majority of API usage issues, they
-are unable to address all possible causes of device-loss.</p>
-</div>
-<div class="paragraph">
-<p>This proposal aims to provide application developers with additional information
-that may aid in diagnosing such errors.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Several options have been considered:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Provide foundational extensions to enable the development of crash postmortem
-tooling</p>
-</li>
-<li>
-<p>Develop extensions or tools that aim to attribute faults to individual Vulkan
-objects</p>
-</li>
-<li>
-<p>Rely on individual vendor tools and extensions</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>This proposal focuses on the first option. It represents a partial solution,
-with further extensions required in order to fully enable crash postmortem
-tooling.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_api_features"><a class="anchor" href="#_api_features"></a>3.1. API Features</h3>
-<div class="paragraph">
-<p>The following features are exposed by the <code>VK_EXT_device_fault</code> extension:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceFaultFeaturesEXT {
-    VkStructureType    sType;
-    void*              pNext;
-    VkBool32           deviceFault;
-    VkBool32           deviceFaultVendorBinary;
-} VkPhysicalDeviceFaultFeaturesEXT;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p><code>deviceFault</code> is the main feature enabling this extension’s functionality and
-must be supported if this extension is supported.</p>
-</div>
-<div class="paragraph">
-<p><code>deviceFaultVendorBinary</code> is an optional feature that enables support for
-vendor-specific binary crash dumps, which may be interpreted via external vendor
-tools.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_querying_for_fault_information"><a class="anchor" href="#_querying_for_fault_information"></a>3.2. Querying for Fault Information</h3>
-<div class="paragraph">
-<p>Following device-loss, applications may query for additional diagnostic
-information by calling <code>vkGetDeviceFaultInfoEXT</code>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkDeviceFaultCountsEXT {
-    VkStructureType    sType;
-    void*              pNext;
-    uint32_t           addressInfoCount;
-    uint32_t           vendorInfoCount;
-    VkDeviceSize       vendorBinarySize;
-} VkDeviceFaultCountsEXT;
-
-typedef struct VkDeviceFaultInfoEXT {
-    VkStructureType                 sType;
-    void*                           pNext;
-    char                            description[VK_MAX_DESCRIPTION_SIZE];
-    VkDeviceFaultAddressInfoEXT*    pAddressInfos;
-    VkDeviceFaultVendorInfoEXT*     pVendorInfos;
-    void*                           pVendorBinaryData;
-} VkDeviceFaultInfoEXT;
-
-VKAPI_ATTR VkResult VKAPI_CALL vkGetDeviceFaultInfoEXT(
-    VkDevice                                    device,
-    VkDeviceFaultCountsEXT*                     pFaultCounts,
-    VkDeviceFaultInfoEXT*                       pFaultInfo);</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The signature of <code>vkGetDeviceFaultInfoEXT</code> is intended to mirror the design of
-existing query functions, where the second parameter (<code>pFaultCounts</code>) indicates
-size of output arrays, or the number of results written. However, device fault
-information requires multiple output arrays. Therefore, a
-<code>VkDeviceFaultCountsEXT</code> structure is used to specify the sizes of multiple
-arrays at once.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Query number of available results
-VkDeviceFaultCountsEXT faultCounts{};
-faultCounts.sType = VK_STRUCTURE_TYPE_DEVICE_FAULT_COUNTS_EXT;
-
-vkGetDeviceFaultInfoEXT(device, &amp;faultCounts, NULL);
-
-// Allocate output arrays and query fault data
-VkDeviceFaultInfoEXT faultInfo{}
-info.sType             = VK_STRUCTURE_TYPE_DEVICE_FAULT_INFO_EXT;
-info.pAddressInfos = (VkDeviceFaultAddressInfoEXT*) malloc(sizeof(VkDeviceFaultAddressInfoEXT) *
-                                                           faultCounts.addressInfoCount);
-info.pVendorInfos  = (VkDeviceFaultVendorInfoEXT*)  malloc(sizeof(VkDeviceFaultVendorInfoEXT)  *
-                                                           faultCounts.vendorInfoCount);
-info.pVendorBinaryData = malloc(faultCounts.vendorBinarySize);
-
-vkGetDeviceFaultInfoEXT(device, &amp;faultCounts, &amp;faultInfo);</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_interpreting_gpu_virtual_addresses"><a class="anchor" href="#_interpreting_gpu_virtual_addresses"></a>3.3. Interpreting GPU Virtual Addresses</h3>
-<div class="paragraph">
-<p>Implementations may return information on both page faults generated by invalid
-memory accesses, and instruction pointers indicating the instructions executing
-at the time of the fault.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef enum VkDeviceFaultAddressTypeEXT {
-    VK_DEVICE_FAULT_ADDRESS_TYPE_NONE_EXT = 0,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_READ_INVALID_EXT = 1,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_WRITE_INVALID_EXT = 2,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_EXECUTE_INVALID_EXT = 3,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_UNKNOWN_EXT = 4,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_INVALID_EXT = 5,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_INSTRUCTION_POINTER_FAULT_EXT = 6,
-    VK_DEVICE_FAULT_ADDRESS_TYPE_MAX_ENUM_EXT = 0x7FFFFFFF
-} VkDeviceFaultAddressTypeEXT;
-
-typedef struct VkDeviceFaultAddressInfoEXT {
-    VkDeviceFaultAddressTypeEXT    addressType;
-    VkDeviceAddress                reportedAddress;
-    VkDeviceSize                   addressPrecision;
-} VkDeviceFaultAddressInfoEXT;</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Page addresses and instruction pointers are reported as GPU virtual addresses,
-and additional extensions or vendor tools may be required in order to correlate
-these extensions with individual Vulkan objects.</p>
-</div>
-<div class="paragraph">
-<p>Implementations may only be able to report these addresses with limited
-precision. The combination of <code>reportedAddress</code> and <code>addressPrecision</code>
-allow the possible range of addresses to be calculated, such that:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">lower_address = (pInfo-&gt;reportedAddress &amp; ~(pInfo-&gt;addressPrecision-1))
-upper_address = (pInfo-&gt;reportedAddress |  (pInfo-&gt;addressPrecision-1))</code></pre>
-</div>
+<p>This extension enables applications to use derivative operations from execution models with defined workgroups.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -614,41 +436,127 @@ upper_address = (pInfo-&gt;reportedAddress |  (pInfo-&gt;addressPrecision-1))</c
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-<div class="paragraph">
-<p>It is valid for the <code>reportedAddress</code> to contain a more precise address
-than indicated by <code>addressPrecision</code>.
-In this case, the value of <code>reportedAddress</code> should be
-treated as an additional hint as to the value of the address that triggered the
-page fault, or to the value of an instruction pointer.</p>
-</div>
+This extension is a promotion (with additions) of
+<a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_NV_compute_shader_derivatives.html">VK_NV_compute_shader_derivatives</a>.
+As that extension already shipped before proposal documents existed, this document has been written
+retroactively during promotion to KHR.
 </td>
 </tr>
 </table>
 </div>
+<div class="paragraph">
+<p>The changes relative to <code>VK_NV_compute_shader_derivatives</code> are the inclusion of optional
+mesh and tash shader support.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As some developers replace portions of the graphics pipeline by custom algorithms in compute, certain operations reserved for fragment shaders such as derivatives become a major hurdle to work around.  This manifests in particular when using Shader Model 6.6 where derivative and derivative-dependent texture sample operations are required to be supported, but have no equivalent in Vulkan other than a vendor specific extension.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Three options have been considered:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Take VK_NV_compute_shader_derivatives as-is.</p>
+</li>
+<li>
+<p>Take VK_NV_compute_shader_derivatives and add support for all execution models with defined workgroup size.</p>
+</li>
+<li>
+<p>Start afresh</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This proposal focuses on the second option.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_new_spir_v_execution_modes"><a class="anchor" href="#_new_spir_v_execution_modes"></a>3.1. New SPIR-V execution modes</h3>
+<div class="paragraph">
+<p>This extension adds Vulkan support for the {spirv}/KHR/SPV_KHR_compute_shader_derivatives.html[<code>SPV_KHR_compute_shader_derivatives</code>] SPIR-V extension.</p>
+</div>
+<div class="paragraph">
+<p>The SPIR-V extension provides two new execution modes, both of which allow execution models with defined workgroups to use built-ins that evaluate derivatives explicitly or implicitly. Derivatives will be computed via differencing over a 2x2 group of shader invocations.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The 'DerivativeGroupQuadsKHR' execution mode assembles shader invocations into 2x2 groups, where each group has x and y coordinates of the local invocation ID of the form (2m+{0,1}, 2n+{0,1}).</p>
+</li>
+<li>
+<p>The 'DerivativeGroupLinearKHR' execution mode assembles shader invocations into 2x2 groups, where each group has local invocation index values of the form 4m+{0,1,2,3}.</p>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_vendor_binary_crash_dumps"><a class="anchor" href="#_vendor_binary_crash_dumps"></a>3.4. Vendor Binary Crash Dumps</h3>
+<h3 id="_features"><a class="anchor" href="#_features"></a>3.2. Features</h3>
 <div class="paragraph">
-<p>Optionally, implementations may also support the generation of vendor-specific
-binary blobs containing additional diagnostic information. All vendor-specific
-binaries will begin with a common header. The contents of the remainder of the
-binary blob are vendor-specific, and will require vendor-specific documentation
-or tools to interpret.</p>
+<p>A new feature enables each of the SPIR-V execution modes introduced by this extension:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkDeviceFaultVendorBinaryHeaderVersionOneEXT {
-    uint32_t                                     headerSize;
-    VkDeviceFaultVendorBinaryHeaderVersionEXT    headerVersion;
-    uint32_t                                     vendorID;
-    uint32_t                                     deviceID;
-    uint32_t                                     driverVersion;
-    uint8_t                                      pipelineCacheUUID[VK_UUID_SIZE];
-    uint32_t                                     applicationNameOffset;
-    uint32_t                                     applicationVersion;
-    uint32_t                                     engineNameOffset;
-} VkDeviceFaultVendorBinaryHeaderVersionOneEXT;</code></pre>
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR {
+    VkStructureType                         sType;
+    void*                                   pNext;
+    VkBool32                                computeDerivativeGroupQuads;
+    VkBool32                                computeDerivativeGroupLinear;
+} VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR;</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>Each value maps to a SPIR-V execution mode:
+ - computeDerivativeGroupQuads enables the SPIR-V 'DerivativeGroupQuadsKHR' execution mode
+ - computeDerivativeGroupLinear enables the SPIR-V 'DerivativeGroupLinearKHR' execution mode</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_properties"><a class="anchor" href="#_properties"></a>3.3. Properties</h3>
+<div class="paragraph">
+<p>A new property is added which determines if the new execution modes can be used in mesh and task shaders:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           meshAndTaskShaderDerivatives;
+} VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If this property is 'VK_FALSE', the derivatives are only supported in compute shaders.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glsl_mapping"><a class="anchor" href="#_glsl_mapping"></a>3.4. GLSL mapping</h3>
+<div class="paragraph">
+<p>The following layout qualifiers from GLSL_KHR_compute_shader_derivatives map to these SPIR-V execution modes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>derivative_group_quadsKHR layout qualifier &#8594; DerivativeGroupQuadsKHR Execution Mode</p>
+</li>
+<li>
+<p>derivative_group_linearKHR layout qualifier &#8594; DerivativeGroupLinearKHR Execution Mode</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -657,63 +565,18 @@ or tools to interpret.</p>
 <h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>1) Should <code>vkGetDeviceFaultInfoEXT</code> return multiple faults?</p>
+<p>(1) Should we specify that the groups of four shader invocations used for
+    derivatives in a compute shader are the same groups of four invocations
+    that form a "quad" in shader subgroups?</p>
 </div>
 <div class="paragraph">
-<p><strong>RESOLVED</strong>: No. This extension only seeks to identify a single fault as a
-possible cause of device loss and not to maintain a log of multiple faults.
-We anticipate that in cases where a GPU does encounter multiple faults, there
-is a high probability that the faults would be duplicates, such as those caused
-by parallel execution of the same defective code.</p>
+<p><strong>RESOLVED</strong>: Yes.</p>
 </div>
 <div class="paragraph">
-<p>2) Can <code>vkGetDeviceFaultInfoEXT</code> be called prior to device loss?</p>
+<p>(2) Should we add support for derivatives in mesh and task shaders?</p>
 </div>
 <div class="paragraph">
-<p><strong>RESOLVED</strong>: No. <code>VK_KHR_fault_handling</code> in VulkanSC does support an equivalent
-to this, but <code>VK_KHR_fault_handling</code> aims to address a different use case, where
-a fault log is polled prior to device loss to enable remedial action to be taken.</p>
-</div>
-<div class="paragraph">
-<p>3) Do page faults need to report the actual address that was accessed, or
-should we allow reporting of the page address?</p>
-</div>
-<div class="paragraph">
-<p><strong>RESOLVED</strong>: Some IHVs hardware reports page faults at page alignment, or
-at some other hardware-unit dependent granularity, rather than the precise
-address that triggered the fault. All addresses are reported at hardware-unit
-dependent granularity, along with an associated precision indicator. This information
-can be used to compute an address range that contains the original address that
-triggered the fault.</p>
-</div>
-<div class="paragraph">
-<p>4) How should we report cases where one of multiple pipelines may have caused a
-fault?</p>
-</div>
-<div class="paragraph">
-<p><strong>RESOLVED</strong>: In cases where a fault cannot be attributed to a single unique
-pipeline, reporting the set of possible candidates is desirable.</p>
-</div>
-<div class="paragraph">
-<p>5) The page fault and instruction address information structures have similar
-structure. Should they be combined?</p>
-</div>
-<div class="paragraph">
-<p><strong>RESOLVED</strong>: Yes. These have been combined as <code>VkDeviceFaultAddressInfoEXT</code>
-to reduce API surface area.</p>
-</div>
-<div class="paragraph">
-<p>6) How should implementors approach extensibility for vendor-specific faults?
-Should they rely on <code>pNext</code> chains, or should the extension introduce a
-generic structure to return vendor error codes and human-readable descriptions
-in the base structure?</p>
-</div>
-<div class="paragraph">
-<p><strong>RESOLVED</strong>: Implementors should utilize the generic
-<code>VkDeviceFaultVendorInfoEXT</code> structures where applicable, and fallback to
-extending <code>pNext</code> chains where this is insufficient. Where a <code>pNext</code>
-chain is required, vendors should tailor their human-readable error
-descriptions to advise developers that additional information may be available.</p>
+<p><strong>RESOLVED</strong>: Yes, as optional features. Add them as an optional feature as they are in SM6.6.</p>
 </div>
 </div>
 </div>
