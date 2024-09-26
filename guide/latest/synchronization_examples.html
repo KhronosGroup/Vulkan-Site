@@ -1996,10 +1996,15 @@ VkSubmitInfo2KHR renderingSubmitInfo = {
 
 vkQueueSubmit2KHR(renderQueue, &amp;renderingSubmitInfo, ...);
 
+VkSemaphoreSubmitInfoKHR prePresentWaitInfo = {
+    ...
+    .semaphore = renderingCompleteSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR};
+
 VkSemaphoreSubmitInfoKHR prePresentCompleteInfo = {
     ...
     .semaphore = prePresentCompleteSemaphore,
-    .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR};
+    .stageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT_KHR};
 
 VkCommandBufferSubmitInfoKHR prePresentCommandBufferInfo = {
     ...
@@ -2009,7 +2014,7 @@ VkCommandBufferSubmitInfoKHR prePresentCommandBufferInfo = {
 VkSubmitInfo2KHR prePresentSubmitInfo = {
     ...
     .waitSemaphoreInfoCount     = 1,
-    .pWaitSemaphoreInfos        = &amp;renderingCompleteInfo,
+    .pWaitSemaphoreInfos        = &amp;prePresentWaitInfo,
     .commandBufferInfoCount     = 1,
     .pCommandBufferInfos        = &amp;prePresentCommandBufferInfo,
     .signalSemaphoreInfoCount   = 1,

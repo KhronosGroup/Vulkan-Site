@@ -176,7 +176,7 @@
     <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="VK_NV_device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
@@ -4468,9 +4468,15 @@ sections.</p>
 <div class="paragraph">
 <p>If <a href="primsrast.html#VkPipelineRasterizationStateCreateInfo" class="xref page">VkPipelineRasterizationStateCreateInfo</a>::<code>depthClampEnable</code> is
 enabled, <span class="eq">z<sub>f</sub></span> is clamped to <span class="eq">[z<sub>min</sub>, z<sub>max</sub>]</span>, where <span class="eq">z<sub>min</sub>
-= min(n,f)</span>, <span class="eq">z<sub>max</sub> = max(n,f)]</span>, and <span class="eq">n</span> and <span class="eq">f</span> are the
+= min(n,f)</span>, <span class="eq">z<sub>max</sub> = max(n,f)</span>, and <span class="eq">n</span> and <span class="eq">f</span> are the
 <code>minDepth</code> and <code>maxDepth</code> depth range values of the viewport used by
-this fragment, respectively.</p>
+this fragment, respectively.
+If <a href="features.html#features-depthClampControl" class="xref page"><code>depthClampControl</code></a> is enabled and
+<a href="#VkPipelineViewportDepthClampControlCreateInfoEXT">VkPipelineViewportDepthClampControlCreateInfoEXT</a>::<code>depthClampMode</code>
+is set to <code>VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT</code> then <span class="eq">z<sub>min</sub></span>
+and <span class="eq">z<sub>max</sub></span> are equal to the <code>minDepthClamp</code> and
+<code>maxDepthClamp</code> values of the <a href="#VkDepthClampRangeEXT">VkDepthClampRangeEXT</a> structure
+pointed to by <code>pDepthClampRange</code>.</p>
 </div>
 <div class="paragraph">
 <p>If
@@ -4504,6 +4510,331 @@ in the range <span class="eq">[0, 1]</span>, then <span class="eq">z<sub>f</sub>
 step.</p>
 </li>
 </ul>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPipelineViewportDepthClampControlCreateInfoEXT</code> structure is
+defined as:</p>
+</div>
+<div id="VkPipelineViewportDepthClampControlCreateInfoEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_depth_clamp_control
+typedef struct VkPipelineViewportDepthClampControlCreateInfoEXT {
+    VkStructureType                sType;
+    const void*                    pNext;
+    VkDepthClampModeEXT            depthClampMode;
+    const VkDepthClampRangeEXT*    pDepthClampRange;
+} VkPipelineViewportDepthClampControlCreateInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>depthClampMode</code> determines how the clamp range is determined for
+each viewport.</p>
+</li>
+<li>
+<p><code>pDepthClampRange</code> sets the depth clamp range for all viewports if
+<code>depthClampMode</code> is set to
+<code>VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This structure extends <code>VkPipelineViewportStateCreateInfo</code> and specifies
+the depth clamp range used in the pipeline.
+If this structure is not provided in the next chain then
+<code>depthClampMode</code> defaults to
+<code>VK_DEPTH_CLAMP_MODE_VIEWPORT_RANGE_EXT</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-pDepthClampRange-09646" href="#VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-pDepthClampRange-09646"></a> <span class="vuid">VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-pDepthClampRange-09646</span><br>
+
+If <code>depthClampMode</code> is set to
+<code>VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT</code>, and the pipeline is
+not created with <code>VK_DYNAMIC_STATE_DEPTH_CLAMP_RANGE_EXT</code>, then
+<code>pDepthClampRange</code> must be a valid pointer to a valid
+<code>VkDepthClampRangeEXT</code> structure.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-sType-sType" href="#VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_DEPTH_CLAMP_CONTROL_CREATE_INFO_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-depthClampMode-parameter" href="#VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-depthClampMode-parameter"></a> <span class="vuid">VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-depthClampMode-parameter</span><br>
+ <code>depthClampMode</code> <strong>must</strong> be a valid <a href="#VkDepthClampModeEXT">VkDepthClampModeEXT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-pDepthClampRange-parameter" href="#VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-pDepthClampRange-parameter"></a> <span class="vuid">VUID-VkPipelineViewportDepthClampControlCreateInfoEXT-pDepthClampRange-parameter</span><br>
+ If <code>pDepthClampRange</code> is not <code>NULL</code>, <code>pDepthClampRange</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDepthClampRangeEXT">VkDepthClampRangeEXT</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values of
+<a href="#VkPipelineViewportDepthClampControlCreateInfoEXT">VkPipelineViewportDepthClampControlCreateInfoEXT</a>::<code>depthClampMode</code>,
+specifying which range should be used for depth clamping, are:</p>
+</div>
+<div id="VkDepthClampModeEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_depth_clamp_control
+typedef enum VkDepthClampModeEXT {
+    VK_DEPTH_CLAMP_MODE_VIEWPORT_RANGE_EXT = 0,
+    VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT = 1,
+} VkDepthClampModeEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DEPTH_CLAMP_MODE_VIEWPORT_RANGE_EXT</code> specifies that the depth
+clamp range follows the viewport depth range.
+The depth clamp range of each viewport will implicitly be set to
+<span class="eq">z<sub>min</sub> = min(n,f)</span> and <span class="eq">z<sub>max</sub> = max(n,f)</span>, where <span class="eq">n</span> and
+<span class="eq">f</span> are the <code>minDepth</code> and <code>maxDepth</code> depth range values of
+the viewport.</p>
+</li>
+<li>
+<p><code>VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT</code> specifies that a single
+user-defined depth clamp range will be used for all viewports.
+The user-defined depth clamp range is defined by the <code>minDepthClamp</code>
+and <code>maxDepthClamp</code> members of <a href="#VkDepthClampRangeEXT">VkDepthClampRangeEXT</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To <a href="pipelines.html#pipelines-dynamic-state" class="xref page">dynamically set</a> the viewport depth clamp
+range parameters, call:</p>
+</div>
+<div id="vkCmdSetDepthClampRangeEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_depth_clamp_control, VK_EXT_depth_clamp_control with VK_EXT_shader_object
+void vkCmdSetDepthClampRangeEXT(
+    VkCommandBuffer                             commandBuffer,
+    VkDepthClampModeEXT                         depthClampMode,
+    const VkDepthClampRangeEXT*                 pDepthClampRange);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>depthClampMode</code> determines how the clamp range is determined for
+each viewport.</p>
+</li>
+<li>
+<p><code>pDepthClampRange</code> sets the depth clamp range for all viewports if
+<code>depthClampMode</code> is set to
+<code>VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command sets the viewport depth clamp range for subsequent drawing
+commands
+when drawing using <a href="shaders.html#shaders-objects" class="xref page">shader objects</a>, or
+when the graphics pipeline is created with
+<code>VK_DYNAMIC_STATE_DEPTH_CLAMP_RANGE_EXT</code> set in
+<a href="pipelines.html#VkPipelineDynamicStateCreateInfo" class="xref page">VkPipelineDynamicStateCreateInfo</a>::<code>pDynamicStates</code>.
+Otherwise, this state is specified by the
+<a href="#VkPipelineViewportDepthClampControlCreateInfoEXT">VkPipelineViewportDepthClampControlCreateInfoEXT</a>::<code>depthClampMode</code>
+value used to create the currently active pipeline.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-pDepthClampRange-09647" href="#VUID-vkCmdSetDepthClampRangeEXT-pDepthClampRange-09647"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-pDepthClampRange-09647</span><br>
+
+If <code>depthClampMode</code> is set to
+<code>VK_DEPTH_CLAMP_MODE_USER_DEFINED_RANGE_EXT</code>, then
+<code>pDepthClampRange</code> must be a valid pointer to a valid
+<code>VkDepthClampRangeEXT</code> structure.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-parameter" href="#VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-depthClampMode-parameter" href="#VUID-vkCmdSetDepthClampRangeEXT-depthClampMode-parameter"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-depthClampMode-parameter</span><br>
+ <code>depthClampMode</code> <strong>must</strong> be a valid <a href="#VkDepthClampModeEXT">VkDepthClampModeEXT</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-pDepthClampRange-parameter" href="#VUID-vkCmdSetDepthClampRangeEXT-pDepthClampRange-parameter"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-pDepthClampRange-parameter</span><br>
+ If <code>pDepthClampRange</code> is not <code>NULL</code>, <code>pDepthClampRange</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkDepthClampRangeEXT">VkDepthClampRangeEXT</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-recording" href="#VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-cmdpool" href="#VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSetDepthClampRangeEXT-videocoding" href="#VUID-vkCmdSetDepthClampRangeEXT-videocoding"></a> <span class="vuid">VUID-vkCmdSetDepthClampRangeEXT-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Both <a href="#VkPipelineViewportDepthClampControlCreateInfoEXT">VkPipelineViewportDepthClampControlCreateInfoEXT</a> and
+<a href="#vkCmdSetDepthClampRangeEXT">vkCmdSetDepthClampRangeEXT</a> use <code>VkDepthClampRangeEXT</code> to set the
+viewport depth clamp range parameters.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDepthClampRangeEXT</code> structure is defined as:</p>
+</div>
+<div id="VkDepthClampRangeEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_depth_clamp_control
+typedef struct VkDepthClampRangeEXT {
+    float    minDepthClamp;
+    float    maxDepthClamp;
+} VkDepthClampRangeEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>minDepthClamp</code> sets <span class="eq">z<sub>min</sub></span> in the depth clamp range of the
+viewport.</p>
+</li>
+<li>
+<p><code>maxDepthClamp</code> sets <span class="eq">z<sub>max</sub></span> in the depth clamp range of the
+viewport.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDepthClampRangeEXT-pDepthClampRange-00999" href="#VUID-VkDepthClampRangeEXT-pDepthClampRange-00999"></a> <span class="vuid">VUID-VkDepthClampRangeEXT-pDepthClampRange-00999</span><br>
+
+<code>minDepthClamp</code> <strong>must</strong> be less than or equal to <code>maxDepthClamp</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDepthClampRangeEXT-pDepthClampRange-09648" href="#VUID-VkDepthClampRangeEXT-pDepthClampRange-09648"></a> <span class="vuid">VUID-VkDepthClampRangeEXT-pDepthClampRange-09648</span><br>
+
+If the <code><a href="../appendices/extensions.html#VK_EXT_depth_range_unrestricted" class="xref page">VK_EXT_depth_range_unrestricted</a></code> extension is not
+enabled,
+<code>minDepthClamp</code> <strong>must</strong> be greater than or equal to <code>0.0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDepthClampRangeEXT-pDepthClampRange-09649" href="#VUID-VkDepthClampRangeEXT-pDepthClampRange-09649"></a> <span class="vuid">VUID-VkDepthClampRangeEXT-pDepthClampRange-09649</span><br>
+
+If the <code><a href="../appendices/extensions.html#VK_EXT_depth_range_unrestricted" class="xref page">VK_EXT_depth_range_unrestricted</a></code> extension is not
+enabled,
+<code>maxDepthClamp</code> <strong>must</strong> be less than or equal to <code>1.0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">

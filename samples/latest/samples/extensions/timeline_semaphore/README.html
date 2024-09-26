@@ -261,6 +261,9 @@
     <a class="nav-link" href="../dynamic_rendering/README.html">Dynamic rendering</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../extended_dynamic_state2/README.html">Extended dynamic state2</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -280,6 +283,9 @@
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../host_image_copy/README.html">Host image copy</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../logic_op_dynamic_state/README.html">Logic op dynamic state</a>
@@ -778,87 +784,74 @@ This sample could trivially be done with binary semaphores of course, so in this
 <div class="sect2">
 <h3 id="_async_worker_thread_out_of_order_submission"><a class="anchor" href="#_async_worker_thread_out_of_order_submission"></a>Async worker thread - out-of-order submission</h3>
 <div class="paragraph">
-<p>The key aspect we use to demonstrate out of order submission is a dedicated worker thread which does all work related to simulation on the async compute queue.
-It never synchronizes with the main thread except at teardown, so the only way it synchronizes is through timeline semaphores.
-Submission order is completely out-of-order in this case and forward progress in the async queue is generally blocked by the main thread submitting more work.</p>
+<p>The key aspects we use to demonstrate out of order submission are dedicated workers thread which perform all work related to simulation on the async compute queue, and drawing on the graphics queue.
+They never synchronize with the main thread except at teardown, so the only way to synchronize them is through timeline semaphores.
+To avoid issues when running the sample on Windows platforms (particularly when resizing the window), forward progress in the queues is throttled by the main thread (i.e. only allowing the timeline to advance
+when a render call is active).</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_data_flow"><a class="anchor" href="#_data_flow"></a>Data flow</h3>
 <div class="paragraph">
 <p>To simulate "Game of Life", we allocate two images of 64x64 RGBA8.
-First, one image is initialized with initial state, and from here there is a ping-pong where image N is updated, while reading from image 1 - N.</p>
+First, one image is initialized with initial state, and from here there is a ping-pong where image N is updated, while reading from image 1 - N.
+After updating image N, the main thread will sample from image N.</p>
 </div>
 <div class="paragraph">
-<p>After updating image N, the main thread will sample from image N.
-Before async compute updates the same image index N again, it must wait for graphics queue to complete.
-With the double buffer in play, the async queue can run ahead for a little while and it will be mostly stalled by graphics queue.</p>
-</div>
-<div class="paragraph">
-<p>The sequential flow of the rendering is something like, assuming two timeline semaphores A and G:</p>
+<p>The sequential flow of the rendering is something like:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Async compute write image 1.</p>
+<p>Compute: wait for "submit"</p>
 </li>
 <li>
-<p>Async compute signal A = 1.</p>
+<p>Graphics: wait for "submit"</p>
 </li>
 <li>
-<p>Graphics wait A = 1.</p>
+<p>Main: acquires the swapchain image</p>
 </li>
 <li>
-<p>Graphics read image 1.</p>
+<p>Main: signal "submit"</p>
 </li>
 <li>
-<p>Graphics signal G = 1.</p>
+<p>Main: wait for "present"</p>
 </li>
 <li>
-<p>Async compute wait A = 1.
-(Could use pipeline barrier of course, but hey!)</p>
+<p>Compute: wait for "image_acquired" (binary semaphore)</p>
 </li>
 <li>
-<p>Async compute write image 0.</p>
+<p>Graphics: wait for "draw"</p>
 </li>
 <li>
-<p>Async compute signal A = 2.</p>
+<p>Compute: write image</p>
 </li>
 <li>
-<p>Graphics wait A = 2.</p>
+<p>Compute: signal "draw"</p>
 </li>
 <li>
-<p>Graphics read image 0.</p>
+<p>Compute: wait for "end of frame"</p>
 </li>
 <li>
-<p>Graphics signal G = 2.</p>
+<p>Graphics: read image</p>
 </li>
 <li>
-<p>Async compute wait G = 1.
-(Resolve write-after-read hazard)</p>
+<p>Graphics: signal "present"</p>
 </li>
 <li>
-<p>Async compute wait A = 2.
-(Could use pipeline barrier of course, but hey!)</p>
+<p>Graphics: wait for "end of frame"</p>
 </li>
 <li>
-<p>Async compute wait host A = 1.
-(Wait for command buffer to retire so we can re-record it!)</p>
+<p>Main: present swapchain</p>
 </li>
 <li>
-<p>Async compute write image 1.</p>
+<p>Main: signals "end of frame"</p>
 </li>
 <li>
-<p>Async compute signal A = 3.</p>
+<p>Compute: wait for "submit"</p>
 </li>
 <li>
-<p>Graphics wait A = 3.</p>
-</li>
-<li>
-<p>Graphics read image 1.</p>
-</li>
-<li>
-<p>Graphics signal G = 3.</p>
+<p>Graphics: wait for "submit"</p>
 </li>
 </ul>
 </div>
@@ -869,63 +862,55 @@ With out of order signal, we can end up observing this order of submissions inst
 <div class="ulist">
 <ul>
 <li>
-<p>Async compute write image 1.</p>
+<p>Compute: wait for "submit"</p>
 </li>
 <li>
-<p>Async compute signal A = 1.</p>
+<p>Graphics: wait for "submit"</p>
 </li>
 <li>
-<p>Async compute wait A = 1.</p>
+<p>Main: acquires the swapchain image</p>
 </li>
 <li>
-<p>Async compute write image 0.</p>
+<p>Main: signal "submit"</p>
 </li>
 <li>
-<p>Async compute signal A = 2.</p>
+<p>Graphics: wait for "draw"</p>
 </li>
 <li>
-<p>Async compute wait G = 1.
-(Out of order submission, queue progress is stalled, but we can keep recording)</p>
+<p>Compute: wait for "image_acquired" (binary semaphore)</p>
 </li>
 <li>
-<p>Async compute wait A = 2.</p>
+<p>Compute: write image</p>
 </li>
 <li>
-<p>Async compute wait host A = 1.</p>
+<p>Compute: signal "draw"</p>
 </li>
 <li>
-<p>Async compute write image 1.</p>
+<p>Graphics: read image</p>
 </li>
 <li>
-<p>Async compute signal A = 3.</p>
+<p>Graphics: signal "present"</p>
 </li>
 <li>
-<p>Graphics wait A = 1.</p>
+<p>Main: wait for "present"</p>
 </li>
 <li>
-<p>Graphics read image 1.</p>
+<p>Main: present swapchain</p>
 </li>
 <li>
-<p>Graphics signal G = 1.
-(Unblocks queue forward progress)</p>
+<p>Compute: wait for "end of frame"</p>
 </li>
 <li>
-<p>Graphics wait A = 2.</p>
+<p>Main: signals "end of frame"</p>
 </li>
 <li>
-<p>Graphics read image 0.</p>
+<p>Graphics: wait for "end of frame"</p>
 </li>
 <li>
-<p>Graphics signal G = 2.</p>
+<p>Compute: wait for "submit"</p>
 </li>
 <li>
-<p>Graphics wait A = 3.</p>
-</li>
-<li>
-<p>Graphics read image 1.</p>
-</li>
-<li>
-<p>Graphics signal G = 3.</p>
+<p>Graphics: wait for "submit"</p>
 </li>
 </ul>
 </div>
@@ -952,37 +937,45 @@ While calling <code>vkDeviceWaitIdle</code>, you cannot call <code>vkQueueSubmit
 To alleviate this, we can make use of host signalling of timeline semaphores to unblock everything in one fell swoop.</p>
 </div>
 <div class="paragraph">
-<p>From <code>TimelineSemaphore::finish()</code>:</p>
+<p>From <code>TimelineSemaphore::finish_timeline_workers()</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Draining queues which submit out-of-order can be quite tricky, since QueueWaitIdle can deadlock for threads which want to run ahead.
-// If we call Submit waiting for a semaphore which is yet to be signalled,
-// QueueWaitIdle will not finish until a signal in another thread happens.
-// Here's an approach we can use to safely tear down the queue.
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">	graphics_worker.alive = false;
+	compute_worker.alive  = false;
 
-// Drain the main thread timeline.
-// The async queue might be stalled waiting on the main queue to finish rendering a future frame which it never completes,
-// but we might never hit that count, since we're tearing down the application now.
-wait_timeline_cpu(main_thread_timeline);
+	signal_timeline(Timeline::MAX_STAGES);
 
-// Now we're guaranteed that the graphics timeline is at N and the async compute queue is blocked at N + num_frames + 1, waiting for N + 1 to finish.
-// Since we're not reading any more in graphics queue, we can jump bump the timeline on CPU towards infinity.
-// On the next loop iteration, we will exit the rendering loop and QueueWaitIdle will not be blocked on async thread anymore.
-// Just bump the timeline by INT32_MAX which is min-spec for maxTimelineSemaphoreValueDifference.
-// This is a useful way to mark a timeline semaphore as "permanently" signalled.
-main_thread_timeline.timeline += std::numeric_limits&lt;int32_t&gt;::max();
+	if (graphics_worker.thread.joinable())
+	{
+		graphics_worker.thread.join();
+	}
 
-// Order matters here, this works kinda like a condition variable.
-// If the timeline update is observed, we should see that the worker is not alive anymore.
-async_compute_worker.alive = false;
-signal_timeline_cpu(main_thread_timeline, main_thread_timeline_lock);
+	if (compute_worker.thread.joinable())
+	{
+		compute_worker.thread.join();
+	}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>From <code>TimelineSemaphore::finish_timeline_workers()</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">	graphics_worker.alive = false;
+	compute_worker.alive  = false;
 
-// This will now complete in finite time.
-if (async_compute_worker.thread.joinable())
-{
-    async_compute_worker.thread.join();
-}</code></pre>
+	signal_timeline(Timeline::MAX_STAGES);
+
+	if (graphics_worker.thread.joinable())
+	{
+		graphics_worker.thread.join();
+	}
+
+	if (compute_worker.thread.joinable())
+	{
+		compute_worker.thread.join();
+	}</code></pre>
 </div>
 </div>
 </div>

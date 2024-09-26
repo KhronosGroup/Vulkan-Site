@@ -176,7 +176,7 @@
     <a class="nav-link" href="dispatch.html">Dispatching Commands</a>
   </li>
   <li class="nav-item" data-depth="1">
-    <a class="nav-link" href="VK_NV_device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
+    <a class="nav-link" href="device_generated_commands/generatedcommands.html">Device-Generated Commands</a>
   </li>
   <li class="nav-item" data-depth="1">
     <a class="nav-link" href="sparsemem.html">Sparse Resources</a>
@@ -919,6 +919,21 @@ If <code>flags</code> includes
 <strong>must</strong> be enabled</p>
 </li>
 <li>
+<p><a id="VUID-VkShaderCreateInfoEXT-flags-11005" href="#VUID-VkShaderCreateInfoEXT-flags-11005"></a> <span class="vuid">VUID-VkShaderCreateInfoEXT-flags-11005</span><br>
+
+If <code>flags</code> includes
+<code>VK_SHADER_CREATE_INDIRECT_BINDABLE_BIT_EXT</code>, then the
+<a href="features.html#features-deviceGeneratedCommandsEXT" class="xref page"><code>deviceGeneratedCommands</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkShaderCreateInfoEXT-flags-11006" href="#VUID-VkShaderCreateInfoEXT-flags-11006"></a> <span class="vuid">VUID-VkShaderCreateInfoEXT-flags-11006</span><br>
+
+If <code>flags</code> includes
+<code>VK_SHADER_CREATE_INDIRECT_BINDABLE_BIT_EXT</code>, then the identified
+entry point <strong>must</strong> not specify <code>Xfb</code> execution mode</p>
+</li>
+<li>
 <p><a id="VUID-VkShaderCreateInfoEXT-flags-08992" href="#VUID-VkShaderCreateInfoEXT-flags-08992"></a> <span class="vuid">VUID-VkShaderCreateInfoEXT-flags-08992</span><br>
 
 If <code>flags</code> includes
@@ -1362,6 +1377,8 @@ typedef enum VkShaderCreateFlagBitsEXT {
     VK_SHADER_CREATE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_EXT = 0x00000020,
   // Provided by VK_EXT_fragment_density_map with VK_EXT_shader_object
     VK_SHADER_CREATE_FRAGMENT_DENSITY_MAP_ATTACHMENT_BIT_EXT = 0x00000040,
+  // Provided by VK_EXT_device_generated_commands
+    VK_SHADER_CREATE_INDIRECT_BINDABLE_BIT_EXT = 0x00000080,
 } VkShaderCreateFlagBitsEXT;</code></pre>
 </div>
 </div>
@@ -1405,6 +1422,10 @@ rate attachment.</p>
 <p><code>VK_SHADER_CREATE_FRAGMENT_DENSITY_MAP_ATTACHMENT_BIT_EXT</code> specifies
 that a fragment shader <strong>can</strong> be used with a fragment density map
 attachment.</p>
+</li>
+<li>
+<p><code>VK_SHADER_CREATE_INDIRECT_BINDABLE_BIT_EXT</code> specifies that the
+shader <strong>can</strong> be used in combination with <a href="device_generated_commands/generatedcommands.html#device-generated-commands" class="xref page">Device-Generated Commands</a>.</p>
 </li>
 </ul>
 </div>
@@ -2019,11 +2040,20 @@ drawing:</p>
 <p><a href="drawing.html#vkCmdSetPrimitiveTopology" class="xref page">vkCmdSetPrimitiveTopology</a></p>
 </li>
 <li>
+<p><a href="drawing.html#vkCmdSetPrimitiveRestartEnable" class="xref page">vkCmdSetPrimitiveRestartEnable</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If a shader is bound to the <code>VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT</code>
+stage, the following command <strong>must</strong> have been called in the command buffer
+prior to drawing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
 <p><a href="#vkCmdSetPatchControlPointsEXT">vkCmdSetPatchControlPointsEXT</a>, if <code>primitiveTopology</code> is
 <code>VK_PRIMITIVE_TOPOLOGY_PATCH_LIST</code></p>
-</li>
-<li>
-<p><a href="drawing.html#vkCmdSetPrimitiveRestartEnable" class="xref page">vkCmdSetPrimitiveRestartEnable</a></p>
 </li>
 </ul>
 </div>
@@ -2338,6 +2368,18 @@ prior to drawing:</p>
 <li>
 <p><a href="vertexpostproc.html#vkCmdSetViewportWScalingNV" class="xref page">vkCmdSetViewportWScalingNV</a>, if <code>viewportWScalingEnable</code> is
 <code>VK_TRUE</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <a href="features.html#features-depthClamp" class="xref page">depthClamp</a> and <a href="features.html#features-depthClampControl" class="xref page"><code>depthClampControl</code></a> feature are enabled on the device, and
+<code>depthClampEnable</code> is <code>VK_TRUE</code>, the following command <strong>must</strong> have
+been called in the command buffer prior to drawing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="fragops.html#vkCmdSetDepthClampRangeEXT" class="xref page">vkCmdSetDepthClampRangeEXT</a></p>
 </li>
 </ul>
 </div>
@@ -6325,7 +6367,7 @@ incompatible with the device, the initial bytes written to <code>pData</code> <s
 be a header consisting of the following members:</p>
 </div>
 <table class="tableblock frame-all grid-all" style="width: 85%;">
-<caption class="title">Table 1. Layout for validation cache header version <code>VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT</code></caption>
+<caption class="title">Table 1. Layout for Validation Cache Header Version <code>VK_VALIDATION_CACHE_HEADER_VERSION_ONE_EXT</code></caption>
 <colgroup>
 <col style="width: 8%;">
 <col style="width: 21%;">
