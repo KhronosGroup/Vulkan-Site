@@ -7473,9 +7473,10 @@ that all pixels in the presentable images have an alpha value of 1.0.</p>
 <p><code>supportedUsageFlags</code> is a bitmask of <a href="../resources.html#VkImageUsageFlagBits" class="xref page">VkImageUsageFlagBits</a>
 representing the ways the application <strong>can</strong> use the presentable images of
 a swapchain created
-with <a href="#VkPresentModeKHR">VkPresentModeKHR</a> set to <code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>,
-<code>VK_PRESENT_MODE_MAILBOX_KHR</code>, <code>VK_PRESENT_MODE_FIFO_KHR</code> or
-<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
+with <a href="#VkPresentModeKHR">VkPresentModeKHR</a> set to
+<code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>,
+<code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>, <code>VK_PRESENT_MODE_MAILBOX_KHR</code>,
+<code>VK_PRESENT_MODE_FIFO_KHR</code> or <code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
 for the surface on the specified device.
 <code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> <strong>must</strong> be included in the set.
 Implementations <strong>may</strong> support additional usages.</p>
@@ -8946,9 +8947,10 @@ that all pixels in the presentable images have an alpha value of 1.0.</p>
 <p><code>supportedUsageFlags</code> is a bitmask of <a href="../resources.html#VkImageUsageFlagBits" class="xref page">VkImageUsageFlagBits</a>
 representing the ways the application <strong>can</strong> use the presentable images of
 a swapchain created
-with <a href="#VkPresentModeKHR">VkPresentModeKHR</a> set to <code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>,
-<code>VK_PRESENT_MODE_MAILBOX_KHR</code>, <code>VK_PRESENT_MODE_FIFO_KHR</code> or
-<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
+with <a href="#VkPresentModeKHR">VkPresentModeKHR</a> set to
+<code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>,
+<code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>, <code>VK_PRESENT_MODE_MAILBOX_KHR</code>,
+<code>VK_PRESENT_MODE_FIFO_KHR</code> or <code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
 for the surface on the specified device.
 <code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code> <strong>must</strong> be included in the set.
 Implementations <strong>may</strong> support additional usages.</p>
@@ -10264,6 +10266,8 @@ typedef enum VkPresentModeKHR {
     VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR = 1000111000,
   // Provided by VK_KHR_shared_presentable_image
     VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR = 1000111001,
+  // Provided by VK_EXT_present_mode_fifo_latest_ready
+    VK_PRESENT_MODE_FIFO_LATEST_READY_EXT = 1000361000,
 } VkPresentModeKHR;</code></pre>
 </div>
 </div>
@@ -10315,6 +10319,24 @@ An internal queue is used to hold pending presentation requests.
 New requests are appended to the end of the queue, and one request is
 removed from the beginning of the queue and processed during or after
 each vertical blanking period in which the queue is non-empty.</p>
+</li>
+<li>
+<p><code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code> specifies that the
+presentation engine waits for the next vertical blanking period to
+update the current image.
+Tearing <strong>cannot</strong> be observed.
+An internal queue is used to hold pending presentation requests.
+New requests are appended to the end of the queue.
+At each vertical blanking period, the presentation engine dequeues all
+successive requests that are ready to be presented from the beginning of
+the queue.
+If using <code><a href="../../appendices/extensions.html#VK_GOOGLE_display_timing" class="xref page">VK_GOOGLE_display_timing</a></code> to provide a target present
+time, the presentation engine will check the specified time for each
+image.
+If the target present time is less-than or equal-to the current time,
+the presentation engine will dequeue the image and check the next one.
+The image of the last dequeued request will be presented.
+The other dequeued requests will be dropped.</p>
 </li>
 <li>
 <p><code>VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR</code> specifies that the
@@ -10376,6 +10398,10 @@ mode, and can be determined as per the table below:</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#VkSurfaceCapabilitiesKHR">VkSurfaceCapabilitiesKHR</a>::<code>supportedUsageFlags</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#VkSurfaceCapabilitiesKHR">VkSurfaceCapabilitiesKHR</a>::<code>supportedUsageFlags</code></p></td>
 </tr>
 <tr>
@@ -12702,10 +12728,6 @@ structure returned by <code>vkGetPhysicalDeviceSurfaceCapabilitiesKHR</code>
 for the surface if the returned <code>maxImageCount</code> is not zero</p>
 </li>
 <li>
-<p><a id="VUID-VkSwapchainCreateInfoKHR-presentMode-02839" href="#VUID-VkSwapchainCreateInfoKHR-presentMode-02839"></a> <span class="vuid">VUID-VkSwapchainCreateInfoKHR-presentMode-02839</span><br>
-</p>
-</li>
-<li>
 <p><a id="VUID-VkSwapchainCreateInfoKHR-swapchainMaintenance1-10155" href="#VUID-VkSwapchainCreateInfoKHR-swapchainMaintenance1-10155"></a> <span class="vuid">VUID-VkSwapchainCreateInfoKHR-swapchainMaintenance1-10155</span><br>
 
 If the <a href="../features.html#features-swapchainMaintenance1" class="xref page"><code>swapchainMaintenance1</code></a>
@@ -12791,8 +12813,10 @@ to the <code>maxImageArrayLayers</code> member of the
 <li>
 <p><a id="VUID-VkSwapchainCreateInfoKHR-presentMode-01427" href="#VUID-VkSwapchainCreateInfoKHR-presentMode-01427"></a> <span class="vuid">VUID-VkSwapchainCreateInfoKHR-presentMode-01427</span><br>
 
-If <code>presentMode</code> is <code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>,
-<code>VK_PRESENT_MODE_MAILBOX_KHR</code>, <code>VK_PRESENT_MODE_FIFO_KHR</code> or
+If <code>presentMode</code> is
+<code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>,
+<code>VK_PRESENT_MODE_IMMEDIATE_KHR</code>, <code>VK_PRESENT_MODE_MAILBOX_KHR</code>,
+<code>VK_PRESENT_MODE_FIFO_KHR</code> or
 <code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>, <code>imageUsage</code> <strong>must</strong> be a
 subset of the supported usage flags present in the
 <code>supportedUsageFlags</code> member of the <a href="#VkSurfaceCapabilitiesKHR">VkSurfaceCapabilitiesKHR</a>
@@ -12854,6 +12878,13 @@ for the surface</p>
 <code>presentMode</code> <strong>must</strong> be one of the <a href="#VkPresentModeKHR">VkPresentModeKHR</a> values
 returned by <code>vkGetPhysicalDeviceSurfacePresentModesKHR</code> for the
 surface</p>
+</li>
+<li>
+<p><a id="VUID-VkSwapchainCreateInfoKHR-presentModeFifoLatestReady-10161" href="#VUID-VkSwapchainCreateInfoKHR-presentModeFifoLatestReady-10161"></a> <span class="vuid">VUID-VkSwapchainCreateInfoKHR-presentModeFifoLatestReady-10161</span><br>
+
+If the <a href="../features.html#features-presentModeFifoLatestReady" class="xref page">    <code>presentModeFifoLatestReady</code></a> feature is not enabled,
+<code>presentMode</code> <strong>must</strong> not be
+<code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code></p>
 </li>
 <li>
 <p><a id="VUID-VkSwapchainCreateInfoKHR-physicalDeviceCount-01429" href="#VUID-VkSwapchainCreateInfoKHR-physicalDeviceCount-01429"></a> <span class="vuid">VUID-VkSwapchainCreateInfoKHR-physicalDeviceCount-01429</span><br>
@@ -13533,6 +13564,12 @@ structure.</p>
 Each entry in pPresentModes <strong>must</strong> be one of the <a href="#VkPresentModeKHR">VkPresentModeKHR</a>
 values returned by <code>vkGetPhysicalDeviceSurfacePresentModesKHR</code> for
 the surface</p>
+</li>
+<li>
+<p><a id="VUID-VkSwapchainPresentModesCreateInfoEXT-presentModeFifoLatestReady-10160" href="#VUID-VkSwapchainPresentModesCreateInfoEXT-presentModeFifoLatestReady-10160"></a> <span class="vuid">VUID-VkSwapchainPresentModesCreateInfoEXT-presentModeFifoLatestReady-10160</span><br>
+
+If the <a href="../features.html#features-presentModeFifoLatestReady" class="xref page">    <code>presentModeFifoLatestReady</code></a> feature is not enabled, pPresentModes
+<strong>must</strong> not contain <code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code></p>
 </li>
 <li>
 <p><a id="VUID-VkSwapchainPresentModesCreateInfoEXT-pPresentModes-07763" href="#VUID-VkSwapchainPresentModesCreateInfoEXT-pPresentModes-07763"></a> <span class="vuid">VUID-VkSwapchainPresentModesCreateInfoEXT-pPresentModes-07763</span><br>
@@ -16671,33 +16708,43 @@ subsequent images.</p>
 </li>
 <li>
 <p>Transition from <code>VK_PRESENT_MODE_IMMEDIATE_KHR</code> to
-<code>VK_PRESENT_MODE_FIFO_KHR</code> or
-<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>: As all prior present requests in
-the <code>VK_PRESENT_MODE_IMMEDIATE_KHR</code> mode are applied immediately,
-there are no outstanding present operations in this mode, and current
-and subsequent images are appended to the FIFO queue and presented
-according to the new mode.</p>
+<code>VK_PRESENT_MODE_FIFO_KHR</code> or <code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
+or <code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>
+: As all prior present requests in the
+<code>VK_PRESENT_MODE_IMMEDIATE_KHR</code> mode are applied immediately, there
+are no outstanding present operations in this mode, and current and
+subsequent images are appended to the FIFO queue and presented according
+to the new mode.</p>
 </li>
 <li>
 <p>Transition from <code>VK_PRESENT_MODE_MAILBOX_KHR</code> to
-<code>VK_PRESENT_MODE_FIFO_KHR</code> or
-<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>: Presentation in both modes
-require waiting for the next vertical blanking period, with
-<code>VK_PRESENT_MODE_MAILBOX_KHR</code> allowing the pending present operation
-to be replaced by a new one.
+<code>VK_PRESENT_MODE_FIFO_KHR</code> or <code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
+or <code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>
+: Presentation in FIFO modes require waiting for the next vertical
+blanking period, with <code>VK_PRESENT_MODE_MAILBOX_KHR</code> allowing the
+pending present operation to be replaced by a new one.
 In this case, the current present operation will replace the pending
 present operation and is applied according to the new mode.</p>
 </li>
 <li>
 <p>Transition from <code>VK_PRESENT_MODE_FIFO_KHR</code> or
-<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code> to
-<code>VK_PRESENT_MODE_IMMEDIATE_KHR</code> or
+<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>
+or <code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>
+to <code>VK_PRESENT_MODE_IMMEDIATE_KHR</code> or
 <code>VK_PRESENT_MODE_MAILBOX_KHR</code>: If the FIFO queue is empty,
 presentation is done according to the behavior of the new mode.
 If there are present operations in the FIFO queue, once the last present
 operation is performed based on the respective vertical blanking period,
 the current and subsequent updates are applied according to the new
 mode.</p>
+</li>
+<li>
+<p>Transition between <code>VK_PRESENT_MODE_FIFO_KHR</code> or
+<code>VK_PRESENT_MODE_FIFO_RELAXED_KHR</code>, and
+<code>VK_PRESENT_MODE_FIFO_LATEST_READY_EXT</code>: Images continue to be
+appended to the same FIFO queue, and the behavior with respect to
+waiting for vertical blanking period and dequeuing requests will follow
+the new mode for current and subsequent images.</p>
 </li>
 <li>
 <p>The behavior during transition between any other present modes, if
@@ -18785,12 +18832,6 @@ present barrier.</p>
   </div>
 </main>
 </div>
-<footer class="footer">
-    <!--
-  <p>This page was built using the Antora default UI.</p>
-  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
-    -->
-</footer>
 <script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
 <script async src="../../../../_/js/vendor/highlight.js"></script>
 <script src="../../../../_/js/vendor/lunr.js"></script>

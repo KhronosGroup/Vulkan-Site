@@ -554,6 +554,50 @@ in the destination, or vice versa.</p>
 </div>
 </div>
 <div class="sect2">
+<h3 id="acceleration-structure-degenerate-prims"><a class="anchor" href="#acceleration-structure-degenerate-prims"></a>Degenerate Primitives and Instances</h3>
+<div class="paragraph">
+<p><em>Degenerate</em> primitives and instances behave differently to
+<a href="#acceleration-structure-inactive-prims">inactive primitives and instances</a>,
+and are defined as:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>triangles that have one or more vertices whose respective (X), (Y), (Z)
+components are identical, or have three vertices that have at least two
+of the (X), (Y), or (Z) components identical, therefore forming a line
+or point.
+Degenerate triangles do not generate any intersections.</p>
+</li>
+<li>
+<p>AABBs whose <code>minX</code>=<code>maxX</code>, <code>minY</code>=<code>maxY</code>, and
+<code>minZ</code>=<code>maxZ</code>.
+Degenerate AABBs <strong>may</strong> invoke the intersection shader.</p>
+</li>
+<li>
+<p>instances that reference bottom level acceleration structures that
+contain no active primitives.
+When building an acceleration structure, implementations <strong>should</strong> treat
+degenerate instances as though they are a point at the instance origin,
+specified by <a href="#VkAccelerationStructureInstanceKHR">VkAccelerationStructureInstanceKHR</a>::<code>transform</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Unlike <em>inactive</em> primitives and instances, <em>degenerate</em> primitives and
+instances <strong>may</strong> transition from the degenerate to the non-degenerate state,
+or vice versa, when performing an acceleration structure update.</p>
+</div>
+<div class="paragraph">
+<p>If an acceleration structure is built without
+<code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_UPDATE_BIT_KHR</code> set in
+<a href="#VkAccelerationStructureBuildGeometryInfoKHR">VkAccelerationStructureBuildGeometryInfoKHR</a>::<code>flags</code>, degenerate
+primitives <strong>may</strong> be discarded.
+Primitives that are defined with the same index value for more than one
+vertex <strong>can</strong> always be discarded.</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="acceleration-structure-building"><a class="anchor" href="#acceleration-structure-building"></a>Building Acceleration Structures</h3>
 <div class="openblock">
 <div class="content">
@@ -7969,12 +8013,6 @@ allocated with multiple instances</p>
   </div>
 </main>
 </div>
-<footer class="footer">
-    <!--
-  <p>This page was built using the Antora default UI.</p>
-  <p>The source code for this UI is licensed under the terms of the MPL-2.0 license.</p>
-    -->
-</footer>
 <script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
 <script async src="../../../_/js/vendor/highlight.js"></script>
 <script src="../../../_/js/vendor/lunr.js"></script>
