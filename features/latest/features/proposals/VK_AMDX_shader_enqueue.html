@@ -48,9 +48,10 @@
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link" href="#">Education</a>
           <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
             <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
-            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
             <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
             <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
             <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
           </div>
@@ -430,9 +431,8 @@
 </li>
 <li><a href="#_issues">4. Issues</a>
 <ul class="sectlevel2">
-<li><a href="#_resolved_for_compute_nodes_can_the_input_payload_be_modified_if_so_what_sees_that_modification">4.1. RESOLVED: For compute nodes, can the input payload be modified? If so what sees that modification?</a></li>
-<li><a href="#_unresolved_do_we_need_input_from_the_application_to_tune_the_scratch_allocation">4.2. UNRESOLVED: Do we need input from the application to tune the scratch allocation?</a></li>
-<li><a href="#_proposed_how_does_this_extension_interact_with_device_groups">4.3. PROPOSED: How does this extension interact with device groups?</a></li>
+<li><a href="#_how_does_this_extension_interact_with_device_groups">4.1. How does this extension interact with device groups?</a></li>
+<li><a href="#_what_dynamic_state_should_be_allowed">4.2. What dynamic state should be allowed?</a></li>
 </ul>
 </li>
 </ul>
@@ -440,7 +440,7 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This extension adds the ability for developers to enqueue compute workgroups from a shader.</p>
+<p>This extension adds the ability for developers to enqueue mesh pipelines and compute shader workgroups from other compute shaders.</p>
 </div>
 </div>
 </div>
@@ -516,7 +516,7 @@ This proposal introduces a new <em>execution graph pipeline</em> that defines ex
     VkDevice                                        device,
     VkPipelineCache                                 pipelineCache,
     uint32_t                                        createInfoCount,
-    const VkExecutionGraphPipelineCreateInfoAMDX*    pCreateInfos,
+    const VkExecutionGraphPipelineCreateInfoAMDX*   pCreateInfos,
     const VkAllocationCallbacks*                    pAllocator,
     VkPipeline*                                     pPipelines);
 
@@ -535,11 +535,18 @@ typedef struct VkExecutionGraphPipelineCreateInfoAMDX {
 </div>
 <div class="paragraph">
 <p>Shaders defined by <code>pStages</code> and any pipelines in <code>pLibraryInfo&#8594;pLibraries</code> define the possible nodes of the graph.
-The linkage between nodes however is defined wholly in shader code.</p>
+The linkage between nodes however is defined wholly in shader code, though may be overridden by specialization constants in many cases.</p>
 </div>
 <div class="paragraph">
-<p>Shaders in <code>pStages</code> must be in the <code>GLCompute</code> execution model, and may have the <strong>CoalescingAMDX</strong> execution mode.
-Pipelines in <code>pLibraries</code> can be compute pipelines or other graph pipelines created with the <code>VK_PIPELINE_CREATE_LIBRARY_BIT_KHR</code> flag bit.</p>
+<p>Shaders in <code>pStages</code> must be in the <code>GLCompute</code> execution model, and may have the <strong>CoalescingAMDX</strong> execution mode.</p>
+</div>
+<div class="paragraph">
+<p>Pipelines in <code>pLibraries</code> can be compute pipelines, graphics pipelines, or other execution graph pipelines. Compute and graphics pipelines must be created with the <code>VK_PIPELINE_CREATE_2_LIBRARY_BIT_KHR</code> and <code>VK_PIPELINE_CREATE_2_EXECUTION_GRAPH_BIT_AMDX</code> flag bits. Execution graph pipelines used as libraries must be created with the <code>VK_PIPELINE_CREATE_2_LIBRARY_BIT_KHR</code> flag bit.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VK_PIPELINE_CREATE_2_EXECUTION_GRAPH_BIT_AMDX = 0x100000000ULL</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>Each shader in an execution graph is associated with a name and an index, which are used to identify the target shader when dispatching a payload.
@@ -578,6 +585,63 @@ Allowing the index to be set dynamically lets applications stream shaders in and
 Shaders with the same name and different indexes must consume identical payloads and have the same execution model.
 Shaders with the same name in an execution graph pipeline must have unique indexes.</p>
 </div>
+<div class="paragraph">
+<p>When dispatching from another shader, any declared input payload for the dispatched node must be less than or equal to the size of the output payload in the dispatching node.
+Additionally, if an input payload is declared in the dispatched shader, the input and output payloads must specify members with the same decorations at the same offsets.</p>
+</div>
+<div class="sect4">
+<h5 id="_graphics_pipeline_state"><a class="anchor" href="#_graphics_pipeline_state"></a>Graphics Pipeline State</h5>
+<div class="paragraph">
+<p>When adding a graphics pipeline to an execution graph pipeline, applications must specify a graphics pipeline with a complete set of state, and the <code>VK_PIPELINE_CREATE_2_LIBRARY_BIT_KHR</code> and <code>VK_PIPELINE_CREATE_2_EXECUTION_GRAPH_BIT_AMDX</code> flags set.
+Graphics pipelines must only include mesh shaders; vertex shader pipelines or mesh pipelines with task shaders are not supported.
+When creating such a graphics pipeline from libraries as an interaction with <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_graphics_pipeline_library.html">VK_EXT_graphics_pipeline_library</a>, those libraries must also have been created with those flags.</p>
+</div>
+<div class="paragraph">
+<p>For graphics pipelines defined in this way, only the following dynamic state is allowed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_DYNAMIC_STATE_VIEWPORT</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_SCISSOR</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_LINE_WIDTH</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_DEPTH_BIAS</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_BLEND_CONSTANTS</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_DEPTH_BOUNDS</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT</code></p>
+</li>
+<li>
+<p><code>VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When these dynamic states are specified, this state is captured from the command buffer state at the point the execution graph is dispatched, and applies to all nodes that have that state set dynamically executed as part of that dispatch.
+All graphics pipelines in an execution graph must use the same set of dynamic states.
+Applications can dynamically choose any other state at runtime by selecting between pipelines with different state when dispatching, but the underlying pipelines must be created statically.</p>
+</div>
+<div class="paragraph">
+<p>When included as a library in an execution graph pipeline, the node is defined by the first shader in the graphics pipeline.</p>
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_scratch_memory"><a class="anchor" href="#_scratch_memory"></a>3.1.2. Scratch Memory</h4>
@@ -589,18 +653,24 @@ Shaders with the same name in an execution graph pipeline must have unique index
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkExecutionGraphPipelineScratchSizeAMDX {
     VkStructureType                     sType;
     void*                               pNext;
-    VkDeviceSize                        size;
+    VkDeviceSize                        minSize;
+    VkDeviceSize                        maxSize;
+    VkDeviceSize                        sizeGranularity;
 } VkExecutionGraphPipelineScratchSizeAMDX;
 
 VkResult vkGetExecutionGraphPipelineScratchSizeAMDX(
-    VkDevice                                device,
-    VkPipeline                              executionGraph,
-    VkExecutionGraphPipelineScratchSizeAMDX* pSizeInfo);</code></pre>
+    VkDevice                                    device,
+    VkPipeline                                  executionGraph,
+    VkExecutionGraphPipelineScratchSizeAMDX*    pSizeInfo);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Applications can query the required amount of scratch memory required for a given pipeline, and the address of a buffer of that size must be provided when calling <code>vkCmdDispatchGraphAMDX</code>.
+<p>Applications can query the required amount of scratch memory for a given pipeline, and the address of a buffer of that size must be provided when calling <code>vkCmdDispatchGraphAMDX</code>.
 The amount of scratch memory needed by a given pipeline is related to the number and size of payloads across the whole graph; while the exact relationship is implementation dependent, reducing the number of unique nodes (different name string) and size of payloads can reduce scratch memory consumption.</p>
+</div>
+<div class="paragraph">
+<p>A range of sizes are returned by the implementation; any size between <code>minSize</code> and <code>maxSize</code> can be used, though the actual memory consumed will be snapped to <code>minSize</code> + an integer multiple of <code>sizeGranularity</code>.
+Choosing any value less than the maximum size will reduce memory pressure but will likely result in degraded performance.</p>
 </div>
 <div class="paragraph">
 <p>Buffers created for this purpose must use the new buffer usage flags:</p>
@@ -618,12 +688,14 @@ VK_BUFFER_USAGE_2_EXECUTION_GRAPH_SCRATCH_BIT_AMDX</code></pre>
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void vkCmdInitializeGraphScratchMemoryAMDX(
     VkCommandBuffer                             commandBuffer,
-    VkDeviceAddress                             scratch);</code></pre>
+    VkPipeline                                  executionGraph,
+    VkDeviceAddress                             scratch,
+    VkDeviceSize                                scratchSize);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This command initializes it for the currently bound execution graph pipeline.
-Scratch memory will need to be re-initialized if it is going to be reused with a different execution graph pipeline, but can be used with the same pipeline repeatedly without re-initialization.
+<p>This command initializes it for the execution graph pipeline <code>executionGraph</code> with the specified <code>scratchSize</code>.
+Scratch memory will need to be re-initialized if it is going to be re-used with a different execution graph pipeline, but can be used with the same pipeline repeatedly without re-initialization.
 Scratch memory initialization can be synchronized using the compute pipeline stage <code>VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</code> and shader write access flag <code>VK_ACCESS_SHADER_WRITE_BIT</code>.</p>
 </div>
 </div>
@@ -650,21 +722,24 @@ typedef struct VkDispatchGraphCountInfoAMDX {
 void vkCmdDispatchGraphAMDX(
     VkCommandBuffer                             commandBuffer,
     VkDeviceAddress                             scratch,
+    VkDeviceSize                                scratchSize,
     const VkDispatchGraphCountInfoAMDX*         pCountInfo);
 
 void vkCmdDispatchGraphIndirectAMDX(
     VkCommandBuffer                             commandBuffer,
     VkDeviceAddress                             scratch,
+    VkDeviceSize                                scratchSize,
     const VkDispatchGraphCountInfoAMDX*         pCountInfo);
 
 void vkCmdDispatchGraphIndirectCountAMDX(
     VkCommandBuffer                             commandBuffer,
     VkDeviceAddress                             scratch,
+    VkDeviceSize                                scratchSize,
     VkDeviceAddress                             countInfo);</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Each of the above commands enqueues an array of nodes in the bound execution graph pipeline with separate payloads, according to the contents of the <code>VkDispatchGraphCountInfoAMDX</code> and <code>VkDispatchGraphInfoAMDX</code> structures.</p>
+<p>Each of the above commands enqueues payloads for an array of nodes in the bound execution graph pipeline, according to the contents of the <code>VkDispatchGraphCountInfoAMDX</code> and <code>VkDispatchGraphInfoAMDX</code> structures.</p>
 </div>
 <div class="paragraph">
 <p><code>vkCmdDispatchGraphAMDX</code> takes all of its arguments from the host pointers.
@@ -681,22 +756,40 @@ with stride equal to <code>VkDispatchGraphCountInfoAMDX::stride</code> and <code
 <p>Data consumed via a device address must be from buffers created with the <code>VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT</code> and <code>VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT</code> flags.
 <code>payloads</code> is a pointer to a linear array of payloads in memory, with a stride equal to <code>payloadStride</code>.
 <code>payloadCount</code> may be <code>0</code>.
-<code>scratch</code> may be used by the implementation to hold temporary data during graph execution, and can be synchronized using the compute pipeline stage and shader write access flags.</p>
+The range of memory from <code>scratch</code> up to <code>scratchSize</code> may be used by the implementation to hold temporary data during graph execution, and can be synchronized using the compute pipeline stage and shader write access flags.</p>
 </div>
 <div class="paragraph">
 <p>These dispatch commands must not be called in protected command buffers or secondary command buffers.</p>
 </div>
 <div class="paragraph">
-<p>If a selected node does not include a <code>StaticNumWorkgroupsAMDX</code> or <code>CoalescingAMDX</code> declaration, the first part of each element of <code>payloads</code> must be a <code>VkDispatchIndirectCommand</code> structure, indicating the number of workgroups to dispatch in each dimension.
-If an input payload variable in <code>NodePayloadAMDX</code> storage class is defined in the shader, its structure type <strong>must</strong> include <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkDispatchIndirectCommand.html">VkDispatchIndirectCommand</a> in its first 12 bytes.</p>
+<p>The size of the payload provided for each dispatched node must be at least as large as the <strong>NodePayloadAMDX</strong> declaration in the node, and the layout of the payload data in memory will be interpreted as it is laid out in the selected node&#8217;s shader, including any member decorations.
+In particular, this means for nodes that consume indirect parameters from the payload, those parameters must be provided in the correct location as specified in the shader.
+For example, for a compute shader that does not include a <code>StaticNumWorkgroupsAMDX</code> or <code>CoalescingAMDX</code> declaration, each dispatch will consume a payload structure containing a member decorated with <strong>PayloadDispatchIndirectAMDX</strong> that indicates the number of workgroups to dispatch in each dimension.</p>
 </div>
 <div class="paragraph">
-<p>If that node does not include a <code>MaxNumWorkgroupsAMDX</code> declaration, it is assumed that the node may be dispatched with a grid size up to <code>VkPhysicalDeviceLimits::maxComputeWorkGroupCount</code>.</p>
+<p>Node payload members must be <em>explicitly laid out</em> with offset and array stride decorations, both in the input and output.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If the dispatched shader uses <code>GLCompute</code> or <code>MeshEXT</code> <code>Execution Model</code>, then it is allowed to not specify the input payload.
+In this case, the payload is defined implicitly as follows:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>If the <code>StaticNumWorkgroupsAMDX</code> or <code>CoalescingAMDX</code> execution modes are specified, the payload is empty.</p>
+</li>
+<li>
+<p>Otherwise, the payload is a structure with a single member that is a vector of three 32-bit unsigned integers.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>If that node does not include a <code>CoalescingAMDX</code> declaration, all data in the payload is broadcast to all workgroups dispatched in this way.
-If that node includes a <code>CoalescingAMDX</code> declaration, data in the payload will be consumed by exactly one workgroup.
-There is no guarantee of how payloads will be consumed by <code>CoalescingAMDX</code> nodes.</p>
+<p>Payloads are always read (including built-in values) according to the input payload definition - the output payload definition must have the same size as the expected input, but does not otherwise need to match.
+Applications must take care to ensure that values are where they expect them.</p>
 </div>
 <div class="paragraph">
 <p>The <code>nodeIndex</code> is a unique integer identifier identifying a specific shader name and shader index (defined by <code>VkPipelineShaderStageNodeCreateInfoAMDX</code>) added to the executable graph pipeline.
@@ -707,7 +800,7 @@ There is no guarantee of how payloads will be consumed by <code>CoalescingAMDX</
 <pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkResult vkGetExecutionGraphPipelineNodeIndexAMDX(
     VkDevice                                        device,
     VkPipeline                                      executionGraph,
-    const VkPipelineShaderStageNodeCreateInfoAMDX*   pNodeInfo,
+    const VkPipelineShaderStageNodeCreateInfoAMDX*  pNodeInfo,
     uint32_t*                                       pNodeIndex);</code></pre>
 </div>
 </div>
@@ -763,6 +856,8 @@ When used with this function, <code>pNodeInfo&#8594;pName</code> must not be <co
     uint32_t                            maxExecutionGraphShaderPayloadSize;
     uint32_t                            maxExecutionGraphShaderPayloadCount;
     uint32_t                            executionGraphDispatchAddressAlignment;
+    uint32_t                            maxExecutionGraphWorkgroupCount[3];
+    uint32_t                            maxExecutionGraphWorkgroups;
 } VkPhysicalDeviceShaderEnqueuePropertiesAMDX;</code></pre>
 </div>
 </div>
@@ -773,7 +868,7 @@ When used with this function, <code>pNodeInfo&#8594;pName</code> must not be <co
 <ul>
 <li>
 <p><code>maxExecutionGraphDepth</code> defines the maximum node chain length in the graph, and must be at least 32.
-The dispatched node is at depth 1 and the node enqueued by it is at depth 2, and so on.
+A node that is dispatched with an API command is at depth 1 and the node that receives a payload from it is at depth 2, and so on.
 If a node uses tail recursion, each recursive call increases the depth by 1 as well.</p>
 </li>
 <li>
@@ -788,13 +883,20 @@ If a node uses tail recursion, each recursive call increases the depth by 1 as w
 <li>
 <p><code>executionGraphDispatchAddressAlignment</code> specifies the alignment of non-scratch <code>VkDeviceAddress</code> arguments consumed by graph dispatch commands, and must be no more than 4 bytes.</p>
 </li>
+<li>
+<p><code>maxExecutionGraphWorkgroupCount[3]</code> describes the maximum number of local workgroups that a shader can be dispatched with,
+and must be at least (65535, 65535, 65535) for the X, Y, and Z dimensions, respectively.</p>
+</li>
+<li>
+<p><code>maxExecutionGraphWorkgroups</code> describes the total number of local workgroups that a shader can be dispatched with and must be at least 16777215.</p>
+</li>
 </ul>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_features"><a class="anchor" href="#_features"></a>3.1.5. Features</h4>
 <div class="paragraph">
-<p>The following new feature is added to Vulkan:</p>
+<p>The following new features are added to Vulkan:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -802,11 +904,13 @@ If a node uses tail recursion, each recursive call increases the depth by 1 as w
     VkStructureType                     sType;
     void*                               pNext;
     VkBool32                            shaderEnqueue;
+    VkBool32                            shaderMeshEnqueue;
 } VkPhysicalDeviceShaderEnqueueFeaturesAMDX;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The <code>shaderEnqueue</code> feature enables all functionality in this extension.</p>
+<p>The <code>shaderEnqueue</code> feature enables the ability to enqueue compute shader workgroups from other compute shaders.
+The <code>shaderMeshEnqueue</code> feature enables the ability to enqueue mesh nodes in an execution graph.</p>
 </div>
 </div>
 </div>
@@ -855,18 +959,12 @@ Uses shader enqueue capabilities</p></td>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5068</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>NodePayloadAMDX</strong><br>
-Input payload from a node dispatch.<br>
-In the <strong>GLCompute</strong> execution model with the <strong>CoalescingAMDX</strong> execution mode, it is visible across all functions in all invocations in a workgroup; otherwise it is visible across all functions in all invocations in a dispatch.<br>
-Variables declared with this storage class are read-write, and must not have initializers.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5076</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>NodeOutputPayloadAMDX</strong><br>
-Output payload to be used for dispatch.<br>
-Variables declared with this storage class are read-write, must not have initializers, and must be initialized with <strong>OpInitializeNodePayloadsAMDX</strong> before they are accessed.<br>
-Once initialized, a variable declared with this storage class is visible to all invocations in the declared <em>Scope</em>.<br>
-Valid in <strong>GLCompute</strong> execution models.</p></td>
+Storage for Node Payloads.<br>
+<br>
+Variables declared with <strong>OpVariable</strong> in the <strong>GLCompute</strong> execution model with the <strong>CoalescingAMDX</strong> execution mode are visible across all invocations within a workgroup; and other variables declared with <strong>OpVariable</strong> in this storage class are visible across all invocations within a node dispatch.
+Variables declared with this storage class are readable and writable, and must not have initializers.<br>
+<br>
+Pointers to this storage class are also used to point to payloads allocated and enqueued for other nodes.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 </tbody>
@@ -906,15 +1004,28 @@ Must not be declared alongside <strong>StaticNumWorkgroupsAMDX</strong> or <stro
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5071</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>MaxNodeRecursionAMDX</strong><br>
-Maximum number of times a node can enqueue itself.</p></td>
+Maximum number of times a node can enqueue payloads for itself.</p></td>
 <td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><em>&lt;id&gt;</em><br>
 <em>Number of recursions</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5070</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>IsApiEntryAMDX</strong><br>
+Indicates whether the shader can be dispatched directly by the client API or not. (GLCompute and MeshEXT execution models only)<br>
+<br>
+<em>Is Entry</em> is a scalar Boolean value, with a value of <strong>true</strong> indicating that it can be dispatched from the API, and <strong>false</strong> indicating that it cannot.
+If not specified, defaults to <strong>true</strong>.<br>
+<br>
+Must be set to <strong>false</strong> if <strong>SharesInputWithAMDX</strong> is specified.</p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Is Entry</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5072</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>StaticNumWorkgroupsAMDX</strong><br>
-Statically declare the number of workgroups dispatched for this shader, instead of obeying an API- or payload-specified value. Values are reflected in the NumWorkgroups built-in value. (GLCompute only)<br>
+Statically declare the number of workgroups dispatched for this shader, instead of obeying an API- or payload-specified value. (GLCompute and MeshEXT only)<br>
 <br>
 Must not be declared alongside <strong>CoalescingAMDX</strong> or <strong>MaxNumWorkgroupsAMDX</strong>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
@@ -928,7 +1039,7 @@ Must not be declared alongside <strong>CoalescingAMDX</strong> or <strong>MaxNum
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5077</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>MaxNumWorkgroupsAMDX</strong><br>
-Declare the maximum number of workgroups dispatched for this shader. Dispatches must not exceed this value (GLCompute only)<br>
+Declare the maximum number of workgroups dispatched for this shader. Dispatches must not exceed this value (GLCompute and MeshEXT only)<br>
 <br>
 Must not be declared alongside <strong>CoalescingAMDX</strong> or <strong>StaticNumWorkgroupsAMDX</strong>.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
@@ -942,9 +1053,23 @@ Must not be declared alongside <strong>CoalescingAMDX</strong> or <strong>Static
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5073</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderIndexAMDX</strong><br>
-Declare the node index for this shader. (GLCompute only)</p></td>
+Declare the node index for this shader. (GLCompute and MeshEXT only)</p></td>
 <td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><em>&lt;id&gt;</em><br>
 <em>Shader Index</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5102</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>SharesInputWithAMDX</strong><br>
+Declare that this shader is paired with another node, such that it will be dispatched with the same input payload when the identified node is dispatched.<br>
+<em>Node Name</em> and <em>Shader Index</em> indicate the node that the input will be shared with.<br>
+<br>
+<em>Node Name</em> must be an <strong>OpConstantStringAMDX</strong> or <strong>OpSpecConstantStringAMDX</strong> instruction.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;id&gt;<br>
+<em>Node Name</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Shader Index</em></p></td>
+<td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 </tbody>
@@ -955,7 +1080,7 @@ Declare the node index for this shader. (GLCompute only)</p></td>
 </div>
 <div class="paragraph">
 <p><code>MaxNodeRecursionAMDX</code> must be specified if a shader re-enqueues itself, which takes place if that shader
-initializes and finalizes a payload for the same node <em>name</em> and <em>index</em>. Other forms of recursion are not allowed.</p>
+allocates and enqueues a payload for the same node <em>name</em> and <em>index</em>. Other forms of recursion are not allowed.</p>
 </div>
 <div class="paragraph">
 <p>An application must not dispatch the shader with a number of workgroups in any dimension greater than the values specified by <code>MaxNumWorkgroupsAMDX</code>.</p>
@@ -964,13 +1089,16 @@ initializes and finalizes a payload for the same node <em>name</em> and <em>inde
 <p><code>StaticNumWorkgroupsAMDX</code> allows the declaration of the number of workgroups to dispatch to be coded into the shader itself, which can be useful for optimizing some algorithms. When a compute shader is dispatched using existing <code>vkCmdDispatchGraph*</code> commands, the workgroup counts specified there are overridden. When enqueuing such shaders with a payload, these arguments will not be consumed from the payload before application-specified data begins.</p>
 </div>
 <div class="paragraph">
-<p>The values of <code>MaxNumWorkgroupsAMDX</code> and <code>StaticNumWorkgroupsAMDX</code> must be less than or equal to <code><a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceLimits.html">VkPhysicalDeviceLimits</a>::maxComputeWorkGroupCount</code>.</p>
+<p>The values of <code>MaxNumWorkgroupsAMDX</code> and <code>StaticNumWorkgroupsAMDX</code> must be less than or equal to <code><a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceShaderEnqueuePropertiesAMDX.html">VkPhysicalDeviceShaderEnqueuePropertiesAMDX</a>::maxExecutionGraphWorkgroupCount</code>.</p>
+</div>
+<div class="paragraph">
+<p>The product of the X, Y, and Z values of <code>MaxNumWorkgroupsAMDX</code> and <code>StaticNumWorkgroupsAMDX</code> must be less than or equal to <code><a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceShaderEnqueuePropertiesAMDX.html">VkPhysicalDeviceShaderEnqueuePropertiesAMDX</a>::maxExecutionGraphWorkgroups</code>.</p>
 </div>
 <div class="paragraph">
 <p>The arguments to each of these execution modes must be a constant 32-bit integer value, and may be supplied via specialization constants.</p>
 </div>
 <div class="paragraph">
-<p>When a <strong>GLCompute</strong> shader is being used in an execution graph, <code>NumWorkgroups</code> must not be used.</p>
+<p>When a <strong>GLCompute</strong> or <strong>MeshEXT</strong> shader is being used in an execution graph, <code>NumWorkgroups</code> must not be used.</p>
 </div>
 <div class="paragraph">
 <p>When <strong>CoalescingAMDX</strong> is used, it has the following effects on a compute shader&#8217;s inputs and outputs:</p>
@@ -987,18 +1115,41 @@ initializes and finalizes a payload for the same node <em>name</em> and <em>inde
 <p>So similar to <code>StaticNumWorkgroupsAMDX</code>, no dispatch size is consumed from the payload-specified</p>
 </li>
 <li>
-<p>The input in the <code>NodePayloadAMDX</code> storage class must have a type of <strong>OpTypeArray</strong> or <strong>OpTypeRuntimeArray</strong>.</p>
+<p>The input in the <code>NodePayloadAMDX</code> storage class must have a type of <code>OpTypeNodePayloadArrayAMDX</code>.</p>
 </li>
 <li>
 <p>This input must be decorated with <code>NodeMaxPayloadsAMDX</code>, indicating the number of payloads that can be received.</p>
 </li>
 <li>
-<p>The number of payloads received is provided in the <code>CoalescedInputCountAMDX</code> built-in.</p>
-</li>
-<li>
-<p>If <strong>OpTypeArray</strong> is used, that input&#8217;s array length must be equal to the size indicated by the <code>NodeMaxPayloadsAMDX</code> decoration.</p>
+<p>The number of payloads received can be queried through <code>OpNodePayloadArrayLengthAMDX</code></p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>When <strong>SharesInputWithAMDX</strong> is declared, the node will be dispatched whenever the node identified by it is dispatched, with the same input payload.
+The following limitations apply for sharing nodes in this way:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Nodes must only share with a node that does not declare <strong>SharesInputWithAMDX</strong></p>
+</li>
+<li>
+<p>No more than 256 nodes in a graph can share the same input (including the base node)</p>
+</li>
+<li>
+<p>Applications must not directly dispatch any node with the <strong>SharesInputWithAMDX</strong> execution mode.</p>
+</li>
+<li>
+<p>Input payloads must be decorated with <em>NonWritable</em> if <strong>SharesInputWithAMDX</strong> is declared.</p>
+</li>
+<li>
+<p>Emitting a payload to a shared node multiplies all of the payload resources by the number of shared nodes, as they count against values in <code>VkPhysicalDeviceShaderEnqueuePropertiesAMDX</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <strong>IsApiEntryAMDX</strong> is set to <strong>false</strong>, <code>vkCmdDispatchGraph*</code> commands must not reference this node.</p>
 </div>
 <div class="paragraph">
 <p>New decorations are added:</p>
@@ -1021,14 +1172,10 @@ initializes and finalizes a payload for the same node <em>name</em> and <em>inde
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5020</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>NodeMaxPayloadsAMDX</strong><br>
-Must only be used to decorate a variable in the <strong>NodeOutputPayloadAMDX</strong> or <strong>NodePayloadAMDX</strong> storage class.<br>
+Must only be used to decorate an <strong>OpTypeNodePayloadArrayAMDX</strong>.<br>
 <br>
-Variables in the <strong>NodeOutputPayloadAMDX</strong> storage class must have this decoration.
-If such a variable is decorated, the operand indicates the maximum number of payloads in the array<br>
-as well as the maximum number of payloads that can be allocated by a single workgroup for this output.<br>
-<br>
-Variables in the <strong>NodePayloadAMDX</strong> storage class must have this decoration if the <strong>CoalescingAMDX</strong> execution mode is specified, otherwise they must not.
-If such a variable is decorated, the operand indicates the maximum number of payloads in the array.<br></p></td>
+<strong>OpTypeNodePayloadArrayAMDX</strong> must have this decoration.
+The operand indicates the maximum number of payloads that can be in the array, and the maximum number of payloads that can be enqueued with this type.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
 <em>Max number of payloads</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
@@ -1036,57 +1183,97 @@ If such a variable is decorated, the operand indicates the maximum number of pay
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5019</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>NodeSharesPayloadLimitsWithAMDX</strong><br>
-Decorates a variable in the <strong>NodeOutputPayloadAMDX</strong> storage class to indicate that it shares output resources with <em>Payload Array</em> when dispatched.<br>
+Decorates an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration to indicate that payloads of this type share output resources with <em>Payload Type</em> when allocated.<br>
 <br>
-Without the decoration, each variable&#8217;s resources are separately allocated against the output limits; by using the decoration only the limit of <em>Payload Array</em> is considered.
-Applications must still ensure that at runtime the actual usage does not exceed these limits, as this decoration only relaxes static validation.<br>
+Without the decoration, each types&#8217;s resources are separately allocated against the output limits; by using the decoration only the limits of <em>Payload Type</em> are considered.
+Applications must still ensure that at runtime the actual usage does not exceed these limits, as this decoration only modifies static validation.<br>
 <br>
-Must only be used to decorate a variable in the <strong>NodeOutputPayloadAMDX</strong> storage class,
-<em>Payload Array</em> must be a different variable in the <strong>NodeOutputPayloadAMDX</strong> storage class, and
-<em>Payload Array</em> must not be itself decorated with <strong>NodeSharesPayloadLimitsWithAMDX</strong>.<br>
+Must only be used to decorate an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration,
+<em>Payload Type</em> must be a different <strong>OpTypeNodePayloadArrayAMDX</strong> declaration, and
+<em>Payload Type</em> must not be itself decorated with <strong>NodeSharesPayloadLimitsWithAMDX</strong>.<br>
 <br>
-It is only necessary to decorate one variable to indicate sharing between two node outputs.
-Multiple variables can be decorated with the same <em>Payload Array</em> to indicate sharing across multiple node outputs.</p></td>
+It is only necessary to decorate one <strong>OpTypeNodePayloadArrayAMDX</strong> declaration to indicate sharing between two node outputs.
+Multiple variables can be decorated with the same <em>Payload Type</em> to indicate sharing across multiple node outputs.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
-<em>Payload Array</em></p></td>
+<em>Payload Type</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5091</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PayloadNodeNameAMDX</strong><br>
-Decorates a variable in the <strong>NodeOutputPayloadAMDX</strong> storage class to indicate that the payloads in the array
+Decorates an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration to indicate that the payloads in the array
 will be enqueued for the shader with <em>Node Name</em>.<br>
 <br>
-Must only be used to decorate a variable that is initialized by <strong>OpInitializeNodePayloadsAMDX</strong>.</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Literal</em><br>
+Must only be used to decorate an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration.<br>
+<br>
+<em>Node Name</em> must be an <strong>OpConstantStringAMDX</strong> or <strong>OpSpecConstantStringAMDX</strong> instruction.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
 <em>Node Name</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5098</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PayloadNodeBaseIndexAMDX</strong><br>
+Decorates an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration to indicate a base index that
+will be added to the <em>Node Index</em> when allocating payloads of this type.
+If not specified, it is equivalent to specifying a value of 0.<br>
+<br>
+Must only be used to decorate an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Base Index</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5099</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PayloadNodeSparseArrayAMDX</strong><br>
+Decorates an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration to indicate that nodes at some node indexes may not exist in the execution graph pipeline and cannot be used to allocate payloads.<br>
+<br>
+If not specified, all node indexes between 0 and the <strong>PayloadNodeArraySizeAMDX</strong> value must be valid nodes in the graph.<br>
+<br>
+Must only be used to decorate an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5100</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PayloadNodeArraySizeAMDX</strong><br>
+Decorates an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration to indicate the maximum node index that can be used when allocating payloads of this type, including the base index offset in <strong>PayloadNodeBaseIndexAMDX</strong> decoration (if present).
+If not specified, the node array is considered unbounded.<br>
+<br>
+Must only be used to decorate an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration.<br>
+<br>
+If <strong>PayloadNodeSparseArrayAMDX</strong> is not set to <strong>true</strong> for a type initialized by <strong>OpAllocateNodePayloadsAMDX</strong>, this must be specified.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Array Size</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5078</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>TrackFinishWritingAMDX</strong><br>
-Decorates a variable in the <strong>NodeOutputPayloadAMDX</strong> or <strong>NodePayloadAMDX</strong> storage class to indicate that a payload that is first
-enqueued and then accessed in a receiving shader, will be used with <strong>OpFinishWritingNodePayloadAMDX</strong> instruction.<br>
+Decorates a structure to indicate that when used as a payload it can be written to and works with the <strong>OpFinishWritingNodePayloadAMDX</strong> instruction.<br>
 <br>
-Must only be used to decorate a variable in the <strong>NodeOutputPayloadAMDX</strong> or <strong>NodePayloadAMDX</strong> storage class.<br>
+Must only be used to decorate a structure type declaration.<br>
 <br>
-Must not be used to decorate a variable in the <strong>NodePayloadAMDX</strong> storage class if the shader uses <strong>CoalescingAMDX</strong> execution mode.<br>
-<br>
-If a variable in <strong>NodeOutputPayloadAMDX</strong> storage class is decorated, then a matching variable with <strong>NodePayloadAMDX</strong> storage class
-in the receiving shader must be decorated as well.<br>
-<br>
-If a variable in <strong>NodePayloadAMDX</strong> storage class is decorated, then a matching variable with <strong>NodeOutputPayloadAMDX</strong> storage class
-in the enqueuing shader must be decorated as well.<br></p></td>
+If the payload enqueued for a node is using a structure decorated with this value, the input payload in the <strong>NodePayloadAMDX</strong> storage class in the receiving node must use a structure decorated with it as well.</p></td>
+<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5105</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>PayloadDispatchIndirectAMDX</strong><br>
+Indicates the dispatch indirect arguments describing the number of workgroups to dispatch in a payload.
+Must only be used with <strong>OpMemberDecorate</strong> to decorate the member of a structure.</p>
+<p class="tableblock">Must decorate a structure member with a type of <strong>OpTypeInt</strong> or <strong>OpTypeVector</strong> with two or three components.
+The integer type or the type of the vector component must be an <strong>OpTypeInt</strong> with up to 32-bit <em>Width</em> and 0 <em>Signedness</em>.
+If a single integer is used, the Y and Z dispatch indirect arguments are assumed to be 1.
+If a vector of two components is used, the Z dispatch indirect argument is assumed to be 1.</p></td>
 <td class="tableblock halign-left valign-top"></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>This allows more control over the <code>maxExecutionGraphShaderPayloadSize</code> limit, and can be useful when a shader may output some large number of payloads but to potentially different nodes.</p>
-</div>
-<div class="paragraph">
-<p>Two new built-ins are provided:</p>
+<p>The following new built-ins are provided:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1102,63 +1289,166 @@ in the enqueuing shader must be decorated as well.<br></p></td>
 </thead>
 <tbody>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5021</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>RemainingRecursionLevelsAMDX</strong><br>
+The number of times this node can still enqueue payloads for itself.<br>
+Is equal to 0 if at the leaf or if the node is not recursive at all.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">5073</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderIndexAMDX</strong><br>
 Index assigned to the current shader.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>If the <code>Execution Model</code> is <code>GLCompute</code> or <code>MeshEXT</code>, and neither the <code>StaticNumWorkgroupsAMDX</code> or <code>CoalescingAMDX</code> execution modes are specified, if an input payload is specified it must include a member with the <strong>PayloadDispatchIndirectAMDX</strong> decoration, indicating the number of workgroups to dispatch in each dimension.</p>
+</div>
+<div class="paragraph">
+<p>New constant instructions are added to allow specialization of string variables, which are used for linkage between shaders.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5021</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>CoalescedInputCountAMDX</strong><br>
-Number of valid inputs in the <strong>NodePayloadAMDX</strong> storage class array when using the <strong>CoalescingAMDX</strong> Execution Mode. (GLCompute only)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>ShaderEnqueueAMDX</strong></p></td>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><a id="OpConstantStringAMDX"></a><strong>OpConstantStringAMDX</strong><br>
+<br>
+Declare a new string specialization constant.<br>
+<br>
+<em>String</em> is the value of the constant.<br>
+<br>
+Unlike <strong>OpString</strong>, this is a semantically meaningful instruction and cannot be safely removed from a module.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Capability:<br>
+<strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3 + variable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5103</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Result &lt;id&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Literal</em><br>
+<em>String</em></p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><a id="OpSpecConstantStringAMDX"></a><strong>OpSpecConstantStringAMDX</strong><br>
+<br>
+Declare a new string specialization constant.<br>
+<br>
+<em>String</em> is the default value of the constant.<br>
+<br>
+Unlike <strong>OpString</strong>, this is a semantically meaningful instruction and cannot be safely removed from a module.<br>
+<br>
+This instruction can be specialized to become an <strong>OpConstantStringAMDX</strong> instruction.<br>
+<br>
+See <em>Specialization</em>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Capability:<br>
+<strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3 + variable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5104</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Result &lt;id&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Literal</em><br>
+<em>String</em></p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>The business of actually allocating and enqueuing payloads is done by <strong>OpInitializeNodePayloadsAMDX</strong>:</p>
+<p>A new payload type is defined that can be allocated dynamically and then enqueued for a node:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 9.0909%;">
-<col style="width: 18.1818%;">
-<col style="width: 18.1818%;">
-<col style="width: 18.1818%;">
-<col style="width: 18.1818%;">
-<col style="width: 18.1819%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top" colspan="5"><p class="tableblock"><a id="OpInitializeNodePayloadsAMDX"></a><strong>OpInitializeNodePayloadsAMDX</strong><br>
+<td class="tableblock halign-left valign-top" colspan="3"><p class="tableblock"><a id="OpTypeNodePayloadArrayAMDX"></a><strong>OpTypeNodePayloadArrayAMDX</strong><br>
 <br>
-Allocate payloads in memory and make them accessible through the <em>Payload Array</em> variable.
-The payloads are enqueued for the node shader identified by the <em>Node Index</em> and <em>Node Name</em> in the decoration
-<strong>PayloadNodeNameAMDX</strong> on the <em>Payload Array</em> variable.<br>
+Declare a new payload array type.  Its length is not known at compile time.<br>
 <br>
-<em>Payload Array</em> variable must be an <strong>OpTypePointer</strong> with a <em>Storage Class</em> of <em>OutputNodePayloadAMDX</em>, and a <em>Type</em> of <strong>OpTypeArray</strong> with an <em>Element Type</em> of <strong>OpTypeStruct</strong>.<br>
+<em>Payload Type</em> is the type of each payload in the array.<br>
 <br>
-The array pointed to by <em>Payload Array</em> variable must have <em>Payload Count</em> elements.<br>
+ See <a href="#OpNodePayloadArrayLengthAMDX"><strong>OpNodePayloadArrayLengthAMDX</strong></a> for getting the length of an array of this type.<br>
+<br>
+A payload array can be allocated by either <strong>OpAllocateNodePayloadsAMDX</strong> to be enqueued as an output, or via <strong>OpVariable</strong> in the <strong>NodePayloadAMDX</strong> storage class to be consumed as an input.<br>
+<br>
+Can be dereferenced using an access chain in the same way as <strong>OpTypeRuntimeArray</strong> or <strong>OpTypeArray</strong>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#Capability">Capability</a>:<br>
+<strong>Shader</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5076</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Result &lt;id&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Payload Type</em></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Decorations on this type indicate which node this type will be dispatched to and how it consumes resources.
+Once a payload array type has been declared and all relevant decorations specified, they can be allocated using:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="6"><p class="tableblock"><a id="OpAllocateNodePayloadsAMDX"></a><strong>OpAllocateNodePayloadsAMDX</strong><br>
+<br>
+Allocates payloads for a node to be later enqueued via <strong>OpEnqueueNodePayloadsAMDX</strong>.<br>
+<br>
+<em>Result Type</em> must be an <strong>OpTypePointer</strong> to an <strong>OpTypeNodePayloadArrayAMDX</strong> in the <strong>NodePayloadAMDX</strong> storage class.<br>
+<br>
+The payloads are allocated for the node identified by the <em>Node Name</em> in the <strong>PayloadNodeNameAMDX</strong> decoration on <em>Result Type</em>,
+with an index equal to the sum of its <strong>PayloadNodeBaseIndexAMDX</strong> decoration (if present) and <em>Node Index</em>.
 <br>
 Payloads are allocated for the <em>Scope</em> indicated by <em>Visibility</em>, and are visible to all invocations in that <em>Scope</em>.<br>
 <br>
-<em>Payload Count</em> is the number of payloads to initialize in the <em>Payload Array</em>.<br>
+<em>Payload Count</em> is the number of payloads to allocate in the resulting array.
 <br>
-<em>Payload Count</em> must be less than or equal to the <strong>NodeMaxPayloadsAMDX</strong> decoration on the <em>Payload Array</em> variable.<br>
+Behavior is undefined if <em>Payload Count</em> is greater than the <strong>NodeMaxPayloadsAMDX</strong> decoration on <em>Result Type</em>.<br>
 <br>
 <em>Payload Count</em> and <em>Node Index</em> must be dynamically uniform within the scope identified by <em>Visibility</em>.<br>
 <br>
 <em>Visibility</em> must only be either <em>Invocation</em> or <em>Workgroup</em>.<br>
 <br>
-This instruction must be called in uniform control flow.<br>
-This instruction must not be called on a <em>Payload Array</em> variable that has previously been initialized.</p></td>
+This instruction must be called in uniform control flow within the same workgroup.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Capability:<br>
 <strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5090</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5074</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
-<em>Payload Array</em></p></td>
+<em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Result</em> <em>&lt;id&gt;</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>Scope &lt;id&gt;</em><br>
 <em>Visibility</em></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
@@ -1169,16 +1459,13 @@ This instruction must not be called on a <em>Payload Array</em> variable that ha
 </tbody>
 </table>
 <div class="paragraph">
-<p>Once a payload element is initialized, it will be enqueued to workgroups in the corresponding shader after the calling shader has written all of its values.
+<p>Once a payload array is allocated, it can be enqueued to the identified node by calling <strong>OpEnqueueNodePayloadsAMDX</strong>.
 Enqueues are performed in the same manner as the <code>vkCmdDispatchGraph*</code> API commands.
-If the node enqueued has the <code>CoalescingAMDX</code> execution mode, there is no guarantee what set of payloads are visible to the same workgroup.</p>
+If the node receiving the payloads has the <code>CoalescingAMDX</code> execution mode, there is no guarantee what set of payloads are visible to the same workgroup.</p>
 </div>
 <div class="paragraph">
-<p>The shader must not enqueue payloads to a shader with the same name as this shader unless the index identifies this shader and <code>MaxNodeRecursionAMDX</code> is declared with a sufficient depth.
+<p>The shader must not enqueue payloads to a shader with the same name as this shader unless the index identifies this node and <code>MaxNodeRecursionAMDX</code> is declared with a sufficient depth.
 Shaders with the same name and different indexes can each recurse independently.</p>
-</div>
-<div class="paragraph">
-<p>A shader can explicitly specify that it is done writing to outputs (allowing the enqueue to happen sooner) by calling <strong>OpFinalizeNodePayloadsAMDX</strong>:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1188,16 +1475,13 @@ Shaders with the same name and different indexes can each recurse independently.
 </colgroup>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock"><a id="OpFinalizeNodePayloadsAMDX"></a><strong>OpFinalizeNodePayloadsAMDX</strong><br>
+<td class="tableblock halign-left valign-top" colspan="2"><p class="tableblock"><a id="OpEnqueueNodePayloadsAMDX"></a><strong>OpEnqueueNodePayloadsAMDX</strong><br>
 <br>
-Optionally indicates that all accesses to an array of output payloads have completed.
+Enqueues a previously allocated payload array for execution by its node.<br>
 <br>
-<em>Payload Array</em> is a payload array previously initialized by <strong>OpInitializeNodePayloadsAMDX</strong>.
+<em>Payload Array</em> is a pointer to a payload array that was previously allocated by <strong>OpAllocateNodePayloadsAMDX</strong>.<br>
 <br>
-This instruction must be called in uniform control flow.
-<br>
-<em>Payload Array</em> must be an <strong>OpTypePointer</strong> with a <em>Storage Class</em> of <em>OutputNodePayloadAMDX</em>, and a <em>Type</em> of <strong>OpTypeArray</strong> or <strong>OpTypeRuntimeArray</strong> with an <em>Element Type</em> of <strong>OpTypeStruct</strong>.
-<em>Payload Array</em> must not have been previously finalized by <strong>OpFinalizeNodePayloadsAMDX</strong>.</p></td>
+This instruction must be called in uniform control flow within the workgroup.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Capability:<br>
 <strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
@@ -1212,6 +1496,104 @@ This instruction must be called in uniform control flow.
 <div class="paragraph">
 <p>Once this has been called, accessing any element of <em>Payload Array</em> is undefined behavior.</p>
 </div>
+<div class="paragraph">
+<p>The length of <em>Payload Array</em> can be queried at any point by calling:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="4"><p class="tableblock"><a id="OpNodePayloadArrayLengthAMDX"></a><strong>OpNodePayloadArrayLengthAMDX</strong><br>
+<br>
+Query the length of a payload array. Must only be used with input payload arrays or allocated output payload arrays.<br>
+<br>
+<em>Result</em> will be equal to the <em>Payload Count</em> value used to allocate <em>Payload Array</em>, or to the number of received payloads if the shader is using <strong>CoalescingAMDX</strong> execution mode. Otherwise, <em>Result</em> will be 1.<br>
+<br>
+<em>Result Type</em> must be an <strong>OpTypeInt</strong> with 32-bit <em>Width</em> and 0 <em>Signedness</em>.<br>
+<br>
+<em>Payload Array</em> is a pointer to a payload array previously allocated by <strong>OpAllocateNodePayloadsAMDX</strong>, or declared via <strong>OpVariable</strong> in the <strong>NodePayloadAMDX</strong> storage class as an input.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#Capability">Capability</a>:<br>
+<strong>Shader</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5090</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Result &lt;id&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Payload Array</em></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Before allocating payloads, applications can determine whether allocating payloads is possible for a particular node index:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If a payload type is decorated with <strong>PayloadNodeSparseArrayAMDX</strong>, applications can determine whether a node exists at a particular index.</p>
+</li>
+<li>
+<p>If a payload type is decorated with <strong>PayloadNodeNameAMDX</strong> that matches the current node, applications can determine whether a node at a particular index has reached its max recursion depth.</p>
+</li>
+<li>
+<p>In all other cases, the payload can be allocated.</p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 9.0909%;">
+<col style="width: 18.1818%;">
+<col style="width: 18.1818%;">
+<col style="width: 18.1818%;">
+<col style="width: 18.1818%;">
+<col style="width: 18.1819%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top" colspan="5"><p class="tableblock"><a id="OpIsNodePayloadValidAMDX"></a><strong>OpIsNodePayloadValidAMDX</strong><br>
+<br>
+Check if the node payload identified by the <em>Node Name</em> in the <strong>PayloadNodeNameAMDX</strong> decoration,
+with an index equal to the sum of its <strong>PayloadNodeBaseIndexAMDX</strong> decoration (if present) and <em>Node Index</em>
+can be allocated.<br>
+<br>
+<em>Result</em> is equal to <strong>OpConstantTrue</strong> if the payload is valid and can be allocated, <strong>OpConstantFalse</strong> otherwise.<br>
+<br>
+<em>Result Type</em> must be <strong>OpTypeBool</strong>.<br>
+<br>
+<em>Payload Type</em> must be an <strong>OpTypeNodePayloadArrayAMDX</strong> declaration.<br>
+<br>
+<em>NodeIndex</em> must be less than the value specified by the <strong>PayloadNodeArraySizeAMDX</strong> decoration if specified.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Capability:<br>
+<strong>ShaderEnqueueAMDX</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5101</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Result Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Result</em> <em>&lt;id&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Payload Type</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;id&gt;</em><br>
+<em>Node Index</em></p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Payloads enqueued in this way will be provided to the node through the <strong>NodePayloadAMDX</strong> storage class in the shader.
+These payloads can be read by the receiving node, but also can be written for a limited amount of communication between multiple workgroups enqueued for the same node.
+It is a data race if one workgroup writes to a particular element of the payload and another workgroup accesses it in any way, with one exception; once all nodes have finished writing, it is safe for the last node to read those values.
+Workgroups can indicate that they have finished writing to the payload by calling:</p>
+</div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 42.8571%;">
@@ -1224,15 +1606,19 @@ This instruction must be called in uniform control flow.
 <tr>
 <td class="tableblock halign-left valign-top" colspan="4"><p class="tableblock"><a id="OpFinishWritingNodePayloadAMDX"></a><strong>OpFinishWritingNodePayloadAMDX</strong><br>
 <br>
-Optionally indicates that all writes to the input payload by the current workgroup have completed.
+Optionally indicates that all writes to the input payload by the current workgroup have completed.<br>
 <br>
-Returns <code>true</code> when all workgroups that can access this payload have called this function.</p>
-<p class="tableblock">Must not be called if the shader is using <strong>CoalescingAMDX</strong> execution mode,
-or if the shader was dispatched with a <code>vkCmdDispatchGraph*</code> command, rather than enqueued from another shader.</p>
-<p class="tableblock">Must not be called if the input payload is not decorated with <strong>TrackFinishWritingAMDX</strong>.</p>
-<p class="tableblock"><em>Result Type</em> must be <strong>OpTypeBool</strong>.
+<em>Result</em> is equal to <strong>OpConstantTrue</strong> if all workgroups that can access this payload have called this function.<br>
 <br>
-<em>Payload</em> is a variable in the <strong>NodePayloadAMDX</strong> storage class.</p></td>
+Must not be called if the shader is using <strong>CoalescingAMDX</strong> execution mode,
+or if the shader was dispatched with a <code>vkCmdDispatchGraph*</code> client API command,
+rather than enqueued from another shader.<br>
+<br>
+Must not be called if the input payload is not decorated with <strong>TrackFinishWritingAMDX</strong>.<br>
+<br>
+<em>Result Type</em> must be <strong>OpTypeBool</strong>.<br>
+<br>
+<em>Payload</em> must be the result of an <strong>OpVariable</strong> in the <strong>NodePayloadAMDX</strong> storage class.</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Capability:<br>
 <strong>ShaderEnqueueAMDX</strong></p></td>
 </tr>
@@ -1257,26 +1643,19 @@ or if the shader was dispatched with a <code>vkCmdDispatchGraph*</code> command,
 <h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_resolved_for_compute_nodes_can_the_input_payload_be_modified_if_so_what_sees_that_modification"><a class="anchor" href="#_resolved_for_compute_nodes_can_the_input_payload_be_modified_if_so_what_sees_that_modification"></a>4.1. RESOLVED: For compute nodes, can the input payload be modified? If so what sees that modification?</h3>
-<div class="paragraph">
-<p>Yes, input payloads are writable and <strong>OpFinishWritingNodePayloadAMDX</strong> instruction is provided to indicate that all
-workgroups that share the same payload have finished writing to it.</p>
-</div>
-<div class="paragraph">
-<p>Limitations apply to this functionality. Please refer to the instruction&#8217;s specification.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_unresolved_do_we_need_input_from_the_application_to_tune_the_scratch_allocation"><a class="anchor" href="#_unresolved_do_we_need_input_from_the_application_to_tune_the_scratch_allocation"></a>4.2. UNRESOLVED: Do we need input from the application to tune the scratch allocation?</h3>
-<div class="paragraph">
-<p>For now no, more research is required to determine what information would be actually useful to know.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_proposed_how_does_this_extension_interact_with_device_groups"><a class="anchor" href="#_proposed_how_does_this_extension_interact_with_device_groups"></a>4.3. PROPOSED: How does this extension interact with device groups?</h3>
+<h3 id="_how_does_this_extension_interact_with_device_groups"><a class="anchor" href="#_how_does_this_extension_interact_with_device_groups"></a>4.1. How does this extension interact with device groups?</h3>
 <div class="paragraph">
 <p>It works the same as any other dispatch commands - work is replicated to all devices unless applications split the work themselves.
 There is no automatic scheduling between devices.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_dynamic_state_should_be_allowed"><a class="anchor" href="#_what_dynamic_state_should_be_allowed"></a>4.2. What dynamic state should be allowed?</h3>
+<div class="paragraph">
+<p>Proposed: Support a subset of dynamic state.</p>
+</div>
+<div class="paragraph">
+<p>For now, this specification exposes basic "value" state - primarily things where there is only a value to modify rather than a mode switch or state enable.</p>
 </div>
 </div>
 </div>
