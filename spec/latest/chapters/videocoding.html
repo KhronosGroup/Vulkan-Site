@@ -3691,8 +3691,34 @@ structure the image was created with:</p>
 <a href="#VkVideoFormatPropertiesKHR">VkVideoFormatPropertiesKHR</a>::<code>format</code>.</p>
 </li>
 <li>
-<p><a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>flags</code> only contains bits also set in
-<a href="#VkVideoFormatPropertiesKHR">VkVideoFormatPropertiesKHR</a>::<code>imageCreateFlags</code>.</p>
+<p><a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>flags</code> only contains
+<code>VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code> and/or bits
+also set in <a href="#VkVideoFormatPropertiesKHR">VkVideoFormatPropertiesKHR</a>::<code>imageCreateFlags</code>.</p>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Specifying <code>VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code> when
+creating
+<a href="#decode-output-picture">decode output pictures</a>
+or
+<a href="#encode-input-picture">encode input pictures</a>
+is always supported when <a href="features.html#features-videoMaintenance1" class="xref page">videoMaintenance1</a> is
+enabled, regardless of the supported <a href="resources.html#VkImageCreateFlags" class="xref page">VkImageCreateFlags</a> reported in
+<a href="#VkVideoFormatPropertiesKHR">VkVideoFormatPropertiesKHR</a>::<code>imageCreateFlags</code>.
+Accordingly, implementations <strong>should</strong> not report
+<code>VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR</code> in
+<a href="#VkVideoFormatPropertiesKHR">VkVideoFormatPropertiesKHR</a>::<code>imageCreateFlags</code> for any video
+format.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </li>
 <li>
 <p><a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>imageType</code> equals
@@ -11573,8 +11599,8 @@ codec profile, as defined in section A.2 of the <a href="introduction.html#aomed
 <p><a id="decode-av1-film-grain-support"></a> <code>filmGrainSupport</code> specifies
 whether AV1 film grain, as defined in section 7.8.3 of the
 <a href="introduction.html#aomedia-av1" class="xref page">AV1 Specification</a>, <strong>can</strong> be used with the video profile.
-When this member is set to <code>VK_TRUE</code>, video session objects created
-against the video profile will be able to decode pictures that have
+When this member is <code>VK_TRUE</code>, video session objects created against
+the video profile will be able to decode pictures that have
 <a href="#decode-av1-film-grain">film grain</a> enabled.</p>
 </li>
 </ul>
@@ -15757,7 +15783,7 @@ be greater than zero</p>
 <p><a id="VUID-VkVideoEncodeRateControlInfoKHR-layerCount-08358" href="#VUID-VkVideoEncodeRateControlInfoKHR-layerCount-08358"></a> <span class="vuid">VUID-VkVideoEncodeRateControlInfoKHR-layerCount-08358</span><br>
 
 If <code>layerCount</code> is not zero, then <code>initialVirtualBufferSizeInMs</code>
-<strong>must</strong> be less than <code>virtualBufferSizeInMs</code></p>
+<strong>must</strong> be less than or equal to <code>virtualBufferSizeInMs</code></p>
 </li>
 <li>
 <p><a id="VUID-VkVideoEncodeRateControlInfoKHR-videoCodecOperation-07022" href="#VUID-VkVideoEncodeRateControlInfoKHR-videoCodecOperation-07022"></a> <span class="vuid">VUID-VkVideoEncodeRateControlInfoKHR-videoCodecOperation-07022</span><br>
@@ -16123,7 +16149,7 @@ The number of VCL NAL units written is specified by
 </div>
 <div class="paragraph">
 <p>In addition, if
-<a href="#VkVideoEncodeH264PictureInfoKHR">VkVideoEncodeH264PictureInfoKHR</a>::<code>generatePrefixNalu</code> is set to
+<a href="#VkVideoEncodeH264PictureInfoKHR">VkVideoEncodeH264PictureInfoKHR</a>::<code>generatePrefixNalu</code> is
 <code>VK_TRUE</code> for the video encode operation, then an additional prefix NAL
 unit is written before each VCL NAL unit corresponding to individual slices
 in the format defined in section 7.3.2.12, according to the semantics
@@ -16957,8 +16983,8 @@ structure.</p>
 <li>
 <p><code>useMaxLevelIdc</code> indicates whether the value of <code>maxLevelIdc</code>
 should be used by the implementation.
-When it is set to <code>VK_FALSE</code>, the implementation ignores the value
-of <code>maxLevelIdc</code> and uses the value of
+When it is <code>VK_FALSE</code>, the implementation ignores the value of
+<code>maxLevelIdc</code> and uses the value of
 <a href="#VkVideoEncodeH264CapabilitiesKHR">VkVideoEncodeH264CapabilitiesKHR</a>::<code>maxLevelIdc</code>, as reported
 by <a href="#vkGetPhysicalDeviceVideoCapabilitiesKHR">vkGetPhysicalDeviceVideoCapabilitiesKHR</a> for the video profile.</p>
 </li>
@@ -17408,7 +17434,7 @@ identify the retrieved H.264 sequence and/or picture parameter set(s).</p>
 <li>
 <p><code>stdPPSId</code> specifies the H.264 picture parameter set ID used to
 identify the retrieved H.264 picture parameter set when
-<code>writeStdPPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>writeStdPPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 </ul>
 </div>
@@ -17422,12 +17448,12 @@ parameter data to the output buffer in the following order:</p>
 <ol class="arabic">
 <li>
 <p>The <a href="#encode-h264-sps">H.264 sequence parameter set</a> identified by
-<code>stdSPSId</code>, if <code>writeStdSPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>stdSPSId</code>, if <code>writeStdSPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p>The <a href="#encode-h264-pps">H.264 picture parameter set</a> identified by the
 pair constructed from <code>stdSPSId</code> and <code>stdPPSId</code>, if
-<code>writeStdPPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>writeStdPPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 </ol>
 </div>
@@ -18323,16 +18349,16 @@ control flags.</p>
 </li>
 <li>
 <p><code>gopFrameCount</code> is the number of frames within a <a href="#encode-h264-gop">    group of pictures (GOP)</a> intended to be used by the application.
-If it is set to 0, the rate control algorithm <strong>may</strong> assume an
+If it is 0, the rate control algorithm <strong>may</strong> assume an
 implementation-dependent GOP length.
-If it is set to <code>UINT32_MAX</code>, the GOP length is treated as infinite.</p>
+If it is <code>UINT32_MAX</code>, the GOP length is treated as infinite.</p>
 </li>
 <li>
 <p><code>idrPeriod</code> is the interval, in terms of number of frames, between
 two <a href="#encode-h264-idr-pic">IDR frames</a> (see <a href="#encode-h264-idr-period">IDR    period</a>).
-If it is set to 0, the rate control algorithm <strong>may</strong> assume an
+If it is 0, the rate control algorithm <strong>may</strong> assume an
 implementation-dependent IDR period.
-If it is set to <code>UINT32_MAX</code>, the IDR period is treated as infinite.</p>
+If it is <code>UINT32_MAX</code>, the IDR period is treated as infinite.</p>
 </li>
 <li>
 <p><code>consecutiveBFrameCount</code> is the number of consecutive B frames
@@ -18559,7 +18585,7 @@ in <code>minQp</code>.</p>
 <li>
 <p><code>minQp</code> specifies the lower bounds on the QP values, for each
 picture type, that the implementation&#8217;s rate control algorithm will use
-when <code>useMinQp</code> is set to <code>VK_TRUE</code>.</p>
+when <code>useMinQp</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p><code>useMaxQp</code> indicates whether the QP values determined by rate
@@ -18569,7 +18595,7 @@ in <code>maxQp</code>.</p>
 <li>
 <p><code>maxQp</code> specifies the upper bounds on the QP values, for each
 picture type, that the implementation&#8217;s rate control algorithm will use
-when <code>useMaxQp</code> is set to <code>VK_TRUE</code>.</p>
+when <code>useMaxQp</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p><code>useMaxFrameSize</code> indicates whether the implementation&#8217;s rate
@@ -18578,8 +18604,7 @@ as the upper bounds on the encoded frame size for each picture type.</p>
 </li>
 <li>
 <p><code>maxFrameSize</code> specifies the upper bounds on the encoded frame size,
-for each picture type, when <code>useMaxFrameSize</code> is set to
-<code>VK_TRUE</code>.</p>
+for each picture type, when <code>useMaxFrameSize</code> is <code>VK_TRUE</code>.</p>
 </li>
 </ul>
 </div>
@@ -20247,8 +20272,8 @@ structure.</p>
 <li>
 <p><code>useMaxLevelIdc</code> indicates whether the value of <code>maxLevelIdc</code>
 should be used by the implementation.
-When it is set to <code>VK_FALSE</code>, the implementation ignores the value
-of <code>maxLevelIdc</code> and uses the value of
+When it is <code>VK_FALSE</code>, the implementation ignores the value of
+<code>maxLevelIdc</code> and uses the value of
 <a href="#VkVideoEncodeH265CapabilitiesKHR">VkVideoEncodeH265CapabilitiesKHR</a>::<code>maxLevelIdc</code>, as reported
 by <a href="#vkGetPhysicalDeviceVideoCapabilitiesKHR">vkGetPhysicalDeviceVideoCapabilitiesKHR</a> for the video profile.</p>
 </li>
@@ -20979,12 +21004,12 @@ set(s).</p>
 <li>
 <p><code>stdSPSId</code> specifies the H.265 sequence parameter set ID used to
 identify the retrieved H.265 sequence and/or picture parameter set(s)
-when <code>writeStdSPS</code> and/or <code>writeStdPPS</code> is set to <code>VK_TRUE</code>.</p>
+when <code>writeStdSPS</code> and/or <code>writeStdPPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p><code>stdPPSId</code> specifies the H.265 picture parameter set ID used to
 identify the retrieved H.265 picture parameter set when
-<code>writeStdPPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>writeStdPPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 </ul>
 </div>
@@ -20998,17 +21023,17 @@ parameter data to the output buffer in the following order:</p>
 <ol class="arabic">
 <li>
 <p>The <a href="#encode-h265-vps">H.265 video parameter set</a> identified by
-<code>stdVPSId</code>, if <code>writeStdVPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>stdVPSId</code>, if <code>writeStdVPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p>The <a href="#encode-h265-sps">H.265 sequence parameter set</a> identified by the
 pair constructed from <code>stdVPSId</code> and <code>stdSPSId</code>, if
-<code>writeStdSPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>writeStdSPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p>The <a href="#encode-h265-pps">H.265 picture parameter set</a> identified by the
 triplet constructed from <code>stdVPSId</code>, <code>stdSPSId</code>, and
-<code>stdPPSId</code>, if <code>writeStdPPS</code> is set to <code>VK_TRUE</code>.</p>
+<code>stdPPSId</code>, if <code>writeStdPPS</code> is <code>VK_TRUE</code>.</p>
 </li>
 </ol>
 </div>
@@ -21960,16 +21985,16 @@ control flags.</p>
 </li>
 <li>
 <p><code>gopFrameCount</code> is the number of frames within a <a href="#encode-h265-gop">    group of pictures (GOP)</a> intended to be used by the application.
-If it is set to 0, the rate control algorithm <strong>may</strong> assume an
+If it is 0, the rate control algorithm <strong>may</strong> assume an
 implementation-dependent GOP length.
-If it is set to <code>UINT32_MAX</code>, the GOP length is treated as infinite.</p>
+If it is <code>UINT32_MAX</code>, the GOP length is treated as infinite.</p>
 </li>
 <li>
 <p><code>idrPeriod</code> is the interval, in terms of number of frames, between
 two <a href="#encode-h265-idr-pic">IDR frames</a> (see <a href="#encode-h265-idr-period">IDR    period</a>).
-If it is set to 0, the rate control algorithm <strong>may</strong> assume an
+If it is 0, the rate control algorithm <strong>may</strong> assume an
 implementation-dependent IDR period.
-If it is set to <code>UINT32_MAX</code>, the IDR period is treated as infinite.</p>
+If it is <code>UINT32_MAX</code>, the IDR period is treated as infinite.</p>
 </li>
 <li>
 <p><code>consecutiveBFrameCount</code> is the number of consecutive B frames
@@ -22196,7 +22221,7 @@ in <code>minQp</code>.</p>
 <li>
 <p><code>minQp</code> specifies the lower bounds on the QP values, for each
 picture type, that the implementation&#8217;s rate control algorithm will use
-when <code>useMinQp</code> is set to <code>VK_TRUE</code>.</p>
+when <code>useMinQp</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p><code>useMaxQp</code> indicates whether the QP values determined by rate
@@ -22206,7 +22231,7 @@ in <code>maxQp</code>.</p>
 <li>
 <p><code>maxQp</code> specifies the upper bounds on the QP values, for each
 picture type, that the implementation&#8217;s rate control algorithm will use
-when <code>useMaxQp</code> is set to <code>VK_TRUE</code>.</p>
+when <code>useMaxQp</code> is <code>VK_TRUE</code>.</p>
 </li>
 <li>
 <p><code>useMaxFrameSize</code> indicates whether the implementation&#8217;s rate
@@ -22215,8 +22240,7 @@ as the upper bounds on the encoded frame size for each picture type.</p>
 </li>
 <li>
 <p><code>maxFrameSize</code> specifies the upper bounds on the encoded frame size,
-for each picture type, when <code>useMaxFrameSize</code> is set to
-<code>VK_TRUE</code>.</p>
+for each picture type, when <code>useMaxFrameSize</code> is <code>VK_TRUE</code>.</p>
 </li>
 </ul>
 </div>

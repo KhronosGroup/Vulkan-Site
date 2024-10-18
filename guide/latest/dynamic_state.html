@@ -470,6 +470,52 @@ vkEndCommandBuffer();</code></pre>
 </div>
 </div>
 <div class="sect1">
+<h2 id="dynamic-state-lifetime"><a class="anchor" href="#dynamic-state-lifetime"></a>Dynamic state lifetime</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The spec talks about how there is a <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#dynamic-state-lifetime">dynamic state lifetime</a>. The following best describes it in some examples:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// example 1 - valid
+vkCmdSetViewport()
+vkCmdBindPipeline() // static state
+vkCmdDraw()
+
+// example 2 - valid
+vkCmdBindPipeline() // static state
+vkCmdSetViewport()
+vkCmdBindPipeline() // dynamic state
+vkCmdDraw()
+
+// example 3 - invalid (VUID-vkCmdDraw-None-07831)
+vkCmdBindPipeline() // static state
+vkCmdBindPipeline() // dynamic state
+vkCmdDraw()
+
+// example 4 - invalid (VUID-vkCmdDraw-None-08608)
+vkCmdBindPipeline() // dynamic state
+vkCmdBindPipeline() // static state
+vkCmdSetViewport()
+vkCmdDraw()
+
+// example 5 - invalid (VUID-vkCmdDraw-None-07831)
+vkCmdSetViewport()
+vkCmdBindPipeline() // static state
+vkCmdBindPipeline() // dynamic state
+vkCmdDraw()
+
+// example 6 - invalid (VUID-vkCmdDraw-None-07831)
+vkCmdSetViewport()
+vkCmdBindPipeline() // static state
+vkCmdDraw()
+vkCmdBindPipeline() // dynamic state
+vkCmdDraw()</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="states-that-are-dynamic"><a class="anchor" href="#states-that-are-dynamic"></a>What states are dynamic</h2>
 <div class="sectionbody">
 <div class="paragraph">
