@@ -345,15 +345,7 @@ and geometries in an acceleration structure.</p>
 <div class="paragraph">
 <p>Ray traversal cannot be started by a Vulkan API command directly - a shader
 <strong>must</strong> execute
-<code>OpRayQueryProceedKHR</code>
-or
-a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction
-.
-When the <a href="features.html#features-rayTracingPipeline" class="xref page"><code>rayTracingPipeline</code></a> feature
-is enabled, <code>OpTraceRayKHR</code> <strong>can</strong> be used for <a href="raytracing.html#ray-tracing" class="xref page">ray tracing</a>
-in a <a href="pipelines.html#pipelines-ray-tracing" class="xref page">ray tracing pipeline</a>.
-When the <a href="features.html#features-rayQuery" class="xref page"><code>rayQuery</code></a> feature is enabled,
-<code>OpRayQueryProceedKHR</code> <strong>can</strong> be used in any shader stage.</p>
+.</p>
 </div>
 </div>
 </div>
@@ -518,14 +510,6 @@ This case can usually be mitigated by offsetting <span class="eq">t<sub>min</sub
 </table>
 </div>
 <div class="paragraph">
-<p>For a motion primitive or a motion instance, the positions for intersection
-are evaluated at the time specified in the <code>time</code> parameter to
-<code>OpTraceRayMotionNV</code> by interpolating between the two endpoints as
-specified for the given motion type.
-If a motion acceleration structure is traced with <code>OpTraceRayKHR</code>, it
-behaves as a <code>OpTraceRayMotionNV</code> with <code>time</code> of 0.0.</p>
-</div>
-<div class="paragraph">
 <p>In the case of AABB geometries, implementations <strong>may</strong> increase their size in
 an acceleration structure in order to mitigate precision issues.
 This <strong>may</strong> result in false positive intersections being reported to the
@@ -534,9 +518,7 @@ application.</p>
 <div class="paragraph">
 <p>For triangle intersection candidates, the <span class="eq">b</span> and <span class="eq">c</span>
 <a href="primsrast.html#primsrast-polygon-barycentrics" class="xref page">barycentric coordinates</a> on the triangle
-where the above condition is met are made available to future shading.
-If the ray was traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction, these values are available as a vector of 2 32-bit
-floating-point values in the <code>HitAttributeKHR</code> storage class.</p>
+where the above condition is met are made available to future shading.</p>
 </div>
 <div class="paragraph">
 <p>Once an intersection candidate is determined, it proceeds through the
@@ -624,7 +606,7 @@ operations.</p>
 <div class="sect2">
 <h3 id="ray-traversal-culling-primitive"><a class="anchor" href="#ray-traversal-culling-primitive"></a>Ray Primitive Culling</h3>
 <div class="paragraph">
-<p>If the <a href="features.html#features-rayTraversalPrimitiveCulling" class="xref page"><code>rayTraversalPrimitiveCulling</code></a> or <a href="features.html#features-rayQuery" class="xref page"><code>rayQuery</code></a> features are enabled, the <code>SkipTrianglesKHR</code> and
+<p>If the <a href="#features-rayTraversalPrimitiveCulling"><code>rayTraversalPrimitiveCulling</code></a> or <a href="#features-rayQuery"><code>rayQuery</code></a> features are enabled, the <code>SkipTrianglesKHR</code> and
 <code>SkipAABBsKHR</code> ray flags <strong>can</strong> be specified when tracing a ray.
 <code>SkipTrianglesKHR</code> and <code>SkipAABBsKHR</code> are mutually exclusive.
 <code>SkipTrianglesKHR</code> is also mutually exclusive with
@@ -636,7 +618,7 @@ trace instruction, and the intersection is with a triangle primitive, the
 intersection is dropped, and no further processing of this intersection
 occurs.
 If <code>VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR</code> was included
-in the pipeline, traversal with <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions will all behave as if <code>SkipTrianglesKHR</code> was
+in the pipeline, traversal with <a href="#glossary-pipeline-trace-ray">pipeline trace ray</a> instructions will all behave as if <code>SkipTrianglesKHR</code> was
 included in their <code>Ray Flags</code> operand.</p>
 </div>
 <div class="paragraph">
@@ -645,7 +627,7 @@ trace instruction, and the intersection is with an AABB primitive, the
 intersection is dropped, and no further processing of this intersection
 occurs.
 If <code>VK_PIPELINE_CREATE_RAY_TRACING_SKIP_AABBS_BIT_KHR</code> was included in
-the pipeline, traversal with <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions will all behave as if <code>SkipAABBsKHR</code> was included in
+the pipeline, traversal with <a href="#glossary-pipeline-trace-ray">pipeline trace ray</a> instructions will all behave as if <code>SkipAABBsKHR</code> was included in
 their <code>Ray Flags</code> operand.</p>
 </div>
 </div>
@@ -653,7 +635,7 @@ their <code>Ray Flags</code> operand.</p>
 <h3 id="_ray_mask_culling"><a class="anchor" href="#_ray_mask_culling"></a>Ray Mask Culling</h3>
 <div class="paragraph">
 <p>Instances <strong>can</strong> be made invisible to particular rays based on the value of
-<a href="accelstructures.html#VkAccelerationStructureInstanceKHR" class="xref page">VkAccelerationStructureInstanceKHR</a>::<code>mask</code> used to add that
+<code>VkAccelerationStructureInstanceKHR</code>::<code>mask</code> used to add that
 instance to a top-level acceleration structure, and the <code>Cull Mask</code>
 parameter used to trace the ray.</p>
 </div>
@@ -700,7 +682,7 @@ is <span class="eq">(i +  1) mod n</span>.</p>
 <p>By default, if <span class="eq">a</span> is negative then the intersection is with the front
 face of the triangle, otherwise it is with the back face.
 If <code>VK_GEOMETRY_INSTANCE_TRIANGLE_FLIP_FACING_BIT_KHR</code> is included in
-<a href="accelstructures.html#VkAccelerationStructureInstanceKHR" class="xref page">VkAccelerationStructureInstanceKHR</a>::<code>flags</code> for the instance
+<code>VkAccelerationStructureInstanceKHR</code>::<code>flags</code> for the instance
 containing the intersected triangle, this determination is reversed.
 Additionally, if <span class="eq">a</span> is 0, the intersection candidate is treated as not
 intersecting with any face, irrespective of the sign.</p>
@@ -726,17 +708,6 @@ of this.</p>
 </table>
 </div>
 <div class="paragraph">
-<p>If the ray was traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction, the <code>HitKindKHR</code> built-in is set to
-<code>HitKindFrontFacingTriangleKHR</code> if the intersection is with front-facing
-geometry, and <code>HitKindBackFacingTriangleKHR</code> if the intersection is with
-back-facing geometry, for shader stages considering this intersection.</p>
-</div>
-<div class="paragraph">
-<p>If the ray was traced with <code>OpRayQueryProceedKHR</code>,
-<code>OpRayQueryGetIntersectionFrontFaceKHR</code> will return true for intersection
-candidates with front faces, or false for back faces.</p>
-</div>
-<div class="paragraph">
 <div class="title">Culling</div>
 <p>If <code>CullBackFacingTrianglesKHR</code> was included in the <code>Ray Flags</code> parameter
 of the ray trace instruction, and the intersection is determined as with the
@@ -752,7 +723,7 @@ and no further processing of this intersection occurs.</p>
 <div class="paragraph">
 <p>This culling is disabled if
 <code>VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR</code> was included
-in <a href="accelstructures.html#VkAccelerationStructureInstanceKHR" class="xref page">VkAccelerationStructureInstanceKHR</a>::<code>flags</code> for the instance
+in <code>VkAccelerationStructureInstanceKHR</code>::<code>flags</code> for the instance
 which the intersected geometry belongs to.</p>
 </div>
 <div class="paragraph">
@@ -778,22 +749,13 @@ Intersection candidates <strong>can</strong> also be culled based on their opaci
 <div class="title">Determination</div>
 <p>Each individual intersection candidate is initially determined as opaque if
 <code>VK_GEOMETRY_OPAQUE_BIT_KHR</code> was included in the
-<a href="accelstructures.html#VkAccelerationStructureGeometryKHR" class="xref page">VkAccelerationStructureGeometryKHR</a>::<code>flags</code> when the geometry it
+<code>VkAccelerationStructureGeometryKHR</code>::<code>flags</code> when the geometry it
 intersected with was built, otherwise it is considered non-opaque.</p>
-</div>
-<div class="paragraph">
-<p>If the geometry includes an opacity micromap, the opacity of the
-intersection at this point is instead derived as described in
-<a href="#ray-opacity-micromap">Ray Opacity Micromap</a>.</p>
-</div>
-<div class="paragraph">
-<p>If the intersection candidate was generated by an <a href="shaders.html#shaders-intersection" class="xref page">intersection shader</a>, the intersection is initially considered to have
-opacity matching the AABB candidate that it was generated from.</p>
 </div>
 <div class="paragraph">
 <p>However, this opacity can be overridden when it is built into an instance.
 Setting <code>VK_GEOMETRY_INSTANCE_FORCE_OPAQUE_BIT_KHR</code> in
-<a href="accelstructures.html#VkAccelerationStructureInstanceKHR" class="xref page">VkAccelerationStructureInstanceKHR</a>::<code>flags</code> will force all
+<code>VkAccelerationStructureInstanceKHR</code>::<code>flags</code> will force all
 geometries in the instance to be considered opaque.
 Similarly, setting <code>VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR</code> will
 force all geometries in the instance to be considered non-opaque.</p>
@@ -805,13 +767,6 @@ in the <code>Ray Flags</code> parameter when tracing a ray.
 regardless of their build parameters.
 Similarly, <code>NoOpaqueKHR</code> forces all geometries to behave as if they are
 non-opaque.</p>
-</div>
-<div class="paragraph">
-<p>If the ray was traced with <code>OpRayQueryProceedKHR</code>, to determine the
-opacity of AABB intersection candidates,
-<code>OpRayQueryGetIntersectionCandidateAABBOpaqueKHR</code> <strong>can</strong> be used.
-This instruction will return <code>true</code> for opaque intersection candidates,
-and <code>false</code> for non-opaque intersection candidates.</p>
 </div>
 <div class="paragraph">
 <div class="title">Culling</div>
@@ -828,153 +783,6 @@ is dropped, and no further processing occurs.</p>
 <p>The <code>OpaqueKHR</code>, <code>NoOpaqueKHR</code>, <code>CullOpaqueKHR</code>, and
 <code>CullNoOpaqueKHR</code> <code>Ray Flags</code> are mutually exclusive.</p>
 </div>
-</div>
-<div class="sect2">
-<h3 id="ray-opacity-micromap"><a class="anchor" href="#ray-opacity-micromap"></a>Ray Opacity Micromap</h3>
-<div class="paragraph">
-<p>A <code>VK_GEOMETRY_TYPE_TRIANGLES_KHR</code> geometry in the acceleration
-structure <strong>may</strong> have an opacity micromap associated with it to give
-finer-grained opacity information.</p>
-</div>
-<div class="paragraph">
-<p>If the intersection candidate is with a geometry with an associated opacity
-micromap and <code>VK_GEOMETRY_INSTANCE_DISABLE_OPACITY_MICROMAPS_EXT</code> is not
-set in its instance then the micromap is used to determine geometry opacity
-instead of the <code>VK_GEOMETRY_OPAQUE_BIT_KHR</code> flag in the geometry.</p>
-</div>
-<div class="paragraph">
-<p>The opacity information in the micromap object is accessed using the
-candidate intersection <span class="eq">u</span> and <span class="eq">v</span> coordinates.
-The integer <span class="eq">u</span> and <span class="eq">v</span> are computed from <span class="eq">⌊u⌋
-+  ⌊v⌋</span>, clamping <span class="eq">⌊u⌋</span> as needed to
-keep the sum less than or equal to <span class="eq">1 &lt;&lt; subdivisionlevel</span>.
-These values are mapped into a linear index with a space filling curve which
-is defined recursively by traversing into the sub-triangle nearest vertex 0,
-then the middle triangle with ordering flipped, then nearest vertex 1 then
-nearest vertex 2.</p>
-</div>
-<div class="imageblock text-center">
-<div class="content">
-<img src="../_images/micromap-subd.svg" alt="micromap subd">
-</div>
-<div class="title">Figure 2. Example ordering for micromap data</div>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<i class="fa icon-note" title="Note"></i>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>This encoding is spatially coherent, purely hierarchical, and allows a
-bit-parallel conversion between barycentric address and index values.</p>
-</div>
-<div class="paragraph">
-<p>See the appendix for reference code implementing this mapping.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-<div class="paragraph">
-<p>The result of the opacity micromap lookup and operations is to treat the
-intersection as opaque, non-opaque, or ignored.
-The interpretation of the values depends on
-<code>VK_GEOMETRY_INSTANCE_FORCE_OPACITY_MICROMAP_2_STATE_EXT</code> in the
-instance of the candidate intersection or
-<code>ForceOpacityMicromap2StateEXT</code> ray flags on the ray.
-If either is set, the opacity micromap information is interpreted in 2 state
-override mode.
-If the result of the micromap lookup is to treat the intersection candidate
-as ignored, no further processing of that candidate is done.</p>
-</div>
-<div class="paragraph">
-<p>If the associated opacity micromap has format
-<code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code>, each element of the micromap
-is represented by a single bit at the index derived above.</p>
-</div>
-<div class="paragraph">
-<p>If the associated opacity micromap has format
-<code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code>, each element is represented by
-a two bit value at the index derived above.</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 20%;">
-<col style="width: 20%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">4 State value</th>
-<th class="tableblock halign-left valign-top">2 State value</th>
-<th class="tableblock halign-left valign-top">Special index value</th>
-<th class="tableblock halign-left valign-top">2 State override</th>
-<th class="tableblock halign-left valign-top">Result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_TRANSPARENT_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ignored</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_TRANSPARENT_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ignored</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_OPAQUE_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Opaque</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_OPAQUE_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Opaque</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_UNKNOWN_TRANSPARENT_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ignored</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_UNKNOWN_TRANSPARENT_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Non-opaque</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_UNKNOWN_OPAQUE_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Opaque</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_OPACITY_MICROMAP_SPECIAL_INDEX_FULLY_UNKNOWN_OPAQUE_EXT</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Non-opaque</p></td>
-</tr>
-</tbody>
-</table>
 </div>
 </div>
 </div>
@@ -1004,43 +812,7 @@ Reporting an intersection outside the AABB either through the implementation
 giving a conservative bound or reporting a <span class="eq">t</span> out of range is legal but
 <strong>may</strong> result in unpredictable closest hit results.</p>
 </div>
-<div class="paragraph">
-<p>If the ray was traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction, an <a href="shaders.html#shaders-intersection" class="xref page">intersection shader</a> is
-invoked from the <a href="raytracing.html#shader-binding-table" class="xref page">Shader Binding Table</a> according to the
-<a href="raytracing.html#shader-binding-table-indexing-rules" class="xref page">specified indexing</a> for the
-intersected geometry.
-If this shader calls <code>OpReportIntersectionKHR</code>, a new intersection
-candidate is generated as described
-<a href="#aabb-intersection-candidate-generation">below</a>.
-If the intersection shader is <code>VK_SHADER_UNUSED_KHR</code> (which is only
-allowed for a zero shader group) then no further processing of the
-intersection candidate occurs.</p>
-</div>
 <div id="aabb-intersection-candidate-generation" class="paragraph">
-<p>Each new candidate generated as a result of this processing is a generated
-intersection candidate from the intersection with AABB geometry, with a
-<span class="eq">t</span> value equal to the <code>Hit</code> parameter of the
-<code>OpReportIntersectionKHR</code> instruction.
-The new generated candidate is then independently run through
-<a href="#ray-intersection-confirmation">Ray Intersection Confirmation</a> as a
-<a href="#ray-triangle-and-generated-intersection-candidates">generated intersection</a>.</p>
-</div>
-<div class="paragraph">
-<p>If the ray was traced with <code>OpRayQueryProceedKHR</code>, control is returned to
-the shader which executed <code>OpRayQueryProceedKHR</code>, returning <code>true</code>.
-The resulting ray query has a candidate intersection type of
-<code>RayQueryCandidateIntersectionAABBKHR</code>.
-<code>OpRayQueryGenerateIntersectionKHR</code> <strong>can</strong> be called to commit a new
-intersection candidate with committed intersection type of
-<code>RayQueryCommittedIntersectionGeneratedKHR</code>.
-Further ray query processing <strong>can</strong> be continued by executing
-<code>OpRayQueryProceedKHR</code> with the same ray query, or intersection <strong>can</strong> be
-terminated with <code>OpRayQueryTerminateKHR</code>.
-Unlike rays traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction, candidates generated in this way skip generated
-intersection candidate confirmation; applications <strong>should</strong> make this
-determination before generating the intersection.</p>
-</div>
-<div class="paragraph">
 <p>This operation <strong>may</strong> be executed multiple times for the same intersection
 candidate.</p>
 </div>
@@ -1058,30 +830,6 @@ valid hit and passes to the next stage of processing.</p>
 <div class="paragraph">
 <p>For non-opaque intersection candidates, shader code is executed to determine
 whether a hit occurred or not.</p>
-</div>
-<div class="paragraph">
-<p>If the ray was traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction, an <a href="shaders.html#shaders-any-hit" class="xref page">any-hit shader</a> is invoked from
-the <a href="raytracing.html#shader-binding-table" class="xref page">Shader Binding Table</a> according to the specified indexing.
-If this shader calls <code>OpIgnoreIntersectionKHR</code>, the candidate is dropped
-and no further processing of the candidate occurs.
-If the <a href="shaders.html#shaders-any-hit" class="xref page">any-hit shader</a> identified is
-<code>VK_SHADER_UNUSED_KHR</code>, the candidate is immediately confirmed as a
-valid hit and passes to the next stage of processing.</p>
-</div>
-<div class="paragraph">
-<p>If the ray was traced with <code>OpRayQueryProceedKHR</code>, control is returned to
-the shader which executed <code>OpRayQueryProceedKHR</code>, returning <code>true</code>.
-As only triangle candidates participate in this operation with ray queries,
-the resulting candidate intersection type is always
-<code>RayQueryCandidateIntersectionTriangleKHR</code>.
-<code>OpRayQueryConfirmIntersectionKHR</code> <strong>can</strong> be called on the ray query to
-confirm the candidate as a hit with committed intersection type of
-<code>RayQueryCommittedIntersectionTriangleKHR</code>.
-Further ray query processing <strong>can</strong> be continued by executing
-<code>OpRayQueryProceedKHR</code> with the same ray query, or intersection <strong>can</strong> be
-terminated with <code>OpRayQueryTerminateKHR</code>.
-If <code>OpRayQueryConfirmIntersectionKHR</code> has not been executed, the
-candidate is dropped and no further processing of the candidate occurs.</p>
 </div>
 <div class="paragraph">
 <p>This operation <strong>may</strong> be executed multiple times for the same intersection
@@ -1136,41 +884,6 @@ is forcibly terminated, the final result of the ray trace is determined.</p>
 <div class="paragraph">
 <p>If a closest hit result was identified by <a href="#ray-closest-hit-determination">Ray Closest Hit Determination</a>,
 a closest hit has occurred, otherwise the final result is a miss.</p>
-</div>
-<div class="paragraph">
-<p>For rays traced with <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a>
-instructions which <strong>can</strong> invoke a closest hit shader, if a closest hit result
-was identified, a <a href="shaders.html#shaders-closest-hit" class="xref page">closest hit shader</a> is invoked
-from the <a href="raytracing.html#shader-binding-table" class="xref page">Shader Binding Table</a> according to the
-<a href="raytracing.html#shader-binding-table-indexing-rules" class="xref page">specified indexing</a> for the
-intersected geometry.
-Control returns to the shader that executed the
-<a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction once this
-shader returns.
-This shader is skipped if either the ray flags included
-<code>SkipClosestHitShaderKHR</code>, or if the <a href="shaders.html#shaders-closest-hit" class="xref page">closest hit shader</a> identified is <code>VK_SHADER_UNUSED_KHR</code>.</p>
-</div>
-<div class="paragraph">
-<p>For rays traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a>
-instruction where no hit result was identified, the <a href="shaders.html#shaders-miss" class="xref page">miss shader</a> identified by the <code>Miss Index</code> parameter of the instruction is
-invoked.
-Control returns to the shader that executed the pipeline trace ray
-instruction once this shader returns.
-This shader is skipped if the miss shader identified is
-<code>VK_SHADER_UNUSED_KHR</code>.</p>
-</div>
-<div class="paragraph">
-<p>If the ray was traced with <code>OpRayQueryProceedKHR</code>, control is returned to
-the shader which executed <code>OpRayQueryProceedKHR</code>, returning <code>false</code>.
-If a closest hit was identified by <a href="#ray-closest-hit-determination">Ray Closest Hit Determination</a>, the
-ray query will now have a committed intersection type of
-<code>RayQueryCommittedIntersectionGeneratedKHR</code> or
-<code>RayQueryCommittedIntersectionTriangleKHR</code>.
-If no closest hit was identified, the committed intersection type will be
-<code>RayQueryCommittedIntersectionNoneKHR</code>.</p>
-</div>
-<div class="paragraph">
-<p>No further processing of a ray query occurs after this result is determined.</p>
 </div>
 </div>
 </div>
