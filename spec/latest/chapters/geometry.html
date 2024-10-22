@@ -496,6 +496,125 @@ from subsequent input primitives.</p>
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="geometry-passthrough"><a class="anchor" href="#geometry-passthrough"></a>Geometry Shader Passthrough</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A geometry shader that uses the <code>PassthroughNV</code> decoration on a variable
+in its input interface is considered a <em>passthrough geometry shader</em>.
+Output primitives in a passthrough geometry shader <strong>must</strong> have the same
+topology as the input primitive and are not produced by emitting vertices.
+The vertices of the output primitive have two different types of attributes,
+per-vertex and per-primitive.
+Geometry shader input variables with <code>PassthroughNV</code> decoration are
+considered to produce per-vertex outputs, where values for each output
+vertex are copied from the corresponding input vertex.
+Any built-in or user-defined geometry shader outputs are considered
+per-primitive in a passthrough geometry shader, where a single output value
+is copied to all output vertices.</p>
+</div>
+<div class="paragraph">
+<p>The remainder of this section details the usage of the <code>PassthroughNV</code>
+decoration and modifications to the interface matching rules when using
+passthrough geometry shaders.</p>
+</div>
+<div class="sect2">
+<h3 id="geometry-passthrough-passthrough"><a class="anchor" href="#geometry-passthrough-passthrough"></a><code>PassthroughNV</code> Decoration</h3>
+<div class="paragraph">
+<p>Decorating a geometry shader input variable with the <code>PassthroughNV</code>
+decoration indicates that values of this input are copied through to the
+corresponding vertex of the output primitive.
+Input variables and block members which do not have the <code>PassthroughNV</code>
+decoration are consumed by the geometry shader without being passed through
+to subsequent stages.</p>
+</div>
+<div class="paragraph">
+<p>The <code>PassthroughNV</code> decoration <strong>must</strong> only be used within a geometry
+shader.</p>
+</div>
+<div class="paragraph">
+<p>Any variable decorated with <code>PassthroughNV</code> <strong>must</strong> be declared using the
+<code>Input</code> storage class.</p>
+</div>
+<div class="paragraph">
+<p>The <code>PassthroughNV</code> decoration <strong>must</strong> not be used with any of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>an input primitive type other than <code>InputPoints</code>, <code>InputLines</code>, or
+<code>Triangles</code>, as specified by the mode for <code>OpExecutionMode</code>.</p>
+</li>
+<li>
+<p>an invocation count other than one, as specified by the <code>Invocations</code>
+mode for <code>OpExecutionMode</code>.</p>
+</li>
+<li>
+<p>an <code>OpEntryPoint</code> which statically uses the <code>OpEmitVertex</code> or
+<code>OpEndPrimitive</code> instructions.</p>
+</li>
+<li>
+<p>a variable decorated with the <code>InvocationId</code> built-in decoration.</p>
+</li>
+<li>
+<p>a variable decorated with the <code>PrimitiveId</code> built-in decoration that
+is declared using the <code>Input</code> storage class.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="geometry-passthrough-interface"><a class="anchor" href="#geometry-passthrough-interface"></a>Passthrough Interface Matching</h3>
+<div class="paragraph">
+<p>When a passthrough geometry shader is in use, the
+<a href="interfaces.html#interfaces-iointerfaces-matching" class="xref page">Interface Matching</a> rules involving the
+geometry shader input and output interfaces operate as described in this
+section.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of matching passthrough geometry shader inputs with outputs
+of the previous pipeline stages, the <code>PassthroughNV</code> decoration is
+ignored.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of matching the outputs of the geometry shader with
+subsequent pipeline stages, each input variable with the <code>PassthroughNV</code>
+decoration is considered to add an equivalent output variable with the same
+type, decoration (other than <code>PassthroughNV</code>), number, and declaration
+order on the output interface.
+The output variable declaration corresponding to an input variable decorated
+with <code>PassthroughNV</code> will be identical to the input declaration, except
+that the outermost array dimension of such variables is removed.
+The output block declaration corresponding to an input block decorated with
+<code>PassthroughNV</code> or having members decorated with <code>PassthroughNV</code> will
+be identical to the input declaration, except that the outermost array
+dimension of such declaration is removed.</p>
+</div>
+<div class="paragraph">
+<p>If an input block is decorated with <code>PassthroughNV</code>, the equivalent
+output block contains all the members of the input block.
+Otherwise, the equivalent output block contains only those input block
+members decorated with <code>PassthroughNV</code>.
+All members of the corresponding output block are assigned <code>Location</code> and
+<code>Component</code> decorations identical to those assigned to the corresponding
+input block members.</p>
+</div>
+<div class="paragraph">
+<p>Output variables and blocks generated from inputs decorated with
+<code>PassthroughNV</code> will only exist for the purposes of interface matching;
+these declarations are not available to geometry shader code or listed in
+the module interface.</p>
+</div>
+<div class="paragraph">
+<p>For the purposes of component counting, passthrough geometry shaders count
+all statically used input variable components declared with the
+<code>PassthroughNV</code> decoration as output components as well, since their
+values will be copied to the output primitive produced by the geometry
+shader.</p>
+</div>
+</div>
+</div>
+</div>
 </article>
   </div>
 </main>
