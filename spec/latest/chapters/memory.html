@@ -1756,8 +1756,8 @@ allocated with this type <strong>can</strong> be mapped for host access using
 <p><a id="memory-coherent"></a> <code>VK_MEMORY_PROPERTY_HOST_COHERENT_BIT</code> bit
 specifies that the host cache management commands
 <a href="#vkFlushMappedMemoryRanges">vkFlushMappedMemoryRanges</a> and <a href="#vkInvalidateMappedMemoryRanges">vkInvalidateMappedMemoryRanges</a>
-are not needed to flush host writes to the device or make device writes
-visible to the host, respectively.</p>
+are not needed to manage
+<a href="synchronization.html#synchronization-dependencies-available-and-visible" class="xref page">availability and    visibility</a> on the host.</p>
 </li>
 <li>
 <p><code>VK_MEMORY_PROPERTY_HOST_CACHED_BIT</code> bit specifies that memory
@@ -1786,7 +1786,9 @@ and any of <code>VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT</code> set, or
 <li>
 <p><code>VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD</code> bit specifies that
 device accesses to allocations of this memory type are automatically
-made available and visible.</p>
+made <a href="synchronization.html#synchronization-dependencies-available-and-visible" class="xref page">available and    visible</a> on the device.
+If paired with <code>VK_MEMORY_PROPERTY_HOST_COHERENT_BIT</code>,
+<a href="synchronization.html#synchronization-dependencies-available-and-visible" class="xref page">memory domain    operations</a> are also performed automatically between host and device.</p>
 </li>
 <li>
 <p><code>VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD</code> bit specifies that
@@ -8757,7 +8759,7 @@ additional parameters of the memory map operation.</p>
 <p><code>ppData</code> is a pointer to a <code>void*</code> variable in which a
 host-accessible pointer to the beginning of the mapped range is
 returned.
-This pointer minus <code>offset</code> <strong>must</strong> be aligned to at least
+The value of the returned pointer minus <code>offset</code> <strong>must</strong> be aligned to
 <a href="limits.html#VkPhysicalDeviceLimits" class="xref page">VkPhysicalDeviceLimits</a>::<code>minMemoryMapAlignment</code>.</p>
 </li>
 </ul>
@@ -9492,13 +9494,62 @@ domain via <a href="synchronization.html#synchronization-dependencies-available-
 <a href="synchronization.html#synchronization-access-types" class="xref page">access type</a>.</p>
 </div>
 <div class="paragraph">
-<p>Within each range described by <code>pMemoryRanges</code>, each set of
-<code>nonCoherentAtomSize</code> bytes in that range is flushed if any byte in that
-set has been written by the host since it was first host mapped, or the last
-time it was flushed.
-If <code>pMemoryRanges</code> includes sets of <code>nonCoherentAtomSize</code> bytes
-where no bytes have been written by the host, those bytes <strong>must</strong> not be
-flushed.</p>
+<p>The first <a href="synchronization.html#synchronization-dependencies-scopes" class="xref page">synchronization scope</a>
+includes all host operations that happened-before it, as defined by the host
+memory model.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>Some systems allow writes that do not directly integrate with the host
+memory model; these have to be synchronized by the application manually.
+One example of this is non-temporal store instructions on x86; to ensure
+these happen-before submission, applications should call <code>_mm_sfence()</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The second <a href="synchronization.html#synchronization-dependencies-scopes" class="xref page">synchronization scope</a> is
+empty.</p>
+</div>
+<div class="paragraph">
+<p>The first <a href="synchronization.html#synchronization-dependencies-access-scopes" class="xref page">access scope</a>
+includes host writes to the specified memory ranges.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>When a host write to a memory location is made available in this way, each
+whole aligned set of <a href="limits.html#limits-nonCoherentAtomSize" class="xref page"><code>nonCoherentAtomSize</code></a> bytes that the memory location exists in will
+also be made available as if they were written by the host.
+For example, with a <code>nonCoherentAtomSize</code> of 128, if an application
+writes to the first byte of a memory object via a host mapping, the first
+128 bytes of the memory object will be made available by this command.
+While the value of the following 127 bytes will be unchanged, this does
+count as an access for the purpose of synchronization, so care must be taken
+to avoid data races.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The second <a href="synchronization.html#synchronization-dependencies-access-scopes" class="xref page">access scope</a> is
+empty.</p>
 </div>
 <div id="memory-device-unmap-does-not-flush" class="paragraph">
 <p>Unmapping non-coherent memory does not implicitly flush the host mapped
@@ -9617,10 +9668,83 @@ If a range of non-coherent memory is written by the host and then
 invalidated without first being flushed, its contents are <strong>undefined</strong>.</p>
 </div>
 <div class="paragraph">
-<p>Within each range described by <code>pMemoryRanges</code>, each set of
-<code>nonCoherentAtomSize</code> bytes in that range is invalidated if any byte in
-that set has been written by the device since it was first host mapped, or
-the last time it was invalidated.</p>
+<p>The first <a href="synchronization.html#synchronization-dependencies-scopes" class="xref page">synchronization scope</a>
+includes all host operations that happened-before it, as defined by the host
+memory model.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>This function does not synchronize with device operations directly - other
+host <a href="synchronization.html#synchronization" class="xref page">synchronization operations</a> that depend on device
+operations such as <a href="synchronization.html#vkWaitForFences" class="xref page">vkWaitForFences</a> must be executed beforehand.
+So for any non-coherent device write to be made visible to the host, there
+has to be a dependency chain along the following lines:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Device write</p>
+</li>
+<li>
+<p>Device memory barrier including host reads in its second scope</p>
+</li>
+<li>
+<p>Signal on the device (e.g. a <a href="synchronization.html#synchronization-fences-signaling" class="xref page">fence    signal operation</a>)</p>
+</li>
+<li>
+<p>Wait on the host (e.g. <a href="synchronization.html#vkWaitForFences" class="xref page">vkWaitForFences</a>)</p>
+</li>
+<li>
+<p><a href="#vkInvalidateMappedMemoryRanges">vkInvalidateMappedMemoryRanges</a></p>
+</li>
+</ol>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The second <a href="synchronization.html#synchronization-dependencies-scopes" class="xref page">synchronization scope</a>
+includes all host operations that happen-after it, as defined by the host
+memory model.</p>
+</div>
+<div class="paragraph">
+<p>The first <a href="synchronization.html#synchronization-dependencies-access-scopes" class="xref page">access scope</a> is
+empty.</p>
+</div>
+<div class="paragraph">
+<p>The second <a href="synchronization.html#synchronization-dependencies-access-scopes" class="xref page">access scope</a>
+includes host reads to the specified memory ranges.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Note</div>
+<div class="paragraph">
+<p>When a device write to a memory location is made visible to the host in this
+way, each whole aligned set of <a href="limits.html#limits-nonCoherentAtomSize" class="xref page"><code>nonCoherentAtomSize</code></a> bytes that the memory location exists in will
+also be made visible as if they were written by the device.
+For example, with a <code>nonCoherentAtomSize</code> of 128, if an application
+writes to the first byte of a memory object on the device, the first 128
+bytes of the memory object will be made visible by this command.
+While the value of the following 127 bytes will be unchanged, this does
+count as an access for the purpose of synchronization, so care must be taken
+to avoid data races.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="admonitionblock note">
 <table>

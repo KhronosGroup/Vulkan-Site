@@ -339,11 +339,13 @@
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p><em>Features</em> describe functionality which is not supported on all
-implementations.
-Features are properties of the physical device.
-Features are <strong>optional</strong>, and <strong>must</strong> be explicitly enabled before use.
-Support for features is reported and enabled on a per-feature basis.</p>
+<p><em>Features</em> advertise additional functionality which <strong>can</strong> be enabled in the
+API.
+If a feature is <em>supported</em> by a physical device, it <strong>must</strong> be <em>enabled</em> when
+creating a <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> in order to use its associated functionality with
+that <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a>.
+If a feature is <em>unsupported</em>, that functionality <strong>cannot</strong> be used with that
+<a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a>.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -556,8 +558,11 @@ structure in which the physical device features are returned.</p>
 <div class="paragraph">
 <p>Each structure in <code>pFeatures</code> and its <code>pNext</code> chain contains members
 corresponding to fine-grained features.
-<code>vkGetPhysicalDeviceFeatures2</code> writes each member to a boolean value
-indicating whether that feature is supported.</p>
+Each structure in <code>pFeatures</code> and its <code>pNext</code> chain contains
+<code>VkBool32</code> members corresponding to fine-grained features.
+Each such member is returned with a <code>VK_TRUE</code> value indicating that
+feature is supported on this physical device, or a <code>VK_FALSE</code> value
+indicating it is unsupported.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -4294,14 +4299,13 @@ and <code>VK_PIPELINE_STAGE_MESH_SHADER_BIT_EXT</code> enum values <strong>must<
 used.</p>
 </li>
 <li>
-<p><a id="features-multiview-mesh"></a> <code>multiviewMeshShader</code> specifies whether
-the implementation supports <a href="#features-multiview"><code>multiview</code></a>
-rendering within a render pass, with mesh shaders.
+<p><a id="features-multiviewMeshShader"></a> <code>multiviewMeshShader</code> specifies
+whether the implementation supports <a href="#features-multiview">    <code>multiview</code></a> rendering within a render pass, with mesh shaders.
 If this feature is not enabled, then a pipeline compiled against a
 subpass with a non-zero view mask <strong>must</strong> not include a mesh shader.</p>
 </li>
 <li>
-<p><a id="features-primitiveFragmentShadingRate-mesh"></a>
+<p><a id="features-primitiveFragmentShadingRateMeshShader"></a>
 <code>primitiveFragmentShadingRateMeshShader</code> indicates that the
 implementation supports the <a href="primsrast.html#primsrast-fragment-shading-rate-primitive" class="xref page">    primitive fragment shading rate</a> in mesh shaders.</p>
 </li>
@@ -6662,6 +6666,113 @@ corresponding feature is supported.
 <li>
 <p><a id="VUID-VkPhysicalDeviceCooperativeMatrixFeaturesKHR-sType-sType" href="#VUID-VkPhysicalDeviceCooperativeMatrixFeaturesKHR-sType-sType"></a> <span class="vuid">VUID-VkPhysicalDeviceCooperativeMatrixFeaturesKHR-sType-sType</span><br>
  <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPhysicalDeviceCooperativeMatrix2FeaturesNV</code> structure is defined
+as:</p>
+</div>
+<div id="VkPhysicalDeviceCooperativeMatrix2FeaturesNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_matrix2
+typedef struct VkPhysicalDeviceCooperativeMatrix2FeaturesNV {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           cooperativeMatrixWorkgroupScope;
+    VkBool32           cooperativeMatrixFlexibleDimensions;
+    VkBool32           cooperativeMatrixReductions;
+    VkBool32           cooperativeMatrixConversions;
+    VkBool32           cooperativeMatrixPerElementOperations;
+    VkBool32           cooperativeMatrixTensorAddressing;
+    VkBool32           cooperativeMatrixBlockLoads;
+} VkPhysicalDeviceCooperativeMatrix2FeaturesNV;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This structure describes the following features:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixWorkgroupScope"></a>
+<code>cooperativeMatrixWorkgroupScope</code> indicates that the implementation
+supports workgroup scope cooperative matrices.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixFlexibleDimensions"></a>
+<code>cooperativeMatrixFlexibleDimensions</code> indicates that the
+implementation supports cooperative matrix sizes that are a multiple of
+the granularity advertised in
+<a href="shaders.html#VkCooperativeMatrixFlexibleDimensionsPropertiesNV" class="xref page">VkCooperativeMatrixFlexibleDimensionsPropertiesNV</a>.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixReductions"></a>
+<code>cooperativeMatrixReductions</code> indicates that the implementation
+supports the <code>CooperativeMatrixReductionsNV</code> SPIR-V capability.
+This allows performing (row, column, 2x2, or all element) reductions on
+matrices.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixConversions"></a>
+<code>cooperativeMatrixConversions</code> indicates that the implementation
+supports the <code>CooperativeMatrixConversionsNV</code> SPIR-V capability.
+This allows converting accumulator matrices to A or B matrices.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixPerElementOperations"></a>
+<code>cooperativeMatrixPerElementOperations</code> indicates that the
+implementation supports the <code>CooperativeMatrixPerElementOperationsNV</code>
+SPIR-V capability.
+This allows performing element-wise operations on matrix elements using
+a callback function.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixTensorAddressing"></a>
+<code>cooperativeMatrixTensorAddressing</code> indicates that the
+implementation supports the <code>TensorAddressingNV</code> and
+<code>CooperativeMatrixTensorAddressingNV</code> SPIR-V capabilities.
+This allows using tensor layout and tensor view types for matrix loads
+and stores.</p>
+</li>
+<li>
+<p><a id="features-cooperativeMatrixBlockLoads"></a>
+<code>cooperativeMatrixBlockLoads</code> indicates that the implementation
+supports the <code>CooperativeMatrixBlockLoadsNV</code> SPIR-V capability.
+This allows setting block size for loads and using a callback function
+to decode block elements.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>VkPhysicalDeviceCooperativeMatrix2FeaturesNV</code> structure is included in the <code>pNext</code> chain of the
+<a href="#VkPhysicalDeviceFeatures2">VkPhysicalDeviceFeatures2</a> structure passed to
+<a href="#vkGetPhysicalDeviceFeatures2">vkGetPhysicalDeviceFeatures2</a>, it is filled in to indicate whether each
+corresponding feature is supported.
+<code>VkPhysicalDeviceCooperativeMatrix2FeaturesNV</code> <strong>can</strong> also be used in the <code>pNext</code> chain of
+<a href="devsandqueues.html#VkDeviceCreateInfo" class="xref page">VkDeviceCreateInfo</a> to selectively enable these features.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPhysicalDeviceCooperativeMatrix2FeaturesNV-sType-sType" href="#VUID-VkPhysicalDeviceCooperativeMatrix2FeaturesNV-sType-sType"></a> <span class="vuid">VUID-VkPhysicalDeviceCooperativeMatrix2FeaturesNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_2_FEATURES_NV</code></p>
 </li>
 </ul>
 </div>
@@ -17000,14 +17111,17 @@ corresponding feature is supported.
 <li>
 <p>If Vulkan 1.0 is supported,
 <a href="#features-robustBufferAccess"><code>robustBufferAccess</code></a> <strong>must</strong> be supported
-if
-<code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> is not advertised</p>
+if <code><a href="../appendices/extensions.html#VK_KHR_portability_subset" class="xref page">VK_KHR_portability_subset</a></code> is not advertised</p>
 </li>
 <li>
 <p>If Vulkan 1.1 is supported,
 the following features <strong>must</strong> be supported:</p>
 <div class="ulist">
 <ul>
+<li>
+<p><a href="#features-storageBuffer16BitAccess"><code>storageBuffer16BitAccess</code></a>
+if <a href="#features-uniformAndStorageBuffer16BitAccess">uniformAndStorageBuffer16BitAccess</a> is supported</p>
+</li>
 <li>
 <p><a href="#features-multiview"><code>multiview</code></a></p>
 </li>
@@ -17035,8 +17149,76 @@ if <code><a href="../appendices/extensions.html#VK_KHR_sampler_mirror_clamp_to_e
 if <code><a href="../appendices/extensions.html#VK_KHR_draw_indirect_count" class="xref page">VK_KHR_draw_indirect_count</a></code> is supported</p>
 </li>
 <li>
+<p><a href="#features-storageBuffer8BitAccess"><code>storageBuffer8BitAccess</code></a>
+if <a href="#features-uniformAndStorageBuffer8BitAccess">uniformAndStorageBuffer8BitAccess</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderInt64"><code>shaderInt64</code></a>
+if <a href="#features-shaderSharedInt64Atomics">shaderSharedInt64Atomics</a> or <a href="#features-shaderBufferInt64Atomics">shaderBufferInt64Atomics</a> are supported</p>
+</li>
+<li>
 <p><a href="#features-descriptorIndexing"><code>descriptorIndexing</code></a>
 if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" class="xref page">VK_EXT_descriptor_indexing</a></code> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderSampledImageArrayDynamicIndexing"><code>shaderSampledImageArrayDynamicIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderStorageBufferArrayDynamicIndexing"><code>shaderStorageBufferArrayDynamicIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderUniformTexelBufferArrayDynamicIndexing"><code>shaderUniformTexelBufferArrayDynamicIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderStorageTexelBufferArrayDynamicIndexing"><code>shaderStorageTexelBufferArrayDynamicIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderSampledImageArrayNonUniformIndexing"><code>shaderSampledImageArrayNonUniformIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderStorageBufferArrayNonUniformIndexing"><code>shaderStorageBufferArrayNonUniformIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderUniformTexelBufferArrayNonUniformIndexing"><code>shaderUniformTexelBufferArrayNonUniformIndexing</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingSampledImageUpdateAfterBind"><code>descriptorBindingSampledImageUpdateAfterBind</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingStorageImageUpdateAfterBind"><code>descriptorBindingStorageImageUpdateAfterBind</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingStorageBufferUpdateAfterBind"><code>descriptorBindingStorageBufferUpdateAfterBind</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingUniformTexelBufferUpdateAfterBind"><code>descriptorBindingUniformTexelBufferUpdateAfterBind</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingStorageTexelBufferUpdateAfterBind"><code>descriptorBindingStorageTexelBufferUpdateAfterBind</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingUpdateUnusedWhilePending"><code>descriptorBindingUpdateUnusedWhilePending</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-descriptorBindingPartiallyBound"><code>descriptorBindingPartiallyBound</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-runtimeDescriptorArray"><code>runtimeDescriptorArray</code></a>
+if <a href="#features-descriptorIndexing">descriptorIndexing</a> is supported</p>
 </li>
 <li>
 <p><a href="#features-shaderOutputViewportIndex"><code>shaderOutputViewportIndex</code></a>
@@ -17126,7 +17308,7 @@ the following features <strong>must</strong> be supported:</p>
 </li>
 <li>
 <p><a href="#features-descriptorBindingInlineUniformBlockUpdateAfterBind"><code>descriptorBindingInlineUniformBlockUpdateAfterBind</code></a>
-if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" class="xref page">VK_EXT_descriptor_indexing</a></code> is supported</p>
+if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" class="xref page">VK_EXT_descriptor_indexing</a></code> or <a href="#features-descriptorIndexing">descriptorIndexing</a> are supported</p>
 </li>
 </ul>
 </div>
@@ -17138,6 +17320,10 @@ if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" clas
 <li>
 <p>If <code><a href="../appendices/extensions.html#VK_KHR_multiview" class="xref page">VK_KHR_multiview</a></code> is supported,
 <a href="#features-multiview"><code>multiview</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
+<p>If <code><a href="../appendices/extensions.html#VK_KHR_shader_float16_int8" class="xref page">VK_KHR_shader_float16_int8</a></code> is supported,
+<a href="#features-shaderFloat16"><code>shaderFloat16</code></a>, or <a href="#features-shaderInt8"><code>shaderInt8</code></a> <strong>must</strong> be supported</p>
 </li>
 <li>
 <p>If <code><a href="../appendices/extensions.html#VK_KHR_16bit_storage" class="xref page">VK_KHR_16bit_storage</a></code> is supported,
@@ -17300,6 +17486,10 @@ if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" clas
 <a href="#features-indexTypeUint8"><code>indexTypeUint8</code></a> <strong>must</strong> be supported</p>
 </li>
 <li>
+<p>If <code><a href="../appendices/extensions.html#VK_KHR_line_rasterization" class="xref page">VK_KHR_line_rasterization</a></code> is supported,
+<a href="#features-rectangularLines"><code>rectangularLines</code></a>, <a href="#features-bresenhamLines"><code>bresenhamLines</code></a>, <a href="#features-smoothLines"><code>smoothLines</code></a>, <a href="#features-stippledRectangularLines"><code>stippledRectangularLines</code></a>, <a href="#features-stippledBresenhamLines"><code>stippledBresenhamLines</code></a>, or <a href="#features-stippledSmoothLines"><code>stippledSmoothLines</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
 <p>If <code><a href="../appendices/extensions.html#VK_KHR_shader_expect_assume" class="xref page">VK_KHR_shader_expect_assume</a></code> is supported,
 <a href="#features-shaderExpectAssume"><code>shaderExpectAssume</code></a> <strong>must</strong> be supported</p>
 </li>
@@ -17364,7 +17554,8 @@ the following features <strong>must</strong> be supported:</p>
 </li>
 <li>
 <p><a href="#features-descriptorBindingInlineUniformBlockUpdateAfterBind"><code>descriptorBindingInlineUniformBlockUpdateAfterBind</code></a>
-if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" class="xref page">VK_EXT_descriptor_indexing</a></code> is supported</p>
+if <code><a href="../appendices/extensions.html#VK_EXT_descriptor_indexing" class="xref page">VK_EXT_descriptor_indexing</a></code> is supported, or
+if Vulkan 1.2 and <a href="#features-descriptorIndexing">descriptorIndexing</a> are supported</p>
 </li>
 </ul>
 </div>
@@ -17423,6 +17614,14 @@ the following features <strong>must</strong> be supported:</p>
 </div>
 </li>
 <li>
+<p>If <code><a href="../appendices/extensions.html#VK_NV_shading_rate_image" class="xref page">VK_NV_shading_rate_image</a></code> is supported,
+<a href="#features-shadingRateImage"><code>shadingRateImage</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
+<p>If <code><a href="../appendices/extensions.html#VK_NV_representative_fragment_test" class="xref page">VK_NV_representative_fragment_test</a></code> is supported,
+<a href="#features-representativeFragmentTest"><code>representativeFragmentTest</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_vertex_attribute_divisor" class="xref page">VK_EXT_vertex_attribute_divisor</a></code> is supported,
 <a href="#features-vertexAttributeInstanceRateDivisor"><code>vertexAttributeInstanceRateDivisor</code></a> <strong>must</strong> be supported</p>
 </li>
@@ -17471,12 +17670,40 @@ the following features <strong>must</strong> be supported:</p>
 <a href="#features-memoryPriority"><code>memoryPriority</code></a> <strong>must</strong> be supported</p>
 </li>
 <li>
+<p>If <code><a href="../appendices/extensions.html#VK_NV_coverage_reduction_mode" class="xref page">VK_NV_coverage_reduction_mode</a></code> is supported,
+<a href="#features-coverageReductionMode"><code>coverageReductionMode</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
+<p>If <code><a href="../appendices/extensions.html#VK_EXT_fragment_shader_interlock" class="xref page">VK_EXT_fragment_shader_interlock</a></code> is supported,
+<a href="#features-fragmentShaderSampleInterlock"><code>fragmentShaderSampleInterlock</code></a>, <a href="#features-fragmentShaderPixelInterlock"><code>fragmentShaderPixelInterlock</code></a>, or <a href="#features-fragmentShaderShadingRateInterlock"><code>fragmentShaderShadingRateInterlock</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_ycbcr_image_arrays" class="xref page">VK_EXT_ycbcr_image_arrays</a></code> is supported,
 <a href="#features-ycbcrImageArrays"><code>ycbcrImageArrays</code></a> <strong>must</strong> be supported</p>
 </li>
 <li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_provoking_vertex" class="xref page">VK_EXT_provoking_vertex</a></code> is supported,
 <a href="#features-provokingVertexLast"><code>provokingVertexLast</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
+<p>If <code><a href="../appendices/extensions.html#VK_EXT_line_rasterization" class="xref page">VK_EXT_line_rasterization</a></code> is supported,
+<a href="#features-rectangularLines"><code>rectangularLines</code></a>, <a href="#features-bresenhamLines"><code>bresenhamLines</code></a>, <a href="#features-smoothLines"><code>smoothLines</code></a>, <a href="#features-stippledRectangularLines"><code>stippledRectangularLines</code></a>, <a href="#features-stippledBresenhamLines"><code>stippledBresenhamLines</code></a>, or <a href="#features-stippledSmoothLines"><code>stippledSmoothLines</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
+<p>If <code><a href="../appendices/extensions.html#VK_EXT_shader_atomic_float" class="xref page">VK_EXT_shader_atomic_float</a></code> is supported,
+the following features <strong>must</strong> be supported:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#features-shaderImageFloat32Atomics"><code>shaderImageFloat32Atomics</code></a>
+if <a href="#features-sparseImageFloat32Atomics">sparseImageFloat32Atomics</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-shaderImageFloat32AtomicAdd"><code>shaderImageFloat32AtomicAdd</code></a>
+if <a href="#features-sparseImageFloat32AtomicAdd">sparseImageFloat32AtomicAdd</a> is supported</p>
+</li>
+</ul>
+</div>
 </li>
 <li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_host_query_reset" class="xref page">VK_EXT_host_query_reset</a></code> is supported,
@@ -17497,6 +17724,11 @@ the following features <strong>must</strong> be supported:</p>
 <li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_map_memory_placed" class="xref page">VK_EXT_map_memory_placed</a></code> is supported,
 <a href="#features-memoryMapPlaced"><code>memoryMapPlaced</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
+<p>If <code><a href="../appendices/extensions.html#VK_EXT_shader_atomic_float2" class="xref page">VK_EXT_shader_atomic_float2</a></code> is supported,
+<a href="#features-shaderImageFloat32AtomicMinMax"><code>shaderImageFloat32AtomicMinMax</code></a> <strong>must</strong> be supported
+if <a href="#features-sparseImageFloat32AtomicMinMax">sparseImageFloat32AtomicMinMax</a> is supported</p>
 </li>
 <li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_swapchain_maintenance1" class="xref page">VK_EXT_swapchain_maintenance1</a></code> is supported,
@@ -17708,6 +17940,38 @@ the following features <strong>must</strong> be supported:</p>
 <a href="#features-nestedCommandBuffer"><code>nestedCommandBuffer</code></a> <strong>must</strong> be supported</p>
 </li>
 <li>
+<p>If <code><a href="../appendices/extensions.html#VK_EXT_extended_dynamic_state3" class="xref page">VK_EXT_extended_dynamic_state3</a></code> is supported,
+the following features <strong>must</strong> be supported:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#features-tessellationShader"><code>tessellationShader</code></a>
+if <a href="#features-extendedDynamicState3TessellationDomainOrigin">extendedDynamicState3TessellationDomainOrigin</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-depthClamp"><code>depthClamp</code></a>
+if <a href="#features-extendedDynamicState3DepthClampEnable">extendedDynamicState3DepthClampEnable</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-fillModeNonSolid"><code>fillModeNonSolid</code></a>
+if <a href="#features-extendedDynamicState3PolygonMode">extendedDynamicState3PolygonMode</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-alphaToOne"><code>alphaToOne</code></a>
+if <a href="#features-extendedDynamicState3AlphaToOneEnable">extendedDynamicState3AlphaToOneEnable</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-logicOp"><code>logicOp</code></a>
+if <a href="#features-extendedDynamicState3LogicOpEnable">extendedDynamicState3LogicOpEnable</a> is supported</p>
+</li>
+<li>
+<p><a href="#features-geometryStreams"><code>geometryStreams</code></a>
+if <code><a href="../appendices/extensions.html#VK_EXT_transform_feedback" class="xref page">VK_EXT_transform_feedback</a></code> and <a href="#features-extendedDynamicState3RasterizationStream">extendedDynamicState3RasterizationStream</a> are supported</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
 <p>If <code><a href="../appendices/extensions.html#VK_EXT_subpass_merge_feedback" class="xref page">VK_EXT_subpass_merge_feedback</a></code> is supported,
 <a href="#features-subpassMergeFeedback"><code>subpassMergeFeedback</code></a> <strong>must</strong> be supported</p>
 </li>
@@ -17812,6 +18076,10 @@ the following features <strong>must</strong> be supported:</p>
 <a href="#features-depthClampControl"><code>depthClampControl</code></a> <strong>must</strong> be supported</p>
 </li>
 <li>
+<p>If <code><a href="../appendices/extensions.html#VK_NV_cooperative_matrix2" class="xref page">VK_NV_cooperative_matrix2</a></code> is supported,
+<a href="#features-cooperativeMatrixWorkgroupScope"><code>cooperativeMatrixWorkgroupScope</code></a>, <a href="#features-cooperativeMatrixFlexibleDimensions"><code>cooperativeMatrixFlexibleDimensions</code></a>, <a href="#features-cooperativeMatrixReductions"><code>cooperativeMatrixReductions</code></a>, <a href="#features-cooperativeMatrixConversions"><code>cooperativeMatrixConversions</code></a>, <a href="#features-cooperativeMatrixPerElementOperations"><code>cooperativeMatrixPerElementOperations</code></a>, <a href="#features-cooperativeMatrixTensorAddressing"><code>cooperativeMatrixTensorAddressing</code></a>, or <a href="#features-cooperativeMatrixBlockLoads"><code>cooperativeMatrixBlockLoads</code></a> <strong>must</strong> be supported</p>
+</li>
+<li>
 <p>If <code><a href="../appendices/extensions.html#VK_KHR_acceleration_structure" class="xref page">VK_KHR_acceleration_structure</a></code> is supported,
 the following features <strong>must</strong> be supported:</p>
 <div class="ulist">
@@ -17865,146 +18133,19 @@ the following features <strong>must</strong> be supported:</p>
 <li>
 <p><a href="#features-meshShader"><code>meshShader</code></a></p>
 </li>
-</ul>
-</div>
-</li>
 <li>
-<p><a href="#features-storageBuffer8BitAccess"><code>storageBuffer8BitAccess</code></a>, if
-<a href="#features-uniformAndStorageBuffer8BitAccess">    <code>uniformAndStorageBuffer8BitAccess</code></a> is enabled.</p>
-</li>
-<li>
-<p>If the <a href="#features-descriptorIndexing"><code>descriptorIndexing</code></a> feature
-is supported:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><a href="#features-shaderSampledImageArrayDynamicIndexing">     <code>shaderSampledImageArrayDynamicIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-shaderStorageBufferArrayDynamicIndexing">     <code>shaderStorageBufferArrayDynamicIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-shaderUniformTexelBufferArrayDynamicIndexing">     <code>shaderUniformTexelBufferArrayDynamicIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-shaderStorageTexelBufferArrayDynamicIndexing">     <code>shaderStorageTexelBufferArrayDynamicIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-shaderSampledImageArrayNonUniformIndexing">     <code>shaderSampledImageArrayNonUniformIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-shaderStorageBufferArrayNonUniformIndexing">     <code>shaderStorageBufferArrayNonUniformIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-shaderUniformTexelBufferArrayNonUniformIndexing">     <code>shaderUniformTexelBufferArrayNonUniformIndexing</code></a></p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingSampledImageUpdateAfterBind">     <code>descriptorBindingSampledImageUpdateAfterBind</code></a></p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingStorageImageUpdateAfterBind">     <code>descriptorBindingStorageImageUpdateAfterBind</code></a></p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingStorageBufferUpdateAfterBind">     <code>descriptorBindingStorageBufferUpdateAfterBind</code></a> (see also
-<a href="devsandqueues.html#limits-robustBufferAccessUpdateAfterBind" class="xref page">     <code>robustBufferAccessUpdateAfterBind</code></a>)</p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingUniformTexelBufferUpdateAfterBind">     <code>descriptorBindingUniformTexelBufferUpdateAfterBind</code></a> (see also
-<a href="devsandqueues.html#limits-robustBufferAccessUpdateAfterBind" class="xref page">     <code>robustBufferAccessUpdateAfterBind</code></a>)</p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingStorageTexelBufferUpdateAfterBind">     <code>descriptorBindingStorageTexelBufferUpdateAfterBind</code></a> (see also
-<a href="devsandqueues.html#limits-robustBufferAccessUpdateAfterBind" class="xref page">     <code>robustBufferAccessUpdateAfterBind</code></a>)</p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingUpdateUnusedWhilePending">     <code>descriptorBindingUpdateUnusedWhilePending</code></a></p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingPartiallyBound">     <code>descriptorBindingPartiallyBound</code></a></p>
-</li>
-<li>
-<p><a href="#features-runtimeDescriptorArray"><code>runtimeDescriptorArray</code></a></p>
-</li>
-<li>
-<p><a href="#features-descriptorBindingInlineUniformBlockUpdateAfterBind">     <code>descriptorBindingInlineUniformBlockUpdateAfterBind</code></a>, if Vulkan
-1.3 or <code><a href="../appendices/extensions.html#VK_EXT_inline_uniform_block" class="xref page">VK_EXT_inline_uniform_block</a></code> is supported</p>
+<p><a href="#features-primitiveFragmentShadingRate"><code>primitiveFragmentShadingRate</code></a>
+if <code><a href="../appendices/extensions.html#VK_KHR_fragment_shading_rate" class="xref page">VK_KHR_fragment_shading_rate</a></code> and <a href="#features-primitiveFragmentShadingRateMeshShader">primitiveFragmentShadingRateMeshShader</a> are supported</p>
 </li>
 </ul>
 </div>
 </li>
 <li>
-<p><a href="#features-shaderInt64"><code>shaderInt64</code></a>, if the
-<a href="#features-shaderSharedInt64Atomics"><code>shaderSharedInt64Atomics</code></a> or
-<a href="#features-shaderBufferInt64Atomics"><code>shaderBufferInt64Atomics</code></a>
-features are supported.</p>
+<p><code><a href="../appendices/extensions.html#VK_KHR_fragment_shading_rate" class="xref page">VK_KHR_fragment_shading_rate</a></code> if
+<a href="#features-primitiveFragmentShadingRateMeshShader">    <code>primitiveFragmentShadingRateMeshShader</code></a> feature is supported.</p>
 </li>
 <li>
-<p><a href="#features-storageBuffer16BitAccess"><code>storageBuffer16BitAccess</code></a>,
-if <a href="#features-uniformAndStorageBuffer16BitAccess">    <code>uniformAndStorageBuffer16BitAccess</code></a> is enabled.</p>
-</li>
-<li>
-<p><a href="#features-shaderImageFloat32Atomics"><code>shaderImageFloat32Atomics</code></a>,
-if the <a href="#features-sparseImageFloat32Atomics">    <code>sparseImageFloat32Atomics</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-shaderImageFloat32AtomicAdd">    <code>shaderImageFloat32AtomicAdd</code></a>, if the
-<a href="#features-sparseImageFloat32AtomicAdd">    <code>sparseImageFloat32AtomicAdd</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-shaderImageFloat32AtomicMinMax">    <code>shaderImageFloat32AtomicMinMax</code></a>, if the
-<a href="#features-sparseImageFloat32AtomicMinMax">    <code>sparseImageFloat32AtomicMinMax</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-primitiveFragmentShadingRate">    <code>primitiveFragmentShadingRate</code></a> if
-<a href="#features-primitiveFragmentShadingRate-mesh">    <code>primitiveFragmentShadingRateMeshShader</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-fragmentShaderSampleInterlock">    <code>fragmentShaderSampleInterlock</code></a> or
-<a href="#features-fragmentShaderPixelInterlock">    <code>fragmentShaderPixelInterlock</code></a> or
-<a href="#features-fragmentShaderShadingRateInterlock">    <code>fragmentShaderShadingRateInterlock</code></a>, if the
-<code><a href="../appendices/extensions.html#VK_EXT_fragment_shader_interlock" class="xref page">VK_EXT_fragment_shader_interlock</a></code> extension is supported.</p>
-</li>
-<li>
-<p><a href="#features-rectangularLines"><code>rectangularLines</code></a> or
-<a href="#features-bresenhamLines"><code>bresenhamLines</code></a> or
-<a href="#features-smoothLines"><code>smoothLines</code></a> or
-<a href="#features-stippledRectangularLines"><code>stippledRectangularLines</code></a> or
-<a href="#features-stippledBresenhamLines"><code>stippledBresenhamLines</code></a> or
-<a href="#features-stippledSmoothLines"><code>stippledSmoothLines</code></a>, if the
-<code><a href="../appendices/extensions.html#VK_KHR_line_rasterization" class="xref page">VK_KHR_line_rasterization</a></code> extension is supported.</p>
-</li>
-<li>
-<p><a href="#features-rectangularLines"><code>rectangularLines</code></a> or
-<a href="#features-bresenhamLines"><code>bresenhamLines</code></a> or
-<a href="#features-smoothLines"><code>smoothLines</code></a> or
-<a href="#features-stippledRectangularLines"><code>stippledRectangularLines</code></a> or
-<a href="#features-stippledBresenhamLines"><code>stippledBresenhamLines</code></a> or
-<a href="#features-stippledSmoothLines"><code>stippledSmoothLines</code></a>, if the
-<code><a href="../appendices/extensions.html#VK_EXT_line_rasterization" class="xref page">VK_EXT_line_rasterization</a></code> extension is supported.</p>
-</li>
-<li>
-<p><a href="#features-tessellationShader"><code>tessellationShader</code></a>, if the
-<a href="#features-extendedDynamicState3TessellationDomainOrigin">    <code>extendedDynamicState3TessellationDomainOrigin</code></a> feature is
-supported.</p>
-</li>
-<li>
-<p><a href="#features-depthClamp"><code>depthClamp</code></a>, if the
-<a href="#features-extendedDynamicState3DepthClampEnable">    <code>extendedDynamicState3DepthClampEnable</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-fillModeNonSolid"><code>fillModeNonSolid</code></a>, if the
-<a href="#features-extendedDynamicState3PolygonMode">    <code>extendedDynamicState3PolygonMode</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-alphaToOne"><code>alphaToOne</code></a>, if the
-<a href="#features-extendedDynamicState3AlphaToOneEnable">    <code>extendedDynamicState3AlphaToOneEnable</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-logicOp"><code>logicOp</code></a>, if the
-<a href="#features-extendedDynamicState3LogicOpEnable">    <code>extendedDynamicState3LogicOpEnable</code></a> feature is supported.</p>
-</li>
-<li>
-<p><a href="#features-geometryStreams"><code>geometryStreams</code></a>, if the
+<p><code><a href="../appendices/extensions.html#VK_EXT_transform_feedback" class="xref page">VK_EXT_transform_feedback</a></code>, if the
 <a href="#features-extendedDynamicState3RasterizationStream">    <code>extendedDynamicState3RasterizationStream</code></a> feature is supported.</p>
 </li>
 <li>
@@ -18026,7 +18167,7 @@ supported.</p>
 <a href="#features-extendedDynamicState3ColorBlendAdvanced">    <code>extendedDynamicState3ColorBlendAdvanced</code></a> feature is supported.</p>
 </li>
 <li>
-<p><a href="#features-provokingVertexLast"><code>provokingVertexLast</code></a>, if the
+<p><code><a href="../appendices/extensions.html#VK_EXT_provoking_vertex" class="xref page">VK_EXT_provoking_vertex</a></code>, if the
 <a href="#features-extendedDynamicState3ProvokingVertexMode">    <code>extendedDynamicState3ProvokingVertexMode</code></a> feature is supported.</p>
 </li>
 <li>
@@ -18038,7 +18179,7 @@ extension, if the <a href="#features-extendedDynamicState3LineRasterizationMode"
 extension, if the <a href="#features-extendedDynamicState3LineStippleEnable">    <code>extendedDynamicState3LineStippleEnable</code></a> feature is supported.</p>
 </li>
 <li>
-<p><a href="#features-depthClipControl"><code>depthClipControl</code></a>, if the
+<p><code><a href="../appendices/extensions.html#VK_EXT_depth_clip_control" class="xref page">VK_EXT_depth_clip_control</a></code>, if the
 <a href="#features-extendedDynamicState3DepthClipNegativeOneToOne">    <code>extendedDynamicState3DepthClipNegativeOneToOne</code></a> feature is
 supported.</p>
 </li>
@@ -18076,23 +18217,18 @@ supported.</p>
 supported.</p>
 </li>
 <li>
-<p><a href="#features-coverageReductionMode"><code>coverageReductionMode</code></a>, if the
+<p><code><a href="../appendices/extensions.html#VK_NV_coverage_reduction_mode" class="xref page">VK_NV_coverage_reduction_mode</a></code>, if the
 <a href="#features-extendedDynamicState3CoverageReductionMode">    <code>extendedDynamicState3CoverageReductionMode</code></a> feature is supported.</p>
 </li>
 <li>
-<p><a href="#features-representativeFragmentTest">    <code>representativeFragmentTest</code></a>, if the
+<p><code><a href="../appendices/extensions.html#VK_NV_representative_fragment_test" class="xref page">VK_NV_representative_fragment_test</a></code>, if the
 <a href="#features-extendedDynamicState3RepresentativeFragmentTestEnable">    <code>extendedDynamicState3RepresentativeFragmentTestEnable</code></a> feature is
 supported.</p>
 </li>
 <li>
-<p><a href="#features-shadingRateImage"><code>shadingRateImage</code></a>, if the
+<p><code><a href="../appendices/extensions.html#VK_NV_shading_rate_image" class="xref page">VK_NV_shading_rate_image</a></code>, if the
 <a href="#features-extendedDynamicState3ShadingRateImageEnable">    <code>extendedDynamicState3ShadingRateImageEnable</code></a> feature is
 supported.</p>
-</li>
-<li>
-<p>Either <a href="#features-shaderFloat16"><code>shaderFloat16</code></a> or
-<a href="#features-shaderInt8"><code>shaderInt8</code></a> if
-<code><a href="../appendices/extensions.html#VK_KHR_shader_float16_int8" class="xref page">VK_KHR_shader_float16_int8</a></code> is supported.</p>
 </li>
 </ul>
 </div>
