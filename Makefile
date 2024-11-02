@@ -67,10 +67,10 @@ prep-sources: prep-docs prep-guide prep-samples prep-tutorial
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
 prep-docs:
-	make -C Vulkan-Docs -f antora/Makefile clean setup
+	(cd Vulkan-Docs && ./makeSpec -clean -spec all setup_antora)
 	cp $(GENPATH)/apimap.cjs \
 	   $(GENPATH)/pageMap.cjs \
-	   Vulkan-Docs/antora/spec/xrefMap.cjs \
+	   $(GENPATH)/xrefMap.cjs \
 	   docs-site/js/
 
 prep-guide:
