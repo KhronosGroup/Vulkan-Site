@@ -46,10 +46,14 @@ init: subrepos
 	    (echo Installing node modules in $$dir: && cd $$dir && npm install) ; \
 	done
 
-subrepos: $(REPONAMES)
+subrepos:
 	for repo in $(REPONAMES) ; do \
 	    echo Cloning $$repo && \
-	    test -d $$repo || git clone git@github.com:KhronosGroup/$$repo.git ; \
+	    if test -d $$repo ; then \
+		echo "Not cloning repo $$repo, already exists" ; \
+	    else \
+	    git clone git@github.com:KhronosGroup/$$repo.git ; \
+	    fi ; \
 	done
 
 # Build UI bundle
@@ -67,7 +71,7 @@ prep-sources: prep-docs prep-guide prep-samples prep-tutorial
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
 prep-docs:
-	(cd Vulkan-Docs && ./makeSpec -clean -spec all setup_antora)
+	cd Vulkan-Docs && ./makeSpec -clean -spec all setup_antora
 	cp $(GENPATH)/apimap.cjs \
 	   $(GENPATH)/pageMap.cjs \
 	   $(GENPATH)/xrefMap.cjs \
