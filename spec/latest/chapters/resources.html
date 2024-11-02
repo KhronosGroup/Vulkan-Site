@@ -3375,15 +3375,6 @@ If <code>flags</code> contains
 be <code>VK_IMAGE_TYPE_2D</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageCreateInfo-imageType-10196" href="#VUID-VkImageCreateInfo-imageType-10196"></a> <span class="vuid">VUID-VkImageCreateInfo-imageType-10196</span><br>
-
-If <code>imageType</code> is <code>VK_IMAGE_TYPE_3D</code> and <code>flags</code> contains
-<code>VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT</code> then <code>flags</code> <strong>must</strong> not
-contain any of <code>VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>,
-<code>VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>, and
-<code>VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code></p>
-</li>
-<li>
 <p><a id="VUID-VkImageCreateInfo-flags-00950" href="#VUID-VkImageCreateInfo-flags-00950"></a> <span class="vuid">VUID-VkImageCreateInfo-flags-00950</span><br>
 
 If <code>flags</code> contains <code>VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT</code>,
@@ -3407,11 +3398,11 @@ be <code>VK_IMAGE_TYPE_3D</code></p>
 <li>
 <p><a id="VUID-VkImageCreateInfo-imageType-10197" href="#VUID-VkImageCreateInfo-imageType-10197"></a> <span class="vuid">VUID-VkImageCreateInfo-imageType-10197</span><br>
 
-If <code>imageType</code> is <code>VK_IMAGE_TYPE_3D</code> and <code>flags</code> contains
-<code>VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT</code> then <code>flags</code> <strong>must</strong>
-not contain any of <code>VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>,
-<code>VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code>, and
-<code>VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code></p>
+If <code>flags</code> contains
+<code>VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT</code>, <code>flags</code> <strong>must</strong> not
+include <code>VK_IMAGE_CREATE_SPARSE_ALIASED_BIT</code>,
+<code>VK_IMAGE_CREATE_SPARSE_BINDING_BIT</code>, or
+<code>VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code></p>
 </li>
 <li>
 <p><a id="VUID-VkImageCreateInfo-extent-02252" href="#VUID-VkImageCreateInfo-extent-02252"></a> <span class="vuid">VUID-VkImageCreateInfo-extent-02252</span><br>
@@ -4287,6 +4278,13 @@ If <code>imageCreateFormatFeatures</code> (as defined in
 <a href="#resources-image-creation-limits">Image Creation Limits</a>) does not
 contain <code>VK_FORMAT_FEATURE_2_HOST_IMAGE_TRANSFER_BIT_EXT</code>, then
 <code>usage</code> <strong>must</strong> not contain <code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkImageCreateInfo-usage-10245" href="#VUID-VkImageCreateInfo-usage-10245"></a> <span class="vuid">VUID-VkImageCreateInfo-usage-10245</span><br>
+
+If <code>usage</code> includes <code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code>, then
+the <a href="features.html#features-hostImageCopy" class="xref page"><code>hostImageCopy</code></a> feature <strong>must</strong> be
+enabled</p>
 </li>
 <li>
 <p><a id="VUID-VkImageCreateInfo-pNext-09653" href="#VUID-VkImageCreateInfo-pNext-09653"></a> <span class="vuid">VUID-VkImageCreateInfo-pNext-09653</span><br>
@@ -11096,13 +11094,11 @@ level accessible to the view</p>
 <div class="sect1">
 <h2 id="resources-acceleration-structures"><a class="anchor" href="#resources-acceleration-structures"></a>Acceleration Structures</h2>
 <div class="sectionbody">
-<div class="openblock">
-<div class="content">
 <div class="paragraph">
 <p>Acceleration structures are opaque data structures that are built by the
 implementation to more efficiently perform spatial queries on the provided
 geometric data.
-For this extension, an acceleration structure is either a top-level
+For these extensions, an acceleration structure is either a top-level
 acceleration structure containing a set of bottom-level acceleration
 structures or a bottom-level acceleration structure containing either a set
 of axis-aligned bounding boxes for custom geometry or a set of triangles.</p>
@@ -11115,376 +11111,16 @@ The top-level acceleration structure is what is bound to the acceleration
 descriptor, for example to trace inside the shader in the ray tracing
 pipeline.</p>
 </div>
+<div class="openblock">
+<div class="content">
 <div class="paragraph">
-<p>Acceleration structures are represented by <code>VkAccelerationStructureKHR</code>
-handles:</p>
+<p>Acceleration structures for the <code><a href="../appendices/extensions.html#VK_KHR_acceleration_structure" class="xref page">VK_KHR_acceleration_structure</a>
+extension</code> are represented by <code>VkAccelerationStructureKHR</code> handles:</p>
 </div>
 <div id="VkAccelerationStructureKHR" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_acceleration_structure
 VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkAccelerationStructureKHR)</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="openblock">
-<div class="content">
-<div class="paragraph">
-<p>Acceleration structures for the <code><a href="../appendices/extensions.html#VK_NV_ray_tracing" class="xref page">VK_NV_ray_tracing</a> extension</code> are
-represented by the similar <code>VkAccelerationStructureNV</code> handles:</p>
-</div>
-<div id="VkAccelerationStructureNV" class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
-VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkAccelerationStructureNV)</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="openblock">
-<div class="content">
-<div class="paragraph">
-<p>To create acceleration structures, call:</p>
-</div>
-<div id="vkCreateAccelerationStructureNV" class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
-VkResult vkCreateAccelerationStructureNV(
-    VkDevice                                    device,
-    const VkAccelerationStructureCreateInfoNV*  pCreateInfo,
-    const VkAllocationCallbacks*                pAllocator,
-    VkAccelerationStructureNV*                  pAccelerationStructure);</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>device</code> is the logical device that creates the buffer object.</p>
-</li>
-<li>
-<p><code>pCreateInfo</code> is a pointer to a
-<a href="#VkAccelerationStructureCreateInfoNV">VkAccelerationStructureCreateInfoNV</a> structure containing
-parameters affecting creation of the acceleration structure.</p>
-</li>
-<li>
-<p><code>pAllocator</code> controls host memory allocation as described in the
-<a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
-</li>
-<li>
-<p><code>pAccelerationStructure</code> is a pointer to a
-<a href="#VkAccelerationStructureNV">VkAccelerationStructureNV</a> handle in which the resulting
-acceleration structure object is returned.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Similarly to other objects in Vulkan, the acceleration structure creation
-merely creates an object with a specific &#8220;shape&#8221; as specified by the
-information in <a href="#VkAccelerationStructureInfoNV">VkAccelerationStructureInfoNV</a> and <code>compactedSize</code>
-in <code>pCreateInfo</code>.</p>
-</div>
-<div class="paragraph">
-<p>Once memory has been bound to the acceleration structure using
-<a href="#vkBindAccelerationStructureMemoryNV">vkBindAccelerationStructureMemoryNV</a>, that memory is populated by calls
-to <a href="accelstructures.html#vkCmdBuildAccelerationStructureNV" class="xref page">vkCmdBuildAccelerationStructureNV</a> and
-<a href="accelstructures.html#vkCmdCopyAccelerationStructureNV" class="xref page">vkCmdCopyAccelerationStructureNV</a>.</p>
-</div>
-<div class="paragraph">
-<p>Acceleration structure creation uses the count and type information from the
-geometries, but does not use the data references in the structures.</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Valid Usage (Implicit)</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a id="VUID-vkCreateAccelerationStructureNV-device-parameter" href="#VUID-vkCreateAccelerationStructureNV-device-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-device-parameter</span><br>
- <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
-</li>
-<li>
-<p><a id="VUID-vkCreateAccelerationStructureNV-pCreateInfo-parameter" href="#VUID-vkCreateAccelerationStructureNV-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-pCreateInfo-parameter</span><br>
- <code>pCreateInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkAccelerationStructureCreateInfoNV">VkAccelerationStructureCreateInfoNV</a> structure</p>
-</li>
-<li>
-<p><a id="VUID-vkCreateAccelerationStructureNV-pAllocator-parameter" href="#VUID-vkCreateAccelerationStructureNV-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-pAllocator-parameter</span><br>
- If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
-</li>
-<li>
-<p><a id="VUID-vkCreateAccelerationStructureNV-pAccelerationStructure-parameter" href="#VUID-vkCreateAccelerationStructureNV-pAccelerationStructure-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-pAccelerationStructure-parameter</span><br>
- <code>pAccelerationStructure</code> <strong>must</strong> be a valid pointer to a <a href="#VkAccelerationStructureNV">VkAccelerationStructureNV</a> handle</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Return Codes</div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"><a href="fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
-<dd>
-<div class="ulist">
-<ul>
-<li>
-<p><code>VK_SUCCESS</code></p>
-</li>
-</ul>
-</div>
-</dd>
-<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
-<dd>
-<div class="ulist">
-<ul>
-<li>
-<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
-</li>
-</ul>
-</div>
-</dd>
-</dl>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="openblock">
-<div class="content">
-<div class="paragraph">
-<p>The <code>VkAccelerationStructureCreateInfoNV</code> structure is defined as:</p>
-</div>
-<div id="VkAccelerationStructureCreateInfoNV" class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
-typedef struct VkAccelerationStructureCreateInfoNV {
-    VkStructureType                  sType;
-    const void*                      pNext;
-    VkDeviceSize                     compactedSize;
-    VkAccelerationStructureInfoNV    info;
-} VkAccelerationStructureCreateInfoNV;</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
-</li>
-<li>
-<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
-structure.</p>
-</li>
-<li>
-<p><code>compactedSize</code> is the size from the result of
-<a href="accelstructures.html#vkCmdWriteAccelerationStructuresPropertiesNV" class="xref page">vkCmdWriteAccelerationStructuresPropertiesNV</a> if this acceleration
-structure is going to be the target of a compacting copy.</p>
-</li>
-<li>
-<p><code>info</code> is the <a href="#VkAccelerationStructureInfoNV">VkAccelerationStructureInfoNV</a> structure
-specifying further parameters of the created acceleration structure.</p>
-</li>
-</ul>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Valid Usage</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a id="VUID-VkAccelerationStructureCreateInfoNV-compactedSize-02421" href="#VUID-VkAccelerationStructureCreateInfoNV-compactedSize-02421"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-compactedSize-02421</span><br>
-
-If <code>compactedSize</code> is not <code>0</code> then both <code>info.geometryCount</code> and
-<code>info.instanceCount</code> <strong>must</strong> be <code>0</code></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Valid Usage (Implicit)</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a id="VUID-VkAccelerationStructureCreateInfoNV-sType-sType" href="#VUID-VkAccelerationStructureCreateInfoNV-sType-sType"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_NV</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureCreateInfoNV-pNext-pNext" href="#VUID-VkAccelerationStructureCreateInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-pNext-pNext</span><br>
- <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="descriptorsets.html#VkOpaqueCaptureDescriptorDataCreateInfoEXT" class="xref page">VkOpaqueCaptureDescriptorDataCreateInfoEXT</a></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureCreateInfoNV-sType-unique" href="#VUID-VkAccelerationStructureCreateInfoNV-sType-unique"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-sType-unique</span><br>
- The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureCreateInfoNV-info-parameter" href="#VUID-VkAccelerationStructureCreateInfoNV-info-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-info-parameter</span><br>
- <code>info</code> <strong>must</strong> be a valid <a href="#VkAccelerationStructureInfoNV">VkAccelerationStructureInfoNV</a> structure</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="openblock">
-<div class="content">
-<div class="paragraph">
-<p>The <code>VkAccelerationStructureInfoNV</code> structure is defined as:</p>
-</div>
-<div id="VkAccelerationStructureInfoNV" class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
-typedef struct VkAccelerationStructureInfoNV {
-    VkStructureType                        sType;
-    const void*                            pNext;
-    VkAccelerationStructureTypeNV          type;
-    VkBuildAccelerationStructureFlagsNV    flags;
-    uint32_t                               instanceCount;
-    uint32_t                               geometryCount;
-    const VkGeometryNV*                    pGeometries;
-} VkAccelerationStructureInfoNV;</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
-</li>
-<li>
-<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
-structure.</p>
-</li>
-<li>
-<p><code>type</code> is a <a href="#VkAccelerationStructureTypeNV">VkAccelerationStructureTypeNV</a> value specifying the
-type of acceleration structure that will be created.</p>
-</li>
-<li>
-<p><code>flags</code> is a bitmask of <a href="#VkBuildAccelerationStructureFlagBitsNV">VkBuildAccelerationStructureFlagBitsNV</a>
-specifying additional parameters of the acceleration structure.</p>
-</li>
-<li>
-<p><code>instanceCount</code> specifies the number of instances that will be in
-the new acceleration structure.</p>
-</li>
-<li>
-<p><code>geometryCount</code> specifies the number of geometries that will be in
-the new acceleration structure.</p>
-</li>
-<li>
-<p><code>pGeometries</code> is a pointer to an array of <code>geometryCount</code>
-<a href="#VkGeometryNV">VkGeometryNV</a> structures containing the scene data being passed
-into the acceleration structure.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p><code>VkAccelerationStructureInfoNV</code> contains information that is used both
-for acceleration structure creation with
-<a href="#vkCreateAccelerationStructureNV">vkCreateAccelerationStructureNV</a> and in combination with the actual
-geometric data to build the acceleration structure with
-<a href="accelstructures.html#vkCmdBuildAccelerationStructureNV" class="xref page">vkCmdBuildAccelerationStructureNV</a>.</p>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Valid Usage</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-geometryCount-02422" href="#VUID-VkAccelerationStructureInfoNV-geometryCount-02422"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-geometryCount-02422</span><br>
-
-<code>geometryCount</code> <strong>must</strong> be less than or equal to
-<a href="limits.html#VkPhysicalDeviceRayTracingPropertiesNV" class="xref page">VkPhysicalDeviceRayTracingPropertiesNV</a>::<code>maxGeometryCount</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-instanceCount-02423" href="#VUID-VkAccelerationStructureInfoNV-instanceCount-02423"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-instanceCount-02423</span><br>
-
-<code>instanceCount</code> <strong>must</strong> be less than or equal to
-<a href="limits.html#VkPhysicalDeviceRayTracingPropertiesNV" class="xref page">VkPhysicalDeviceRayTracingPropertiesNV</a>::<code>maxInstanceCount</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-maxTriangleCount-02424" href="#VUID-VkAccelerationStructureInfoNV-maxTriangleCount-02424"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-maxTriangleCount-02424</span><br>
-
-The total number of triangles in all geometries <strong>must</strong> be less than or
-equal to
-<a href="limits.html#VkPhysicalDeviceRayTracingPropertiesNV" class="xref page">VkPhysicalDeviceRayTracingPropertiesNV</a>::<code>maxTriangleCount</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-type-02425" href="#VUID-VkAccelerationStructureInfoNV-type-02425"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-02425</span><br>
-
-If <code>type</code> is <code>VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NV</code> then
-<code>geometryCount</code> <strong>must</strong> be <code>0</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-type-02426" href="#VUID-VkAccelerationStructureInfoNV-type-02426"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-02426</span><br>
-
-If <code>type</code> is <code>VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV</code>
-then <code>instanceCount</code> <strong>must</strong> be <code>0</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-type-02786" href="#VUID-VkAccelerationStructureInfoNV-type-02786"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-02786</span><br>
-
-If <code>type</code> is <code>VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV</code>
-then the <code>geometryType</code> member of each geometry in <code>pGeometries</code>
-<strong>must</strong> be the same</p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-type-04623" href="#VUID-VkAccelerationStructureInfoNV-type-04623"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-04623</span><br>
-
-<code>type</code> <strong>must</strong> not be <code>VK_ACCELERATION_STRUCTURE_TYPE_GENERIC_KHR</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-flags-02592" href="#VUID-VkAccelerationStructureInfoNV-flags-02592"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-flags-02592</span><br>
-
-If <code>flags</code> has the
-<code>VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV</code> bit set,
-then it <strong>must</strong> not have the
-<code>VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV</code> bit set</p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-scratch-02781" href="#VUID-VkAccelerationStructureInfoNV-scratch-02781"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-scratch-02781</span><br>
-
-<code>scratch</code> <strong>must</strong> have been created with
-<code>VK_BUFFER_USAGE_RAY_TRACING_BIT_NV</code> usage flag</p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-instanceData-02782" href="#VUID-VkAccelerationStructureInfoNV-instanceData-02782"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-instanceData-02782</span><br>
-
-If <code>instanceData</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>instanceData</code>
-<strong>must</strong> have been created with <code>VK_BUFFER_USAGE_RAY_TRACING_BIT_NV</code>
-usage flag</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Valid Usage (Implicit)</div>
-<div class="ulist">
-<ul>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-sType-sType" href="#VUID-VkAccelerationStructureInfoNV-sType-sType"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_INFO_NV</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-pNext-pNext" href="#VUID-VkAccelerationStructureInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-pNext-pNext</span><br>
- <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-type-parameter" href="#VUID-VkAccelerationStructureInfoNV-type-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-parameter</span><br>
- <code>type</code> <strong>must</strong> be a valid <a href="#VkAccelerationStructureTypeNV">VkAccelerationStructureTypeNV</a> value</p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-flags-parameter" href="#VUID-VkAccelerationStructureInfoNV-flags-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-flags-parameter</span><br>
- <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkBuildAccelerationStructureFlagBitsNV">VkBuildAccelerationStructureFlagBitsNV</a> values</p>
-</li>
-<li>
-<p><a id="VUID-VkAccelerationStructureInfoNV-pGeometries-parameter" href="#VUID-VkAccelerationStructureInfoNV-pGeometries-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-pGeometries-parameter</span><br>
- If <code>geometryCount</code> is not <code>0</code>, <code>pGeometries</code> <strong>must</strong> be a valid pointer to an array of <code>geometryCount</code> valid <a href="#VkGeometryNV">VkGeometryNV</a> structures</p>
-</li>
-</ul>
-</div>
 </div>
 </div>
 </div>
@@ -12312,6 +11948,368 @@ for a build operation.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
+<p>Acceleration structures for the <code><a href="../appendices/extensions.html#VK_NV_ray_tracing" class="xref page">VK_NV_ray_tracing</a> extension</code> are
+represented by the similar <code>VkAccelerationStructureNV</code> handles:</p>
+</div>
+<div id="VkAccelerationStructureNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
+VK_DEFINE_NON_DISPATCHABLE_HANDLE(VkAccelerationStructureNV)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To create acceleration structures, call:</p>
+</div>
+<div id="vkCreateAccelerationStructureNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
+VkResult vkCreateAccelerationStructureNV(
+    VkDevice                                    device,
+    const VkAccelerationStructureCreateInfoNV*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkAccelerationStructureNV*                  pAccelerationStructure);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the logical device that creates the buffer object.</p>
+</li>
+<li>
+<p><code>pCreateInfo</code> is a pointer to a
+<a href="#VkAccelerationStructureCreateInfoNV">VkAccelerationStructureCreateInfoNV</a> structure containing
+parameters affecting creation of the acceleration structure.</p>
+</li>
+<li>
+<p><code>pAllocator</code> controls host memory allocation as described in the
+<a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter.</p>
+</li>
+<li>
+<p><code>pAccelerationStructure</code> is a pointer to a
+<a href="#VkAccelerationStructureNV">VkAccelerationStructureNV</a> handle in which the resulting
+acceleration structure object is returned.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Similarly to other objects in Vulkan, the acceleration structure creation
+merely creates an object with a specific &#8220;shape&#8221; as specified by the
+information in <a href="#VkAccelerationStructureInfoNV">VkAccelerationStructureInfoNV</a> and <code>compactedSize</code>
+in <code>pCreateInfo</code>.</p>
+</div>
+<div class="paragraph">
+<p>Once memory has been bound to the acceleration structure using
+<a href="#vkBindAccelerationStructureMemoryNV">vkBindAccelerationStructureMemoryNV</a>, that memory is populated by calls
+to <a href="accelstructures.html#vkCmdBuildAccelerationStructureNV" class="xref page">vkCmdBuildAccelerationStructureNV</a> and
+<a href="accelstructures.html#vkCmdCopyAccelerationStructureNV" class="xref page">vkCmdCopyAccelerationStructureNV</a>.</p>
+</div>
+<div class="paragraph">
+<p>Acceleration structure creation uses the count and type information from the
+geometries, but does not use the data references in the structures.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCreateAccelerationStructureNV-device-parameter" href="#VUID-vkCreateAccelerationStructureNV-device-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateAccelerationStructureNV-pCreateInfo-parameter" href="#VUID-vkCreateAccelerationStructureNV-pCreateInfo-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-pCreateInfo-parameter</span><br>
+ <code>pCreateInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkAccelerationStructureCreateInfoNV">VkAccelerationStructureCreateInfoNV</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateAccelerationStructureNV-pAllocator-parameter" href="#VUID-vkCreateAccelerationStructureNV-pAllocator-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-pAllocator-parameter</span><br>
+ If <code>pAllocator</code> is not <code>NULL</code>, <code>pAllocator</code> <strong>must</strong> be a valid pointer to a valid <a href="memory.html#VkAllocationCallbacks" class="xref page">VkAllocationCallbacks</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCreateAccelerationStructureNV-pAccelerationStructure-parameter" href="#VUID-vkCreateAccelerationStructureNV-pAccelerationStructure-parameter"></a> <span class="vuid">VUID-vkCreateAccelerationStructureNV-pAccelerationStructure-parameter</span><br>
+ <code>pAccelerationStructure</code> <strong>must</strong> be a valid pointer to a <a href="#VkAccelerationStructureNV">VkAccelerationStructureNV</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkAccelerationStructureCreateInfoNV</code> structure is defined as:</p>
+</div>
+<div id="VkAccelerationStructureCreateInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
+typedef struct VkAccelerationStructureCreateInfoNV {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    VkDeviceSize                     compactedSize;
+    VkAccelerationStructureInfoNV    info;
+} VkAccelerationStructureCreateInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>compactedSize</code> is the size from the result of
+<a href="accelstructures.html#vkCmdWriteAccelerationStructuresPropertiesNV" class="xref page">vkCmdWriteAccelerationStructuresPropertiesNV</a> if this acceleration
+structure is going to be the target of a compacting copy.</p>
+</li>
+<li>
+<p><code>info</code> is the <a href="#VkAccelerationStructureInfoNV">VkAccelerationStructureInfoNV</a> structure
+specifying further parameters of the created acceleration structure.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkAccelerationStructureCreateInfoNV-compactedSize-02421" href="#VUID-VkAccelerationStructureCreateInfoNV-compactedSize-02421"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-compactedSize-02421</span><br>
+
+If <code>compactedSize</code> is not <code>0</code> then both <code>info.geometryCount</code> and
+<code>info.instanceCount</code> <strong>must</strong> be <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkAccelerationStructureCreateInfoNV-sType-sType" href="#VUID-VkAccelerationStructureCreateInfoNV-sType-sType"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureCreateInfoNV-pNext-pNext" href="#VUID-VkAccelerationStructureCreateInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code> or a pointer to a valid instance of <a href="descriptorsets.html#VkOpaqueCaptureDescriptorDataCreateInfoEXT" class="xref page">VkOpaqueCaptureDescriptorDataCreateInfoEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureCreateInfoNV-sType-unique" href="#VUID-VkAccelerationStructureCreateInfoNV-sType-unique"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-sType-unique</span><br>
+ The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureCreateInfoNV-info-parameter" href="#VUID-VkAccelerationStructureCreateInfoNV-info-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureCreateInfoNV-info-parameter</span><br>
+ <code>info</code> <strong>must</strong> be a valid <a href="#VkAccelerationStructureInfoNV">VkAccelerationStructureInfoNV</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkAccelerationStructureInfoNV</code> structure is defined as:</p>
+</div>
+<div id="VkAccelerationStructureInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_ray_tracing
+typedef struct VkAccelerationStructureInfoNV {
+    VkStructureType                        sType;
+    const void*                            pNext;
+    VkAccelerationStructureTypeNV          type;
+    VkBuildAccelerationStructureFlagsNV    flags;
+    uint32_t                               instanceCount;
+    uint32_t                               geometryCount;
+    const VkGeometryNV*                    pGeometries;
+} VkAccelerationStructureInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>type</code> is a <a href="#VkAccelerationStructureTypeNV">VkAccelerationStructureTypeNV</a> value specifying the
+type of acceleration structure that will be created.</p>
+</li>
+<li>
+<p><code>flags</code> is a bitmask of <a href="#VkBuildAccelerationStructureFlagBitsNV">VkBuildAccelerationStructureFlagBitsNV</a>
+specifying additional parameters of the acceleration structure.</p>
+</li>
+<li>
+<p><code>instanceCount</code> specifies the number of instances that will be in
+the new acceleration structure.</p>
+</li>
+<li>
+<p><code>geometryCount</code> specifies the number of geometries that will be in
+the new acceleration structure.</p>
+</li>
+<li>
+<p><code>pGeometries</code> is a pointer to an array of <code>geometryCount</code>
+<a href="#VkGeometryNV">VkGeometryNV</a> structures containing the scene data being passed
+into the acceleration structure.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>VkAccelerationStructureInfoNV</code> contains information that is used both
+for acceleration structure creation with
+<a href="#vkCreateAccelerationStructureNV">vkCreateAccelerationStructureNV</a> and in combination with the actual
+geometric data to build the acceleration structure with
+<a href="accelstructures.html#vkCmdBuildAccelerationStructureNV" class="xref page">vkCmdBuildAccelerationStructureNV</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-geometryCount-02422" href="#VUID-VkAccelerationStructureInfoNV-geometryCount-02422"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-geometryCount-02422</span><br>
+
+<code>geometryCount</code> <strong>must</strong> be less than or equal to
+<a href="limits.html#VkPhysicalDeviceRayTracingPropertiesNV" class="xref page">VkPhysicalDeviceRayTracingPropertiesNV</a>::<code>maxGeometryCount</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-instanceCount-02423" href="#VUID-VkAccelerationStructureInfoNV-instanceCount-02423"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-instanceCount-02423</span><br>
+
+<code>instanceCount</code> <strong>must</strong> be less than or equal to
+<a href="limits.html#VkPhysicalDeviceRayTracingPropertiesNV" class="xref page">VkPhysicalDeviceRayTracingPropertiesNV</a>::<code>maxInstanceCount</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-maxTriangleCount-02424" href="#VUID-VkAccelerationStructureInfoNV-maxTriangleCount-02424"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-maxTriangleCount-02424</span><br>
+
+The total number of triangles in all geometries <strong>must</strong> be less than or
+equal to
+<a href="limits.html#VkPhysicalDeviceRayTracingPropertiesNV" class="xref page">VkPhysicalDeviceRayTracingPropertiesNV</a>::<code>maxTriangleCount</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-type-02425" href="#VUID-VkAccelerationStructureInfoNV-type-02425"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-02425</span><br>
+
+If <code>type</code> is <code>VK_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL_NV</code> then
+<code>geometryCount</code> <strong>must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-type-02426" href="#VUID-VkAccelerationStructureInfoNV-type-02426"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-02426</span><br>
+
+If <code>type</code> is <code>VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV</code>
+then <code>instanceCount</code> <strong>must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-type-02786" href="#VUID-VkAccelerationStructureInfoNV-type-02786"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-02786</span><br>
+
+If <code>type</code> is <code>VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_NV</code>
+then the <code>geometryType</code> member of each geometry in <code>pGeometries</code>
+<strong>must</strong> be the same</p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-type-04623" href="#VUID-VkAccelerationStructureInfoNV-type-04623"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-04623</span><br>
+
+<code>type</code> <strong>must</strong> not be <code>VK_ACCELERATION_STRUCTURE_TYPE_GENERIC_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-flags-02592" href="#VUID-VkAccelerationStructureInfoNV-flags-02592"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-flags-02592</span><br>
+
+If <code>flags</code> has the
+<code>VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_NV</code> bit set,
+then it <strong>must</strong> not have the
+<code>VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_BUILD_BIT_NV</code> bit set</p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-scratch-02781" href="#VUID-VkAccelerationStructureInfoNV-scratch-02781"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-scratch-02781</span><br>
+
+<code>scratch</code> <strong>must</strong> have been created with
+<code>VK_BUFFER_USAGE_RAY_TRACING_BIT_NV</code> usage flag</p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-instanceData-02782" href="#VUID-VkAccelerationStructureInfoNV-instanceData-02782"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-instanceData-02782</span><br>
+
+If <code>instanceData</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>instanceData</code>
+<strong>must</strong> have been created with <code>VK_BUFFER_USAGE_RAY_TRACING_BIT_NV</code>
+usage flag</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-sType-sType" href="#VUID-VkAccelerationStructureInfoNV-sType-sType"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-pNext-pNext" href="#VUID-VkAccelerationStructureInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-type-parameter" href="#VUID-VkAccelerationStructureInfoNV-type-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-type-parameter</span><br>
+ <code>type</code> <strong>must</strong> be a valid <a href="#VkAccelerationStructureTypeNV">VkAccelerationStructureTypeNV</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-flags-parameter" href="#VUID-VkAccelerationStructureInfoNV-flags-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkBuildAccelerationStructureFlagBitsNV">VkBuildAccelerationStructureFlagBitsNV</a> values</p>
+</li>
+<li>
+<p><a id="VUID-VkAccelerationStructureInfoNV-pGeometries-parameter" href="#VUID-VkAccelerationStructureInfoNV-pGeometries-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureInfoNV-pGeometries-parameter</span><br>
+ If <code>geometryCount</code> is not <code>0</code>, <code>pGeometries</code> <strong>must</strong> be a valid pointer to an array of <code>geometryCount</code> valid <a href="#VkGeometryNV">VkGeometryNV</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
 <p>Values which <strong>can</strong> be set in
 <a href="#VkAccelerationStructureCreateInfoKHR">VkAccelerationStructureCreateInfoKHR</a>::<code>type</code>
 or
@@ -12396,6 +12394,11 @@ specifies that the acceleration structure <strong>can</strong> be used with desc
 buffers when capturing and replaying (e.g. for trace capture and
 replay), see <a href="descriptorsets.html#VkOpaqueCaptureDescriptorDataCreateInfoEXT" class="xref page">VkOpaqueCaptureDescriptorDataCreateInfoEXT</a> for more
 detail.</p>
+</li>
+<li>
+<p><code>VK_ACCELERATION_STRUCTURE_CREATE_MOTION_BIT_NV</code> specifies that the
+acceleration structure will be used with motion information, see
+<a href="#VkAccelerationStructureMotionInfoNV">VkAccelerationStructureMotionInfoNV</a> for more detail.</p>
 </li>
 </ul>
 </div>
