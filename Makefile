@@ -69,7 +69,7 @@ build-ui:
 prep-sources: prep-docs prep-guide prep-samples prep-tutorial
 
 # Prepare Vulkan-Docs
-GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
+GENPATH = Vulkan-Docs/gen
 prep-docs:
 	cd Vulkan-Docs && ./makeSpec -clean -spec all setup_antora
 	cp $(GENPATH)/apimap.cjs \
