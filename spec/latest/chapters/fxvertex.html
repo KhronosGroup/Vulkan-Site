@@ -446,6 +446,15 @@ default values as described <a href="#fxvertex-input-extraction">below</a>.</p>
 <p>If an implementation supports <a href="features.html#features-storageInputOutput16" class="xref page"><code>storageInputOutput16</code></a>, vertex shader input variables <strong>can</strong> have a
 width of 16 bits.</p>
 </div>
+<div class="paragraph">
+<p>In all the following component assignment specifications, if
+<a href="features.html#features-vertexAttributeRobustness" class="xref page"><code>vertexAttributeRobustness</code></a> is
+enabled and there is no
+<code>VkVertexInputAttributeDescription</code>::<code>location</code> specified for the
+shader vertex attribute <code>Location</code> being read, the value (0,0,0,0) or
+(0,0,0,1) is used for each of the equivalent (x,y,z,w) components consumed
+entries as specified below.</p>
+</div>
 <table id="fxvertex-attrib-components" class="tableblock frame-all grid-all" style="width: 65%;">
 <caption class="title">Table 1. Input Attribute Components Accessed By 16-Bit and 32-Bit Input Variables</caption>
 <colgroup>
@@ -1208,6 +1217,12 @@ the bound pipeline state object was also created with the
 <code>VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE</code> dynamic state enabled,
 then <a href="#vkCmdBindVertexBuffers2">vkCmdBindVertexBuffers2</a> can be used instead of
 <code>vkCmdSetVertexInputEXT</code> to dynamically set the stride.</p>
+</div>
+<div class="paragraph">
+<p>The vertex attribute description for any location in the range
+<span class="eq">[0,<code>VkPhysicalDeviceLimits</code>::<code>maxVertexInputAttributes</code>)</span> not
+specified in the <code>pVertexAttributeDescriptions</code> array becomes
+<strong>undefined</strong>.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -2213,13 +2228,13 @@ then the divisor has a logical default value of 1.</p>
 <li>
 <p><a id="VUID-VkVertexInputBindingDivisorDescriptionKHR-vertexAttributeInstanceRateZeroDivisor-02228" href="#VUID-VkVertexInputBindingDivisorDescriptionKHR-vertexAttributeInstanceRateZeroDivisor-02228"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescriptionKHR-vertexAttributeInstanceRateZeroDivisor-02228</span><br>
 
-If the <code>vertexAttributeInstanceRateZeroDivisor</code> feature is not
-enabled, <code>divisor</code> <strong>must</strong> not be <code>0</code></p>
+If the <a href="features.html#features-vertexAttributeInstanceRateZeroDivisor" class="xref page">    <code>vertexAttributeInstanceRateZeroDivisor</code></a> feature is not enabled,
+<code>divisor</code> <strong>must</strong> not be <code>0</code></p>
 </li>
 <li>
 <p><a id="VUID-VkVertexInputBindingDivisorDescriptionKHR-vertexAttributeInstanceRateDivisor-02229" href="#VUID-VkVertexInputBindingDivisorDescriptionKHR-vertexAttributeInstanceRateDivisor-02229"></a> <span class="vuid">VUID-VkVertexInputBindingDivisorDescriptionKHR-vertexAttributeInstanceRateDivisor-02229</span><br>
 
-If the <code>vertexAttributeInstanceRateDivisor</code> feature is not enabled,
+If the <a href="features.html#features-vertexAttributeInstanceRateDivisor" class="xref page">    <code>vertexAttributeInstanceRateDivisor</code></a> feature is not enabled,
 <code>divisor</code> <strong>must</strong> be <code>1</code></p>
 </li>
 <li>
@@ -2273,8 +2288,8 @@ between <code>firstVertex</code> and <code>firstVertex</code>+<code>vertexCount<
 <code>firstInstance</code> and <code>firstInstance</code>+<code>instanceCount</code>).</p>
 </li>
 <li>
-<p>Let <code>offset</code> be an array of offsets into the currently bound vertex
-    buffers specified during <code>vkCmdBindVertexBuffers</code>
+<p>Let <code>offset</code> be an array of offsets into the bound vertex buffers
+    specified during <code>vkCmdBindVertexBuffers</code>
 or <code>vkCmdBindVertexBuffers2</code>
     with <code>pOffsets</code>.</p>
 </li>
@@ -2335,14 +2350,16 @@ variable in the shader.
 The input variable in the shader <strong>must</strong> be declared as a 64-bit data type if
 and only if <code>format</code> is a 64-bit data type.
 If
-either <code>format</code> is a 64-bit format or <a href="features.html#features-legacyVertexAttributes" class="xref page"><code>legacyVertexAttributes</code></a> is not enabled, and
+either <code>format</code> is a 64-bit format or the
+<a href="features.html#features-legacyVertexAttributes" class="xref page"><code>legacyVertexAttributes</code></a> feature is
+not enabled, and
 <code>format</code> is a packed format, <code>attribAddress</code> <strong>must</strong> be a multiple of the
 size in bytes of the whole attribute data type as described in
 <a href="formats.html#formats-packed" class="xref page">Packed Formats</a>.
 Otherwise,
-if either <code>format</code> is a 64-bit format or
-<a href="features.html#features-legacyVertexAttributes" class="xref page"><code>legacyVertexAttributes</code></a> is not
-enabled,
+if either <code>format</code> is a 64-bit format or the
+<a href="features.html#features-legacyVertexAttributes" class="xref page"><code>legacyVertexAttributes</code></a> feature is
+not enabled,
 <code>attribAddress</code> <strong>must</strong> be a multiple of the size in bytes of the component
 type indicated by <code>format</code> (see <a href="formats.html#formats" class="xref page">Formats</a>).
 For attributes that are not 64-bit data types, each component is converted

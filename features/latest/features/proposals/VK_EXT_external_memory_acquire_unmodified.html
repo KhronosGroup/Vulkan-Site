@@ -313,10 +313,16 @@
     <a class="nav-link" href="VK_KHR_video_decode_queue.html">VK_KHR_video_decode_queue</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_av1.html">VK_KHR_video_encode_av1</a>
+  </li>
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_video_encode_h264.html">VK_KHR_video_encode_h264</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_video_encode_h265.html">VK_KHR_video_encode_h265</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_KHR_video_encode_quantization_map.html">VK_KHR_video_encode_quantization_map</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_video_encode_queue.html">VK_KHR_video_encode_queue</a>
@@ -335,6 +341,9 @@
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_NV_cooperative_matrix2.html">VK_NV_cooperative_matrix2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="VK_NV_display_stereo.html">VK_NV_display_stereo</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_NV_ray_tracing_validation.html">VK_NV_ray_tracing_validation</a>
@@ -452,7 +461,7 @@
 <p>This document proposes adding a performance hint that may reduce the runtime
 cost of memory barriers that acquire ownership of a resource from an external
 queue family (such as
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_QUEUE_FAMILY_FOREIGN_EXT.html">VK_QUEUE_FAMILY_FOREIGN_EXT</a>).</p>
+<a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VK_QUEUE_FAMILY_FOREIGN_EXT">VK_QUEUE_FAMILY_FOREIGN_EXT</a>).</p>
 </div>
 </div>
 </div>
@@ -468,24 +477,24 @@ noticeable latency.</p>
 <p>An external resource&#8217;s data may be split between external memory and
 non-external memory.
 The resource&#8217;s <em>external memory</em> is the collection of ranges
-of <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkDeviceMemory.html">VkDeviceMemory</a> bound to the resource,
-where the <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkDeviceMemory.html">VkDeviceMemory</a> has been imported or
+of <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#VkDeviceMemory">VkDeviceMemory</a> bound to the resource,
+where the <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#VkDeviceMemory">VkDeviceMemory</a> has been imported or
 exported with an API related to
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_KHR_external_memory.html">VK_KHR_external_memory</a>.
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_external_memory">VK_KHR_external_memory</a>.
 The external memory is shared among all external APIs and/or processes that
 access the resource.
 The resource&#8217;s <em>non-external memory</em>, in this discussion,
 is any implementation-private memory that
 is associated with the resource
-and does not reside in any range of <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkDeviceMemory.html">VkDeviceMemory</a> bound to the resource.
-For example, if the external resource is a <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImage.html">VkImage</a>,
+and does not reside in any range of <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#VkDeviceMemory">VkDeviceMemory</a> bound to the resource.
+For example, if the external resource is a <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImage">VkImage</a>,
 then in some Vulkan implementations
 the external memory may contain the image&#8217;s pixel data and externally shared metadata,
 and the non-external memory may contain implementation-private metadata.
 Note that, in some Vulkan implementations,
 the resource&#8217;s non-external memory, unlike its external memory, is
 not shared globally among the APIs and/or processes that use the resource.
-For example, each <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkDevice.html">VkDevice</a>
+For example, each <a href="https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VkDevice">VkDevice</a>
 and <code>EGLContext</code> that accesses the resource may maintain its own private
 non-external memory for the resource.</p>
 </div>
@@ -525,27 +534,27 @@ avoid the synchronization operation.</p>
 <div class="paragraph">
 <p>For example, suppose the application renders to an image, then transfers
 ownership of the image to
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_QUEUE_FAMILY_FOREIGN_EXT.html">VK_QUEUE_FAMILY_FOREIGN_EXT</a>,
+<a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VK_QUEUE_FAMILY_FOREIGN_EXT">VK_QUEUE_FAMILY_FOREIGN_EXT</a>,
 then later re-acquires the image with
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageMemoryBarrier.html">VkImageMemoryBarrier</a>.
+<a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a>.
 Suppose the application knows that the external queue family did not modify
 the image&#8217;s external memory, but cannot inform the Vulkan implementation
 of its unmodified status due to lack of Vulkan API.
 The Vulkan implementation must perform the unnecessary data synchronization
-during the execution of the <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageMemoryBarrier.html">VkImageMemoryBarrier</a>.</p>
+during the execution of the <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a>.</p>
 </div>
 <div class="paragraph">
 <p>The problem is especially relevant for systems that implement
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkSwapchainKHR.html">VkSwapchainKHR</a>
+<a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VkSwapchainKHR">VkSwapchainKHR</a>
 by layering it atop the external memory extensions such as
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_external_memory_dma_buf.html">VK_EXT_external_memory_dma_buf</a>.
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_external_memory_dma_buf">VK_EXT_external_memory_dma_buf</a>.
 On such systems, the application may suffer the performance overhead each time
 it acquires an image from the swapchain, even though the window system did not
 modify the image&#8217;s memory.
 Specifically, the overhead is likely to occur when the application transitions
 the image layout away from
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageLayout.html">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</a>
-after <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/vkAcquireNextImageKHR.html">vkAcquireNextImageKHR</a>.</p>
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImageLayout">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</a>
+after <a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#vkAcquireNextImageKHR">vkAcquireNextImageKHR</a>.</p>
 </div>
 </div>
 </div>
@@ -564,21 +573,20 @@ until the application&#8217;s current ownership acquire operation.</p>
 </li>
 <li>
 <p>The solution should not require the implementation to internally track the
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageLayout.html">VkImageLayout</a> of external images.
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImageLayout">VkImageLayout</a> of external images.
 Such tracking can be complex to implement and cause performance overhead.</p>
 </li>
 <li>
 <p>The solution must work well for systems that implement
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkSwapchainKHR.html">VkSwapchainKHR</a> by layering it atop external
+<a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VkSwapchainKHR">VkSwapchainKHR</a> by layering it atop external
 memory extensions such as
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_external_memory_dma_buf.html">VK_EXT_external_memory_dma_buf</a>.</p>
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_external_memory_dma_buf">VK_EXT_external_memory_dma_buf</a>.</p>
 </li>
 <li>
 <p>After acquiring a swapchain image but before using the image, applications
 must transition the image away from
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageLayout.html">VK_IMAGE_LAYOUT_PRESENT_SRC_LAYOUT_KHR</a>
-(which preserves the image&#8217;s pixels) or
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_IMAGE_LAYOUT_UNDEFINED.html">VK_IMAGE_LAYOUT_UNDEFINED</a>
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImageLayout">VK_IMAGE_LAYOUT_PRESENT_SRC_LAYOUT_KHR</a>
+(which preserves the image&#8217;s pixels) or <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImageLayout">VK_IMAGE_LAYOUT_UNDEFINED</a>
 (which discards the image&#8217;s pixels). The solution should work well and
 improve performance regardless of the source layout.</p>
 </li>
@@ -590,27 +598,26 @@ improve performance regardless of the source layout.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>A</strong>. Define a new read-only external queue family, such as
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_QUEUE_FAMILY_FOREIGN_READ_ONLY_EXT.html">VK_QUEUE_FAMILY_FOREIGN_READ_ONLY_EXT</a>.
+<p><strong>A</strong>. Define a new read-only external queue family, such as <code>VK_QUEUE_FAMILY_FOREIGN_READ_ONLY_EXT</code>.
 When the application transfers ownership of a resource to this queue family,
 it implicitly informs the implementation that the external queue will not
 modify the resource&#8217;s external memory.</p>
 </li>
 <li>
-<p><strong>B</strong>. Extend resource creation, such as <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageCreateInfo.html">VkImageCreateInfo</a>,
+<p><strong>B</strong>. Extend resource creation, such as <a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImageCreateInfo">VkImageCreateInfo</a>,
 with a new parameter that informs the implementation that no external queue
 will modify the resource&#8217;s external memory.</p>
 </li>
 <li>
 <p><strong>C</strong>. Extend the ownership-release memory barrier, such as
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageMemoryBarrier.html">VkImageMemoryBarrier</a>, with a new
+<a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a>, with a new
 parameter that informs the implementation that the resource&#8217;s external memory
 will remain unmodified for the duration of the external queue family&#8217;s
 ownership.</p>
 </li>
 <li>
 <p><strong>D</strong>. Extend the ownership-acquire memory barrier, such as
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageMemoryBarrier.html">VkImageMemoryBarrier</a>, with a new
+<a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a>, with a new
 parameter that informs the implementation that the resource&#8217;s external memory
 has remained unmodified since the most recent ownership-release.</p>
 </li>
@@ -643,13 +650,13 @@ unchanged.</p>
 <p>A presentation engine (such as a window system) that only reads the image
 and never modifies it.
 The application does not use Vulkan WSI to interact with the presentation
-engine, such as <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/vkCreateWaylandSurfaceKHR.html">vkCreateWaylandSurfaceKHR</a>,
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkSwapchainKHR.html">VkSwapchainKHR</a>, and
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/vkQueuePresentKHR.html">vkQueuePresentKHR</a>.
+engine, such as <a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#vkCreateWaylandSurfaceKHR">vkCreateWaylandSurfaceKHR</a>,
+<a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VkSwapchainKHR">VkSwapchainKHR</a>, and
+<a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#vkQueuePresentKHR">vkQueuePresentKHR</a>.
 Instead, the application effectively implements these
 functions itself with a combination of
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_external_memory_dma_buf.html">VK_EXT_external_memory_dma_buf</a>,
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_EXT_queue_family_foreign.html">VK_EXT_queue_family_foreign</a>,
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_external_memory_dma_buf">VK_EXT_external_memory_dma_buf</a>,
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_queue_family_foreign">VK_EXT_queue_family_foreign</a>,
 and  native Wayland API from <code>libwayland-client</code>.</p>
 </li>
 </ul>
@@ -722,7 +729,7 @@ know yet whether step (f.rw) or (f.ro) will be taken.</p>
 <p>Solution (D) works well for all steps in the sequence. In particular, between
 (f) and (g), the application can query the post-processing library, asking
 whether (f.rw) or (f.ro) occurred. If (f.ro), the application can add the
-performance hint to <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkImageMemoryBarrier.html">VkImageMemoryBarrier</a> in step (g).</p>
+performance hint to <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkImageMemoryBarrier">VkImageMemoryBarrier</a> in step (g).</p>
 </div>
 </div>
 </div>
@@ -766,8 +773,8 @@ struct to be chained into any memory barrier for any resource.
 If the memory barrier&#8217;s <code>srcQueueFamilyIndex</code> does not specify an external
 queue family, then the Vulkan implementation ignores the struct.
 This flexibility simplifies the implementation of layers that implement
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VkSwapchainKHR.html">VkSwapchainKHR</a> atop
-<a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/VK_KHR_external_memory.html">VK_KHR_external_memory</a> and native
+<a href="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html#VkSwapchainKHR">VkSwapchainKHR</a> atop
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_external_memory">VK_KHR_external_memory</a> and native
 window system APIs.</p>
 </div>
 </div>
@@ -793,7 +800,7 @@ In this method, examples of "read-only" access are SPIR-V instructions such as
 <a href="https://www.khronos.org/registry/SPIR-V/specs/unified1/SPIRV.html#OpImageRead">OpImageRead</a>,
 <a href="https://www.khronos.org/registry/SPIR-V/specs/unified1/SPIRV.html#OpImageFetch">OpImageFetch</a>,
 and <a href="https://www.khronos.org/registry/SPIR-V/specs/unified1/SPIRV.html#OpImageSampleImplicitLod">OpImageSampleImplicitLod</a>,
-and transfer commands such as <a href="https://www.khronos.org/registry/vulkan/specs/1.3-extensions/man/html/vkCmdCopyImage.html">vkCmdCopyImage</a>.
+and transfer commands such as <a href="https://docs.vulkan.org/spec/latest/chapters/copies.html#vkCmdCopyImage">vkCmdCopyImage</a>.
 Surprisingly, these operations may not be implemented as read-only.
 The Vulkan implementation, before dispatching the "read-only" shader
 or transfer command, may modify the image&#8217;s external memory

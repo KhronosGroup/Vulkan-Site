@@ -298,7 +298,13 @@
     <a class="nav-link" href="samples/extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="samples/extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="samples/extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="samples/extensions/open_cl_interop/README.html">OpenCL interop</a>
@@ -313,7 +319,13 @@
     <a class="nav-link" href="samples/extensions/portability/README.html">Portability</a>
   </li>
   <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
     <a class="nav-link" href="samples/extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="samples/extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="samples/extensions/ray_tracing_basic/README.html">Raytracing basic</a>
@@ -455,6 +467,9 @@
 <ul class="nav-list">
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="samples/general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="samples/general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
   </li>
 </ul>
   </li>
@@ -693,9 +708,32 @@ network routing issues to github within your ISP&#8217;s internal network, rathe
 than anything wrong in your own networking setup.</p>
 </div>
 <div class="paragraph">
-<p>It can be very difficult to get ISPs to acknowledge such problems exist much
-less to fix them. In this case, consider trying the clone while running a
-VPN service.</p>
+<p>It can be very difficult to get ISPs to acknowledge such problems exist, much
+less to fix them.</p>
+</div>
+<div class="paragraph">
+<p>One workaround is to switch the repository to use ssh protocol prior to the
+submodule download, which can be done via e.g.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-sh hljs" data-lang="sh">git clone git@github.com:KhronosGroup/Vulkan-Samples.git
+cd Vulkan-Samples
+perl -i -p -e 's|https://(.*?)/|git@\1:|g' .gitmodules
+git submodule sync
+git submodule update</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>While this can be a good alternative if you are running into this connection
+issue, you must have GitHub ssh key authentication setup to use ssh
+protocol - see
+<a href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh">Connecting
+to GitHub with SSH</a> for details.
+So it is a not a solution we can implement as the repository default.</p>
+</div>
+<div class="paragraph">
+<p>Another option which may help is to run github through a VPN service.</p>
 </div>
 </td>
 </tr>
@@ -756,8 +794,12 @@ vulkan_samples sample swapchain_images
 # Run AFBC sample in benchmark mode for 5000 frames
 vulkan_samples sample afbc --benchmark --stop-after-frame 5000
 
-# Run bonza test offscreen
-vulkan_samples test bonza --headless
+# Run compute nbody using headless_surface and take a screenshot of frame 5
+# Note: headless_surface uses VK_EXT_headless_surface.
+# This will create a surface and a Swapchain, but present will be a no op.
+# The extension is supported by Swiftshader(https://github.com/google/swiftshader).
+# It allows to quickly test content in environments without a GPU.
+vulkan_samples sample compute_nbody --headless_surface -screenshot 5
 
 # Run all the performance samples for 10 seconds in each configuration
 vulkan_samples batch --category performance --duration 10
