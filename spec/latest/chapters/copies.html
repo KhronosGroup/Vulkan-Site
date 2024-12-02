@@ -40,7 +40,7 @@
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link" href="#">Specs</a>
           <div class="navbar-dropdown is-right">
-            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan 1.3</a>
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
             <a class="navbar-item" href="https://registry.khronos.org/OpenGL/specs/gl/GLSLangSpec.4.60.html">GLSL</a>
             <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
           </div>
@@ -6129,12 +6129,23 @@ host constitutes a <a href="../appendices/memorymodel.html#memory-model-access-d
 <div class="paragraph">
 <p>To copy data from host memory to an image object, call:</p>
 </div>
+<div id="vkCopyMemoryToImage" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+VkResult vkCopyMemoryToImage(
+    VkDevice                                    device,
+    const VkCopyMemoryToImageInfo*              pCopyMemoryToImageInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent command</p>
+</div>
 <div id="vkCopyMemoryToImageEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
 VkResult vkCopyMemoryToImageEXT(
     VkDevice                                    device,
-    const VkCopyMemoryToImageInfoEXT*           pCopyMemoryToImageInfo);</code></pre>
+    const VkCopyMemoryToImageInfo*              pCopyMemoryToImageInfo);</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -6145,8 +6156,7 @@ VkResult vkCopyMemoryToImageEXT(
 </li>
 <li>
 <p><code>pCopyMemoryToImageInfo</code> is a pointer to a
-<a href="#VkCopyMemoryToImageInfoEXT">VkCopyMemoryToImageInfoEXT</a> structure describing the copy
-parameters.</p>
+<a href="#VkCopyMemoryToImageInfo">VkCopyMemoryToImageInfo</a> structure describing the copy parameters.</p>
 </li>
 </ul>
 </div>
@@ -6179,12 +6189,12 @@ the device.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-vkCopyMemoryToImageEXT-device-parameter" href="#VUID-vkCopyMemoryToImageEXT-device-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToImageEXT-device-parameter</span><br>
+<p><a id="VUID-vkCopyMemoryToImage-device-parameter" href="#VUID-vkCopyMemoryToImage-device-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToImage-device-parameter</span><br>
  <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-vkCopyMemoryToImageEXT-pCopyMemoryToImageInfo-parameter" href="#VUID-vkCopyMemoryToImageEXT-pCopyMemoryToImageInfo-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToImageEXT-pCopyMemoryToImageInfo-parameter</span><br>
- <code>pCopyMemoryToImageInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMemoryToImageInfoEXT">VkCopyMemoryToImageInfoEXT</a> structure</p>
+<p><a id="VUID-vkCopyMemoryToImage-pCopyMemoryToImageInfo-parameter" href="#VUID-vkCopyMemoryToImage-pCopyMemoryToImageInfo-parameter"></a> <span class="vuid">VUID-vkCopyMemoryToImage-pCopyMemoryToImageInfo-parameter</span><br>
+ <code>pCopyMemoryToImageInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyMemoryToImageInfo">VkCopyMemoryToImageInfo</a> structure</p>
 </li>
 </ul>
 </div>
@@ -6233,20 +6243,29 @@ the device.</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <code>VkCopyMemoryToImageInfoEXT</code> structure is defined as:</p>
+<p>The <code>VkCopyMemoryToImageInfo</code> structure is defined as:</p>
+</div>
+<div id="VkCopyMemoryToImageInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef struct VkCopyMemoryToImageInfo {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkHostImageCopyFlags          flags;
+    VkImage                       dstImage;
+    VkImageLayout                 dstImageLayout;
+    uint32_t                      regionCount;
+    const VkMemoryToImageCopy*    pRegions;
+} VkCopyMemoryToImageInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
 </div>
 <div id="VkCopyMemoryToImageInfoEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef struct VkCopyMemoryToImageInfoEXT {
-    VkStructureType                  sType;
-    const void*                      pNext;
-    VkHostImageCopyFlagsEXT          flags;
-    VkImage                          dstImage;
-    VkImageLayout                    dstImageLayout;
-    uint32_t                         regionCount;
-    const VkMemoryToImageCopyEXT*    pRegions;
-} VkCopyMemoryToImageInfoEXT;</code></pre>
+typedef VkCopyMemoryToImageInfo VkCopyMemoryToImageInfoEXT;</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -6259,7 +6278,7 @@ typedef struct VkCopyMemoryToImageInfoEXT {
 structure.</p>
 </li>
 <li>
-<p><code>flags</code> is a bitmask of <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a> values
+<p><code>flags</code> is a bitmask of <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a> values
 describing additional copy parameters.</p>
 </li>
 <li>
@@ -6273,13 +6292,13 @@ for the copy.</p>
 <p><code>regionCount</code> is the number of regions to copy.</p>
 </li>
 <li>
-<p><code>pRegions</code> is a pointer to an array of <a href="#VkMemoryToImageCopyEXT">VkMemoryToImageCopyEXT</a>
+<p><code>pRegions</code> is a pointer to an array of <a href="#VkMemoryToImageCopy">VkMemoryToImageCopy</a>
 structures specifying the regions to copy.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p><code>vkCopyMemoryToImageEXT</code> does not check whether the device memory
+<p><code>vkCopyMemoryToImage</code> does not check whether the device memory
 associated with <code>dstImage</code> is currently in use before performing the
 copy.
 The application <strong>must</strong> guarantee that any previously submitted command that
@@ -6297,51 +6316,51 @@ extents <strong>must</strong> match the edge of the image.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-09109" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-09109"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-09109</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-09109" href="#VUID-VkCopyMemoryToImageInfo-dstImage-09109"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-09109</span><br>
 
 If <code>dstImage</code> is sparse then all memory ranges accessed by the
 copy command <strong>must</strong> be bound as described in
 <a href="sparsemem.html#sparsememory-resource-binding" class="xref page">Binding Resource Memory</a></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-09111" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-09111"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-09111</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-09111" href="#VUID-VkCopyMemoryToImageInfo-dstImage-09111"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-09111</span><br>
 
 If the stencil aspect of <code>dstImage</code> is accessed, and
 <code>dstImage</code> was not created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>dstImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-09112" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-09112"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-09112</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-09112" href="#VUID-VkCopyMemoryToImageInfo-dstImage-09112"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-09112</span><br>
 
 If the stencil aspect of <code>dstImage</code> is accessed, and
 <code>dstImage</code> was created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>dstImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">VkImageStencilUsageCreateInfo</a>::<code>stencilUsage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-09113" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-09113"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-09113</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-09113" href="#VUID-VkCopyMemoryToImageInfo-dstImage-09113"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-09113</span><br>
 
 If non-stencil aspects of <code>dstImage</code> are accessed,
 <code>dstImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-09114" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-09114"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-09114</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-09114" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-09114"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-09114</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
-<code>x</code>, <code>y</code>, and <code>z</code> members of the <code>imageOffset</code> member
-of each element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the <code>x</code>,
+<code>y</code>, and <code>z</code> members of the <code>imageOffset</code> member of each
+element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-09115" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-09115"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-09115</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-09115" href="#VUID-VkCopyMemoryToImageInfo-dstImage-09115"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-09115</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the
 <code>imageExtent</code> member of each element of <code>pRegions</code> <strong>must</strong> equal
 the extents of <code>dstImage</code> identified by <code>imageSubresource</code></p>
 </li>
@@ -6350,7 +6369,7 @@ the extents of <code>dstImage</code> identified by <code>imageSubresource</code>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07966" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07966"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07966</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07966" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07966"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07966</span><br>
 
 If <code>dstImage</code> is non-sparse then the image
 or the specified <em>disjoint</em> plane
@@ -6358,14 +6377,14 @@ or the specified <em>disjoint</em> plane
 <code>VkDeviceMemory</code> object</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07967" href="#VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07967"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07967</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageSubresource-07967" href="#VUID-VkCopyMemoryToImageInfo-imageSubresource-07967"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageSubresource-07967</span><br>
 
 The <code>imageSubresource.mipLevel</code> member of each element of
 <code>pRegions</code> <strong>must</strong> be less than the <code>mipLevels</code> specified in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>dstImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07968" href="#VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07968"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07968</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageSubresource-07968" href="#VUID-VkCopyMemoryToImageInfo-imageSubresource-07968"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageSubresource-07968</span><br>
 
 If <code>imageSubresource.layerCount</code> is not
 <code>VK_REMAINING_ARRAY_LAYERS</code>,
@@ -6375,7 +6394,7 @@ If <code>imageSubresource.layerCount</code> is not
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>dstImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07969" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07969"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07969</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07969" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07969"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07969</span><br>
 
 <code>dstImage</code> <strong>must</strong> not have been created with <code>flags</code>
 containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
@@ -6385,14 +6404,14 @@ containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07970" href="#VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07970"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07970</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageSubresource-07970" href="#VUID-VkCopyMemoryToImageInfo-imageSubresource-07970"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageSubresource-07970</span><br>
 
 The image region specified by each element of <code>pRegions</code> <strong>must</strong> be
 contained within the specified <code>imageSubresource</code> of
 <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07971" href="#VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07971"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07971</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageSubresource-07971" href="#VUID-VkCopyMemoryToImageInfo-imageSubresource-07971"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageSubresource-07971</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.x</code> and
 <span class="eq">(<code>imageExtent.width</code> +  <code>imageOffset.x</code>)</span> <strong>must</strong>
@@ -6400,7 +6419,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the wi
 of the specified <code>imageSubresource</code> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07972" href="#VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07972"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-07972</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageSubresource-07972" href="#VUID-VkCopyMemoryToImageInfo-imageSubresource-07972"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageSubresource-07972</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.y</code> and
 <span class="eq">(<code>imageExtent.height</code> +  <code>imageOffset.y</code>)</span> <strong>must</strong>
@@ -6412,7 +6431,7 @@ height of the specified <code>imageSubresource</code> of <code>dstImage</code></
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07973" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07973"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07973</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07973" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07973"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07973</span><br>
 
 <code>dstImage</code> <strong>must</strong> have a sample count equal to
 <code>VK_SAMPLE_COUNT_1_BIT</code></p>
@@ -6422,14 +6441,14 @@ height of the specified <code>imageSubresource</code> of <code>dstImage</code></
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07979" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07979"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07979</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07979" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07979"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07979</span><br>
 
 If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_1D</code>, then for each
 element of <code>pRegions</code>, <code>imageOffset.y</code> <strong>must</strong> be <code>0</code> and
 <code>imageExtent.height</code> <strong>must</strong> be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-09104" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-09104"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-09104</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-09104" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-09104"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-09104</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.z</code> and
 <span class="eq">(<code>imageExtent.depth</code> +  <code>imageOffset.z</code>)</span> <strong>must</strong>
@@ -6437,7 +6456,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the de
 of the specified <code>imageSubresource</code> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07980" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07980"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07980</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07980" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07980"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07980</span><br>
 
 If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 <code>VK_IMAGE_TYPE_2D</code>, then for each element of <code>pRegions</code>,
@@ -6445,7 +6464,7 @@ If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07274" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07274"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07274</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07274" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07274"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07274</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6456,7 +6475,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10051" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10051"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10051</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10051" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10051"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10051</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6468,7 +6487,7 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07275" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07275"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07275</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07275" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07275"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07275</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6479,7 +6498,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10052" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10052"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10052</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10052" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10052"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10052</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6491,13 +6510,13 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07276" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07276"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07276</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07276" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07276"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07276</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.z</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-00207" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-00207"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-00207</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-00207" href="#VUID-VkCopyMemoryToImageInfo-dstImage-00207"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-00207</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6509,7 +6528,7 @@ the width of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10053" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10053"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10053</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10053" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10053"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10053</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6519,7 +6538,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10054" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10054"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10054</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10054" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10054"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10054</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6529,7 +6548,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10055" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10055"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10055</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10055" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10055"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10055</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6541,7 +6560,7 @@ of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-00208" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-00208"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-00208</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-00208" href="#VUID-VkCopyMemoryToImageInfo-dstImage-00208"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-00208</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6553,7 +6572,7 @@ the height of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10056" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10056"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10056</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10056" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10056"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10056</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6565,7 +6584,7 @@ of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10057" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10057"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10057</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10057" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10057"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10057</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6575,7 +6594,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10058" href="#VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10058"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageOffset-10058</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageOffset-10058" href="#VUID-VkCopyMemoryToImageInfo-imageOffset-10058"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageOffset-10058</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -6585,7 +6604,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-00209" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-00209"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-00209</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-00209" href="#VUID-VkCopyMemoryToImageInfo-dstImage-00209"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-00209</span><br>
 
 For each element of <code>pRegions</code>, if the sum of <code>imageOffset.z</code>
 and <code>extent.depth</code> does not equal the depth of the subresource
@@ -6593,13 +6612,13 @@ specified by <code>srcSubresource</code>, <code>extent.depth</code> <strong>must
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-09105" href="#VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-09105"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-imageSubresource-09105</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-imageSubresource-09105" href="#VUID-VkCopyMemoryToImageInfo-imageSubresource-09105"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-imageSubresource-09105</span><br>
 
 For each element of <code>pRegions</code>, <code>imageSubresource.aspectMask</code>
 <strong>must</strong> specify aspects present in <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07981" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07981"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07981</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07981" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07981"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07981</span><br>
 
 If <code>dstImage</code> has a
 <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a>, then for each element of <code>pRegions</code>,
@@ -6607,7 +6626,7 @@ If <code>dstImage</code> has a
 <a href="formats.html#formats-planes-image-aspect" class="xref page">multi-planar aspect mask</a> bit</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-07983" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-07983"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-07983</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-07983" href="#VUID-VkCopyMemoryToImageInfo-dstImage-07983"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-07983</span><br>
 
 If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, for each
 element of <code>pRegions</code>, <code>imageSubresource.baseArrayLayer</code> <strong>must</strong>
@@ -6618,19 +6637,19 @@ be <code>0</code> and <code>imageSubresource.layerCount</code> <strong>must</str
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-memoryRowLength-09106" href="#VUID-VkCopyMemoryToImageInfoEXT-memoryRowLength-09106"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-memoryRowLength-09106</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-memoryRowLength-09106" href="#VUID-VkCopyMemoryToImageInfo-memoryRowLength-09106"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-memoryRowLength-09106</span><br>
 
 For each element of <code>pRegions</code>, <code>memoryRowLength</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    width</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-memoryImageHeight-09107" href="#VUID-VkCopyMemoryToImageInfoEXT-memoryImageHeight-09107"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-memoryImageHeight-09107</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-memoryImageHeight-09107" href="#VUID-VkCopyMemoryToImageInfo-memoryImageHeight-09107"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-memoryImageHeight-09107</span><br>
 
 For each element of <code>pRegions</code>, <code>memoryImageHeight</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    height</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-memoryRowLength-09108" href="#VUID-VkCopyMemoryToImageInfoEXT-memoryRowLength-09108"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-memoryRowLength-09108</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-memoryRowLength-09108" href="#VUID-VkCopyMemoryToImageInfo-memoryRowLength-09108"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-memoryRowLength-09108</span><br>
 
 For each element of <code>pRegions</code>, <code>memoryRowLength</code> divided by
 the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent width</a> and then
@@ -6638,23 +6657,23 @@ multiplied by the texel block size of <code>dstImage</code> <strong>must</strong
 than or equal to <span class="eq">2<sup>31</sup>-1</span></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-09059" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-09059"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-09059</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImageLayout-09059" href="#VUID-VkCopyMemoryToImageInfo-dstImageLayout-09059"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImageLayout-09059</span><br>
 
 <code>dstImageLayout</code> <strong>must</strong> specify the current layout of the image
 subresources of <code>dstImage</code> specified in <code>pRegions</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-09060" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-09060"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-09060</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImageLayout-09060" href="#VUID-VkCopyMemoryToImageInfo-dstImageLayout-09060"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImageLayout-09060</span><br>
 
 <code>dstImageLayout</code> <strong>must</strong> be one of the image layouts returned in
-<a href="limits.html#VkPhysicalDeviceHostImageCopyPropertiesEXT" class="xref page">VkPhysicalDeviceHostImageCopyPropertiesEXT</a>::<code>pCopyDstLayouts</code></p>
+<a href="limits.html#VkPhysicalDeviceHostImageCopyProperties" class="xref page">VkPhysicalDeviceHostImageCopyProperties</a>::<code>pCopyDstLayouts</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-flags-09393" href="#VUID-VkCopyMemoryToImageInfoEXT-flags-09393"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-flags-09393</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-flags-09393" href="#VUID-VkCopyMemoryToImageInfo-flags-09393"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-flags-09393</span><br>
 
-If <code>flags</code> includes <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, for each
-region in <code>pRegions</code>, <code>memoryRowLength</code> and
-<code>memoryImageHeight</code> <strong>must</strong> both be 0</p>
+If <code>flags</code> includes <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, for each region
+in <code>pRegions</code>, <code>memoryRowLength</code> and <code>memoryImageHeight</code>
+<strong>must</strong> both be 0</p>
 </li>
 </ul>
 </div>
@@ -6666,31 +6685,31 @@ region in <code>pRegions</code>, <code>memoryRowLength</code> and
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-sType-sType" href="#VUID-VkCopyMemoryToImageInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO_EXT</code></p>
+<p><a id="VUID-VkCopyMemoryToImageInfo-sType-sType" href="#VUID-VkCopyMemoryToImageInfo-sType-sType"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_MEMORY_TO_IMAGE_INFO</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-pNext-pNext" href="#VUID-VkCopyMemoryToImageInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-pNext-pNext</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-pNext-pNext" href="#VUID-VkCopyMemoryToImageInfo-pNext-pNext"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-flags-parameter" href="#VUID-VkCopyMemoryToImageInfoEXT-flags-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-flags-parameter</span><br>
- <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a> values</p>
+<p><a id="VUID-VkCopyMemoryToImageInfo-flags-parameter" href="#VUID-VkCopyMemoryToImageInfo-flags-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a> values</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImage-parameter" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImage-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImage-parameter</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImage-parameter" href="#VUID-VkCopyMemoryToImageInfo-dstImage-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImage-parameter</span><br>
  <code>dstImage</code> <strong>must</strong> be a valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-parameter" href="#VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-dstImageLayout-parameter</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-dstImageLayout-parameter" href="#VUID-VkCopyMemoryToImageInfo-dstImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-dstImageLayout-parameter</span><br>
  <code>dstImageLayout</code> <strong>must</strong> be a valid <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-pRegions-parameter" href="#VUID-VkCopyMemoryToImageInfoEXT-pRegions-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-pRegions-parameter</span><br>
- <code>pRegions</code> <strong>must</strong> be a valid pointer to an array of <code>regionCount</code> valid <a href="#VkMemoryToImageCopyEXT">VkMemoryToImageCopyEXT</a> structures</p>
+<p><a id="VUID-VkCopyMemoryToImageInfo-pRegions-parameter" href="#VUID-VkCopyMemoryToImageInfo-pRegions-parameter"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-pRegions-parameter</span><br>
+ <code>pRegions</code> <strong>must</strong> be a valid pointer to an array of <code>regionCount</code> valid <a href="#VkMemoryToImageCopy">VkMemoryToImageCopy</a> structures</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyMemoryToImageInfoEXT-regionCount-arraylength" href="#VUID-VkCopyMemoryToImageInfoEXT-regionCount-arraylength"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfoEXT-regionCount-arraylength</span><br>
+<p><a id="VUID-VkCopyMemoryToImageInfo-regionCount-arraylength" href="#VUID-VkCopyMemoryToImageInfo-regionCount-arraylength"></a> <span class="vuid">VUID-VkCopyMemoryToImageInfo-regionCount-arraylength</span><br>
  <code>regionCount</code> <strong>must</strong> be greater than <code>0</code></p>
 </li>
 </ul>
@@ -6702,13 +6721,13 @@ region in <code>pRegions</code>, <code>memoryRowLength</code> and
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>Each element of <a href="#VkCopyMemoryToImageInfoEXT">VkCopyMemoryToImageInfoEXT</a>::<code>pRegions</code> is a
-structure defined as:</p>
+<p>Each element of <a href="#VkCopyMemoryToImageInfo">VkCopyMemoryToImageInfo</a>::<code>pRegions</code> is a structure
+defined as:</p>
 </div>
-<div id="VkMemoryToImageCopyEXT" class="listingblock">
+<div id="VkMemoryToImageCopy" class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef struct VkMemoryToImageCopyEXT {
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef struct VkMemoryToImageCopy {
     VkStructureType             sType;
     const void*                 pNext;
     const void*                 pHostPointer;
@@ -6717,7 +6736,16 @@ typedef struct VkMemoryToImageCopyEXT {
     VkImageSubresourceLayers    imageSubresource;
     VkOffset3D                  imageOffset;
     VkExtent3D                  imageExtent;
-} VkMemoryToImageCopyEXT;</code></pre>
+} VkMemoryToImageCopy;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkMemoryToImageCopyEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
+typedef VkMemoryToImageCopy VkMemoryToImageCopyEXT;</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -6767,7 +6795,7 @@ structure apply here as well.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-pHostPointer-09061" href="#VUID-VkMemoryToImageCopyEXT-pHostPointer-09061"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-pHostPointer-09061</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-pHostPointer-09061" href="#VUID-VkMemoryToImageCopy-pHostPointer-09061"></a> <span class="vuid">VUID-VkMemoryToImageCopy-pHostPointer-09061</span><br>
 
 <code>pHostPointer</code> <strong>must</strong> point to memory that is large enough to contain
 all memory locations that are accessed according to
@@ -6775,7 +6803,7 @@ all memory locations that are accessed according to
 each element of <code>pRegions</code></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-pRegions-09062" href="#VUID-VkMemoryToImageCopyEXT-pRegions-09062"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-pRegions-09062</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-pRegions-09062" href="#VUID-VkMemoryToImageCopy-pRegions-09062"></a> <span class="vuid">VUID-VkMemoryToImageCopy-pRegions-09062</span><br>
 
 The union of all source regions, and the union of all destination
 regions, specified by the elements of <code>pRegions</code>, <strong>must</strong> not overlap
@@ -6786,35 +6814,35 @@ in memory</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-memoryRowLength-09101" href="#VUID-VkMemoryToImageCopyEXT-memoryRowLength-09101"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-memoryRowLength-09101</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-memoryRowLength-09101" href="#VUID-VkMemoryToImageCopy-memoryRowLength-09101"></a> <span class="vuid">VUID-VkMemoryToImageCopy-memoryRowLength-09101</span><br>
 
 <code>memoryRowLength</code> <strong>must</strong> be <code>0</code>, or greater than or equal to the
 <code>width</code> member of <code>imageExtent</code></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-memoryImageHeight-09102" href="#VUID-VkMemoryToImageCopyEXT-memoryImageHeight-09102"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-memoryImageHeight-09102</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-memoryImageHeight-09102" href="#VUID-VkMemoryToImageCopy-memoryImageHeight-09102"></a> <span class="vuid">VUID-VkMemoryToImageCopy-memoryImageHeight-09102</span><br>
 
 <code>memoryImageHeight</code> <strong>must</strong> be <code>0</code>, or greater than or equal to the
 <code>height</code> member of <code>imageExtent</code></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-aspectMask-09103" href="#VUID-VkMemoryToImageCopyEXT-aspectMask-09103"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-aspectMask-09103</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-aspectMask-09103" href="#VUID-VkMemoryToImageCopy-aspectMask-09103"></a> <span class="vuid">VUID-VkMemoryToImageCopy-aspectMask-09103</span><br>
 
 The <code>aspectMask</code> member of <code>imageSubresource</code> <strong>must</strong> only have a
 single bit set</p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-imageExtent-06659" href="#VUID-VkMemoryToImageCopyEXT-imageExtent-06659"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-imageExtent-06659</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-imageExtent-06659" href="#VUID-VkMemoryToImageCopy-imageExtent-06659"></a> <span class="vuid">VUID-VkMemoryToImageCopy-imageExtent-06659</span><br>
 
 <code>imageExtent.width</code> <strong>must</strong> not be 0</p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-imageExtent-06660" href="#VUID-VkMemoryToImageCopyEXT-imageExtent-06660"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-imageExtent-06660</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-imageExtent-06660" href="#VUID-VkMemoryToImageCopy-imageExtent-06660"></a> <span class="vuid">VUID-VkMemoryToImageCopy-imageExtent-06660</span><br>
 
 <code>imageExtent.height</code> <strong>must</strong> not be 0</p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-imageExtent-06661" href="#VUID-VkMemoryToImageCopyEXT-imageExtent-06661"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-imageExtent-06661</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-imageExtent-06661" href="#VUID-VkMemoryToImageCopy-imageExtent-06661"></a> <span class="vuid">VUID-VkMemoryToImageCopy-imageExtent-06661</span><br>
 
 <code>imageExtent.depth</code> <strong>must</strong> not be 0</p>
 </li>
@@ -6828,19 +6856,19 @@ single bit set</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-sType-sType" href="#VUID-VkMemoryToImageCopyEXT-sType-sType"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY_EXT</code></p>
+<p><a id="VUID-VkMemoryToImageCopy-sType-sType" href="#VUID-VkMemoryToImageCopy-sType-sType"></a> <span class="vuid">VUID-VkMemoryToImageCopy-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_MEMORY_TO_IMAGE_COPY</code></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-pNext-pNext" href="#VUID-VkMemoryToImageCopyEXT-pNext-pNext"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-pNext-pNext</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-pNext-pNext" href="#VUID-VkMemoryToImageCopy-pNext-pNext"></a> <span class="vuid">VUID-VkMemoryToImageCopy-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-pHostPointer-parameter" href="#VUID-VkMemoryToImageCopyEXT-pHostPointer-parameter"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-pHostPointer-parameter</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-pHostPointer-parameter" href="#VUID-VkMemoryToImageCopy-pHostPointer-parameter"></a> <span class="vuid">VUID-VkMemoryToImageCopy-pHostPointer-parameter</span><br>
  <code>pHostPointer</code> <strong>must</strong> be a pointer value</p>
 </li>
 <li>
-<p><a id="VUID-VkMemoryToImageCopyEXT-imageSubresource-parameter" href="#VUID-VkMemoryToImageCopyEXT-imageSubresource-parameter"></a> <span class="vuid">VUID-VkMemoryToImageCopyEXT-imageSubresource-parameter</span><br>
+<p><a id="VUID-VkMemoryToImageCopy-imageSubresource-parameter" href="#VUID-VkMemoryToImageCopy-imageSubresource-parameter"></a> <span class="vuid">VUID-VkMemoryToImageCopy-imageSubresource-parameter</span><br>
  <code>imageSubresource</code> <strong>must</strong> be a valid <a href="#VkImageSubresourceLayers">VkImageSubresourceLayers</a> structure</p>
 </li>
 </ul>
@@ -6854,12 +6882,23 @@ single bit set</p>
 <div class="paragraph">
 <p>To copy data from an image object to host memory, call:</p>
 </div>
+<div id="vkCopyImageToMemory" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+VkResult vkCopyImageToMemory(
+    VkDevice                                    device,
+    const VkCopyImageToMemoryInfo*              pCopyImageToMemoryInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent command</p>
+</div>
 <div id="vkCopyImageToMemoryEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
 VkResult vkCopyImageToMemoryEXT(
     VkDevice                                    device,
-    const VkCopyImageToMemoryInfoEXT*           pCopyImageToMemoryInfo);</code></pre>
+    const VkCopyImageToMemoryInfo*              pCopyImageToMemoryInfo);</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -6870,8 +6909,7 @@ VkResult vkCopyImageToMemoryEXT(
 </li>
 <li>
 <p><code>pCopyImageToMemoryInfo</code> is a pointer to a
-<a href="#VkCopyImageToMemoryInfoEXT">VkCopyImageToMemoryInfoEXT</a> structure describing the copy
-parameters.</p>
+<a href="#VkCopyImageToMemoryInfo">VkCopyImageToMemoryInfo</a> structure describing the copy parameters.</p>
 </li>
 </ul>
 </div>
@@ -6907,12 +6945,12 @@ Before this copy command can be called, a memory barrier for this image
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-vkCopyImageToMemoryEXT-device-parameter" href="#VUID-vkCopyImageToMemoryEXT-device-parameter"></a> <span class="vuid">VUID-vkCopyImageToMemoryEXT-device-parameter</span><br>
+<p><a id="VUID-vkCopyImageToMemory-device-parameter" href="#VUID-vkCopyImageToMemory-device-parameter"></a> <span class="vuid">VUID-vkCopyImageToMemory-device-parameter</span><br>
  <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-vkCopyImageToMemoryEXT-pCopyImageToMemoryInfo-parameter" href="#VUID-vkCopyImageToMemoryEXT-pCopyImageToMemoryInfo-parameter"></a> <span class="vuid">VUID-vkCopyImageToMemoryEXT-pCopyImageToMemoryInfo-parameter</span><br>
- <code>pCopyImageToMemoryInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyImageToMemoryInfoEXT">VkCopyImageToMemoryInfoEXT</a> structure</p>
+<p><a id="VUID-vkCopyImageToMemory-pCopyImageToMemoryInfo-parameter" href="#VUID-vkCopyImageToMemory-pCopyImageToMemoryInfo-parameter"></a> <span class="vuid">VUID-vkCopyImageToMemory-pCopyImageToMemoryInfo-parameter</span><br>
+ <code>pCopyImageToMemoryInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyImageToMemoryInfo">VkCopyImageToMemoryInfo</a> structure</p>
 </li>
 </ul>
 </div>
@@ -6961,20 +6999,29 @@ Before this copy command can be called, a memory barrier for this image
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <code>VkCopyImageToMemoryInfoEXT</code> structure is defined as:</p>
+<p>The <code>VkCopyImageToMemoryInfo</code> structure is defined as:</p>
+</div>
+<div id="VkCopyImageToMemoryInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef struct VkCopyImageToMemoryInfo {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkHostImageCopyFlags          flags;
+    VkImage                       srcImage;
+    VkImageLayout                 srcImageLayout;
+    uint32_t                      regionCount;
+    const VkImageToMemoryCopy*    pRegions;
+} VkCopyImageToMemoryInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
 </div>
 <div id="VkCopyImageToMemoryInfoEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef struct VkCopyImageToMemoryInfoEXT {
-    VkStructureType                  sType;
-    const void*                      pNext;
-    VkHostImageCopyFlagsEXT          flags;
-    VkImage                          srcImage;
-    VkImageLayout                    srcImageLayout;
-    uint32_t                         regionCount;
-    const VkImageToMemoryCopyEXT*    pRegions;
-} VkCopyImageToMemoryInfoEXT;</code></pre>
+typedef VkCopyImageToMemoryInfo VkCopyImageToMemoryInfoEXT;</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -6987,7 +7034,7 @@ typedef struct VkCopyImageToMemoryInfoEXT {
 structure.</p>
 </li>
 <li>
-<p><code>flags</code> is a bitmask of <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a> values
+<p><code>flags</code> is a bitmask of <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a> values
 describing additional copy parameters.</p>
 </li>
 <li>
@@ -7001,13 +7048,13 @@ the copy.</p>
 <p><code>regionCount</code> is the number of regions to copy.</p>
 </li>
 <li>
-<p><code>pRegions</code> is a pointer to an array of <a href="#VkImageToMemoryCopyEXT">VkImageToMemoryCopyEXT</a>
+<p><code>pRegions</code> is a pointer to an array of <a href="#VkImageToMemoryCopy">VkImageToMemoryCopy</a>
 structures specifying the regions to copy.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p><code>vkCopyImageToMemoryEXT</code> does not check whether the device memory
+<p><code>vkCopyImageToMemory</code> does not check whether the device memory
 associated with <code>srcImage</code> is currently in use before performing the
 copy.
 The application <strong>must</strong> guarantee that any previously submitted command that
@@ -7024,51 +7071,51 @@ extents <strong>must</strong> match the edge of the image.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-09109" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-09109"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-09109</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-09109" href="#VUID-VkCopyImageToMemoryInfo-srcImage-09109"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-09109</span><br>
 
 If <code>srcImage</code> is sparse then all memory ranges accessed by the
 copy command <strong>must</strong> be bound as described in
 <a href="sparsemem.html#sparsememory-resource-binding" class="xref page">Binding Resource Memory</a></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-09111" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-09111"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-09111</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-09111" href="#VUID-VkCopyImageToMemoryInfo-srcImage-09111"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-09111</span><br>
 
 If the stencil aspect of <code>srcImage</code> is accessed, and
 <code>srcImage</code> was not created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>srcImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-09112" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-09112"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-09112</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-09112" href="#VUID-VkCopyImageToMemoryInfo-srcImage-09112"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-09112</span><br>
 
 If the stencil aspect of <code>srcImage</code> is accessed, and
 <code>srcImage</code> was created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>srcImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">VkImageStencilUsageCreateInfo</a>::<code>stencilUsage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-09113" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-09113"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-09113</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-09113" href="#VUID-VkCopyImageToMemoryInfo-srcImage-09113"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-09113</span><br>
 
 If non-stencil aspects of <code>srcImage</code> are accessed,
 <code>srcImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-09114" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-09114"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-09114</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-09114" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-09114"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-09114</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
-<code>x</code>, <code>y</code>, and <code>z</code> members of the <code>imageOffset</code> member
-of each element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the <code>x</code>,
+<code>y</code>, and <code>z</code> members of the <code>imageOffset</code> member of each
+element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-09115" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-09115"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-09115</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-09115" href="#VUID-VkCopyImageToMemoryInfo-srcImage-09115"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-09115</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the
 <code>imageExtent</code> member of each element of <code>pRegions</code> <strong>must</strong> equal
 the extents of <code>srcImage</code> identified by <code>imageSubresource</code></p>
 </li>
@@ -7077,7 +7124,7 @@ the extents of <code>srcImage</code> identified by <code>imageSubresource</code>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07966" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07966"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07966</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07966" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07966"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07966</span><br>
 
 If <code>srcImage</code> is non-sparse then the image
 or the specified <em>disjoint</em> plane
@@ -7085,14 +7132,14 @@ or the specified <em>disjoint</em> plane
 <code>VkDeviceMemory</code> object</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07967" href="#VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07967"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07967</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageSubresource-07967" href="#VUID-VkCopyImageToMemoryInfo-imageSubresource-07967"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageSubresource-07967</span><br>
 
 The <code>imageSubresource.mipLevel</code> member of each element of
 <code>pRegions</code> <strong>must</strong> be less than the <code>mipLevels</code> specified in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>srcImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07968" href="#VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07968"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07968</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageSubresource-07968" href="#VUID-VkCopyImageToMemoryInfo-imageSubresource-07968"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageSubresource-07968</span><br>
 
 If <code>imageSubresource.layerCount</code> is not
 <code>VK_REMAINING_ARRAY_LAYERS</code>,
@@ -7102,7 +7149,7 @@ If <code>imageSubresource.layerCount</code> is not
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>srcImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07969" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07969"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07969</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07969" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07969"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07969</span><br>
 
 <code>srcImage</code> <strong>must</strong> not have been created with <code>flags</code>
 containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
@@ -7112,14 +7159,14 @@ containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07970" href="#VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07970"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07970</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageSubresource-07970" href="#VUID-VkCopyImageToMemoryInfo-imageSubresource-07970"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageSubresource-07970</span><br>
 
 The image region specified by each element of <code>pRegions</code> <strong>must</strong> be
 contained within the specified <code>imageSubresource</code> of
 <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07971" href="#VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07971"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07971</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageSubresource-07971" href="#VUID-VkCopyImageToMemoryInfo-imageSubresource-07971"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageSubresource-07971</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.x</code> and
 <span class="eq">(<code>imageExtent.width</code> +  <code>imageOffset.x</code>)</span> <strong>must</strong>
@@ -7127,7 +7174,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the wi
 of the specified <code>imageSubresource</code> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07972" href="#VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07972"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-07972</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageSubresource-07972" href="#VUID-VkCopyImageToMemoryInfo-imageSubresource-07972"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageSubresource-07972</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.y</code> and
 <span class="eq">(<code>imageExtent.height</code> +  <code>imageOffset.y</code>)</span> <strong>must</strong>
@@ -7139,7 +7186,7 @@ height of the specified <code>imageSubresource</code> of <code>srcImage</code></
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07973" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07973"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07973</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07973" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07973"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07973</span><br>
 
 <code>srcImage</code> <strong>must</strong> have a sample count equal to
 <code>VK_SAMPLE_COUNT_1_BIT</code></p>
@@ -7149,14 +7196,14 @@ height of the specified <code>imageSubresource</code> of <code>srcImage</code></
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07979" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07979"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07979</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07979" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07979"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07979</span><br>
 
 If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_1D</code>, then for each
 element of <code>pRegions</code>, <code>imageOffset.y</code> <strong>must</strong> be <code>0</code> and
 <code>imageExtent.height</code> <strong>must</strong> be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-09104" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-09104"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-09104</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-09104" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-09104"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-09104</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.z</code> and
 <span class="eq">(<code>imageExtent.depth</code> +  <code>imageOffset.z</code>)</span> <strong>must</strong>
@@ -7164,7 +7211,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the de
 of the specified <code>imageSubresource</code> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07980" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07980"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07980</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07980" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07980"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07980</span><br>
 
 If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 <code>VK_IMAGE_TYPE_2D</code>, then for each element of <code>pRegions</code>,
@@ -7172,7 +7219,7 @@ If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07274" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07274"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07274</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07274" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07274"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07274</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7183,7 +7230,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10051" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10051"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10051</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10051" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10051"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10051</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7195,7 +7242,7 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07275" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07275"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07275</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07275" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07275"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07275</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7206,7 +7253,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10052" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10052"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10052</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10052" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10052"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10052</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7218,13 +7265,13 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07276" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07276"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07276</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07276" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07276"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07276</span><br>
 
 For each element of <code>pRegions</code>, <code>imageOffset.z</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-00207" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-00207"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-00207</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-00207" href="#VUID-VkCopyImageToMemoryInfo-srcImage-00207"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-00207</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7236,7 +7283,7 @@ the width of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10053" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10053"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10053</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10053" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10053"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10053</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7246,7 +7293,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10054" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10054"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10054</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10054" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10054"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10054</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7256,7 +7303,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10055" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10055"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10055</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10055" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10055"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10055</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7268,7 +7315,7 @@ of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-00208" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-00208"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-00208</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-00208" href="#VUID-VkCopyImageToMemoryInfo-srcImage-00208"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-00208</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7280,7 +7327,7 @@ the height of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10056" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10056"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10056</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10056" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10056"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10056</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7292,7 +7339,7 @@ of the subresource specified by <code>imageSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10057" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10057"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10057</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10057" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10057"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10057</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7302,7 +7349,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10058" href="#VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10058"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageOffset-10058</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageOffset-10058" href="#VUID-VkCopyImageToMemoryInfo-imageOffset-10058"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageOffset-10058</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7312,7 +7359,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-00209" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-00209"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-00209</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-00209" href="#VUID-VkCopyImageToMemoryInfo-srcImage-00209"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-00209</span><br>
 
 For each element of <code>pRegions</code>, if the sum of <code>imageOffset.z</code>
 and <code>extent.depth</code> does not equal the depth of the subresource
@@ -7320,13 +7367,13 @@ specified by <code>srcSubresource</code>, <code>extent.depth</code> <strong>must
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-09105" href="#VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-09105"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-imageSubresource-09105</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-imageSubresource-09105" href="#VUID-VkCopyImageToMemoryInfo-imageSubresource-09105"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-imageSubresource-09105</span><br>
 
 For each element of <code>pRegions</code>, <code>imageSubresource.aspectMask</code>
 <strong>must</strong> specify aspects present in <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07981" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07981"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07981</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07981" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07981"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07981</span><br>
 
 If <code>srcImage</code> has a
 <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a>, then for each element of <code>pRegions</code>,
@@ -7334,7 +7381,7 @@ If <code>srcImage</code> has a
 <a href="formats.html#formats-planes-image-aspect" class="xref page">multi-planar aspect mask</a> bit</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-07983" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-07983"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-07983</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-07983" href="#VUID-VkCopyImageToMemoryInfo-srcImage-07983"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-07983</span><br>
 
 If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, for each
 element of <code>pRegions</code>, <code>imageSubresource.baseArrayLayer</code> <strong>must</strong>
@@ -7345,19 +7392,19 @@ be <code>0</code> and <code>imageSubresource.layerCount</code> <strong>must</str
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-memoryRowLength-09106" href="#VUID-VkCopyImageToMemoryInfoEXT-memoryRowLength-09106"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-memoryRowLength-09106</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-memoryRowLength-09106" href="#VUID-VkCopyImageToMemoryInfo-memoryRowLength-09106"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-memoryRowLength-09106</span><br>
 
 For each element of <code>pRegions</code>, <code>memoryRowLength</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    width</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-memoryImageHeight-09107" href="#VUID-VkCopyImageToMemoryInfoEXT-memoryImageHeight-09107"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-memoryImageHeight-09107</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-memoryImageHeight-09107" href="#VUID-VkCopyImageToMemoryInfo-memoryImageHeight-09107"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-memoryImageHeight-09107</span><br>
 
 For each element of <code>pRegions</code>, <code>memoryImageHeight</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    height</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-memoryRowLength-09108" href="#VUID-VkCopyImageToMemoryInfoEXT-memoryRowLength-09108"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-memoryRowLength-09108</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-memoryRowLength-09108" href="#VUID-VkCopyImageToMemoryInfo-memoryRowLength-09108"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-memoryRowLength-09108</span><br>
 
 For each element of <code>pRegions</code>, <code>memoryRowLength</code> divided by
 the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent width</a> and then
@@ -7365,23 +7412,23 @@ multiplied by the texel block size of <code>srcImage</code> <strong>must</strong
 than or equal to <span class="eq">2<sup>31</sup>-1</span></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-09064" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-09064"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-09064</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImageLayout-09064" href="#VUID-VkCopyImageToMemoryInfo-srcImageLayout-09064"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImageLayout-09064</span><br>
 
 <code>srcImageLayout</code> <strong>must</strong> specify the current layout of the image
 subresources of <code>srcImage</code> specified in <code>pRegions</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-09065" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-09065"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-09065</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImageLayout-09065" href="#VUID-VkCopyImageToMemoryInfo-srcImageLayout-09065"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImageLayout-09065</span><br>
 
 <code>srcImageLayout</code> <strong>must</strong> be one of the image layouts returned in
-<a href="limits.html#VkPhysicalDeviceHostImageCopyPropertiesEXT" class="xref page">VkPhysicalDeviceHostImageCopyPropertiesEXT</a>::<code>pCopySrcLayouts</code></p>
+<a href="limits.html#VkPhysicalDeviceHostImageCopyProperties" class="xref page">VkPhysicalDeviceHostImageCopyProperties</a>::<code>pCopySrcLayouts</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-flags-09394" href="#VUID-VkCopyImageToMemoryInfoEXT-flags-09394"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-flags-09394</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-flags-09394" href="#VUID-VkCopyImageToMemoryInfo-flags-09394"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-flags-09394</span><br>
 
-If <code>flags</code> includes <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, for each
-region in <code>pRegions</code>, <code>memoryRowLength</code> and
-<code>memoryImageHeight</code> <strong>must</strong> both be 0</p>
+If <code>flags</code> includes <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, for each region
+in <code>pRegions</code>, <code>memoryRowLength</code> and <code>memoryImageHeight</code>
+<strong>must</strong> both be 0</p>
 </li>
 </ul>
 </div>
@@ -7393,31 +7440,31 @@ region in <code>pRegions</code>, <code>memoryRowLength</code> and
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-sType-sType" href="#VUID-VkCopyImageToMemoryInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO_EXT</code></p>
+<p><a id="VUID-VkCopyImageToMemoryInfo-sType-sType" href="#VUID-VkCopyImageToMemoryInfo-sType-sType"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_IMAGE_TO_MEMORY_INFO</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-pNext-pNext" href="#VUID-VkCopyImageToMemoryInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-pNext-pNext</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-pNext-pNext" href="#VUID-VkCopyImageToMemoryInfo-pNext-pNext"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-flags-parameter" href="#VUID-VkCopyImageToMemoryInfoEXT-flags-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-flags-parameter</span><br>
- <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a> values</p>
+<p><a id="VUID-VkCopyImageToMemoryInfo-flags-parameter" href="#VUID-VkCopyImageToMemoryInfo-flags-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a> values</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImage-parameter" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImage-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImage-parameter</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImage-parameter" href="#VUID-VkCopyImageToMemoryInfo-srcImage-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImage-parameter</span><br>
  <code>srcImage</code> <strong>must</strong> be a valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-parameter" href="#VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-srcImageLayout-parameter</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-srcImageLayout-parameter" href="#VUID-VkCopyImageToMemoryInfo-srcImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-srcImageLayout-parameter</span><br>
  <code>srcImageLayout</code> <strong>must</strong> be a valid <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-pRegions-parameter" href="#VUID-VkCopyImageToMemoryInfoEXT-pRegions-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-pRegions-parameter</span><br>
- <code>pRegions</code> <strong>must</strong> be a valid pointer to an array of <code>regionCount</code> valid <a href="#VkImageToMemoryCopyEXT">VkImageToMemoryCopyEXT</a> structures</p>
+<p><a id="VUID-VkCopyImageToMemoryInfo-pRegions-parameter" href="#VUID-VkCopyImageToMemoryInfo-pRegions-parameter"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-pRegions-parameter</span><br>
+ <code>pRegions</code> <strong>must</strong> be a valid pointer to an array of <code>regionCount</code> valid <a href="#VkImageToMemoryCopy">VkImageToMemoryCopy</a> structures</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToMemoryInfoEXT-regionCount-arraylength" href="#VUID-VkCopyImageToMemoryInfoEXT-regionCount-arraylength"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfoEXT-regionCount-arraylength</span><br>
+<p><a id="VUID-VkCopyImageToMemoryInfo-regionCount-arraylength" href="#VUID-VkCopyImageToMemoryInfo-regionCount-arraylength"></a> <span class="vuid">VUID-VkCopyImageToMemoryInfo-regionCount-arraylength</span><br>
  <code>regionCount</code> <strong>must</strong> be greater than <code>0</code></p>
 </li>
 </ul>
@@ -7429,13 +7476,13 @@ region in <code>pRegions</code>, <code>memoryRowLength</code> and
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>Each element of <a href="#VkCopyImageToMemoryInfoEXT">VkCopyImageToMemoryInfoEXT</a>::<code>pRegions</code> is a
-structure defined as:</p>
+<p>Each element of <a href="#VkCopyImageToMemoryInfo">VkCopyImageToMemoryInfo</a>::<code>pRegions</code> is a structure
+defined as:</p>
 </div>
-<div id="VkImageToMemoryCopyEXT" class="listingblock">
+<div id="VkImageToMemoryCopy" class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef struct VkImageToMemoryCopyEXT {
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef struct VkImageToMemoryCopy {
     VkStructureType             sType;
     const void*                 pNext;
     void*                       pHostPointer;
@@ -7444,7 +7491,16 @@ typedef struct VkImageToMemoryCopyEXT {
     VkImageSubresourceLayers    imageSubresource;
     VkOffset3D                  imageOffset;
     VkExtent3D                  imageExtent;
-} VkImageToMemoryCopyEXT;</code></pre>
+} VkImageToMemoryCopy;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
+</div>
+<div id="VkImageToMemoryCopyEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
+typedef VkImageToMemoryCopy VkImageToMemoryCopyEXT;</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -7494,7 +7550,7 @@ structure apply here as well.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-pHostPointer-09066" href="#VUID-VkImageToMemoryCopyEXT-pHostPointer-09066"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-pHostPointer-09066</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-pHostPointer-09066" href="#VUID-VkImageToMemoryCopy-pHostPointer-09066"></a> <span class="vuid">VUID-VkImageToMemoryCopy-pHostPointer-09066</span><br>
 
 <code>pHostPointer</code> <strong>must</strong> point to memory that is large enough to contain
 all memory locations that are accessed according to
@@ -7502,7 +7558,7 @@ all memory locations that are accessed according to
 each element of <code>pRegions</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-pRegions-09067" href="#VUID-VkImageToMemoryCopyEXT-pRegions-09067"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-pRegions-09067</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-pRegions-09067" href="#VUID-VkImageToMemoryCopy-pRegions-09067"></a> <span class="vuid">VUID-VkImageToMemoryCopy-pRegions-09067</span><br>
 
 The union of all source regions, and the union of all destination
 regions, specified by the elements of <code>pRegions</code>, <strong>must</strong> not overlap
@@ -7513,35 +7569,35 @@ in memory</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-memoryRowLength-09101" href="#VUID-VkImageToMemoryCopyEXT-memoryRowLength-09101"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-memoryRowLength-09101</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-memoryRowLength-09101" href="#VUID-VkImageToMemoryCopy-memoryRowLength-09101"></a> <span class="vuid">VUID-VkImageToMemoryCopy-memoryRowLength-09101</span><br>
 
 <code>memoryRowLength</code> <strong>must</strong> be <code>0</code>, or greater than or equal to the
 <code>width</code> member of <code>imageExtent</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-memoryImageHeight-09102" href="#VUID-VkImageToMemoryCopyEXT-memoryImageHeight-09102"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-memoryImageHeight-09102</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-memoryImageHeight-09102" href="#VUID-VkImageToMemoryCopy-memoryImageHeight-09102"></a> <span class="vuid">VUID-VkImageToMemoryCopy-memoryImageHeight-09102</span><br>
 
 <code>memoryImageHeight</code> <strong>must</strong> be <code>0</code>, or greater than or equal to the
 <code>height</code> member of <code>imageExtent</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-aspectMask-09103" href="#VUID-VkImageToMemoryCopyEXT-aspectMask-09103"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-aspectMask-09103</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-aspectMask-09103" href="#VUID-VkImageToMemoryCopy-aspectMask-09103"></a> <span class="vuid">VUID-VkImageToMemoryCopy-aspectMask-09103</span><br>
 
 The <code>aspectMask</code> member of <code>imageSubresource</code> <strong>must</strong> only have a
 single bit set</p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-imageExtent-06659" href="#VUID-VkImageToMemoryCopyEXT-imageExtent-06659"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-imageExtent-06659</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-imageExtent-06659" href="#VUID-VkImageToMemoryCopy-imageExtent-06659"></a> <span class="vuid">VUID-VkImageToMemoryCopy-imageExtent-06659</span><br>
 
 <code>imageExtent.width</code> <strong>must</strong> not be 0</p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-imageExtent-06660" href="#VUID-VkImageToMemoryCopyEXT-imageExtent-06660"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-imageExtent-06660</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-imageExtent-06660" href="#VUID-VkImageToMemoryCopy-imageExtent-06660"></a> <span class="vuid">VUID-VkImageToMemoryCopy-imageExtent-06660</span><br>
 
 <code>imageExtent.height</code> <strong>must</strong> not be 0</p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-imageExtent-06661" href="#VUID-VkImageToMemoryCopyEXT-imageExtent-06661"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-imageExtent-06661</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-imageExtent-06661" href="#VUID-VkImageToMemoryCopy-imageExtent-06661"></a> <span class="vuid">VUID-VkImageToMemoryCopy-imageExtent-06661</span><br>
 
 <code>imageExtent.depth</code> <strong>must</strong> not be 0</p>
 </li>
@@ -7555,19 +7611,19 @@ single bit set</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-sType-sType" href="#VUID-VkImageToMemoryCopyEXT-sType-sType"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_IMAGE_TO_MEMORY_COPY_EXT</code></p>
+<p><a id="VUID-VkImageToMemoryCopy-sType-sType" href="#VUID-VkImageToMemoryCopy-sType-sType"></a> <span class="vuid">VUID-VkImageToMemoryCopy-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_IMAGE_TO_MEMORY_COPY</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-pNext-pNext" href="#VUID-VkImageToMemoryCopyEXT-pNext-pNext"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-pNext-pNext</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-pNext-pNext" href="#VUID-VkImageToMemoryCopy-pNext-pNext"></a> <span class="vuid">VUID-VkImageToMemoryCopy-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-pHostPointer-parameter" href="#VUID-VkImageToMemoryCopyEXT-pHostPointer-parameter"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-pHostPointer-parameter</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-pHostPointer-parameter" href="#VUID-VkImageToMemoryCopy-pHostPointer-parameter"></a> <span class="vuid">VUID-VkImageToMemoryCopy-pHostPointer-parameter</span><br>
  <code>pHostPointer</code> <strong>must</strong> be a pointer value</p>
 </li>
 <li>
-<p><a id="VUID-VkImageToMemoryCopyEXT-imageSubresource-parameter" href="#VUID-VkImageToMemoryCopyEXT-imageSubresource-parameter"></a> <span class="vuid">VUID-VkImageToMemoryCopyEXT-imageSubresource-parameter</span><br>
+<p><a id="VUID-VkImageToMemoryCopy-imageSubresource-parameter" href="#VUID-VkImageToMemoryCopy-imageSubresource-parameter"></a> <span class="vuid">VUID-VkImageToMemoryCopy-imageSubresource-parameter</span><br>
  <code>imageSubresource</code> <strong>must</strong> be a valid <a href="#VkImageSubresourceLayers">VkImageSubresourceLayers</a> structure</p>
 </li>
 </ul>
@@ -7579,23 +7635,34 @@ single bit set</p>
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>Bits which <strong>can</strong> be set in <a href="#VkCopyMemoryToImageInfoEXT">VkCopyMemoryToImageInfoEXT</a>::<code>flags</code>,
-<a href="#VkCopyImageToMemoryInfoEXT">VkCopyImageToMemoryInfoEXT</a>::<code>flags</code>, and
-<a href="#VkCopyImageToImageInfoEXT">VkCopyImageToImageInfoEXT</a>::<code>flags</code>, specifying additional copy
+<p>Bits which <strong>can</strong> be set in <a href="#VkCopyMemoryToImageInfo">VkCopyMemoryToImageInfo</a>::<code>flags</code>,
+<a href="#VkCopyImageToMemoryInfo">VkCopyImageToMemoryInfo</a>::<code>flags</code>, and
+<a href="#VkCopyImageToImageInfo">VkCopyImageToImageInfo</a>::<code>flags</code>, specifying additional copy
 parameters are:</p>
+</div>
+<div id="VkHostImageCopyFlagBits" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef enum VkHostImageCopyFlagBits {
+    VK_HOST_IMAGE_COPY_MEMCPY = 0x00000001,
+  // Provided by VK_EXT_host_image_copy
+    VK_HOST_IMAGE_COPY_MEMCPY_EXT = VK_HOST_IMAGE_COPY_MEMCPY,
+} VkHostImageCopyFlagBits;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
 </div>
 <div id="VkHostImageCopyFlagBitsEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef enum VkHostImageCopyFlagBitsEXT {
-    VK_HOST_IMAGE_COPY_MEMCPY_EXT = 0x00000001,
-} VkHostImageCopyFlagBitsEXT;</code></pre>
+typedef VkHostImageCopyFlagBits VkHostImageCopyFlagBitsEXT;</code></pre>
 </div>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code> specifies that no memory layout
+<p><code>VK_HOST_IMAGE_COPY_MEMCPY</code> specifies that no memory layout
 swizzling is to be applied during data copy.
 For copies between memory and images, this flag indicates that image
 data in host memory is swizzled in exactly the same way as the image
@@ -7612,15 +7679,24 @@ is not defined in this specification.</p>
 </div>
 <div class="openblock">
 <div class="content">
-<div id="VkHostImageCopyFlagsEXT" class="listingblock">
+<div id="VkHostImageCopyFlags" class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef VkFlags VkHostImageCopyFlagsEXT;</code></pre>
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef VkFlags VkHostImageCopyFlags;</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p><code>VkHostImageCopyFlagsEXT</code> is a bitmask type for setting a mask of zero
-or more <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a>.</p>
+<p>or the equivalent</p>
+</div>
+<div id="VkHostImageCopyFlagsEXT" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
+typedef VkHostImageCopyFlags VkHostImageCopyFlagsEXT;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>VkHostImageCopyFlags</code> is a bitmask type for setting a mask of zero or
+more <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a>.</p>
 </div>
 </div>
 </div>
@@ -7630,12 +7706,23 @@ or more <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a>.</p
 <p>To copy data from an image object to another image object using the host,
 call:</p>
 </div>
+<div id="vkCopyImageToImage" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+VkResult vkCopyImageToImage(
+    VkDevice                                    device,
+    const VkCopyImageToImageInfo*               pCopyImageToImageInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent command</p>
+</div>
 <div id="vkCopyImageToImageEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
 VkResult vkCopyImageToImageEXT(
     VkDevice                                    device,
-    const VkCopyImageToImageInfoEXT*            pCopyImageToImageInfo);</code></pre>
+    const VkCopyImageToImageInfo*               pCopyImageToImageInfo);</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -7647,8 +7734,7 @@ VkResult vkCopyImageToImageEXT(
 </li>
 <li>
 <p><code>pCopyImageToImageInfo</code> is a pointer to a
-<a href="#VkCopyImageToImageInfoEXT">VkCopyImageToImageInfoEXT</a> structure describing the copy
-parameters.</p>
+<a href="#VkCopyImageToImageInfo">VkCopyImageToImageInfo</a> structure describing the copy parameters.</p>
 </li>
 </ul>
 </div>
@@ -7690,12 +7776,12 @@ need for a memory barrier before using the results of this copy operation in
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-vkCopyImageToImageEXT-device-parameter" href="#VUID-vkCopyImageToImageEXT-device-parameter"></a> <span class="vuid">VUID-vkCopyImageToImageEXT-device-parameter</span><br>
+<p><a id="VUID-vkCopyImageToImage-device-parameter" href="#VUID-vkCopyImageToImage-device-parameter"></a> <span class="vuid">VUID-vkCopyImageToImage-device-parameter</span><br>
  <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-vkCopyImageToImageEXT-pCopyImageToImageInfo-parameter" href="#VUID-vkCopyImageToImageEXT-pCopyImageToImageInfo-parameter"></a> <span class="vuid">VUID-vkCopyImageToImageEXT-pCopyImageToImageInfo-parameter</span><br>
- <code>pCopyImageToImageInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyImageToImageInfoEXT">VkCopyImageToImageInfoEXT</a> structure</p>
+<p><a id="VUID-vkCopyImageToImage-pCopyImageToImageInfo-parameter" href="#VUID-vkCopyImageToImage-pCopyImageToImageInfo-parameter"></a> <span class="vuid">VUID-vkCopyImageToImage-pCopyImageToImageInfo-parameter</span><br>
+ <code>pCopyImageToImageInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkCopyImageToImageInfo">VkCopyImageToImageInfo</a> structure</p>
 </li>
 </ul>
 </div>
@@ -7744,22 +7830,31 @@ need for a memory barrier before using the results of this copy operation in
 <div class="openblock">
 <div class="content">
 <div class="paragraph">
-<p>The <code>VkCopyImageToImageInfoEXT</code> structure is defined as:</p>
+<p>The <code>VkCopyImageToImageInfo</code> structure is defined as:</p>
+</div>
+<div id="VkCopyImageToImageInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_VERSION_1_4
+typedef struct VkCopyImageToImageInfo {
+    VkStructureType         sType;
+    const void*             pNext;
+    VkHostImageCopyFlags    flags;
+    VkImage                 srcImage;
+    VkImageLayout           srcImageLayout;
+    VkImage                 dstImage;
+    VkImageLayout           dstImageLayout;
+    uint32_t                regionCount;
+    const VkImageCopy2*     pRegions;
+} VkCopyImageToImageInfo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>or the equivalent</p>
 </div>
 <div id="VkCopyImageToImageInfoEXT" class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_EXT_host_image_copy
-typedef struct VkCopyImageToImageInfoEXT {
-    VkStructureType            sType;
-    const void*                pNext;
-    VkHostImageCopyFlagsEXT    flags;
-    VkImage                    srcImage;
-    VkImageLayout              srcImageLayout;
-    VkImage                    dstImage;
-    VkImageLayout              dstImageLayout;
-    uint32_t                   regionCount;
-    const VkImageCopy2*        pRegions;
-} VkCopyImageToImageInfoEXT;</code></pre>
+typedef VkCopyImageToImageInfo VkCopyImageToImageInfoEXT;</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -7772,7 +7867,7 @@ typedef struct VkCopyImageToImageInfoEXT {
 structure.</p>
 </li>
 <li>
-<p><code>flags</code> is a bitmask of <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a> values
+<p><code>flags</code> is a bitmask of <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a> values
 describing additional copy parameters.</p>
 </li>
 <li>
@@ -7799,9 +7894,9 @@ specifying the regions to copy.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p><code>vkCopyImageToImageEXT</code> does not check whether the device memory
-associated with <code>srcImage</code> or <code>dstImage</code> is currently in use before
-performing the copy.
+<p><code>vkCopyImageToImage</code> does not check whether the device memory associated
+with <code>srcImage</code> or <code>dstImage</code> is currently in use before performing
+the copy.
 The application <strong>must</strong> guarantee that any previously submitted command that
 writes to the copy regions has completed before the host performs the copy.</p>
 </div>
@@ -7811,7 +7906,7 @@ writes to the copy regions has completed before the host performs the copy.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-09069" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-09069"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-09069</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-09069" href="#VUID-VkCopyImageToImageInfo-srcImage-09069"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-09069</span><br>
 
 <code>srcImage</code> and <code>dstImage</code> <strong>must</strong> have been created with identical
 image creation parameters</p>
@@ -7821,51 +7916,51 @@ image creation parameters</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-09109" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-09109"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-09109</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-09109" href="#VUID-VkCopyImageToImageInfo-srcImage-09109"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-09109</span><br>
 
 If <code>srcImage</code> is sparse then all memory ranges accessed by the
 copy command <strong>must</strong> be bound as described in
 <a href="sparsemem.html#sparsememory-resource-binding" class="xref page">Binding Resource Memory</a></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-09111" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-09111"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-09111</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-09111" href="#VUID-VkCopyImageToImageInfo-srcImage-09111"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-09111</span><br>
 
 If the stencil aspect of <code>srcImage</code> is accessed, and
 <code>srcImage</code> was not created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>srcImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-09112" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-09112"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-09112</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-09112" href="#VUID-VkCopyImageToImageInfo-srcImage-09112"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-09112</span><br>
 
 If the stencil aspect of <code>srcImage</code> is accessed, and
 <code>srcImage</code> was created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>srcImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">VkImageStencilUsageCreateInfo</a>::<code>stencilUsage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-09113" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-09113"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-09113</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-09113" href="#VUID-VkCopyImageToImageInfo-srcImage-09113"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-09113</span><br>
 
 If non-stencil aspects of <code>srcImage</code> are accessed,
 <code>srcImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-09114" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-09114"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-09114</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-09114" href="#VUID-VkCopyImageToImageInfo-srcOffset-09114"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-09114</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
-<code>x</code>, <code>y</code>, and <code>z</code> members of the <code>srcOffset</code> member
-of each element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the <code>x</code>,
+<code>y</code>, and <code>z</code> members of the <code>srcOffset</code> member of each
+element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-09115" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-09115"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-09115</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-09115" href="#VUID-VkCopyImageToImageInfo-srcImage-09115"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-09115</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the
 <code>extent</code> member of each element of <code>pRegions</code> <strong>must</strong> equal
 the extents of <code>srcImage</code> identified by <code>srcSubresource</code></p>
 </li>
@@ -7874,7 +7969,7 @@ the extents of <code>srcImage</code> identified by <code>srcSubresource</code></
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07966" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07966"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07966</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07966" href="#VUID-VkCopyImageToImageInfo-srcImage-07966"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07966</span><br>
 
 If <code>srcImage</code> is non-sparse then the image
 or the specified <em>disjoint</em> plane
@@ -7882,14 +7977,14 @@ or the specified <em>disjoint</em> plane
 <code>VkDeviceMemory</code> object</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcSubresource-07967" href="#VUID-VkCopyImageToImageInfoEXT-srcSubresource-07967"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcSubresource-07967</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcSubresource-07967" href="#VUID-VkCopyImageToImageInfo-srcSubresource-07967"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcSubresource-07967</span><br>
 
 The <code>srcSubresource.mipLevel</code> member of each element of
 <code>pRegions</code> <strong>must</strong> be less than the <code>mipLevels</code> specified in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>srcImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcSubresource-07968" href="#VUID-VkCopyImageToImageInfoEXT-srcSubresource-07968"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcSubresource-07968</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcSubresource-07968" href="#VUID-VkCopyImageToImageInfo-srcSubresource-07968"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcSubresource-07968</span><br>
 
 If <code>srcSubresource.layerCount</code> is not
 <code>VK_REMAINING_ARRAY_LAYERS</code>,
@@ -7899,7 +7994,7 @@ If <code>srcSubresource.layerCount</code> is not
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>srcImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07969" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07969"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07969</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07969" href="#VUID-VkCopyImageToImageInfo-srcImage-07969"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07969</span><br>
 
 <code>srcImage</code> <strong>must</strong> not have been created with <code>flags</code>
 containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
@@ -7909,14 +8004,14 @@ containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcSubresource-07970" href="#VUID-VkCopyImageToImageInfoEXT-srcSubresource-07970"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcSubresource-07970</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcSubresource-07970" href="#VUID-VkCopyImageToImageInfo-srcSubresource-07970"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcSubresource-07970</span><br>
 
 The image region specified by each element of <code>pRegions</code> <strong>must</strong> be
 contained within the specified <code>srcSubresource</code> of
 <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcSubresource-07971" href="#VUID-VkCopyImageToImageInfoEXT-srcSubresource-07971"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcSubresource-07971</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcSubresource-07971" href="#VUID-VkCopyImageToImageInfo-srcSubresource-07971"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcSubresource-07971</span><br>
 
 For each element of <code>pRegions</code>, <code>srcOffset.x</code> and
 <span class="eq">(<code>extent.width</code> +  <code>srcOffset.x</code>)</span> <strong>must</strong>
@@ -7924,7 +8019,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the wi
 of the specified <code>srcSubresource</code> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcSubresource-07972" href="#VUID-VkCopyImageToImageInfoEXT-srcSubresource-07972"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcSubresource-07972</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcSubresource-07972" href="#VUID-VkCopyImageToImageInfo-srcSubresource-07972"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcSubresource-07972</span><br>
 
 For each element of <code>pRegions</code>, <code>srcOffset.y</code> and
 <span class="eq">(<code>extent.height</code> +  <code>srcOffset.y</code>)</span> <strong>must</strong>
@@ -7936,14 +8031,14 @@ height of the specified <code>srcSubresource</code> of <code>srcImage</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07979" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07979"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07979</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07979" href="#VUID-VkCopyImageToImageInfo-srcImage-07979"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07979</span><br>
 
 If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_1D</code>, then for each
 element of <code>pRegions</code>, <code>srcOffset.y</code> <strong>must</strong> be <code>0</code> and
 <code>extent.height</code> <strong>must</strong> be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-09104" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-09104"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-09104</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-09104" href="#VUID-VkCopyImageToImageInfo-srcOffset-09104"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-09104</span><br>
 
 For each element of <code>pRegions</code>, <code>srcOffset.z</code> and
 <span class="eq">(<code>extent.depth</code> +  <code>srcOffset.z</code>)</span> <strong>must</strong>
@@ -7951,7 +8046,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the de
 of the specified <code>srcSubresource</code> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07980" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07980"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07980</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07980" href="#VUID-VkCopyImageToImageInfo-srcImage-07980"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07980</span><br>
 
 If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 <code>VK_IMAGE_TYPE_2D</code>, then for each element of <code>pRegions</code>,
@@ -7959,7 +8054,7 @@ If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07274" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07274"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07274</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07274" href="#VUID-VkCopyImageToImageInfo-srcImage-07274"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07274</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7970,7 +8065,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10051" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10051"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10051</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10051" href="#VUID-VkCopyImageToImageInfo-srcOffset-10051"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10051</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7982,7 +8077,7 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07275" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07275"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07275</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07275" href="#VUID-VkCopyImageToImageInfo-srcImage-07275"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07275</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -7993,7 +8088,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10052" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10052"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10052</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10052" href="#VUID-VkCopyImageToImageInfo-srcOffset-10052"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10052</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8005,13 +8100,13 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07276" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07276"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07276</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07276" href="#VUID-VkCopyImageToImageInfo-srcImage-07276"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07276</span><br>
 
 For each element of <code>pRegions</code>, <code>srcOffset.z</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-00207" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-00207"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-00207</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-00207" href="#VUID-VkCopyImageToImageInfo-srcImage-00207"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-00207</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8023,7 +8118,7 @@ the width of the subresource specified by <code>srcSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10053" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10053"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10053</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10053" href="#VUID-VkCopyImageToImageInfo-srcOffset-10053"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10053</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8033,7 +8128,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10054" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10054"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10054</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10054" href="#VUID-VkCopyImageToImageInfo-srcOffset-10054"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10054</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8043,7 +8138,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10055" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10055"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10055</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10055" href="#VUID-VkCopyImageToImageInfo-srcOffset-10055"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10055</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8055,7 +8150,7 @@ of the subresource specified by <code>srcSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-00208" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-00208"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-00208</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-00208" href="#VUID-VkCopyImageToImageInfo-srcImage-00208"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-00208</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8067,7 +8162,7 @@ the height of the subresource specified by <code>srcSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10056" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10056"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10056</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10056" href="#VUID-VkCopyImageToImageInfo-srcOffset-10056"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10056</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8079,7 +8174,7 @@ of the subresource specified by <code>srcSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10057" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10057"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10057</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10057" href="#VUID-VkCopyImageToImageInfo-srcOffset-10057"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10057</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8089,7 +8184,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcOffset-10058" href="#VUID-VkCopyImageToImageInfoEXT-srcOffset-10058"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcOffset-10058</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcOffset-10058" href="#VUID-VkCopyImageToImageInfo-srcOffset-10058"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcOffset-10058</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8099,7 +8194,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-00209" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-00209"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-00209</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-00209" href="#VUID-VkCopyImageToImageInfo-srcImage-00209"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-00209</span><br>
 
 For each element of <code>pRegions</code>, if the sum of <code>srcOffset.z</code>
 and <code>extent.depth</code> does not equal the depth of the subresource
@@ -8107,13 +8202,13 @@ specified by <code>srcSubresource</code>, <code>extent.depth</code> <strong>must
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcSubresource-09105" href="#VUID-VkCopyImageToImageInfoEXT-srcSubresource-09105"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcSubresource-09105</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcSubresource-09105" href="#VUID-VkCopyImageToImageInfo-srcSubresource-09105"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcSubresource-09105</span><br>
 
 For each element of <code>pRegions</code>, <code>srcSubresource.aspectMask</code>
 <strong>must</strong> specify aspects present in <code>srcImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07981" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07981"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07981</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07981" href="#VUID-VkCopyImageToImageInfo-srcImage-07981"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07981</span><br>
 
 If <code>srcImage</code> has a
 <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a>, then for each element of <code>pRegions</code>,
@@ -8121,7 +8216,7 @@ If <code>srcImage</code> has a
 <a href="formats.html#formats-planes-image-aspect" class="xref page">multi-planar aspect mask</a> bit</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-07983" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-07983"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-07983</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-07983" href="#VUID-VkCopyImageToImageInfo-srcImage-07983"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-07983</span><br>
 
 If <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, for each
 element of <code>pRegions</code>, <code>srcSubresource.baseArrayLayer</code> <strong>must</strong>
@@ -8132,51 +8227,51 @@ be <code>0</code> and <code>srcSubresource.layerCount</code> <strong>must</stron
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-09109" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-09109"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-09109</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-09109" href="#VUID-VkCopyImageToImageInfo-dstImage-09109"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-09109</span><br>
 
 If <code>dstImage</code> is sparse then all memory ranges accessed by the
 copy command <strong>must</strong> be bound as described in
 <a href="sparsemem.html#sparsememory-resource-binding" class="xref page">Binding Resource Memory</a></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-09111" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-09111"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-09111</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-09111" href="#VUID-VkCopyImageToImageInfo-dstImage-09111"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-09111</span><br>
 
 If the stencil aspect of <code>dstImage</code> is accessed, and
 <code>dstImage</code> was not created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>dstImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-09112" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-09112"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-09112</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-09112" href="#VUID-VkCopyImageToImageInfo-dstImage-09112"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-09112</span><br>
 
 If the stencil aspect of <code>dstImage</code> is accessed, and
 <code>dstImage</code> was created with
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">separate stencil usage</a>,
 <code>dstImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageStencilUsageCreateInfo" class="xref page">VkImageStencilUsageCreateInfo</a>::<code>stencilUsage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-09113" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-09113"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-09113</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-09113" href="#VUID-VkCopyImageToImageInfo-dstImage-09113"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-09113</span><br>
 
 If non-stencil aspects of <code>dstImage</code> are accessed,
 <code>dstImage</code> <strong>must</strong> have been created with
-<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT_EXT</code> set in
+<code>VK_IMAGE_USAGE_HOST_TRANSFER_BIT</code> set in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>usage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-09114" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-09114"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-09114</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-09114" href="#VUID-VkCopyImageToImageInfo-dstOffset-09114"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-09114</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
-<code>x</code>, <code>y</code>, and <code>z</code> members of the <code>dstOffset</code> member
-of each element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the <code>x</code>,
+<code>y</code>, and <code>z</code> members of the <code>dstOffset</code> member of each
+element of <code>pRegions</code> <strong>must</strong> be <code>0</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-09115" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-09115"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-09115</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-09115" href="#VUID-VkCopyImageToImageInfo-dstImage-09115"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-09115</span><br>
 
-If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY_EXT</code>, the
+If <code>flags</code> contains <code>VK_HOST_IMAGE_COPY_MEMCPY</code>, the
 <code>extent</code> member of each element of <code>pRegions</code> <strong>must</strong> equal
 the extents of <code>dstImage</code> identified by <code>dstSubresource</code></p>
 </li>
@@ -8185,7 +8280,7 @@ the extents of <code>dstImage</code> identified by <code>dstSubresource</code></
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07966" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07966"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07966</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07966" href="#VUID-VkCopyImageToImageInfo-dstImage-07966"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07966</span><br>
 
 If <code>dstImage</code> is non-sparse then the image
 or the specified <em>disjoint</em> plane
@@ -8193,14 +8288,14 @@ or the specified <em>disjoint</em> plane
 <code>VkDeviceMemory</code> object</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstSubresource-07967" href="#VUID-VkCopyImageToImageInfoEXT-dstSubresource-07967"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstSubresource-07967</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstSubresource-07967" href="#VUID-VkCopyImageToImageInfo-dstSubresource-07967"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstSubresource-07967</span><br>
 
 The <code>dstSubresource.mipLevel</code> member of each element of
 <code>pRegions</code> <strong>must</strong> be less than the <code>mipLevels</code> specified in
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>dstImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstSubresource-07968" href="#VUID-VkCopyImageToImageInfoEXT-dstSubresource-07968"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstSubresource-07968</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstSubresource-07968" href="#VUID-VkCopyImageToImageInfo-dstSubresource-07968"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstSubresource-07968</span><br>
 
 If <code>dstSubresource.layerCount</code> is not
 <code>VK_REMAINING_ARRAY_LAYERS</code>,
@@ -8210,7 +8305,7 @@ If <code>dstSubresource.layerCount</code> is not
 <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a> when <code>dstImage</code> was created</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07969" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07969"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07969</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07969" href="#VUID-VkCopyImageToImageInfo-dstImage-07969"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07969</span><br>
 
 <code>dstImage</code> <strong>must</strong> not have been created with <code>flags</code>
 containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
@@ -8220,14 +8315,14 @@ containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstSubresource-07970" href="#VUID-VkCopyImageToImageInfoEXT-dstSubresource-07970"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstSubresource-07970</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstSubresource-07970" href="#VUID-VkCopyImageToImageInfo-dstSubresource-07970"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstSubresource-07970</span><br>
 
 The image region specified by each element of <code>pRegions</code> <strong>must</strong> be
 contained within the specified <code>dstSubresource</code> of
 <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstSubresource-07971" href="#VUID-VkCopyImageToImageInfoEXT-dstSubresource-07971"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstSubresource-07971</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstSubresource-07971" href="#VUID-VkCopyImageToImageInfo-dstSubresource-07971"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstSubresource-07971</span><br>
 
 For each element of <code>pRegions</code>, <code>dstOffset.x</code> and
 <span class="eq">(<code>extent.width</code> +  <code>dstOffset.x</code>)</span> <strong>must</strong>
@@ -8235,7 +8330,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the wi
 of the specified <code>dstSubresource</code> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstSubresource-07972" href="#VUID-VkCopyImageToImageInfoEXT-dstSubresource-07972"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstSubresource-07972</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstSubresource-07972" href="#VUID-VkCopyImageToImageInfo-dstSubresource-07972"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstSubresource-07972</span><br>
 
 For each element of <code>pRegions</code>, <code>dstOffset.y</code> and
 <span class="eq">(<code>extent.height</code> +  <code>dstOffset.y</code>)</span> <strong>must</strong>
@@ -8247,14 +8342,14 @@ height of the specified <code>dstSubresource</code> of <code>dstImage</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07979" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07979"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07979</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07979" href="#VUID-VkCopyImageToImageInfo-dstImage-07979"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07979</span><br>
 
 If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_1D</code>, then for each
 element of <code>pRegions</code>, <code>dstOffset.y</code> <strong>must</strong> be <code>0</code> and
 <code>extent.height</code> <strong>must</strong> be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-09104" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-09104"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-09104</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-09104" href="#VUID-VkCopyImageToImageInfo-dstOffset-09104"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-09104</span><br>
 
 For each element of <code>pRegions</code>, <code>dstOffset.z</code> and
 <span class="eq">(<code>extent.depth</code> +  <code>dstOffset.z</code>)</span> <strong>must</strong>
@@ -8262,7 +8357,7 @@ both be greater than or equal to <code>0</code> and less than or equal to the de
 of the specified <code>dstSubresource</code> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07980" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07980"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07980</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07980" href="#VUID-VkCopyImageToImageInfo-dstImage-07980"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07980</span><br>
 
 If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 <code>VK_IMAGE_TYPE_2D</code>, then for each element of <code>pRegions</code>,
@@ -8270,7 +8365,7 @@ If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_1D</code> or
 be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07274" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07274"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07274</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07274" href="#VUID-VkCopyImageToImageInfo-dstImage-07274"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07274</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8281,7 +8376,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10051" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10051"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10051</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10051" href="#VUID-VkCopyImageToImageInfo-dstOffset-10051"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10051</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8293,7 +8388,7 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07275" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07275"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07275</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07275" href="#VUID-VkCopyImageToImageInfo-dstImage-07275"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07275</span><br>
 
 For each element of <code>pRegions</code>,
 if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8304,7 +8399,7 @@ if <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>:
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10052" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10052"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10052</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10052" href="#VUID-VkCopyImageToImageInfo-dstOffset-10052"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10052</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8316,13 +8411,13 @@ the <a href="formats.html#formats-compatibility-classes" class="xref page">texel
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07276" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07276"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07276</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07276" href="#VUID-VkCopyImageToImageInfo-dstImage-07276"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07276</span><br>
 
 For each element of <code>pRegions</code>, <code>dstOffset.z</code> <strong>must</strong> be a
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-00207" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-00207"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-00207</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-00207" href="#VUID-VkCopyImageToImageInfo-dstImage-00207"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-00207</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8334,7 +8429,7 @@ the width of the subresource specified by <code>dstSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10053" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10053"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10053</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10053" href="#VUID-VkCopyImageToImageInfo-dstOffset-10053"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10053</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8344,7 +8439,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10054" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10054"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10054</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10054" href="#VUID-VkCopyImageToImageInfo-dstOffset-10054"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10054</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8354,7 +8449,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10055" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10055"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10055</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10055" href="#VUID-VkCopyImageToImageInfo-dstOffset-10055"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10055</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8366,7 +8461,7 @@ of the subresource specified by <code>dstSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-00208" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-00208"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-00208</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-00208" href="#VUID-VkCopyImageToImageInfo-dstImage-00208"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-00208</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8378,7 +8473,7 @@ the height of the subresource specified by <code>dstSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10056" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10056"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10056</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10056" href="#VUID-VkCopyImageToImageInfo-dstOffset-10056"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10056</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8390,7 +8485,7 @@ of the subresource specified by <code>dstSubresource</code>,
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10057" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10057"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10057</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10057" href="#VUID-VkCopyImageToImageInfo-dstOffset-10057"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10057</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8400,7 +8495,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstOffset-10058" href="#VUID-VkCopyImageToImageInfoEXT-dstOffset-10058"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstOffset-10058</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstOffset-10058" href="#VUID-VkCopyImageToImageInfo-dstOffset-10058"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstOffset-10058</span><br>
 
 For each element of <code>pRegions</code>, if
 <a href="#VkCopyCommandTransformInfoQCOM">VkCopyCommandTransformInfoQCOM</a>::<code>transform</code> is equal to
@@ -8410,7 +8505,7 @@ For each element of <code>pRegions</code>, if
 <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-00209" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-00209"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-00209</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-00209" href="#VUID-VkCopyImageToImageInfo-dstImage-00209"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-00209</span><br>
 
 For each element of <code>pRegions</code>, if the sum of <code>dstOffset.z</code>
 and <code>extent.depth</code> does not equal the depth of the subresource
@@ -8418,13 +8513,13 @@ specified by <code>srcSubresource</code>, <code>extent.depth</code> <strong>must
 multiple of the <a href="formats.html#formats-compatibility-classes" class="xref page">texel block extent    depth</a> of the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> of <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstSubresource-09105" href="#VUID-VkCopyImageToImageInfoEXT-dstSubresource-09105"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstSubresource-09105</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstSubresource-09105" href="#VUID-VkCopyImageToImageInfo-dstSubresource-09105"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstSubresource-09105</span><br>
 
 For each element of <code>pRegions</code>, <code>dstSubresource.aspectMask</code>
 <strong>must</strong> specify aspects present in <code>dstImage</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07981" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07981"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07981</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07981" href="#VUID-VkCopyImageToImageInfo-dstImage-07981"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07981</span><br>
 
 If <code>dstImage</code> has a
 <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a>, then for each element of <code>pRegions</code>,
@@ -8432,35 +8527,35 @@ If <code>dstImage</code> has a
 <a href="formats.html#formats-planes-image-aspect" class="xref page">multi-planar aspect mask</a> bit</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-07983" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-07983"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-07983</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-07983" href="#VUID-VkCopyImageToImageInfo-dstImage-07983"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-07983</span><br>
 
 If <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, for each
 element of <code>pRegions</code>, <code>dstSubresource.baseArrayLayer</code> <strong>must</strong>
 be <code>0</code> and <code>dstSubresource.layerCount</code> <strong>must</strong> be <code>1</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImageLayout-09070" href="#VUID-VkCopyImageToImageInfoEXT-srcImageLayout-09070"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImageLayout-09070</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImageLayout-09070" href="#VUID-VkCopyImageToImageInfo-srcImageLayout-09070"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImageLayout-09070</span><br>
 
 <code>srcImageLayout</code> <strong>must</strong> specify the current layout of the image
 subresources of <code>srcImage</code> specified in <code>pRegions</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImageLayout-09071" href="#VUID-VkCopyImageToImageInfoEXT-dstImageLayout-09071"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImageLayout-09071</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImageLayout-09071" href="#VUID-VkCopyImageToImageInfo-dstImageLayout-09071"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImageLayout-09071</span><br>
 
 <code>dstImageLayout</code> <strong>must</strong> specify the current layout of the image
 subresources of <code>dstImage</code> specified in <code>pRegions</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImageLayout-09072" href="#VUID-VkCopyImageToImageInfoEXT-srcImageLayout-09072"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImageLayout-09072</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImageLayout-09072" href="#VUID-VkCopyImageToImageInfo-srcImageLayout-09072"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImageLayout-09072</span><br>
 
 <code>srcImageLayout</code> <strong>must</strong> be one of the image layouts returned in
-<a href="limits.html#VkPhysicalDeviceHostImageCopyPropertiesEXT" class="xref page">VkPhysicalDeviceHostImageCopyPropertiesEXT</a>::<code>pCopySrcLayouts</code></p>
+<a href="limits.html#VkPhysicalDeviceHostImageCopyProperties" class="xref page">VkPhysicalDeviceHostImageCopyProperties</a>::<code>pCopySrcLayouts</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImageLayout-09073" href="#VUID-VkCopyImageToImageInfoEXT-dstImageLayout-09073"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImageLayout-09073</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImageLayout-09073" href="#VUID-VkCopyImageToImageInfo-dstImageLayout-09073"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImageLayout-09073</span><br>
 
 <code>dstImageLayout</code> <strong>must</strong> be one of the image layouts returned in
-<a href="limits.html#VkPhysicalDeviceHostImageCopyPropertiesEXT" class="xref page">VkPhysicalDeviceHostImageCopyPropertiesEXT</a>::<code>pCopyDstLayouts</code></p>
+<a href="limits.html#VkPhysicalDeviceHostImageCopyProperties" class="xref page">VkPhysicalDeviceHostImageCopyProperties</a>::<code>pCopyDstLayouts</code></p>
 </li>
 </ul>
 </div>
@@ -8472,43 +8567,43 @@ subresources of <code>dstImage</code> specified in <code>pRegions</code></p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-sType-sType" href="#VUID-VkCopyImageToImageInfoEXT-sType-sType"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-sType-sType</span><br>
- <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_IMAGE_TO_IMAGE_INFO_EXT</code></p>
+<p><a id="VUID-VkCopyImageToImageInfo-sType-sType" href="#VUID-VkCopyImageToImageInfo-sType-sType"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COPY_IMAGE_TO_IMAGE_INFO</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-pNext-pNext" href="#VUID-VkCopyImageToImageInfoEXT-pNext-pNext"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-pNext-pNext</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-pNext-pNext" href="#VUID-VkCopyImageToImageInfo-pNext-pNext"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-pNext-pNext</span><br>
  <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-flags-parameter" href="#VUID-VkCopyImageToImageInfoEXT-flags-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-flags-parameter</span><br>
- <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkHostImageCopyFlagBitsEXT">VkHostImageCopyFlagBitsEXT</a> values</p>
+<p><a id="VUID-VkCopyImageToImageInfo-flags-parameter" href="#VUID-VkCopyImageToImageInfo-flags-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-flags-parameter</span><br>
+ <code>flags</code> <strong>must</strong> be a valid combination of <a href="#VkHostImageCopyFlagBits">VkHostImageCopyFlagBits</a> values</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImage-parameter" href="#VUID-VkCopyImageToImageInfoEXT-srcImage-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImage-parameter</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImage-parameter" href="#VUID-VkCopyImageToImageInfo-srcImage-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImage-parameter</span><br>
  <code>srcImage</code> <strong>must</strong> be a valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-srcImageLayout-parameter" href="#VUID-VkCopyImageToImageInfoEXT-srcImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-srcImageLayout-parameter</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-srcImageLayout-parameter" href="#VUID-VkCopyImageToImageInfo-srcImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-srcImageLayout-parameter</span><br>
  <code>srcImageLayout</code> <strong>must</strong> be a valid <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImage-parameter" href="#VUID-VkCopyImageToImageInfoEXT-dstImage-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImage-parameter</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImage-parameter" href="#VUID-VkCopyImageToImageInfo-dstImage-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImage-parameter</span><br>
  <code>dstImage</code> <strong>must</strong> be a valid <a href="resources.html#VkImage" class="xref page">VkImage</a> handle</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-dstImageLayout-parameter" href="#VUID-VkCopyImageToImageInfoEXT-dstImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-dstImageLayout-parameter</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-dstImageLayout-parameter" href="#VUID-VkCopyImageToImageInfo-dstImageLayout-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-dstImageLayout-parameter</span><br>
  <code>dstImageLayout</code> <strong>must</strong> be a valid <a href="resources.html#VkImageLayout" class="xref page">VkImageLayout</a> value</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-pRegions-parameter" href="#VUID-VkCopyImageToImageInfoEXT-pRegions-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-pRegions-parameter</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-pRegions-parameter" href="#VUID-VkCopyImageToImageInfo-pRegions-parameter"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-pRegions-parameter</span><br>
  <code>pRegions</code> <strong>must</strong> be a valid pointer to an array of <code>regionCount</code> valid <a href="#VkImageCopy2">VkImageCopy2</a> structures</p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-regionCount-arraylength" href="#VUID-VkCopyImageToImageInfoEXT-regionCount-arraylength"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-regionCount-arraylength</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-regionCount-arraylength" href="#VUID-VkCopyImageToImageInfo-regionCount-arraylength"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-regionCount-arraylength</span><br>
  <code>regionCount</code> <strong>must</strong> be greater than <code>0</code></p>
 </li>
 <li>
-<p><a id="VUID-VkCopyImageToImageInfoEXT-commonparent" href="#VUID-VkCopyImageToImageInfoEXT-commonparent"></a> <span class="vuid">VUID-VkCopyImageToImageInfoEXT-commonparent</span><br>
+<p><a id="VUID-VkCopyImageToImageInfo-commonparent" href="#VUID-VkCopyImageToImageInfo-commonparent"></a> <span class="vuid">VUID-VkCopyImageToImageInfo-commonparent</span><br>
  Both of <code>dstImage</code>, and <code>srcImage</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
 </li>
 </ul>
