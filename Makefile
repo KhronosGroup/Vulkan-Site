@@ -69,7 +69,7 @@ build-ui:
 	cp antora-ui-khronos/build/ui-bundle.zip docs-site
 
 # Prepare component antora sources
-prep-sources: prep-docs prep-guide prep-samples prep-tutorial
+prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
 
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
