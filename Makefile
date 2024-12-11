@@ -18,9 +18,10 @@
 #   This Makefile itself does no branch selection.
 # 'build-ui' - builds the Antora UI package.
 # 'prep-sources' - prepare each repository's files for Antora.
-# This has four subtargets for the separate repos:
+# This has subtargets for the separate repos:
 #   'prep-docs' - Vulkan-Docs (specification and feature description
 #	components
+#   'prep-glsl' - OpenGL Shading Language specification
 #   'prep-guide' - Vulkan Guide
 #   'prep-samples' - Vulkan Samples
 #   'prep-tutorials' - Vulkan Tutorials
@@ -28,7 +29,7 @@
 # 'clean' - cleans the Antora site
 
 # UI and component repositories which must exist as subdirectories to build
-REPONAMES = antora-ui-khronos Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
+REPONAMES = antora-ui-khronos GLSL Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
 
 # Directories (mostly repos) with their own npm infrastructure
 DIRSWITHNODE = antora-ui-khronos docs-site Vulkan-Docs
@@ -52,7 +53,7 @@ subrepos:
 	    if test -d $$repo ; then \
 		echo "Not cloning repo $$repo, already exists" ; \
 	    else \
-	    git clone git@github.com:KhronosGroup/$$repo.git ; \
+		git clone git@github.com:KhronosGroup/$$repo.git ; \
 	    fi ; \
 	done
 
@@ -66,7 +67,7 @@ build-ui:
 	cp antora-ui-khronos/build/ui-bundle.zip docs-site
 
 # Prepare component antora sources
-prep-sources: prep-docs prep-guide prep-samples prep-tutorial
+prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
 
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
@@ -76,6 +77,9 @@ prep-docs:
 	   $(GENPATH)/pageMap.cjs \
 	   $(GENPATH)/xrefMap.cjs \
 	   docs-site/js/
+
+prep-glsl:
+	make -C GLSL clean setup_antora
 
 prep-guide:
 	make -C Vulkan-Guide -f antora/Makefile clean setup
