@@ -56,8 +56,6 @@ subrepos:
 		git clone git@github.com:KhronosGroup/$$repo.git ; \
 	    fi ; \
 	done
-	# Temporarily use development main branch
-	cd GLSL && git switch antora
 
 # Build UI bundle
 build-ui:
