@@ -1,4 +1,4 @@
-# Copyright 2021 The Khronos Group, Inc.
+# Copyright 2021-2024 The Khronos Group, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # Github CI file for Vulkan Antora Guide
@@ -17,7 +17,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
       # access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -25,8 +25,24 @@ jobs:
         with:
           ruby-version: '3.0'
 
+      - name: "checkout Antora UI"
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/antora-ui-khronos
+          path: ./antora-ui-khronos
+          ref: main
+          submodules: recursive
+
+      - name: "checkout GLSL"
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/GLSL
+          path: ./GLSL
+          ref: main
+          submodules: recursive
+
       - name: "checkout Vulkan Guide"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Guide
           path: ./Vulkan-Guide
@@ -34,7 +50,7 @@ jobs:
           submodules: recursive
 
       - name: "Checkout Vulkan Docs"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Docs
           path: ./Vulkan-Docs
@@ -42,7 +58,7 @@ jobs:
           submodules: recursive
 
       - name: "Checkout Vulkan Samples"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Samples
           path: ./Vulkan-Samples
@@ -50,7 +66,7 @@ jobs:
           submodules: recursive
 
       - name: "Checkout Vulkan Tutorial"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
@@ -58,9 +74,9 @@ jobs:
           submodules: recursive
 
       - name: "setup npm"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
+          node-version: '20.12.2'
           cache: 'npm'
           cache-dependency-path: docs-site/package-lock.json
 
@@ -79,7 +95,6 @@ jobs:
         working-directory: Vulkan-Docs
         run: npm install
 
-
       - name: "ensure we have all dependencies for building/searching/highlighting"
         run: |
           sudo gem install rouge
@@ -96,7 +111,7 @@ jobs:
           ./node_modules/gulp/bin/gulp.js bundle
 
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ui-bundle.zip
           path: antora-ui-khronos/build/ui-bundle.zip
@@ -111,8 +126,7 @@ jobs:
           make setup_tutorial
 
       - name: "prepare repos with make"
-        working-directory: docs-site
-        run: make prepare_components
+        run: make prep-sources
 
       - name: "prepare samples"
         working-directory: Vulkan-Samples
@@ -125,14 +139,14 @@ jobs:
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: fullSite
           path: docs-site/build
           retention-days: 5
 
       - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site

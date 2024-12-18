@@ -1,4 +1,4 @@
-// Copyright 2022-2023 The Khronos Group Inc.
+// Copyright 2022-2024 The Khronos Group Inc.
 // SPDX-License-Identifier: CC-BY-4.0
 
 = Vulkan Documentation Project Site Generator
@@ -8,21 +8,24 @@ documentation site using the
 link:https://antora.org/[Antora] site generator.
 
 An online version of the resulting site is located at
-https://www.khronos.org/registry/vulkan/site/index.html
-(this URL is likely to change in the future).
+https://docs.vulkan.org/spec/latest/index.html.
 
-The site generator currently combines the
-link:https://github.com/KhronosGroup/Vulkan-Docs[Vulkan Specification and
-proposal documents] and the
-link:https://github.com/KhronosGroup/Vulkan-Guide[Vulkan Guide], with more
-components expected to be added in the future.
+The site generator currently combines these components:
+
+
+* link:https://github.com/KhronosGroup/Vulkan-Docs[Vulkan Specification and
+Proposals]
+* link:https://github.com/KhronosGroup/Vulkan-Guide[Vulkan Guide]
+* link:https://github.com/KhronosGroup/Vulkan-Samples[Vulkan Samples]
+* link:https://github.com/KhronosGroup/Vulkan-Tutorial[Vulkan Tutorial]
+* More components will be added in the future.
 
 This repository contains only the Antora "`playbook`" describing the various
 documentation components and how to integrate them, and related files needed
 to build the site using the playbook.
 
 Content for individual components comes from the repositories hosting those
-components.
+components, and issues with individual components should be reported in those repositories.
 
 
 == Files
@@ -32,15 +35,11 @@ components.
 ** `docs-site/node_modules` - Antora executable and related modules.
 ** `docs-site/package.json` / `package-lock.json` - Node.js infrastructure /
    module database
-** `docs-site/ui-bundle.zip` - cached version of Antora UI bundle.
-   This is built from the
-   link:https://github.com/KhronosGroup/antora-ui-khronos[Khronos Antora UI]
-   project, which is forked from the Antora default UI.
 
 
 == Installation
 
-You will need current long-term support versions of Node.js (18.x).
+You will need the current long-term support version of Node.js (20.x).
 
 Antora itself is preinstalled under `docs-site/node_modules/` along with all
 Javascript dependencies.
@@ -54,13 +53,21 @@ npm i -D -E @antora/cli@3.1 @antora/site-generator@3.1 @djencks/asciidoctor-math
 ----
 
 
-== Running
+== Running Antora
 
-Other repositories containing content for the various components must be
-pulled and configured before the site can be built.
+The simplest way is to rely on the GitHub Actions CI.
+CI will pull all the other needed repositories and build an artifact
+`fullSite.zip` which is downloadable from the CI run under the Actions
+GitHub menu.
+
+If you need to build locally, you can use the steps in
+`.github/workflows/ci.yml` adapted to your local OS environment.
+In particular, other repositories containing the Antora UI and content for
+the various components must be pulled and configured before the site can be
+built.
 Currently, we do not take advantage of Antora's capability of
 pulling content directly from github.
-Instead, the repositories must be cloned locally on specific paths
+Instead, the repositories must be available locally on specific paths
 hard-wired into the playbook, followed by steps to prepare their content for
 use with Antora.
 Eventually, we expect to use the Antora Collector extension to make this
@@ -69,11 +76,13 @@ At present, you should clone the repositories as follows:
 
 [source,sh]
 ----
-$ mkdir -p /home/tree/git
-$ cd /home/tree/git
-$ git clone git@github.com:KhronosGroup/Vulkan-Site.git
-$ git clone git@github.com:KhronosGroup/Vulkan-Docs.git
-$ git clone git@github.com:KhronosGroup/Vulkan-Guide.git
+mkdir -p /home/tree/git
+cd /home/tree/git
+git clone git@github.com:KhronosGroup/Vulkan-Site.git
+cd Vulkan-Site
+for repo in antora-ui-khronos Vulkan-Docs Vulkan-Guide Vulkan-Samples Vulkan-Tutorial ; do
+    git clone git@github.com:KhronosGroup/$repo
+done
 ----
 
 Once the repositories are cloned, you will need to be running in an
@@ -85,23 +94,47 @@ We recommend using the Khronos-provided Docker image described in that
 document, rather than trying to install everything yourself and keep it up
 to date.
 
-At this point, you should be able to build via
+At this point, you should be able to build the UI via:
 
 [source,sh]
 ----
-$ cd /home/tree/git/Vulkan-Site/docs-site
-$ make prepare_components
-$ make GUIDEBRANCH=main SPECBRANCH=main build_site
-$ chromium build/site/index.html
+cd antora-ui-khronos
+npm install
+npx update-browserslist-db@latest
+./node_modules/gulp/bin/gulp.js --version
+./node_modules/gulp/bin/gulp.js bundle
+cp build/ui-bundle.zip ../docs-site
 ----
 
-(or whatever browser you prefer instead of Chromium).
+Next, prepare the sources via
 
+[source,sh]
+----
+for dir in docs-site Vulkan-Docs ; do
+    (cd $dir && npm install)
+done
+(cd Vulkan-Tutorial/antora && make setup_tutorial)
+(cd docs-site && make prepare_components)
+(cd Vulkan-Samples && cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON)
+----
+
+Finally, run Antora to build the site
+
+[source,sh]
+----
+(cd docs-site && npx antora antora-playbook.yml --stacktrace)
+----
+
+The result can be viewed by pointing a browser at the root of the site tree:
+
+[source,sh]
+----
+# Or whatever browser you prefer instead of Chromium
+$ chromium docs-site/build/site/index.html
+----
 
 == Feedback
 
 Please provide feedback on the documentation project using the
 link:https://github.com/KhronosGroup/Vulkan-Site/issues[Vulkan-Site issues
 tracker].
-At this stage we are primarily interested in feedback on the usability of
-the site.
