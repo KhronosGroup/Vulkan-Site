@@ -107,32 +107,207 @@
         length: len,
       }
     }
+  }
 
-    // for (let sliceEnd = 0, sliceStart = 0; sliceEnd <= len; sliceEnd++) {
-    //   const char = str.charAt(sliceEnd)
-    //   const sliceLength = sliceEnd - sliceStart
-    //
-    //   if ((char.match(lunr.tokenizer.separator) || sliceEnd === len)) {
-    //     if (sliceLength > 0) {
-    //       const value = str.slice(sliceStart, sliceEnd)
-    //       // QUESTION: if we get an exact match without running the pipeline should we stop?
-    //       if (value.includes(term)) {
-    //         // returns the first match
-    //         return {
-    //           start: sliceStart,
-    //           length: value.length,
-    //         }
-    //       }
-    //     }
-    //     sliceStart = sliceEnd + 1
-    //   }
-    // }
+  class TrieNode {
+    constructor () {
+      this.children = new Map();
+      this.isEndOfWord = false;
+      this.data = []; // Store associated data (e.g., document IDs, URLs)
+    }
+  }
 
-    // not found!
-    // return {
-    //   start: 0,
-    //   length: 0,
-    // }
+  class LevenshteinTrieUser {
+    constructor () {
+      this.root = new TrieNode();
+    }
+
+    insert (word) {
+      let node = this.root;
+      for (const char of word) {
+        if (!node.children.has(char)) {
+          node.children.set(char, new TrieNode());
+        }
+        node = node.children.get(char);
+      }
+      node.isEndOfWord = true;
+    }
+
+    searchWithLevenshtein (word, maxDistance) {
+      const results = [];
+      this._searchRecursive(this.root, '', word, 0, maxDistance, results);
+      return results
+    }
+
+    _searchRecursive (node, currentWord, targetWord, currentIndex, maxDistance, results) {
+      if (currentIndex > targetWord.length && node.isEndOfWord) {
+        results.push(currentWord);
+        return
+      }
+      if (maxDistance < 0) {
+        return
+      }
+
+      if (node.isEndOfWord && this.levenshteinDistance(currentWord, targetWord) <= maxDistance) {
+        results.push(currentWord);
+      }
+
+      for (const [char, childNode] of node.children) {
+        let newDistance = maxDistance;
+        if (currentIndex < targetWord.length) {
+          if (char === targetWord[currentIndex]) {
+            this._searchRecursive(childNode, currentWord + char, targetWord, currentIndex + 1, newDistance, results);
+          } else {
+            newDistance = maxDistance - 1; //substitution
+            this._searchRecursive(childNode, currentWord + char, targetWord, currentIndex + 1, newDistance, results);
+            this._searchRecursive(node, currentWord, targetWord, currentIndex + 1, newDistance, results); //insertion
+            this._searchRecursive(
+              childNode,
+              currentWord + char,
+              targetWord,
+              currentIndex,
+              newDistance,
+              results
+            ); // deletion
+          }
+        } else {
+          this._searchRecursive(childNode, currentWord + char, targetWord, currentIndex, newDistance - 1, results);
+        }
+      }
+    }
+
+    levenshteinDistance (a, b) {
+      if (a.length === 0) return b.length
+      if (b.length === 0) return a.length
+
+      const matrix = [];
+
+      // increment along the first column of each row
+      let i;
+      for (i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+      }
+
+      // increment each column in the first row
+      let j;
+      for (j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+      }
+
+      // Fill in the rest of the matrix
+      for (i = 1; i <= b.length; i++) {
+        for (j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1, // substitution
+              Math.min(matrix[i][j - 1] + 1, // insertion
+                matrix[i - 1][j] + 1) // deletion
+            );
+          }
+        }
+      }
+
+      return matrix[b.length][a.length]
+    }
+
+    // Save the Trie to a JSON string
+    save () {
+      return JSON.stringify(this.root, (key, value) => {
+        if (value instanceof Map) {
+          return Array.from(value.entries()) // Convert Map to array of entries
+        }
+        return value
+      })
+    }
+
+    // Load the Trie from a JSON string
+    load (jsonString) {
+      this.root = jsonString;
+      // this.root = JSON.parse(jsonString, (key, value) => {
+      //   if (Array.isArray(value)) {
+      //     return new Map(value) // Convert array of entries back to Map
+      //   }
+      //   return value
+      // })
+    }
+
+    insertWithData (word, data) {
+      let node = this.root;
+      for (const char of word) {
+        if (!node.children.has(char)) {
+          node.children.set(char, new TrieNode());
+        }
+        node = node.children.get(char);
+      }
+      node.isEndOfWord = true;
+      node.data.push(data); // Store the associated data
+    }
+
+    searchWithLevenshteinWithData (word, maxDistance) {
+      const results = [];
+      this._searchRecursiveWithData(this.root, '', word, 0, maxDistance, results);
+      return results
+    }
+
+    _searchRecursiveWithData (node, currentWord, targetWord, currentIndex, maxDistance, results) {
+      if (currentIndex > targetWord.length && node.isEndOfWord) {
+        results.push({ word: currentWord, data: node.data });
+        return
+      }
+      if (maxDistance < 0) {
+        return
+      }
+
+      if (node.isEndOfWord && this.levenshteinDistance(currentWord, targetWord) <= maxDistance) {
+        results.push({ word: currentWord, data: node.data });
+      }
+
+      for (const [char, childNode] of node.children) {
+        let newDistance = maxDistance;
+        if (currentIndex < targetWord.length) {
+          if (char === targetWord[currentIndex]) {
+            this._searchRecursiveWithData(
+              childNode,
+              currentWord + char,
+              targetWord,
+              currentIndex + 1,
+              newDistance,
+              results
+            );
+          } else {
+            newDistance = maxDistance - 1; //substitution
+            this._searchRecursiveWithData(
+              childNode,
+              currentWord + char,
+              targetWord,
+              currentIndex + 1,
+              newDistance,
+              results
+            );
+            this._searchRecursiveWithData(
+              node,
+              currentWord,
+              targetWord,
+              currentIndex + 1,
+              newDistance,
+              results
+            ); //insertion
+            this._searchRecursiveWithData(
+              childNode,
+              currentWord + char,
+              targetWord,
+              currentIndex,
+              newDistance,
+              results
+            ); // deletion
+          }
+        } else {
+          this._searchRecursiveWithData(childNode, currentWord + char, targetWord, currentIndex, newDistance - 1, results);
+        }
+      }
+    }
   }
 
   /* global CustomEvent, globalThis */
@@ -390,12 +565,62 @@
     return result
   }
 
-  function searchIndex (index, store, text) {
+  function searchIndex (index, trie, store, text) {
     clearSearchResults(false);
     if (text.trim() === '') {
       return
     }
-    const result = search(index, store.documents, text);
+    const maxLevenshteinDistance = 3;
+    const trieResults = trie
+      .searchWithLevenshteinWithData(text.toLowerCase(), maxLevenshteinDistance);
+    let result;
+    const recheck = /\s/.test(text);
+    if (!trieResults) {
+      result = search(index, store.documents, text);
+      if (recheck) {
+        result = search(index, store.documents, text.replace(/\s/g, '_'));
+      }
+    } else {
+      // Extract unique document IDs from Trie results
+      const trieDocIds = new Set();
+      trieResults.forEach((r) => r.data.forEach((d) => trieDocIds.add(d)));
+
+      let lunrResults = [];
+      if (trieDocIds.size > 0) {
+        // Filter documents for Lunr search
+        const filteredDocuments = [];
+        trieDocIds.forEach((id) => {
+          filteredDocuments.push(store.documents[id]);
+        });
+        if (filteredDocuments.length > 0) {
+          // Rebuild a temporary index only with the filtered documents
+          const tempLunrIndex = globalThis.lunr(function () {
+            this.ref('id');
+            this.field('title', { boost: 10 });
+            this.field('name');
+            this.field('text');
+            this.field('component');
+            this.field('keyword', { boost: 5 });
+            filteredDocuments.forEach((doc) => this.add(doc));
+          });
+          lunrResults = search(tempLunrIndex, filteredDocuments, text);
+          if (recheck) {
+            result = search(index, store.documents, text.replace(/\s/g, '_'));
+          }
+        } else {
+          lunrResults = search(index, store.documents, text);
+          if (recheck) {
+            result = search(index, store.documents, text.replace(/\s/g, '_'));
+          }
+        }
+      } else {
+        lunrResults = search(index, store.documents, text);
+        if (recheck) {
+          result = search(index, store.documents, text.replace(/\s/g, '_'));
+        }
+      }
+      result = lunrResults;
+    }
     const searchResultDataset = document.createElement('div');
     searchResultDataset.classList.add('search-result-dataset');
     searchResultContainer.appendChild(searchResultDataset);
@@ -443,7 +668,7 @@
     const query = searchInput.value;
     try {
       if (!query) return clearSearchResults()
-      searchIndex(index.index, index.store, query);
+      searchIndex(index.index, index.trie, index.store, query);
     } catch (err) {
       if (err instanceof globalThis.lunr.QueryParseError) {
         if (debug) {
@@ -462,9 +687,28 @@
     }
   }
 
-  function initSearch (lunr, data) {
+  function base64ToBytesArr (str) {
+    const abc = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/']; // base64 alphabet
+    const result = [];
+
+    for (let i = 0; i < str.length / 4; i++) {
+      const chunk = [...str.slice(4 * i, 4 * i + 4)];
+      const bin = chunk.map((x) => abc.indexOf(x).toString(2).padStart(6, 0)).join('');
+      const bytes = bin.match(/.{1,8}/g).map((x) => +('0b' + x));
+      result.push(...bytes.slice(0, 3 - (str[4 * i + 2] === '=') - (str[4 * i + 3] === '=')));
+    }
+    return result
+  }
+
+  function initSearch (lunr, data, trieData) {
     const start = performance.now();
-    const index = { index: lunr.Index.load(data.index), store: data.store };
+    data = base64ToBytesArr(data);
+    data = window.pako.inflate(data, { to: 'string' });
+    const lunrdata = JSON.parse(data);
+    trieData = base64ToBytesArr(trieData);
+    const trieDataJSON = window.pako.inflate(trieData, { to: 'string' });
+    const index = { index: lunr.Index.load(lunrdata.index), store: lunrdata.store, trie: new LevenshteinTrieUser() };
+    index.trie.load(JSON.parse(trieDataJSON));
     enableSearchInput(true);
     searchInput.dispatchEvent(
       new CustomEvent('loadedindex', {
