@@ -6073,7 +6073,7 @@ If a descriptor with type equal to any of
 <code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
 <code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, or
 <code>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code> is accessed as a result of
-this command, the image subresource identified by that descriptor <strong>must</strong>
+this command, all image subresources identified by that descriptor <strong>must</strong>
 be in the image layout identified when the descriptor was written</p>
 </li>
 <li>
@@ -7240,13 +7240,39 @@ render pass instance</p>
 <li>
 <p><a id="VUID-vkCmdExecuteGeneratedCommandsNV-None-07751" href="#VUID-vkCmdExecuteGeneratedCommandsNV-None-07751"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsNV-None-07751</span><br>
 
-If the bound graphics pipeline state was created with the
-<code>VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</code> dynamic state enabled then
+If the <code><a href="../../appendices/extensions.html#VK_EXT_discard_rectangles" class="xref page">VK_EXT_discard_rectangles</a></code> extension is enabled, a
+graphics pipeline is bound which was created with the
+<code>VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</code> dynamic state enabled and
+the <code>pNext</code> chain of <a href="../pipelines.html#VkGraphicsPipelineCreateInfo" class="xref page">VkGraphicsPipelineCreateInfo</a> included a
+<a href="../fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> structure, the
+<a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>rasterizerDiscardEnable</code> is <code>VK_FALSE</code>, and the
+<a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>discardRectangleEnable</code> is <code>VK_TRUE</code>, then
 <a href="../fragops.html#vkCmdSetDiscardRectangleEXT" class="xref page">vkCmdSetDiscardRectangleEXT</a> <strong>must</strong> have been called and not
 subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
 command buffer prior to this drawing command for each discard rectangle
 in
 <a href="../fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a>::<code>discardRectangleCount</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteGeneratedCommandsNV-rasterizerDiscardEnable-09236" href="#VUID-vkCmdExecuteGeneratedCommandsNV-rasterizerDiscardEnable-09236"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsNV-rasterizerDiscardEnable-09236</span><br>
+
+If the <code><a href="../../appendices/extensions.html#VK_EXT_discard_rectangles" class="xref page">VK_EXT_discard_rectangles</a></code> extension is enabled,
+a shader object is bound to any graphics stage or
+a graphics pipeline is bound which was created with
+<code>VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</code> dynamic state enabled and
+the <code>pNext</code> chain of <a href="../pipelines.html#VkGraphicsPipelineCreateInfo" class="xref page">VkGraphicsPipelineCreateInfo</a> did not
+include a <a href="../fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> structure,
+the <a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>rasterizerDiscardEnable</code> is <code>VK_FALSE</code>, and the
+<a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>discardRectangleEnable</code> is <code>VK_TRUE</code>, then
+<a href="../fragops.html#vkCmdSetDiscardRectangleEXT" class="xref page">vkCmdSetDiscardRectangleEXT</a> <strong>must</strong> have been called and not
+subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
+command buffer prior to this drawing command for each discard rectangle
+in
+<a href="../limits.html#VkPhysicalDeviceDiscardRectanglePropertiesEXT" class="xref page">VkPhysicalDeviceDiscardRectanglePropertiesEXT</a>::<code>maxDiscardRectangles</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteGeneratedCommandsNV-None-07880" href="#VUID-vkCmdExecuteGeneratedCommandsNV-None-07880"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsNV-None-07880</span><br>
@@ -7273,19 +7299,6 @@ the <a href="../pipelines.html#dynamic-state-current-value" class="xref page">cu
 <a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
 <code>discardRectangleEnable</code> is <code>VK_TRUE</code>, then
 <a href="../fragops.html#vkCmdSetDiscardRectangleModeEXT" class="xref page">vkCmdSetDiscardRectangleModeEXT</a> <strong>must</strong> have been called and not
-subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
-command buffer prior to this drawing command</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdExecuteGeneratedCommandsNV-rasterizerDiscardEnable-09236" href="#VUID-vkCmdExecuteGeneratedCommandsNV-rasterizerDiscardEnable-09236"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsNV-rasterizerDiscardEnable-09236</span><br>
-
-If the <code><a href="../../appendices/extensions.html#VK_EXT_discard_rectangles" class="xref page">VK_EXT_discard_rectangles</a></code> extension is enabled, and a
-shader object is bound to any graphics stage, and the most recent call
-to <a href="../primsrast.html#vkCmdSetRasterizerDiscardEnable" class="xref page">vkCmdSetRasterizerDiscardEnable</a> in the current command buffer
-set <code>rasterizerDiscardEnable</code> to <code>VK_FALSE</code>, and the most recent
-call to <a href="../fragops.html#vkCmdSetDiscardRectangleEnableEXT" class="xref page">vkCmdSetDiscardRectangleEnableEXT</a> in the current command
-buffer set <code>discardRectangleEnable</code> to <code>VK_TRUE</code>, then
-<a href="../fragops.html#vkCmdSetDiscardRectangleEXT" class="xref page">vkCmdSetDiscardRectangleEXT</a> <strong>must</strong> have been called and not
 subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
 command buffer prior to this drawing command</p>
 </li>
@@ -8850,7 +8863,7 @@ and either <a href="../features.html#features-legacyVertexAttributes" class="xre
 components,
 the value of <code>attribAddress</code>, calculated as described in
 <a href="../fxvertex.html#fxvertex-input-address-calculation" class="xref page">Vertex Input Calculation</a>, <strong>must</strong>
-be a multiple of the <a href="../formats.html#formats" class="xref page">size of the components of the    <code>format</code></a></p>
+be a multiple of the <a href="../formats.html#formats" class="xref page">component size of the <code>format</code></a></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteGeneratedCommandsNV-None-07842" href="#VUID-vkCmdExecuteGeneratedCommandsNV-None-07842"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsNV-None-07842</span><br>
@@ -10444,7 +10457,7 @@ If a descriptor with type equal to any of
 <code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
 <code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, or
 <code>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code> is accessed as a result of
-this command, the image subresource identified by that descriptor <strong>must</strong>
+this command, all image subresources identified by that descriptor <strong>must</strong>
 be in the image layout identified when the descriptor was written</p>
 </li>
 <li>
@@ -11611,13 +11624,39 @@ render pass instance</p>
 <li>
 <p><a id="VUID-vkCmdExecuteGeneratedCommandsEXT-None-07751" href="#VUID-vkCmdExecuteGeneratedCommandsEXT-None-07751"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsEXT-None-07751</span><br>
 
-If the bound graphics pipeline state was created with the
-<code>VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</code> dynamic state enabled then
+If the <code><a href="../../appendices/extensions.html#VK_EXT_discard_rectangles" class="xref page">VK_EXT_discard_rectangles</a></code> extension is enabled, a
+graphics pipeline is bound which was created with the
+<code>VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</code> dynamic state enabled and
+the <code>pNext</code> chain of <a href="../pipelines.html#VkGraphicsPipelineCreateInfo" class="xref page">VkGraphicsPipelineCreateInfo</a> included a
+<a href="../fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> structure, the
+<a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>rasterizerDiscardEnable</code> is <code>VK_FALSE</code>, and the
+<a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>discardRectangleEnable</code> is <code>VK_TRUE</code>, then
 <a href="../fragops.html#vkCmdSetDiscardRectangleEXT" class="xref page">vkCmdSetDiscardRectangleEXT</a> <strong>must</strong> have been called and not
 subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
 command buffer prior to this drawing command for each discard rectangle
 in
 <a href="../fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a>::<code>discardRectangleCount</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteGeneratedCommandsEXT-rasterizerDiscardEnable-09236" href="#VUID-vkCmdExecuteGeneratedCommandsEXT-rasterizerDiscardEnable-09236"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsEXT-rasterizerDiscardEnable-09236</span><br>
+
+If the <code><a href="../../appendices/extensions.html#VK_EXT_discard_rectangles" class="xref page">VK_EXT_discard_rectangles</a></code> extension is enabled,
+a shader object is bound to any graphics stage or
+a graphics pipeline is bound which was created with
+<code>VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</code> dynamic state enabled and
+the <code>pNext</code> chain of <a href="../pipelines.html#VkGraphicsPipelineCreateInfo" class="xref page">VkGraphicsPipelineCreateInfo</a> did not
+include a <a href="../fragops.html#VkPipelineDiscardRectangleStateCreateInfoEXT" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> structure,
+the <a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>rasterizerDiscardEnable</code> is <code>VK_FALSE</code>, and the
+<a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
+<code>discardRectangleEnable</code> is <code>VK_TRUE</code>, then
+<a href="../fragops.html#vkCmdSetDiscardRectangleEXT" class="xref page">vkCmdSetDiscardRectangleEXT</a> <strong>must</strong> have been called and not
+subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
+command buffer prior to this drawing command for each discard rectangle
+in
+<a href="../limits.html#VkPhysicalDeviceDiscardRectanglePropertiesEXT" class="xref page">VkPhysicalDeviceDiscardRectanglePropertiesEXT</a>::<code>maxDiscardRectangles</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteGeneratedCommandsEXT-None-07880" href="#VUID-vkCmdExecuteGeneratedCommandsEXT-None-07880"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsEXT-None-07880</span><br>
@@ -11644,19 +11683,6 @@ the <a href="../pipelines.html#dynamic-state-current-value" class="xref page">cu
 <a href="../pipelines.html#dynamic-state-current-value" class="xref page">current value</a> of
 <code>discardRectangleEnable</code> is <code>VK_TRUE</code>, then
 <a href="../fragops.html#vkCmdSetDiscardRectangleModeEXT" class="xref page">vkCmdSetDiscardRectangleModeEXT</a> <strong>must</strong> have been called and not
-subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
-command buffer prior to this drawing command</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdExecuteGeneratedCommandsEXT-rasterizerDiscardEnable-09236" href="#VUID-vkCmdExecuteGeneratedCommandsEXT-rasterizerDiscardEnable-09236"></a> <span class="vuid">VUID-vkCmdExecuteGeneratedCommandsEXT-rasterizerDiscardEnable-09236</span><br>
-
-If the <code><a href="../../appendices/extensions.html#VK_EXT_discard_rectangles" class="xref page">VK_EXT_discard_rectangles</a></code> extension is enabled, and a
-shader object is bound to any graphics stage, and the most recent call
-to <a href="../primsrast.html#vkCmdSetRasterizerDiscardEnable" class="xref page">vkCmdSetRasterizerDiscardEnable</a> in the current command buffer
-set <code>rasterizerDiscardEnable</code> to <code>VK_FALSE</code>, and the most recent
-call to <a href="../fragops.html#vkCmdSetDiscardRectangleEnableEXT" class="xref page">vkCmdSetDiscardRectangleEnableEXT</a> in the current command
-buffer set <code>discardRectangleEnable</code> to <code>VK_TRUE</code>, then
-<a href="../fragops.html#vkCmdSetDiscardRectangleEXT" class="xref page">vkCmdSetDiscardRectangleEXT</a> <strong>must</strong> have been called and not
 subsequently <a href="../pipelines.html#dynamic-state-lifetime" class="xref page">invalidated</a> in the current
 command buffer prior to this drawing command</p>
 </li>

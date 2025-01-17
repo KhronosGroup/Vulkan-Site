@@ -7107,6 +7107,8 @@ static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONL
 static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_RAY_TRACING_DISPLACEMENT_MICROMAP_BIT_NV = 0x10000000ULL;
 // Provided by VK_KHR_maintenance5 with VK_EXT_descriptor_buffer
 static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_DESCRIPTOR_BUFFER_BIT_EXT = 0x20000000ULL;
+// Provided by VK_KHR_maintenance5 with VK_ARM_pipeline_opacity_micromap, VK_ARM_pipeline_opacity_micromap
+static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_DISALLOW_OPACITY_MICROMAP_BIT_ARM = 0x2000000000ULL;
 // Provided by VK_KHR_pipeline_binary
 static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_CAPTURE_DATA_BIT_KHR = 0x80000000ULL;
 // Provided by VK_EXT_device_generated_commands
@@ -7337,6 +7339,11 @@ that the pipeline will be used in a render pass that is begun with
 <li>
 <p><code>VK_PIPELINE_CREATE_2_EXECUTION_GRAPH_BIT_AMDX</code> specifies that the
 pipeline will be used in an <a href="executiongraphs.html#executiongraphs" class="xref page">execution graph</a></p>
+</li>
+<li>
+<p><code>VK_PIPELINE_CREATE_2_DISALLOW_OPACITY_MICROMAP_BIT_ARM</code> specifies
+that the pipeline <strong>must</strong> not be used with acceleration structures which
+reference an opacity micromap array.</p>
 </li>
 </ul>
 </div>
@@ -10672,6 +10679,13 @@ element of <code>pLibraryInfo-&gt;pLibraries</code> <strong>must</strong> have b
 the <code>VK_PIPELINE_CREATE_RAY_TRACING_DISPLACEMENT_MICROMAP_BIT_NV</code>
 bit set</p>
 </li>
+<li>
+<p><a id="VUID-VkRayTracingPipelineCreateInfoKHR-flags-10392" href="#VUID-VkRayTracingPipelineCreateInfoKHR-flags-10392"></a> <span class="vuid">VUID-VkRayTracingPipelineCreateInfoKHR-flags-10392</span><br>
+
+<code>flags</code> <strong>must</strong> not include both
+<code>VK_PIPELINE_CREATE_RAY_TRACING_OPACITY_MICROMAP_BIT_EXT</code> and
+<code>VK_PIPELINE_CREATE_2_DISALLOW_OPACITY_MICROMAP_BIT_ARM</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -12339,6 +12353,21 @@ If the <a href="features.html#features-pipelineCreationCacheControl" class="xref
 <strong>must</strong> not include
 <code>VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT</code></p>
 </li>
+<li>
+<p><a id="VUID-VkPipelineCacheCreateInfo-maintenance8-10200" href="#VUID-VkPipelineCacheCreateInfo-maintenance8-10200"></a> <span class="vuid">VUID-VkPipelineCacheCreateInfo-maintenance8-10200</span><br>
+
+If the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is not
+enabled, <code>flags</code> <strong>must</strong> not include
+<code>VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkPipelineCacheCreateInfo-flags-10201" href="#VUID-VkPipelineCacheCreateInfo-flags-10201"></a> <span class="vuid">VUID-VkPipelineCacheCreateInfo-flags-10201</span><br>
+
+If <code>flags</code> includes
+<code>VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT</code>, it <strong>must</strong> not
+include
+<code>VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -12396,6 +12425,8 @@ specifying behavior of the pipeline cache, are:</p>
 typedef enum VkPipelineCacheCreateFlagBits {
   // Provided by VK_VERSION_1_3
     VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT = 0x00000001,
+  // Provided by VK_KHR_maintenance8
+    VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR = 0x00000008,
   // Provided by VK_EXT_pipeline_creation_cache_control
     VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT_EXT = VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT,
 } VkPipelineCacheCreateFlagBits;</code></pre>
@@ -12410,6 +12441,14 @@ that all commands that modify the created <a href="#VkPipelineCache">VkPipelineC
 When set, the implementation <strong>may</strong> skip any unnecessary processing needed
 to support simultaneous modification from multiple threads where
 allowed.</p>
+</li>
+<li>
+<p><code>VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR</code>
+specifies that when the created <a href="#VkPipelineCache">VkPipelineCache</a> is used as the
+<code>dstCache</code> parameter of <a href="#vkMergePipelineCaches">vkMergePipelineCaches</a>, it does not
+need to be <a href="fundamentals.html#fundamentals-threadingbehavior" class="xref page">externally synchronized</a>.
+This flag is mutually exclusive with
+<code>VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT</code>.</p>
 </li>
 </ul>
 </div>
@@ -12478,6 +12517,13 @@ prune duplicate entries.</p>
 
 <code>dstCache</code> <strong>must</strong> not appear in the list of source caches</p>
 </li>
+<li>
+<p><a id="VUID-vkMergePipelineCaches-dstCache-10202" href="#VUID-vkMergePipelineCaches-dstCache-10202"></a> <span class="vuid">VUID-vkMergePipelineCaches-dstCache-10202</span><br>
+
+Host access to <code>dstCache</code> <strong>must</strong> be externally synchronized
+if it was not created with
+<code>VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -12510,18 +12556,6 @@ prune duplicate entries.</p>
 <li>
 <p><a id="VUID-vkMergePipelineCaches-pSrcCaches-parent" href="#VUID-vkMergePipelineCaches-pSrcCaches-parent"></a> <span class="vuid">VUID-vkMergePipelineCaches-pSrcCaches-parent</span><br>
  Each element of <code>pSrcCaches</code> <strong>must</strong> have been created, allocated, or retrieved from <code>device</code></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Host Synchronization</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Host access to <code>dstCache</code> <strong>must</strong> be externally synchronized</p>
 </li>
 </ul>
 </div>

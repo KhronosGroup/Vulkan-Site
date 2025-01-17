@@ -1107,7 +1107,11 @@ specifying the regions to copy.</p>
 image to the destination region of the destination image.
 If any of the specified regions in <code>srcImage</code> overlaps in memory with
 any of the specified regions in <code>dstImage</code>, values read from those
-overlapping regions are <strong>undefined</strong>.</p>
+overlapping regions are <strong>undefined</strong>.
+If any region accesses a depth aspect in <code>dstImage</code>
+and the <code><a href="../appendices/extensions.html#VK_EXT_depth_range_unrestricted" class="xref page">VK_EXT_depth_range_unrestricted</a></code> extension is not enabled,
+values copied from <code>srcBuffer</code> outside of the range <span class="eq">[0,1]</span> will be
+written as <strong>undefined</strong> values to the destination image.</p>
 </div>
 <div class="paragraph">
 <p><a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">Multi-planar images</a> <strong>can</strong>
@@ -1164,6 +1168,28 @@ If <code>commandBuffer</code> is an unprotected command buffer and
 If <code>commandBuffer</code> is a protected command buffer and
 <a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
 <code>dstImage</code> <strong>must</strong> not be an unprotected image</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-commandBuffer-10217" href="#VUID-vkCmdCopyImage-commandBuffer-10217"></a> <span class="vuid">VUID-vkCmdCopyImage-commandBuffer-10217</span><br>
+
+If the queue family used to create the <a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> which
+<code>commandBuffer</code> was allocated from does not support
+<code>VK_QUEUE_GRAPHICS_BIT</code>, for each element of <code>pRegions</code>, where
+the <code>aspectMask</code> member of <code>srcSubresource</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code>, the <code>aspectMask</code> of
+<code>dstSubresource</code> <strong>must</strong> not be <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-commandBuffer-10218" href="#VUID-vkCmdCopyImage-commandBuffer-10218"></a> <span class="vuid">VUID-vkCmdCopyImage-commandBuffer-10218</span><br>
+
+If the queue family used to create the <a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> which
+<code>commandBuffer</code> was allocated from does not support
+<code>VK_QUEUE_GRAPHICS_BIT</code>, for each element of <code>pRegions</code>, where
+the <code>aspectMask</code> member of <code>dstSubresource</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code> then the <code>aspectMask</code> of
+<code>srcSubresource</code> <strong>must</strong> not be <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
 </li>
 </ul>
 </div>
@@ -1276,10 +1302,25 @@ of <code>commandBuffer</code>&#8217;s command pool&#8217;s queue family, as desc
 <li>
 <p><a id="VUID-vkCmdCopyImage-srcImage-01551" href="#VUID-vkCmdCopyImage-srcImage-01551"></a> <span class="vuid">VUID-vkCmdCopyImage-srcImage-01551</span><br>
 
-If neither <code>srcImage</code> nor <code>dstImage</code> has a
-<a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a> then for each element of <code>pRegions</code>,
-<code>srcSubresource.aspectMask</code> and <code>dstSubresource.aspectMask</code>
-<strong>must</strong> match</p>
+    If neither <code>srcImage</code> nor <code>dstImage</code> has a
+    <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a>
+and the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is not enabled
+    then for each element of <code>pRegions</code>, <code>srcSubresource.aspectMask</code>
+    and <code>dstSubresource.aspectMask</code> <strong>must</strong> match</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-srcSubresource-10214" href="#VUID-vkCmdCopyImage-srcSubresource-10214"></a> <span class="vuid">VUID-vkCmdCopyImage-srcSubresource-10214</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>,
+then <code>dstSubresource.aspectMask</code> <strong>must</strong> not contain both
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> and <code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-dstSubresource-10215" href="#VUID-vkCmdCopyImage-dstSubresource-10215"></a> <span class="vuid">VUID-vkCmdCopyImage-dstSubresource-10215</span><br>
+
+If <code>dstSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>,
+then <code>srSubresource.aspectMask</code> <strong>must</strong> not contain both
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> and <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>.</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdCopyImage-srcImage-08713" href="#VUID-vkCmdCopyImage-srcImage-08713"></a> <span class="vuid">VUID-vkCmdCopyImage-srcImage-08713</span><br>
@@ -1312,6 +1353,40 @@ If <code>dstImage</code> has a
 and the <code>srcImage</code> does not have a multi-planar image format, then
 for each element of <code>pRegions</code>, <code>srcSubresource.aspectMask</code>
 <strong>must</strong> be <code>VK_IMAGE_ASPECT_COLOR_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-srcSubresource-10209" href="#VUID-vkCmdCopyImage-srcSubresource-10209"></a> <span class="vuid">VUID-vkCmdCopyImage-srcSubresource-10209</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>
+and <code>dstSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code>
+or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, then
+<a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-srcSubresource-10210" href="#VUID-vkCmdCopyImage-srcSubresource-10210"></a> <span class="vuid">VUID-vkCmdCopyImage-srcSubresource-10210</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code> and <code>dstSubresource.aspectMask</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code>, then
+<a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-srcSubresource-10211" href="#VUID-vkCmdCopyImage-srcSubresource-10211"></a> <span class="vuid">VUID-vkCmdCopyImage-srcSubresource-10211</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>
+and <code>dstSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code>
+or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, then the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> values of
+<code>srcImage</code> and <code>dstImage</code> <strong>must</strong> be compatible according to
+<a href="formats.html#formats-compatible-zs-color" class="xref page">the list of compatible depth-stencil and    color formats</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage-srcSubresource-10212" href="#VUID-vkCmdCopyImage-srcSubresource-10212"></a> <span class="vuid">VUID-vkCmdCopyImage-srcSubresource-10212</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code> and <code>dstSubresource.aspectMask</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code>, then the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> values of
+<code>srcImage</code> and <code>dstImage</code> <strong>must</strong> be compatible according to
+<a href="formats.html#formats-compatible-zs-color" class="xref page">the list of compatible depth-stencil and    color formats</a></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdCopyImage-apiVersion-07932" href="#VUID-vkCmdCopyImage-apiVersion-07932"></a> <span class="vuid">VUID-vkCmdCopyImage-apiVersion-07932</span><br>
@@ -2091,6 +2166,28 @@ If <code>commandBuffer</code> is a protected command buffer and
 <a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
 <code>dstImage</code> <strong>must</strong> not be an unprotected image</p>
 </li>
+<li>
+<p><a id="VUID-vkCmdCopyImage2-commandBuffer-10217" href="#VUID-vkCmdCopyImage2-commandBuffer-10217"></a> <span class="vuid">VUID-vkCmdCopyImage2-commandBuffer-10217</span><br>
+
+If the queue family used to create the <a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> which
+<code>commandBuffer</code> was allocated from does not support
+<code>VK_QUEUE_GRAPHICS_BIT</code>, for each element of <code>pCopyImageInfo-&gt;pRegions</code>, where
+the <code>aspectMask</code> member of <code>srcSubresource</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code>, the <code>aspectMask</code> of
+<code>dstSubresource</code> <strong>must</strong> not be <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImage2-commandBuffer-10218" href="#VUID-vkCmdCopyImage2-commandBuffer-10218"></a> <span class="vuid">VUID-vkCmdCopyImage2-commandBuffer-10218</span><br>
+
+If the queue family used to create the <a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> which
+<code>commandBuffer</code> was allocated from does not support
+<code>VK_QUEUE_GRAPHICS_BIT</code>, for each element of <code>pCopyImageInfo-&gt;pRegions</code>, where
+the <code>aspectMask</code> member of <code>dstSubresource</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code> then the <code>aspectMask</code> of
+<code>srcSubresource</code> <strong>must</strong> not be <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
 </ul>
 </div>
 </div>
@@ -2353,10 +2450,25 @@ of <code>commandBuffer</code>&#8217;s command pool&#8217;s queue family, as desc
 <li>
 <p><a id="VUID-VkCopyImageInfo2-srcImage-01551" href="#VUID-VkCopyImageInfo2-srcImage-01551"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcImage-01551</span><br>
 
-If neither <code>srcImage</code> nor <code>dstImage</code> has a
-<a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a> then for each element of <code>pRegions</code>,
-<code>srcSubresource.aspectMask</code> and <code>dstSubresource.aspectMask</code>
-<strong>must</strong> match</p>
+    If neither <code>srcImage</code> nor <code>dstImage</code> has a
+    <a href="formats.html#formats-requiring-sampler-ycbcr-conversion" class="xref page">multi-planar image    format</a>
+and the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is not enabled
+    then for each element of <code>pRegions</code>, <code>srcSubresource.aspectMask</code>
+    and <code>dstSubresource.aspectMask</code> <strong>must</strong> match</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyImageInfo2-srcSubresource-10214" href="#VUID-VkCopyImageInfo2-srcSubresource-10214"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcSubresource-10214</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>,
+then <code>dstSubresource.aspectMask</code> <strong>must</strong> not contain both
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> and <code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyImageInfo2-dstSubresource-10215" href="#VUID-VkCopyImageInfo2-dstSubresource-10215"></a> <span class="vuid">VUID-VkCopyImageInfo2-dstSubresource-10215</span><br>
+
+If <code>dstSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>,
+then <code>srSubresource.aspectMask</code> <strong>must</strong> not contain both
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> and <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>.</p>
 </li>
 <li>
 <p><a id="VUID-VkCopyImageInfo2-srcImage-08713" href="#VUID-VkCopyImageInfo2-srcImage-08713"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcImage-08713</span><br>
@@ -2389,6 +2501,40 @@ If <code>dstImage</code> has a
 and the <code>srcImage</code> does not have a multi-planar image format, then
 for each element of <code>pRegions</code>, <code>srcSubresource.aspectMask</code>
 <strong>must</strong> be <code>VK_IMAGE_ASPECT_COLOR_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyImageInfo2-srcSubresource-10209" href="#VUID-VkCopyImageInfo2-srcSubresource-10209"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcSubresource-10209</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>
+and <code>dstSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code>
+or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, then
+<a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyImageInfo2-srcSubresource-10210" href="#VUID-VkCopyImageInfo2-srcSubresource-10210"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcSubresource-10210</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code> and <code>dstSubresource.aspectMask</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code>, then
+<a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkCopyImageInfo2-srcSubresource-10211" href="#VUID-VkCopyImageInfo2-srcSubresource-10211"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcSubresource-10211</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_COLOR_BIT</code>
+and <code>dstSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code>
+or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code>, then the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> values of
+<code>srcImage</code> and <code>dstImage</code> <strong>must</strong> be compatible according to
+<a href="formats.html#formats-compatible-zs-color" class="xref page">the list of compatible depth-stencil and    color formats</a></p>
+</li>
+<li>
+<p><a id="VUID-VkCopyImageInfo2-srcSubresource-10212" href="#VUID-VkCopyImageInfo2-srcSubresource-10212"></a> <span class="vuid">VUID-VkCopyImageInfo2-srcSubresource-10212</span><br>
+
+If <code>srcSubresource.aspectMask</code> is <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code> and <code>dstSubresource.aspectMask</code> is
+<code>VK_IMAGE_ASPECT_COLOR_BIT</code>, then the <a href="formats.html#VkFormat" class="xref page">VkFormat</a> values of
+<code>srcImage</code> and <code>dstImage</code> <strong>must</strong> be compatible according to
+<a href="formats.html#formats-compatible-zs-color" class="xref page">the list of compatible depth-stencil and    color formats</a></p>
 </li>
 <li>
 <p><a id="VUID-VkCopyImageInfo2-apiVersion-07932" href="#VUID-VkCopyImageInfo2-apiVersion-07932"></a> <span class="vuid">VUID-VkCopyImageInfo2-apiVersion-07932</span><br>
@@ -3979,6 +4125,15 @@ The <code>imageOffset</code> and <code>imageExtent</code> members of each elemen
 of <code>commandBuffer</code>&#8217;s command pool&#8217;s queue family, as described in
 <a href="devsandqueues.html#VkQueueFamilyProperties" class="xref page">VkQueueFamilyProperties</a></p>
 </li>
+<li>
+<p><a id="VUID-vkCmdCopyImageToBuffer-commandBuffer-10216" href="#VUID-vkCmdCopyImageToBuffer-commandBuffer-10216"></a> <span class="vuid">VUID-vkCmdCopyImageToBuffer-commandBuffer-10216</span><br>
+
+If the queue family used to create the <a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> which
+<code>commandBuffer</code> was allocated from does not support
+<code>VK_QUEUE_GRAPHICS_BIT</code>, for each element of <code>pRegions</code>, the
+<code>aspectMask</code> member of <code>imageSubresource</code> <strong>must</strong> not be
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -5288,6 +5443,15 @@ The <code>imageOffset</code> and <code>imageExtent</code> members of each elemen
 <code>pCopyImageToBufferInfo-&gt;pRegions</code> <strong>must</strong> respect the image transfer granularity requirements
 of <code>commandBuffer</code>&#8217;s command pool&#8217;s queue family, as described in
 <a href="devsandqueues.html#VkQueueFamilyProperties" class="xref page">VkQueueFamilyProperties</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdCopyImageToBuffer2-commandBuffer-10216" href="#VUID-vkCmdCopyImageToBuffer2-commandBuffer-10216"></a> <span class="vuid">VUID-vkCmdCopyImageToBuffer2-commandBuffer-10216</span><br>
+
+If the queue family used to create the <a href="cmdbuffers.html#VkCommandPool" class="xref page">VkCommandPool</a> which
+<code>commandBuffer</code> was allocated from does not support
+<code>VK_QUEUE_GRAPHICS_BIT</code>, for each element of <code>pCopyImageToBufferInfo-&gt;pRegions</code>, the
+<code>aspectMask</code> member of <code>imageSubresource</code> <strong>must</strong> not be
+<code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or <code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
 </li>
 </ul>
 </div>
@@ -9729,14 +9893,32 @@ be less than or equal to the <code>arrayLayers</code> specified in
 <code>flags</code> containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
 </li>
 <li>
+<p><a id="VUID-vkCmdBlitImage-maintenance8-10207" href="#VUID-vkCmdBlitImage-maintenance8-10207"></a> <span class="vuid">VUID-vkCmdBlitImage-maintenance8-10207</span><br>
+
+If the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is enabled
+and <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, then for each
+element of <code>pRegions</code>, <code>srcSubresource.baseArrayLayer</code> <strong>must</strong> be
+<code>0</code>, and <code>srcSubresource.layerCount</code> <strong>must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBlitImage-maintenance8-10208" href="#VUID-vkCmdBlitImage-maintenance8-10208"></a> <span class="vuid">VUID-vkCmdBlitImage-maintenance8-10208</span><br>
+
+If the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is enabled
+and <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, then for each
+element of <code>pRegions</code>, <code>dstSubresource.baseArrayLayer</code> <strong>must</strong> be
+<code>0</code>, and <code>dstSubresource.layerCount</code> <strong>must</strong> be <code>1</code></p>
+</li>
+<li>
 <p><a id="VUID-vkCmdBlitImage-srcImage-00240" href="#VUID-vkCmdBlitImage-srcImage-00240"></a> <span class="vuid">VUID-vkCmdBlitImage-srcImage-00240</span><br>
 
-If either <code>srcImage</code> or <code>dstImage</code> is of type
-<code>VK_IMAGE_TYPE_3D</code>, then for each element of <code>pRegions</code>,
-<code>srcSubresource.baseArrayLayer</code> and
-<code>dstSubresource.baseArrayLayer</code> <strong>must</strong> each be <code>0</code>, and
-<code>srcSubresource.layerCount</code> and <code>dstSubresource.layerCount</code>
-<strong>must</strong> each be <code>1</code></p>
+    If
+the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is not enabled and
+    either <code>srcImage</code> or <code>dstImage</code> is of type
+    <code>VK_IMAGE_TYPE_3D</code>, then for each element of <code>pRegions</code>,
+    <code>srcSubresource.baseArrayLayer</code> and
+    <code>dstSubresource.baseArrayLayer</code> <strong>must</strong> each be <code>0</code>, and
+    <code>srcSubresource.layerCount</code> and <code>dstSubresource.layerCount</code>
+    <strong>must</strong> each be <code>1</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdBlitImage-aspectMask-00241" href="#VUID-vkCmdBlitImage-aspectMask-00241"></a> <span class="vuid">VUID-vkCmdBlitImage-aspectMask-00241</span><br>
@@ -10467,14 +10649,32 @@ be less than or equal to the <code>arrayLayers</code> specified in
 <code>flags</code> containing <code>VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT</code></p>
 </li>
 <li>
+<p><a id="VUID-VkBlitImageInfo2-maintenance8-10207" href="#VUID-VkBlitImageInfo2-maintenance8-10207"></a> <span class="vuid">VUID-VkBlitImageInfo2-maintenance8-10207</span><br>
+
+If the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is enabled
+and <code>srcImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, then for each
+element of <code>pRegions</code>, <code>srcSubresource.baseArrayLayer</code> <strong>must</strong> be
+<code>0</code>, and <code>srcSubresource.layerCount</code> <strong>must</strong> be <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-VkBlitImageInfo2-maintenance8-10208" href="#VUID-VkBlitImageInfo2-maintenance8-10208"></a> <span class="vuid">VUID-VkBlitImageInfo2-maintenance8-10208</span><br>
+
+If the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is enabled
+and <code>dstImage</code> is of type <code>VK_IMAGE_TYPE_3D</code>, then for each
+element of <code>pRegions</code>, <code>dstSubresource.baseArrayLayer</code> <strong>must</strong> be
+<code>0</code>, and <code>dstSubresource.layerCount</code> <strong>must</strong> be <code>1</code></p>
+</li>
+<li>
 <p><a id="VUID-VkBlitImageInfo2-srcImage-00240" href="#VUID-VkBlitImageInfo2-srcImage-00240"></a> <span class="vuid">VUID-VkBlitImageInfo2-srcImage-00240</span><br>
 
-If either <code>srcImage</code> or <code>dstImage</code> is of type
-<code>VK_IMAGE_TYPE_3D</code>, then for each element of <code>pRegions</code>,
-<code>srcSubresource.baseArrayLayer</code> and
-<code>dstSubresource.baseArrayLayer</code> <strong>must</strong> each be <code>0</code>, and
-<code>srcSubresource.layerCount</code> and <code>dstSubresource.layerCount</code>
-<strong>must</strong> each be <code>1</code></p>
+    If
+the <a href="features.html#features-maintenance8" class="xref page"><code>maintenance8</code></a> feature is not enabled and
+    either <code>srcImage</code> or <code>dstImage</code> is of type
+    <code>VK_IMAGE_TYPE_3D</code>, then for each element of <code>pRegions</code>,
+    <code>srcSubresource.baseArrayLayer</code> and
+    <code>dstSubresource.baseArrayLayer</code> <strong>must</strong> each be <code>0</code>, and
+    <code>srcSubresource.layerCount</code> and <code>dstSubresource.layerCount</code>
+    <strong>must</strong> each be <code>1</code></p>
 </li>
 <li>
 <p><a id="VUID-VkBlitImageInfo2-aspectMask-00241" href="#VUID-VkBlitImageInfo2-aspectMask-00241"></a> <span class="vuid">VUID-VkBlitImageInfo2-aspectMask-00241</span><br>

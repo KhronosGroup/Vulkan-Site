@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>VK_EXT_dynamic_rendering_unused_attachments :: Vulkan Documentation Project</title>
+    <title>VK_KHR_maintenance8 :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.10">
     <link rel="stylesheet" href="../../../../_/css/site.css">
     <script>var uiRootPath = '../../../../_'</script>
@@ -142,7 +142,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_device_generated_commands.html">VK_EXT_device_generated_commands</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -274,7 +274,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_maintenance7.html">VK_KHR_maintenance7</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -441,7 +441,7 @@
   <ul>
     <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
     <li>Feature Descriptions</li>
-    <li><a href="VK_EXT_dynamic_rendering_unused_attachments.html">VK_EXT_dynamic_rendering_unused_attachments</a></li>
+    <li><a href="VK_KHR_maintenance8.html">VK_KHR_maintenance8</a></li>
   </ul>
 </nav>
     <!--
@@ -452,21 +452,32 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">VK_EXT_dynamic_rendering_unused_attachments</h1>
+<h1 class="page">VK_KHR_maintenance8</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_problem_statement">1. Problem Statement</a></li>
-<li><a href="#_solution_space">2. Solution Space</a></li>
-<li><a href="#_proposal">3. Proposal</a></li>
+<li><a href="#_proposal">2. Proposal</a>
+<ul class="sectlevel2">
+<li><a href="#_support_offset_as_an_alternative_to_constoffset_image_operand_in_texture_sampling_and_fetch_operations">2.1. Support <code>Offset</code> (as an alternative to <code>ConstOffset</code>) image operand in texture sampling and fetch operations</a></li>
+<li><a href="#_allow_copies_between_depthstencil_and_matching_color_attachments">2.2. Allow copies between depth/stencil and &#8220;matching&#8221; color attachments</a></li>
+<li><a href="#_explicit_synchronization_in_vkmergepipelinecaches">2.3. Explicit Synchronization in <code>vkMergePipelineCaches</code></a></li>
+<li><a href="#_meaningful_stages_for_queue_family_ownership_transfers">2.4. Meaningful Stages for Queue Family Ownership Transfers</a></li>
+</ul>
+</li>
+<li><a href="#_example">3. Example</a></li>
+<li><a href="#_issues">4. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_does_the_new_vk_dependency_queue_family_ownership_transfer_use_all_stages_bit_khr_flag_work_with_the_original_synchronization_commands">4.1. Does the new VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR flag work with the original synchronization commands?</a></li>
+<li><a href="#_when_doing_queue_family_ownership_transfers_do_the_specified_stages_need_to_match_between_the_source_and_destination_queues">4.2. When doing queue family ownership transfers, do the specified stages need to match between the source and destination queues?</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This document describes a limitation with <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering">VK_KHR_dynamic_rendering</a> that limits what
-pipelines can be used with render pass instances, and may subsequently require
-many more pipeline objects to be created to work around the limitation.</p>
+<p>This proposal details and addresses the issues solved by the <code>VK_KHR_maintenance8</code> extension.</p>
 </div>
 </div>
 </div>
@@ -474,102 +485,219 @@ many more pipeline objects to be created to work around the limitation.</p>
 <h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering">VK_KHR_dynamic_rendering</a> has several restrictions on what pipelines can be
-bound within a render pass instance which may cause the application to have to create
-multiple variants of the pipeline object in order to be compatible with the render
-pass instance.
-These restrictions were put in place to accommodate hardware that uses the pipeline
-state to program the framebuffer layout for the render pass instance and cannot easily
-change the framebuffer layout during the render pass instance, requiring all pipeline
-state bound in the render pass instance to match, even if the mismatch is only between
-a consistent valid format and unused attachments.</p>
+<p>Over time, a collection of minor features, none of which would warrant an
+entire extension of their own, requires the creation of a maintenance
+extension.</p>
 </div>
 <div class="paragraph">
-<p>The consequence of this limitation is that the following sequence is invalid:</p>
+<p>The following is a list of issues considered in this proposal:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Allow copies between depth/stencil and &#8220;matching&#8221; color attachments</p>
+</li>
+<li>
+<p>Allow <code>dstCache</code> in <code>vkMergePipelineCaches</code> to be implicitly synchronized.</p>
+</li>
+<li>
+<p>Require src/dst sync scopes to work when doing queue family ownership
+transfers</p>
+</li>
+<li>
+<p>Support <code>Offset</code> (as an alternative to <code>ConstOffset</code>) image operand
+in texture sampling and fetch operations</p>
+</li>
+<li>
+<p>Use the SPIR-V definition of OpSRem and OpSMod, making these
+operations produce well-defined results for negative operands</p>
+</li>
+<li>
+<p>Loosen layer restrictions when blitting from 3D images to other image types</p>
+</li>
+<li>
+<p>Add space for an additional 64 access flags for use with VkMemoryBarrier2,
+VkBufferMemoryBarrier2, and VkImageMemoryBarrier2</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>2. Proposal</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Items introduced by this extension are:</p>
+</div>
+<div class="sect2">
+<h3 id="_support_offset_as_an_alternative_to_constoffset_image_operand_in_texture_sampling_and_fetch_operations"><a class="anchor" href="#_support_offset_as_an_alternative_to_constoffset_image_operand_in_texture_sampling_and_fetch_operations"></a>2.1. Support <code>Offset</code> (as an alternative to <code>ConstOffset</code>) image operand in texture sampling and fetch operations</h3>
+<div class="paragraph">
+<p><code>ConstOffset</code> only allows only constant offsets. Prior to maintenance8
+<code>Offset</code> is only supported for gather operations. This is an issue
+for D3D12 layering.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_allow_copies_between_depthstencil_and_matching_color_attachments"><a class="anchor" href="#_allow_copies_between_depthstencil_and_matching_color_attachments"></a>2.2. Allow copies between depth/stencil and &#8220;matching&#8221; color attachments</h3>
+<div class="paragraph">
+<p>D3D12 allows transfer copies between e.g., R32F and D32F. Providing this functionality
+improves layered D3D12 implementations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_explicit_synchronization_in_vkmergepipelinecaches"><a class="anchor" href="#_explicit_synchronization_in_vkmergepipelinecaches"></a>2.3. Explicit Synchronization in <code>vkMergePipelineCaches</code></h3>
+<div class="paragraph">
+<p>The <code>vkMergePipelineCaches</code> function requires that its <code>dstCache</code> parameter is externally synchronized.
+Currently, applications which can potentially call <code>vkMergePipelineCaches</code> simultaneously from different threads must implement locking around <code>vkCreate*Pipelines</code> for the pipeline cache even if it is created without VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT.
+This can be detrimental to performance, especially if <code>vkMergePipelineCaches</code> rarely happens.</p>
+</div>
+<div class="paragraph">
+<p>The new <code>VK_PIPELINE_CACHE_CREATE_INTERNALLY_SYNCHRONIZED_MERGE_BIT_KHR</code> flag can be used when creating a pipeline cache to indicate that, when used as the <code>dstCache</code> parameter of <code>vkMergePipelineCaches</code>, external synchronization is not needed with pipeline creation functions.
+This flag is mutually exclusive with <code>VK_PIPELINE_CACHE_CREATE_EXTERNALLY_SYNCHRONIZED_BIT</code>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_meaningful_stages_for_queue_family_ownership_transfers"><a class="anchor" href="#_meaningful_stages_for_queue_family_ownership_transfers"></a>2.4. Meaningful Stages for Queue Family Ownership Transfers</h3>
+<div class="paragraph">
+<p>This extension adds a new dependency flag indicating that both stage masks
+are now meaningful when performing a queue family ownership transfer:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vkCmdBeginRendering(); // Only uses color attachment 0, with VK_FORMAT_R8G8B8A8_UNORM
-vkCmdBindPipeline(A); // A was created with color attachments 0, 1, 2 with VK_FORMAT_R8G8B8A8_UNORM
-vkCmdDraw();
-vkCmdBindPipeline(B); // B was created with only color attachment 0 with VK_FORMAT_R8G8B8A8_UNORM
-vkCmdDraw();
-vkCmdEndRendering();</code></pre>
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">    VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR = 0xTBD,</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This can cause a combinatorial explosion of pipeline objects, depending on the
-application, or require pipeline objects to be generated just-in-time to
-be compatible with the active render pass instance.
-Alternatively it forces applications to split the render pass instance any time the
-framebuffer layout in the pipeline state changes.</p>
+<p>When <code>VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR</code> is included in <a href="https://docs.vulkan.org/spec/latest/chapters/synchronization.html#VkDependencyFlags">VkDependencyFlags</a>, buffer and image memory barriers that specify queue family ownership transfers will make use of both synchronization scopes.</p>
 </div>
 <div class="paragraph">
-<p>The current restrictions require there to be an exact match between the bound pipeline
-and the render pass instance attachment formats, including matching unused attachments
-with undefined formats.</p>
+<p>Without this new flag, the operations on each queue can only be synchronized by using <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, which can cause a full stall of the device on many implementations.
+When this flag is specified, these operations can instead be synchronized using the stage flags just as any other synchronization operation would be.</p>
 </div>
 <div class="paragraph">
-<p>The VUIDs that contribute to this limitation are:</p>
+<p>Keeping the destination stage equal to the source stage will generally minimize over synchronization and is recommended, but there is no need for them to match.
+Similarly, there is no need for the stage masks in either queue to match.</p>
 </div>
-<div class="dlist">
-<dl>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-colorAttachmentCount-07616">VUID-vkCmdDraw-colorAttachmentCount-07616</a> </dt>
-<dd>
-<p>If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::colorAttachmentCount greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with an imageView equal to VK_NULL_HANDLE must have the corresponding element of VkPipelineRenderingCreateInfo::pColorAttachmentFormats used to create the bound pipeline equal to VK_FORMAT_UNDEFINED</p>
-</dd>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pDepthAttachment-07617">VUID-vkCmdDraw-pDepthAttachment-07617</a> </dt>
-<dd>
-<p>If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pDepthAttachment&#8594;imageView was VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::depthAttachmentFormat used to create the bound graphics pipeline must be equal to VK_FORMAT_UNDEFINED</p>
-</dd>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pStencilAttachment-07618">VUID-vkCmdDraw-pStencilAttachment-07618</a> </dt>
-<dd>
-<p>If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pStencilAttachment&#8594;imageView was VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::stencilAttachmentFormat used to create the bound graphics pipeline must be equal to VK_FORMAT_UNDEFINED</p>
-</dd>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdExecuteCommands-imageView-07606">VUID-vkCmdExecuteCommands-imageView-07606</a> </dt>
-<dd>
-<p>If vkCmdExecuteCommands is being called within a render pass instance begun with vkCmdBeginRendering, if the imageView member of an element of the VkRenderingInfo::pColorAttachments parameter to vkCmdBeginRendering is VK_NULL_HANDLE, the corresponding element of the pColorAttachmentFormats member of the VkCommandBufferInheritanceRenderingInfo structure included in the pNext chain of VkCommandBufferBeginInfo::pInheritanceInfo used to begin recording each element of pCommandBuffers must be VK_FORMAT_UNDEFINED</p>
-</dd>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-colorAttachmentCount-06180">VUID-vkCmdDraw-colorAttachmentCount-06180</a> </dt>
-<dd>
-<p>If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::colorAttachmentCount greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with an imageView not equal to VK_NULL_HANDLE must have been created with a VkFormat equal to the corresponding element of VkPipelineRenderingCreateInfo::pColorAttachmentFormats used to create the bound graphics pipeline</p>
-</dd>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pDepthAttachment-06181">VUID-vkCmdDraw-pDepthAttachment-06181</a> </dt>
-<dd>
-<p>If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pDepthAttachment&#8594;imageView was not VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::depthAttachmentFormat used to create the bound graphics pipeline must be equal to the VkFormat used to create VkRenderingInfo::pDepthAttachment&#8594;imageView</p>
-</dd>
-<dt class="hdlist1"><a href="https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pStencilAttachment-06182">VUID-vkCmdDraw-pStencilAttachment-06182</a> </dt>
-<dd>
-<p>If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pStencilAttachment&#8594;imageView was not VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::stencilAttachmentFormat used to create the bound graphics pipeline must be equal to the VkFormat used to create VkRenderingInfo::pStencilAttachment&#8594;imageView</p>
-</dd>
-</dl>
-</div>
-<div class="paragraph">
-<p>DX12 does not have these limitations, which makes implementing DX12 translation on top of Vulkan
-with these limitations difficult.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<h2 id="_example"><a class="anchor" href="#_example"></a>3. Example</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Since these limitations do not apply to all implementations, we need a simple
-extension that lifts these restrictions and allows pipelines to be bound to render
-pass instances where the attachment formats may match with the same format or
-unused, and where it matches with unused the writes are discarded.</p>
+<p>The following code performs a queue family ownership transfer for a color attachment from a graphics queue to a compute queue as a storage image:</p>
+</div>
+<div class="listingblock">
+<div class="title">Graphics Queue Release Operation</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkImageMemoryBarrier2 imageMemoryBarrier = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+    .srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+    .dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
+    .srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    .srcQueueFamilyIndex = graphicsQueueFamilyIndex,
+    .dstQueueFamilyIndex = computeQueueFamilyIndex,
+    .image = ...,
+    .subresourceRange = ...};
+
+VkDependencyInfo dependencyInfo = {
+    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+    .dependencyFlags = VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR,
+    .imageMemoryBarrierCount = 1,
+    .imageMemoryBarrier = &amp;imageMemoryBarrier,
+}
+
+vkCmdPipelineBarrier2(graphicsCommandBuffer, &amp;dependencyInfo);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Graphics Queue Submit Information</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkSemaphoreSubmitInfo semaphoreSignalInfo = {
+    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+    .semaphore = transferSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT }; // Do not signal the semaphore until color attachment output completes
+
+VkCommandBufferSubmitInfo graphicsCommandBufferInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+    .commandBuffer = graphicsCommandBuffer };
+
+VkSubmitInfo2 submitInfo = {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+    .commandBufferInfoCount = 1,
+    .pCommandBufferInfos = &amp;graphicsCommandBufferInfo,
+    .signalSemaphoreInfoCount = 1,
+    .pSignalSemaphoreInfos = &amp;semaphoreSignalInfo,
+
+vkQueueSubmit2(graphicsQueue, 1, &amp;submitInfo, VK_NULL_HANDLE);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Compute Queue Acquire Operation</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkImageMemoryBarrier2 imageMemoryBarrier = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+    .srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+    .dstStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+    .dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT,
+    .oldLayout = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+    .newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    .srcQueueFamilyIndex = graphicsQueueFamilyIndex,
+    .dstQueueFamilyIndex = computeQueueFamilyIndex,
+    .image = ...,
+    .subresourceRange = ...};
+
+VkDependencyInfo dependencyInfo = {
+    .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+    .dependencyFlags = VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR,
+    .imageMemoryBarrierCount = 1,
+    .imageMemoryBarrier = &amp;imageMemoryBarrier,
+}
+
+vkCmdPipelineBarrier2(computeCommandBuffer, &amp;dependencyInfo);</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Compute Queue Submit Information</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VkSemaphoreSubmitInfo semaphoreWaitInfo = {
+    .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+    .semaphore = transferSemaphore,
+    .stageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT };  // Do not execute compute shader stages in the destination until semaphore is signaled.
+
+VkCommandBufferSubmitInfo computeCommandBufferInfo = {
+    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+    .commandBuffer = computeCommandBuffer };
+
+VkSubmitInfo2 submitInfo = {
+    .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
+    .waitSemaphoreInfoCount = 1,
+    .pWaitSemaphoreInfos = &amp;semaphoreWaitInfo,
+    .commandBufferInfoCount = 1,
+    .pCommandBufferInfos = &amp;computeCommandBufferInfo,
+
+vkQueueSubmit2(graphicsQueue, 1, &amp;submitInfo, VK_NULL_HANDLE);</code></pre>
+</div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_does_the_new_vk_dependency_queue_family_ownership_transfer_use_all_stages_bit_khr_flag_work_with_the_original_synchronization_commands"><a class="anchor" href="#_does_the_new_vk_dependency_queue_family_ownership_transfer_use_all_stages_bit_khr_flag_work_with_the_original_synchronization_commands"></a>4.1. Does the new VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR flag work with the original synchronization commands?</h3>
 <div class="paragraph">
-<p>Implementations may expose the <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_dynamic_rendering_unused_attachments">VK_EXT_dynamic_rendering_unused_attachments</a> extension
-and the
-<a href="https://docs.vulkan.org/spec/latest/chapters/features.html#VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT">VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT</a>::`dynamicRenderingUnusedAttachments`
-feature which allows apps to bind pipelines to render pass instances where attachment
-formats can match with unused attachments.</p>
+<p>It will work specifically with <code>vkCmdPipelineBarrier</code> as this has a dependency flags parameter.
+When used with this command, the synchronization scopes are used for synchronizing in the same manner when a QFOT is specified.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_when_doing_queue_family_ownership_transfers_do_the_specified_stages_need_to_match_between_the_source_and_destination_queues"><a class="anchor" href="#_when_doing_queue_family_ownership_transfers_do_the_specified_stages_need_to_match_between_the_source_and_destination_queues"></a>4.2. When doing queue family ownership transfers, do the specified stages need to match between the source and destination queues?</h3>
+<div class="paragraph">
+<p>There is no requiremented that any stage masks need to match between the acquire and release, whether the new <code>VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR</code> flag is present or not.</p>
+</div>
 </div>
 </div>
 </div>
