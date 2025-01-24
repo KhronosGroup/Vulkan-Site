@@ -2878,6 +2878,21 @@ If <code>flags</code> includes
 <a href="features.html#features-videoMaintenance1" class="xref page"><code>videoMaintenance1</code></a> <strong>must</strong> be enabled</p>
 </li>
 <li>
+<p><a id="VUID-VkVideoSessionCreateInfoKHR-flags-10398" href="#VUID-VkVideoSessionCreateInfoKHR-flags-10398"></a> <span class="vuid">VUID-VkVideoSessionCreateInfoKHR-flags-10398</span><br>
+
+If <code>flags</code> includes
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, then
+<a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkVideoSessionCreateInfoKHR-flags-10399" href="#VUID-VkVideoSessionCreateInfoKHR-flags-10399"></a> <span class="vuid">VUID-VkVideoSessionCreateInfoKHR-flags-10399</span><br>
+
+If <code>flags</code> includes
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, then
+<code>pVideoProfile-&gt;videoCodecOperation</code> <strong>must</strong> specify a decode
+operation</p>
+</li>
+<li>
 <p><a id="VUID-VkVideoSessionCreateInfoKHR-flags-10264" href="#VUID-VkVideoSessionCreateInfoKHR-flags-10264"></a> <span class="vuid">VUID-VkVideoSessionCreateInfoKHR-flags-10264</span><br>
 
 If <code>flags</code> includes
@@ -3142,6 +3157,8 @@ typedef enum VkVideoSessionCreateFlagBitsKHR {
     VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_QUANTIZATION_DELTA_MAP_BIT_KHR = 0x00000008,
   // Provided by VK_KHR_video_encode_quantization_map
     VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_EMPHASIS_MAP_BIT_KHR = 0x00000010,
+  // Provided by VK_KHR_video_decode_queue with VK_KHR_video_maintenance2
+    VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR = 0x00000020,
 } VkVideoSessionCreateFlagBitsKHR;</code></pre>
 </div>
 </div>
@@ -3196,6 +3213,12 @@ specifies that the video session <strong>can</strong> be used to encode pictures
 <p><code>VK_VIDEO_SESSION_CREATE_ALLOW_ENCODE_EMPHASIS_MAP_BIT_KHR</code>
 specifies that the video session <strong>can</strong> be used to encode pictures with
 <a href="#encode-emphasis-map">emphasis maps</a>.</p>
+</li>
+<li>
+<p><code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>
+specifies that the application <strong>can</strong> specify video session parameters
+inline with video decode operations instead of sourcing them from the
+bound <a href="#video-session-parameters">video session parameters</a> object.</p>
 </li>
 </ul>
 </div>
@@ -6659,21 +6682,27 @@ been created with <code>VK_IMAGE_USAGE_VIDEO_ENCODE_DPB_BIT_KHR</code></p>
 
 If <code>videoSession</code> was created with the video codec operation
 <code>VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR</code>, then
-<code>videoSessionParameters</code> <strong>must</strong> not be <code>VK_NULL_HANDLE</code></p>
+<code>videoSessionParameters</code> <strong>must</strong> not be <code>VK_NULL_HANDLE</code>
+, unless <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> is
+enabled</p>
 </li>
 <li>
 <p><a id="VUID-VkVideoBeginCodingInfoKHR-videoSession-07248" href="#VUID-VkVideoBeginCodingInfoKHR-videoSession-07248"></a> <span class="vuid">VUID-VkVideoBeginCodingInfoKHR-videoSession-07248</span><br>
 
 If <code>videoSession</code> was created with the video codec operation
 <code>VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_KHR</code>, then
-<code>videoSessionParameters</code> <strong>must</strong> not be <code>VK_NULL_HANDLE</code></p>
+<code>videoSessionParameters</code> <strong>must</strong> not be <code>VK_NULL_HANDLE</code>
+, unless <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> is
+enabled</p>
 </li>
 <li>
 <p><a id="VUID-VkVideoBeginCodingInfoKHR-videoSession-09261" href="#VUID-VkVideoBeginCodingInfoKHR-videoSession-09261"></a> <span class="vuid">VUID-VkVideoBeginCodingInfoKHR-videoSession-09261</span><br>
 
 If <code>videoSession</code> was created with the video codec operation
 <code>VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR</code>, then
-<code>videoSessionParameters</code> <strong>must</strong> not be <code>VK_NULL_HANDLE</code></p>
+<code>videoSessionParameters</code> <strong>must</strong> not be <code>VK_NULL_HANDLE</code>
+, unless <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> is
+enabled</p>
 </li>
 <li>
 <p><a id="VUID-VkVideoBeginCodingInfoKHR-videoSession-07249" href="#VUID-VkVideoBeginCodingInfoKHR-videoSession-07249"></a> <span class="vuid">VUID-VkVideoBeginCodingInfoKHR-videoSession-07249</span><br>
@@ -8518,6 +8547,36 @@ the <code>pSliceOffsets</code> member of the
 <code>pDecodeInfo-&gt;srcBufferRange</code></p>
 </li>
 <li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-None-10400" href="#VUID-vkCmdDecodeVideoKHR-None-10400"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-None-10400</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR</code>, then there <strong>must</strong> be
+a bound video session parameters object if any of the following
+conditions are not met:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code></p>
+</li>
+<li>
+<p>the <code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure</p>
+</li>
+<li>
+<p>the <code>pStdSPS</code> member of the
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure
+included in the <code>pNext</code> chain of <code>pDecodeInfo</code> is not <code>NULL</code></p>
+</li>
+<li>
+<p>the <code>pStdPPS</code> member of the
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure
+included in the <code>pNext</code> chain of <code>pDecodeInfo</code> is not <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
 <p><a id="VUID-vkCmdDecodeVideoKHR-StdVideoH264SequenceParameterSet-07154" href="#VUID-vkCmdDecodeVideoKHR-StdVideoH264SequenceParameterSet-07154"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-StdVideoH264SequenceParameterSet-07154</span><br>
 
 If the bound video session was created with the video codec operation
@@ -8527,6 +8586,26 @@ session parameters object <strong>must</strong> contain a
 <code>seq_parameter_set_id</code> matching
 <code>StdVideoDecodeH264PictureInfo</code>::<code>seq_parameter_set_id</code> that is
 provided in the <code>pStdPictureInfo</code> member of the
+<a href="#VkVideoDecodeH264PictureInfoKHR">VkVideoDecodeH264PictureInfoKHR</a> structure included in the
+<code>pNext</code> chain of <code>pDecodeInfo</code>
+, unless the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure, and its
+<code>pStdSPS</code> member is not equal to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-pNext-10401" href="#VUID-vkCmdDecodeVideoKHR-pNext-10401"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-pNext-10401</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure with a
+non-<code>NULL</code> <code>pStdSPS</code> member, then
+<code>pStdSPS-&gt;seq_parameter_set_id</code> <strong>must</strong> equal
+<code>StdVideoDecodeH264PictureInfo</code>::<code>seq_parameter_set_id</code> provided
+in the <code>pStdPictureInfo</code> member of the
 <a href="#VkVideoDecodeH264PictureInfoKHR">VkVideoDecodeH264PictureInfoKHR</a> structure included in the
 <code>pNext</code> chain of <code>pDecodeInfo</code></p>
 </li>
@@ -8542,6 +8621,28 @@ session parameters object <strong>must</strong> contain a
 <code>StdVideoDecodeH264PictureInfo</code>::<code>pic_parameter_set_id</code>,
 respectively, that are provided in the <code>pStdPictureInfo</code> member of
 the <a href="#VkVideoDecodeH264PictureInfoKHR">VkVideoDecodeH264PictureInfoKHR</a> structure included in the
+<code>pNext</code> chain of <code>pDecodeInfo</code>
+, unless the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure, and its
+<code>pStdPPS</code> member is not equal to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-pNext-10402" href="#VUID-vkCmdDecodeVideoKHR-pNext-10402"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-pNext-10402</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure with a
+non-<code>NULL</code> <code>pStdPPS</code> member, then
+<code>pStdPPS-&gt;seq_parameter_set_id</code> and
+<code>pStdPPS-&gt;pic_parameter_set_id</code> <strong>must</strong> equal
+<code>StdVideoDecodeH264PictureInfo</code>::<code>seq_parameter_set_id</code> and
+<code>StdVideoDecodeH264PictureInfo</code>::<code>pic_parameter_set_id</code>,
+respectively, provided in the <code>pStdPictureInfo</code> member of the
+<a href="#VkVideoDecodeH264PictureInfoKHR">VkVideoDecodeH264PictureInfoKHR</a> structure included in the
 <code>pNext</code> chain of <code>pDecodeInfo</code></p>
 </li>
 <li>
@@ -8670,6 +8771,41 @@ the <code>pSliceSegmentOffsets</code> member of the
 <code>pDecodeInfo-&gt;srcBufferRange</code></p>
 </li>
 <li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-None-10403" href="#VUID-vkCmdDecodeVideoKHR-None-10403"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-None-10403</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_KHR</code>, then there <strong>must</strong> be
+a bound video session parameters object if any of the following
+conditions are not met:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code></p>
+</li>
+<li>
+<p>the <code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure</p>
+</li>
+<li>
+<p>the <code>pStdVPS</code> member of the
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure
+included in the <code>pNext</code> chain of <code>pDecodeInfo</code> is not <code>NULL</code></p>
+</li>
+<li>
+<p>the <code>pStdSPS</code> member of the
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure
+included in the <code>pNext</code> chain of <code>pDecodeInfo</code> is not <code>NULL</code></p>
+</li>
+<li>
+<p>the <code>pStdPPS</code> member of the
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure
+included in the <code>pNext</code> chain of <code>pDecodeInfo</code> is not <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
 <p><a id="VUID-vkCmdDecodeVideoKHR-StdVideoH265VideoParameterSet-07160" href="#VUID-vkCmdDecodeVideoKHR-StdVideoH265VideoParameterSet-07160"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-StdVideoH265VideoParameterSet-07160</span><br>
 
 If the bound video session was created with the video codec operation
@@ -8679,6 +8815,26 @@ session parameters object <strong>must</strong> contain a
 <code>vps_video_parameter_set_id</code> matching
 <code>StdVideoDecodeH265PictureInfo</code>::<code>sps_video_parameter_set_id</code>
 that is provided in the <code>pStdPictureInfo</code> member of the
+<a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a> structure included in the
+<code>pNext</code> chain of <code>pDecodeInfo</code>
+, unless the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure, and its
+<code>pStdVPS</code> member is not equal to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-pNext-10404" href="#VUID-vkCmdDecodeVideoKHR-pNext-10404"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-pNext-10404</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure with a
+non-<code>NULL</code> <code>pStdVPS</code> member, then
+<code>pStdVPS-&gt;vps_video_parameter_set_id</code> <strong>must</strong> equal
+<code>StdVideoDecodeH265PictureInfo</code>::<code>sps_video_parameter_set_id</code>
+provided in the <code>pStdPictureInfo</code> member of the
 <a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a> structure included in the
 <code>pNext</code> chain of <code>pDecodeInfo</code></p>
 </li>
@@ -8695,6 +8851,28 @@ matching
 <code>StdVideoDecodeH265PictureInfo</code>::<code>pps_seq_parameter_set_id</code>,
 respectively, that are provided in the <code>pStdPictureInfo</code> member of
 the <a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a> structure included in the
+<code>pNext</code> chain of <code>pDecodeInfo</code>
+, unless the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure, and its
+<code>pStdSPS</code> member is not equal to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-pNext-10405" href="#VUID-vkCmdDecodeVideoKHR-pNext-10405"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-pNext-10405</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure with a
+non-<code>NULL</code> <code>pStdSPS</code> member, then
+<code>pStdSPS-&gt;sps_video_parameter_set_id</code> and
+<code>pStdSPS-&gt;sps_seq_parameter_set_id</code> <strong>must</strong> equal
+<code>StdVideoDecodeH265PictureInfo</code>::<code>sps_video_parameter_set_id</code> and
+<code>StdVideoDecodeH265PictureInfo</code>::<code>pps_seq_parameter_set_id</code>,
+respectively, provided in the <code>pStdPictureInfo</code> member of the
+<a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a> structure included in the
 <code>pNext</code> chain of <code>pDecodeInfo</code></p>
 </li>
 <li>
@@ -8711,6 +8889,30 @@ session parameters object <strong>must</strong> contain a
 <code>StdVideoDecodeH265PictureInfo</code>::<code>pps_pic_parameter_set_id</code>,
 respectively, that are provided in the <code>pStdPictureInfo</code> member of
 the <a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a> structure included in the
+<code>pNext</code> chain of <code>pDecodeInfo</code>
+, unless the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure, and its
+<code>pStdPPS</code> member is not equal to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-pNext-10406" href="#VUID-vkCmdDecodeVideoKHR-pNext-10406"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-pNext-10406</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, and the
+<code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure with a
+non-<code>NULL</code> <code>pStdPPS</code> member, then
+<code>pStdPPS-&gt;sps_video_parameter_set_id</code>,
+<code>pStdPPS-&gt;pps_seq_parameter_set_id</code>, and
+<code>pStdPPS-&gt;pps_pic_parameter_set_id</code> <strong>must</strong> equal
+<code>StdVideoDecodeH265PictureInfo</code>::<code>sps_video_parameter_set_id</code>,
+<code>StdVideoDecodeH265PictureInfo</code>::<code>pps_seq_parameter_set_id</code>, and
+<code>StdVideoDecodeH265PictureInfo</code>::<code>pps_pic_parameter_set_id</code>,
+respectively, provided in the <code>pStdPictureInfo</code> member of the
+<a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a> structure included in the
 <code>pNext</code> chain of <code>pDecodeInfo</code></p>
 </li>
 <li>
@@ -8828,6 +9030,31 @@ If the bound video session was created with the video codec operation
 the <code>referenceNameSlotIndices</code> array member of the
 <a href="#VkVideoDecodeAV1PictureInfoKHR">VkVideoDecodeAV1PictureInfoKHR</a> structure included in the
 <code>pNext</code> chain of <code>pDecodeInfo</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDecodeVideoKHR-None-10407" href="#VUID-vkCmdDecodeVideoKHR-None-10407"></a> <span class="vuid">VUID-vkCmdDecodeVideoKHR-None-10407</span><br>
+
+If the bound video session was created with the video codec operation
+<code>VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR</code>, then there <strong>must</strong> be a
+bound video session parameters object if any of the following conditions
+are not met:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code></p>
+</li>
+<li>
+<p>the <code>pNext</code> chain of <code>pDecodeInfo</code> includes a
+<a href="#VkVideoDecodeAV1InlineSessionParametersInfoKHR">VkVideoDecodeAV1InlineSessionParametersInfoKHR</a> structure</p>
+</li>
+<li>
+<p>the <code>pStdSequenceHeader</code> member of the
+<a href="#VkVideoDecodeAV1InlineSessionParametersInfoKHR">VkVideoDecodeAV1InlineSessionParametersInfoKHR</a> structure included
+in the <code>pNext</code> chain of <code>pDecodeInfo</code> is not <code>NULL</code></p>
+</li>
+</ul>
+</div>
 </li>
 </ul>
 </div>
@@ -9048,7 +9275,7 @@ The <code>pPictureResource</code> member of each element of
 </li>
 <li>
 <p><a id="VUID-VkVideoDecodeInfoKHR-pNext-pNext" href="#VUID-VkVideoDecodeInfoKHR-pNext-pNext"></a> <span class="vuid">VUID-VkVideoDecodeInfoKHR-pNext-pNext</span><br>
- Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkVideoDecodeAV1PictureInfoKHR">VkVideoDecodeAV1PictureInfoKHR</a>, <a href="#VkVideoDecodeH264PictureInfoKHR">VkVideoDecodeH264PictureInfoKHR</a>, <a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a>, or <a href="#VkVideoInlineQueryInfoKHR">VkVideoInlineQueryInfoKHR</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkVideoDecodeAV1InlineSessionParametersInfoKHR">VkVideoDecodeAV1InlineSessionParametersInfoKHR</a>, <a href="#VkVideoDecodeAV1PictureInfoKHR">VkVideoDecodeAV1PictureInfoKHR</a>, <a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a>, <a href="#VkVideoDecodeH264PictureInfoKHR">VkVideoDecodeH264PictureInfoKHR</a>, <a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a>, <a href="#VkVideoDecodeH265PictureInfoKHR">VkVideoDecodeH265PictureInfoKHR</a>, or <a href="#VkVideoInlineQueryInfoKHR">VkVideoInlineQueryInfoKHR</a></p>
 </li>
 <li>
 <p><a id="VUID-VkVideoDecodeInfoKHR-sType-unique" href="#VUID-VkVideoDecodeInfoKHR-sType-unique"></a> <span class="vuid">VUID-VkVideoDecodeInfoKHR-sType-unique</span><br>
@@ -9874,6 +10101,85 @@ of <code>pStdPPSs</code> <strong>must</strong> be unique within <code>pStdPPSs</
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="decode-h264-inline-parameter-sets"><a class="anchor" href="#decode-h264-inline-parameter-sets"></a>Inline Parameter Sets</h4>
+<div class="paragraph">
+<p>In case of <a href="#video-session">video sessions</a> created with the video codec
+operation <code>VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, the
+application <strong>can</strong> also specify the active parameter sets <em>inline</em> by
+including an instance of the
+<a href="#VkVideoDecodeH264InlineSessionParametersInfoKHR">VkVideoDecodeH264InlineSessionParametersInfoKHR</a> structure in the
+<code>pNext</code> chain of <a href="#VkVideoDecodeInfoKHR">VkVideoDecodeInfoKHR</a>.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkVideoDecodeH264InlineSessionParametersInfoKHR</code> structure is
+defined as:</p>
+</div>
+<div id="VkVideoDecodeH264InlineSessionParametersInfoKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_video_decode_h264 with VK_KHR_video_maintenance2
+typedef struct VkVideoDecodeH264InlineSessionParametersInfoKHR {
+    VkStructureType                            sType;
+    const void*                                pNext;
+    const StdVideoH264SequenceParameterSet*    pStdSPS;
+    const StdVideoH264PictureParameterSet*     pStdPPS;
+} VkVideoDecodeH264InlineSessionParametersInfoKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pStdSPS</code> is <code>NULL</code> or a pointer to an instance of the
+<code>StdVideoH264SequenceParameterSet</code> structure describing the
+<a href="#decode-h264-active-sps">active H.264 SPS</a>.</p>
+</li>
+<li>
+<p><code>pStdPPS</code> is <code>NULL</code> or a pointer to an instance of the
+<code>StdVideoH264PictureParameterSet</code> structure describing the
+<a href="#decode-h264-active-pps">active H.264 PPS</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pStdSPS</code> or <code>pStdPPS</code> is not <code>NULL</code>, the issued video decode
+operations will use the parameter sets specified by them, respectively,
+instead of the corresponding parameter sets being sourced from the bound
+video session parameters object.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-sType-sType" href="#VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-sType-sType"></a> <span class="vuid">VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_INLINE_SESSION_PARAMETERS_INFO_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-pStdSPS-parameter" href="#VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-pStdSPS-parameter"></a> <span class="vuid">VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-pStdSPS-parameter</span><br>
+ If <code>pStdSPS</code> is not <code>NULL</code>, <code>pStdSPS</code> <strong>must</strong> be a valid pointer to a valid <code>StdVideoH264SequenceParameterSet</code> value</p>
+</li>
+<li>
+<p><a id="VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-pStdPPS-parameter" href="#VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-pStdPPS-parameter"></a> <span class="vuid">VUID-VkVideoDecodeH264InlineSessionParametersInfoKHR-pStdPPS-parameter</span><br>
+ If <code>pStdPPS</code> is not <code>NULL</code>, <code>pStdPPS</code> <strong>must</strong> be a valid pointer to a valid <code>StdVideoH264PictureParameterSet</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_h_264_decoding_parameters"><a class="anchor" href="#_h_264_decoding_parameters"></a>H.264 Decoding Parameters</h3>
@@ -10021,6 +10327,7 @@ specified, then the corresponding picture reference associated with the
 <dd>
 <p>The members of the <code>StdVideoDecodeH264PictureInfo</code> structure pointed to
 by <code>pStdPictureInfo</code> are used to select the active parameter sets to use
+from the specified <a href="#decode-h264-inline-parameter-sets">inline parameter sets</a> or
 from the bound video session parameters object, as follows:</p>
 <div class="ulist">
 <ul>
@@ -10040,6 +10347,15 @@ constructed from
 </div>
 </dd>
 </dl>
+</div>
+<div class="paragraph">
+<p>If the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and any of
+the active parameter sets are specified
+<a href="#decode-h264-inline-parameter-sets">inline</a>, then the corresponding inline
+parameter set is used.
+Otherwise, the parameter set in question is sourced from the bound video
+session parameters object.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -11319,6 +11635,95 @@ in the elements of <code>pStdPPSs</code> <strong>must</strong> be unique within 
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="decode-h265-inline-parameter-sets"><a class="anchor" href="#decode-h265-inline-parameter-sets"></a>Inline Parameter Sets</h4>
+<div class="paragraph">
+<p>In case of <a href="#video-session">video sessions</a> created with the video codec
+operation <code>VK_VIDEO_CODEC_OPERATION_DECODE_H265_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, the
+application <strong>can</strong> also specify the active parameter sets <em>inline</em> by
+including an instance of the
+<a href="#VkVideoDecodeH265InlineSessionParametersInfoKHR">VkVideoDecodeH265InlineSessionParametersInfoKHR</a> structure in the
+<code>pNext</code> chain of <a href="#VkVideoDecodeInfoKHR">VkVideoDecodeInfoKHR</a>.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkVideoDecodeH265InlineSessionParametersInfoKHR</code> structure is
+defined as:</p>
+</div>
+<div id="VkVideoDecodeH265InlineSessionParametersInfoKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_video_decode_h265 with VK_KHR_video_maintenance2
+typedef struct VkVideoDecodeH265InlineSessionParametersInfoKHR {
+    VkStructureType                            sType;
+    const void*                                pNext;
+    const StdVideoH265VideoParameterSet*       pStdVPS;
+    const StdVideoH265SequenceParameterSet*    pStdSPS;
+    const StdVideoH265PictureParameterSet*     pStdPPS;
+} VkVideoDecodeH265InlineSessionParametersInfoKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pStdVPS</code> is <code>NULL</code> or a pointer to an instance of the
+<code>StdVideoH265VideoParameterSet</code> structure describing the
+<a href="#decode-h265-active-vps">active H.265 VPS</a>.</p>
+</li>
+<li>
+<p><code>pStdSPS</code> is <code>NULL</code> or a pointer to an instance of the
+<code>StdVideoH265SequenceParameterSet</code> structure describing the
+<a href="#decode-h265-active-sps">active H.265 SPS</a>.</p>
+</li>
+<li>
+<p><code>pStdPPS</code> is <code>NULL</code> or a pointer to an instance of the
+<code>StdVideoH265PictureParameterSet</code> structure describing the
+<a href="#decode-h265-active-pps">active H.265 PPS</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pStdVPS</code>, <code>pStdSPS</code>, or <code>pStdPPS</code> is not <code>NULL</code>, the issued
+video decode operations will use the parameter sets specified by them,
+respectively, instead of the corresponding active parameter sets being
+sourced from the bound video session parameters object.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-sType-sType" href="#VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-sType-sType"></a> <span class="vuid">VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_VIDEO_DECODE_H265_INLINE_SESSION_PARAMETERS_INFO_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdVPS-parameter" href="#VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdVPS-parameter"></a> <span class="vuid">VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdVPS-parameter</span><br>
+ If <code>pStdVPS</code> is not <code>NULL</code>, <code>pStdVPS</code> <strong>must</strong> be a valid pointer to a valid <code>StdVideoH265VideoParameterSet</code> value</p>
+</li>
+<li>
+<p><a id="VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdSPS-parameter" href="#VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdSPS-parameter"></a> <span class="vuid">VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdSPS-parameter</span><br>
+ If <code>pStdSPS</code> is not <code>NULL</code>, <code>pStdSPS</code> <strong>must</strong> be a valid pointer to a valid <code>StdVideoH265SequenceParameterSet</code> value</p>
+</li>
+<li>
+<p><a id="VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdPPS-parameter" href="#VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdPPS-parameter"></a> <span class="vuid">VUID-VkVideoDecodeH265InlineSessionParametersInfoKHR-pStdPPS-parameter</span><br>
+ If <code>pStdPPS</code> is not <code>NULL</code>, <code>pStdPPS</code> <strong>must</strong> be a valid pointer to a valid <code>StdVideoH265PictureParameterSet</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_h_265_decoding_parameters"><a class="anchor" href="#_h_265_decoding_parameters"></a>H.265 Decoding Parameters</h3>
@@ -11472,6 +11877,7 @@ specified, then the corresponding picture reference associated with the
 <dd>
 <p>The members of the <code>StdVideoDecodeH265PictureInfo</code> structure pointed to
 by <code>pStdPictureInfo</code> are used to select the active parameter sets to use
+from the specified <a href="#decode-h265-inline-parameter-sets">inline parameter sets</a> or
 from the bound video session parameters object, as follows:</p>
 <div class="ulist">
 <ul>
@@ -11499,6 +11905,15 @@ constructed from
 </div>
 </dd>
 </dl>
+</div>
+<div class="paragraph">
+<p>If the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and any of
+the active parameter sets are specified
+<a href="#decode-h265-inline-parameter-sets">inline</a>, then the corresponding inline
+parameter set is used.
+Otherwise, the parameter set in question is sourced from the bound video
+session parameters object.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -12314,6 +12729,74 @@ it.</p>
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="decode-av1-inline-parameter-sets"><a class="anchor" href="#decode-av1-inline-parameter-sets"></a>Inline Parameter Sets</h4>
+<div class="paragraph">
+<p>In case of <a href="#video-session">video sessions</a> created with the video codec
+operation <code>VK_VIDEO_CODEC_OPERATION_DECODE_AV1_BIT_KHR</code> and with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, the
+application <strong>can</strong> also specify the active <a href="#decode-av1-sequence-header">sequence header</a> <em>inline</em> by including an instance of the
+<a href="#VkVideoDecodeAV1InlineSessionParametersInfoKHR">VkVideoDecodeAV1InlineSessionParametersInfoKHR</a> structure in the
+<code>pNext</code> chain of <a href="#VkVideoDecodeInfoKHR">VkVideoDecodeInfoKHR</a>.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkVideoDecodeAV1InlineSessionParametersInfoKHR</code> structure is
+defined as:</p>
+</div>
+<div id="VkVideoDecodeAV1InlineSessionParametersInfoKHR" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_video_decode_av1 with VK_KHR_video_maintenance2
+typedef struct VkVideoDecodeAV1InlineSessionParametersInfoKHR {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    const StdVideoAV1SequenceHeader*    pStdSequenceHeader;
+} VkVideoDecodeAV1InlineSessionParametersInfoKHR;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>pStdSequenceHeader</code> is <code>NULL</code> or a pointer to an instance of the
+<code>StdVideoAV1SequenceHeader</code> structure describing the
+<a href="#decode-av1-active-sequence-header">active AV1 sequence header</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pStdSequenceHeader</code> is not <code>NULL</code>, the issued video decode
+operations will use the specified sequence header parameters instead of the
+active sequence header being sourced from the bound video session parameters
+object.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkVideoDecodeAV1InlineSessionParametersInfoKHR-sType-sType" href="#VUID-VkVideoDecodeAV1InlineSessionParametersInfoKHR-sType-sType"></a> <span class="vuid">VUID-VkVideoDecodeAV1InlineSessionParametersInfoKHR-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_VIDEO_DECODE_AV1_INLINE_SESSION_PARAMETERS_INFO_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkVideoDecodeAV1InlineSessionParametersInfoKHR-pStdSequenceHeader-parameter" href="#VUID-VkVideoDecodeAV1InlineSessionParametersInfoKHR-pStdSequenceHeader-parameter"></a> <span class="vuid">VUID-VkVideoDecodeAV1InlineSessionParametersInfoKHR-pStdSequenceHeader-parameter</span><br>
+ If <code>pStdSequenceHeader</code> is not <code>NULL</code>, <code>pStdSequenceHeader</code> <strong>must</strong> be a valid pointer to a valid <code>StdVideoAV1SequenceHeader</code> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_av1_decoding_parameters"><a class="anchor" href="#_av1_decoding_parameters"></a>AV1 Decoding Parameters</h3>
@@ -12654,7 +13137,12 @@ then the corresponding picture reference associated with the <a href="#dpb-slot"
 <dl>
 <dt class="hdlist1">Active Parameter Sets</dt>
 <dd>
-<p>The <em>active sequence header</em> is the <a href="#decode-av1-sequence-header">AV1 sequence header</a> stored in the bound video session parameters object.</p>
+<p>The <em>active sequence header</em> is the <a href="#decode-av1-sequence-header">AV1 sequence header</a> stored in the bound video session parameters object
+, unless the bound video session was created with
+<code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> and the
+active sequence header is specified
+<a href="#decode-av1-inline-parameter-sets">inline</a>.
+.</p>
 </dd>
 </dl>
 </div>
@@ -14757,10 +15245,9 @@ The bound video session <strong>must</strong> not be in <a href="#video-session-
 <li>
 <p><a id="VUID-vkCmdEncodeVideoKHR-None-08318" href="#VUID-vkCmdEncodeVideoKHR-None-08318"></a> <span class="vuid">VUID-vkCmdEncodeVideoKHR-None-08318</span><br>
 
-The bound video session parameters object <strong>must</strong> have been created with
-the currently set <a href="#encode-quality-level">video encode quality level</a>
-for the bound video session at the time the command is executed on the
-device</p>
+If there is a bound video session parameters object, then it <strong>must</strong> have
+been created with the currently set <a href="#encode-quality-level">video encode    quality level</a> for the bound video session at the time the command is
+executed on the device</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdEncodeVideoKHR-opCount-07174" href="#VUID-vkCmdEncodeVideoKHR-opCount-07174"></a> <span class="vuid">VUID-vkCmdEncodeVideoKHR-opCount-07174</span><br>
@@ -18049,6 +18536,104 @@ encode parameters:</p>
 </ul>
 </div>
 <div class="paragraph">
+<p>If the <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> feature is
+enabled, implementations <strong>must</strong> not override any of the following H.264
+encode parameters:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the following parameters specified in
+<code>StdVideoH264SequenceParameterSet</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>flags.vui_parameters_present_flag</code></p>
+</li>
+<li>
+<p><code>profile_idc</code></p>
+</li>
+<li>
+<p><code>level_idc</code></p>
+</li>
+<li>
+<p><code>chroma_format_idc</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>the following parameters specified in the
+<code>StdVideoH264SequenceParameterSetVui</code> structure pointed to by
+<code>StdVideoH264SequenceParameterSet</code>::<code>pSequenceParameterSetVui</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>flags.aspect_ratio_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.overscan_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.overscan_appropriate_flag</code></p>
+</li>
+<li>
+<p><code>flags.video_signal_type_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.video_full_range_flag</code></p>
+</li>
+<li>
+<p><code>flags.color_description_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.chroma_loc_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.timing_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.fixed_frame_rate_flag</code></p>
+</li>
+<li>
+<p><code>aspect_ratio_idc</code></p>
+</li>
+<li>
+<p><code>sar_width</code></p>
+</li>
+<li>
+<p><code>sar_height</code></p>
+</li>
+<li>
+<p><code>video_format</code></p>
+</li>
+<li>
+<p><code>colour_primaries</code></p>
+</li>
+<li>
+<p><code>transfer_characteristics</code></p>
+</li>
+<li>
+<p><code>matrix_coefficients</code></p>
+</li>
+<li>
+<p><code>num_units_in_tick</code></p>
+</li>
+<li>
+<p><code>time_scale</code></p>
+</li>
+<li>
+<p><code>chroma_sample_loc_type_top_field</code></p>
+</li>
+<li>
+<p><code>chroma_sample_loc_type_bottom_field</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
 <p>In case of H.264 encode parameters stored in
 <a href="#encode-h264-parameter-sets">video session parameters</a> objects,
 applications need to use the <a href="#vkGetEncodedVideoSessionParametersKHR">vkGetEncodedVideoSessionParametersKHR</a>
@@ -21146,7 +21731,7 @@ returned by <a href="devsandqueues.html#vkGetPhysicalDeviceQueueFamilyProperties
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>rateControlModes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> <sup>4</sup></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
 </tr>
 <tr>
@@ -21292,6 +21877,11 @@ set, but they <strong>may</strong> have additional bits set beyond this minimum.
 <code>VK_VIDEO_ENCODE_CAPABILITY_QUANTIZATION_DELTA_MAP_BIT_KHR</code>, then
 <code>maxQpDelta</code> <strong>must</strong> be greater than <code>minQpDelta</code>.</p>
 </dd>
+<dt class="hdlist1">4</dt>
+<dd>
+<p>If the <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> feature is
+supported.</p>
+</dd>
 </dl>
 </div>
 </div>
@@ -21431,6 +22021,150 @@ encode parameters:</p>
 </li>
 <li>
 <p><code>StdVideoEncodeH265SliceSegmentHeader</code>::<code>slice_type</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> feature is
+enabled, implementations <strong>must</strong> not override any of the following H.265
+encode parameters:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>the following parameters specified in the
+<code>StdVideoH265ProfileTierLevel</code> structure pointed to by
+<code>StdVideoH265VideoParameterSet</code>::<code>pProfileTierLevel</code> and
+<code>StdVideoH265SequenceParameterSet</code>::<code>pProfileTierLevel</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>flags.general_tier_flag</code></p>
+</li>
+<li>
+<p><code>flags.general_progressive_source_flag</code>, if set to <code>1</code></p>
+</li>
+<li>
+<p><code>flags.general_interlaced_source_flag</code>, if set to <code>0</code></p>
+</li>
+<li>
+<p><code>flags.general_frame_only_constraint_flag</code></p>
+</li>
+<li>
+<p><code>general_profile_idc</code></p>
+</li>
+<li>
+<p><code>general_level_idc</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>the following parameters specified in
+<code>StdVideoH265SequenceParameterSet</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>chroma_format_idc</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>the following parameters specified in the
+<code>StdVideoH265SequenceParameterSetVui</code> structure pointed to by
+<code>StdVideoH265SequenceParameterSet</code>::<code>pSequenceParameterSetVui</code>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>flags.aspect_ratio_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.overscan_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.overscan_appropriate_flag</code></p>
+</li>
+<li>
+<p><code>flags.video_signal_type_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.video_full_range_flag</code></p>
+</li>
+<li>
+<p><code>flags.colour_description_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.chroma_loc_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.neutral_chroma_indication_flag</code></p>
+</li>
+<li>
+<p><code>flags.field_seq_flag</code></p>
+</li>
+<li>
+<p><code>flags.frame_field_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.default_display_window_flag</code></p>
+</li>
+<li>
+<p><code>flags.vui_timing_info_present_flag</code></p>
+</li>
+<li>
+<p><code>flags.vui_poc_proportional_to_timing_flag</code></p>
+</li>
+<li>
+<p><code>aspect_ratio_idc</code></p>
+</li>
+<li>
+<p><code>sar_width</code></p>
+</li>
+<li>
+<p><code>sar_height</code></p>
+</li>
+<li>
+<p><code>video_format</code></p>
+</li>
+<li>
+<p><code>colour_primaries</code></p>
+</li>
+<li>
+<p><code>transfer_characteristics</code></p>
+</li>
+<li>
+<p><code>matrix_coeffs</code></p>
+</li>
+<li>
+<p><code>chroma_sample_loc_type_top_field</code></p>
+</li>
+<li>
+<p><code>chroma_sample_loc_type_bottom_field</code></p>
+</li>
+<li>
+<p><code>def_disp_win_left_offset</code></p>
+</li>
+<li>
+<p><code>def_disp_win_right_offset</code></p>
+</li>
+<li>
+<p><code>def_disp_win_top_offset</code></p>
+</li>
+<li>
+<p><code>def_disp_win_bottom_offset</code></p>
+</li>
+<li>
+<p><code>vui_num_units_in_tick</code></p>
+</li>
+<li>
+<p><code>vui_time_scale</code></p>
+</li>
+<li>
+<p><code>vui_num_ticks_poc_diff_one_minus1</code></p>
+</li>
+</ul>
+</div>
 </li>
 </ul>
 </div>
@@ -25059,7 +25793,7 @@ returned by <a href="devsandqueues.html#vkGetPhysicalDeviceQueueFamilyProperties
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>rateControlModes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> <sup>4</sup></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
 </tr>
 <tr>
@@ -25219,6 +25953,11 @@ set, but they <strong>may</strong> have additional bits set beyond this minimum.
 <p>If <a href="#VkVideoCapabilitiesKHR">VkVideoCapabilitiesKHR</a>::<code>flags</code> includes
 <code>VK_VIDEO_ENCODE_CAPABILITY_QUANTIZATION_DELTA_MAP_BIT_KHR</code>, then
 <code>maxQpDelta</code> <strong>must</strong> be greater than <code>minQpDelta</code>.</p>
+</dd>
+<dt class="hdlist1">4</dt>
+<dd>
+<p>If the <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> feature is
+supported.</p>
 </dd>
 </dl>
 </div>
@@ -28643,7 +29382,7 @@ operation <code>VK_VIDEO_CODEC_OPERATION_ENCODE_AV1_BIT_KHR</code>, as returned 
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>rateControlModes</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> <sup>8</sup></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
 </tr>
 <tr>
@@ -28867,6 +29606,11 @@ or equal to <code>maxBidirectionalCompoundReferenceCount</code></p>
 <p>If <a href="#VkVideoCapabilitiesKHR">VkVideoCapabilitiesKHR</a>::<code>flags</code> includes
 <code>VK_VIDEO_ENCODE_CAPABILITY_QUANTIZATION_DELTA_MAP_BIT_KHR</code>, then
 <code>maxQIndexDelta</code> <strong>must</strong> be greater than <code>minQIndexDelta</code>.</p>
+</dd>
+<dt class="hdlist1">8</dt>
+<dd>
+<p>If the <a href="features.html#features-videoMaintenance2" class="xref page"><code>videoMaintenance2</code></a> feature is
+supported.</p>
 </dd>
 </dl>
 </div>

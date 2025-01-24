@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>VK_EXT_shader_replicated_composites :: Vulkan Documentation Project</title>
+    <title>VK_EXT_external_memory_metal :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.10">
     <script>
       !function (theme) {
@@ -189,7 +189,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_external_memory_acquire_unmodified.html">VK_EXT_external_memory_acquire_unmodified</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -261,7 +261,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -485,7 +485,7 @@
   <ul>
     <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
     <li>Feature Descriptions</li>
-    <li><a href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a></li>
+    <li><a href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a></li>
   </ul>
 </nav>
 </div>
@@ -494,27 +494,24 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">VK_EXT_shader_replicated_composites</h1>
+<h1 class="page">VK_EXT_external_memory_metal</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_problem_statement">1. Problem Statement</a></li>
-<li><a href="#_solution_space">2. Solution Space</a></li>
-<li><a href="#_proposal">3. Proposal</a>
+<li><a href="#_proposal">2. Proposal</a></li>
+<li><a href="#_examples">3. Examples</a>
 <ul class="sectlevel2">
-<li><a href="#_spir_v">3.1. SPIR-V</a></li>
-<li><a href="#_vulkan_api">3.2. Vulkan API</a></li>
+<li><a href="#_importing_a_metal_texture_from_a_idmtltexture">3.1. Importing a Metal texture from a id&lt;MTLTexture&gt;</a></li>
 </ul>
 </li>
-<li><a href="#_examples">4. Examples</a></li>
-<li><a href="#_issues">5. Issues</a></li>
+<li><a href="#_issues">4. Issues</a></li>
 </ul>
 </div>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This document proposes adding support for new SPIR-V instructions to construct
-composites with a replicated value.</p>
+<p>This extension allows memory sharing through imports from or export to Metal resource handles.</p>
 </div>
 </div>
 </div>
@@ -522,148 +519,135 @@ composites with a replicated value.</p>
 <h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Several recent or in-development extensions require a way of constructing SPIR-V
-composite values whose top-level constituents all have the same value. Doing
-so with current SPIR-V requires the desired value to be repeated once for each
-constituent of the composite value. This is undesirable from a succinctness
-and code size point of view. As a result extensions have been modifying
-existing core SPIR-V instructions. For example, <code>SPV_KHR_cooperative_matrix</code>
-modifies the behavior of the core <strong>OpConstantComposite</strong> instruction
-for cooperative matrix types. Other extensions in development face the same
-issue and will likely adopt a similar solution if SPIR-V does not introduce
-standard support for this in time.</p>
+<p>An application may wish to reference device memory in multiple Vulkan device instances, in multiple processes, and/or in Metal API.
+This extension enables an application to export non-Vulkan handles from Vulkan memory objects such that the underlying resources can
+be referenced outside the scope of the Vulkan device instance that created them.</p>
 </div>
 <div class="paragraph">
-<p>These modifications go against some of the key design principles for SPIR-V:
-that instructions should not behave differently depending on the types
-they operate on.</p>
+<p>@@<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_external_memory">VK_KHR_external_memory</a>.</p>
 </div>
 <div class="paragraph">
-<p>Furthermore, there are scenarios in which the number of constituents of a
-composite is not known at SPIR-V module production time (e.g. an array
-whose <em>Length</em> is a specialization constant) and providing a value for
-each of the constituents is not only undesirable in that case but
-simply impossible.</p>
+<p>While <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_metal_objects.html">VK_EXT_metal_objects</a> provides a way to expose underlying Metal resources,
+when importing an image from an <code>id&lt;MTLTexture&gt;</code> handle, said images and their backing memory will be imported at
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImage">VkImage</a> creation.
+According to point <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#resources-association">12.8 Memory Resource Association</a>
+resources are created as <em>virtual allocations</em> with no backing memory. This leads to having to treat imported images through
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_metal_objects.html">VK_EXT_metal_objects</a> differently.</p>
 </div>
 <div class="paragraph">
-<p>Lastly, high-level languages often allow the initialization of composite
-objects from a replicated value. Compilers currently have to duplicate
-those initialisers when generating SPIR-V modules.</p>
+<p>This extension aims to import both resources through <a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#VkDeviceMemory">VkDeviceMemory</a>
+so that later can be bound to a existing
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImage">VkImage</a> or
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkBuffer">VkBuffer</a> respectively.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>2. Proposal</h2>
 <div class="sectionbody">
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Do nothing. Some extensions can modify the behavior of core SPIR-V, in a way
-that is undesirable, or accept the code size issues. Some patterns are not
-expressible.</p>
-</li>
-<li>
-<p>Provide new SPIR-V instructions to create composites with a replicated value.
-This is the proposed solution.</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_spir_v"><a class="anchor" href="#_spir_v"></a>3.1. SPIR-V</h3>
 <div class="paragraph">
-<p>Add three new instructions to SPIR-V that enable creating composite values
-from a replicated value:</p>
+<p>This extension aims to standardize memory imports and exports of Vulkan resources using
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_external_memory.html">VK_KHR_external_memory</a> as baseline to conform to what other platforms have done with
+extensions like <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_external_memory_win32.html">VK_KHR_external_memory_win32</a> and
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_ANDROID_external_memory_android_hardware_buffer.html">VK_ANDROID_external_memory_android_hardware_buffer</a> to name a few.</p>
+</div>
+<div class="paragraph">
+<p>This means that external Metal resources will be imported through <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VkDeviceMemory.html">VkDeviceMemory</a> to later be bound.</p>
+</div>
+<div class="paragraph">
+<p>3 new bit values will be added to <a href="https://docs.vulkan.org/spec/latest/chapters/capabilities.html#VkExternalMemoryHandleTypeFlagBits.html">VkExternalMemoryHandleTypeFlagBits</a>:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>OpConstantCompositeReplicateEXT</strong> can be used to declare a new composite
-constant whose constituents all have the same value.</p>
+<p><code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_MTLBUFFER_BIT_EXT</code> to accommodate for Metal buffers (MTLBuffer)</p>
 </li>
 <li>
-<p><strong>OpSpecConstantCompositeReplicateEXT</strong> can be used to declare a new composite
-specialization constant whose constituents all have the same value.</p>
+<p><code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_MTLTEXTURE_BIT_EXT</code> to accommodate for Metal textures (MTLTexture)</p>
 </li>
 <li>
-<p><strong>OpCompositeConstructReplicateEXT</strong> can be used to construct a new composite
-object whose constituents all have the same value.</p>
+<p><code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_MTLHEAP_BIT_EXT</code> to accommodate for Metal heaps (MTLHeap)</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>A new <strong>ReplicatedCompositesEXT</strong> capability enables the three new instructions.</p>
+<p>Due to MTLTexture&#8217;s semantics in Metal API roughly align with that of an image with a dedicated allocation in Vulkan,
+implementations will be required to report <code>VK_EXTERNAL_MEMORY_FEATURE_DEDICATED_ONLY_BIT</code> for
+<code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_MTLTEXTURE_BIT_EXT</code>. When importing a MTLTexture through the creation of a
+<a href="https://docs.vulkan.org/spec/latest/chapters/memory.html#VkDeviceMemory">VkDeviceMemory</a>, the
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImage">VkImage</a>
+<a href="https://docs.vulkan.org/spec/latest/chapters/resources.html#VkImage">VkImage</a> it will be bound to must have the same
+creation parameters as the MTLTexture used at import.</p>
 </div>
 </div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>3. Examples</h2>
+<div class="sectionbody">
 <div class="sect2">
-<h3 id="_vulkan_api"><a class="anchor" href="#_vulkan_api"></a>3.2. Vulkan API</h3>
-<div class="paragraph">
-<p>Add a <code>VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT</code> structure that comprises
-a single <code>shaderReplicatedComposites</code> feature that specifies whether the <strong>ReplicatedCompositesEXT</strong>
-capability can be used in shader modules:</p>
-</div>
+<h3 id="_importing_a_metal_texture_from_a_idmtltexture"><a class="anchor" href="#_importing_a_metal_texture_from_a_idmtltexture"></a>3.1. Importing a Metal texture from a id&lt;MTLTexture&gt;</h3>
 <div class="listingblock">
 <div class="content">
-<pre>typedef struct VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT {
-    VkStructureType sType;
-    void*           pNext;
-    VkBool32        shaderReplicatedComposites;
-} VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT;</pre>
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">void *metalTexture = /* Initialized to id&lt;MTLTexture&gt; */;
+VkMemoryMetalHandlePropertiesEXT handleProperties;
+VkResult result = vkGetMemoryMetalHandlePropertiesEXT(
+    device,
+    VK_EXTERNAL_MEMORY_HANDLE_TYPE_MTLTEXTURE_BIT_EXT,
+    metalTexture,
+    &amp;handleProperties);
+
+VkImageCreateInfo imageCreateInfo = {
+    // This image creation parameters should match MTLTexture's, or the exported VkImage's
+};
+VkImage image;
+result = vkCreateImage(
+    device,
+    &amp;imageCreateInfo,
+    NULL,               // pAllocator
+    &amp;image);
+
+// Import image memory
+VkImportMemoryMetalHandleInfoEXT importInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMPORT_MEMORY_METAL_HANDLE_INFO_EXT,
+    .pNext = NULL,
+    .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_MTLTEXTURE_BIT_EXT,
+    .handle = metalTexture
+};
+VkMemoryDedicatedAllocateInfoKHR dedicatedInfo = {
+    .sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR,
+    .pNext = &amp;importInfo,
+    .image = image,
+    .buffer = VK_NULL_HANDLE,
+};
+VkMemoryAllocateInfo allocateInfo = {
+    .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+    .pNext = &amp;dedicatedInfo,
+    .allocationSize = 0, // Ignored. The allocation will have the size of the Metal object
+    .memoryTypeIndex = /* Select preferred memory type from handleProperties.memoryTypeBits */
+};
+// If the Metal object cannot be used for the VkImage we created, implementations will return VK_ERROR_INVALID_EXTERNAL_HANDLE
+VkDeviceMemory memory;
+result = vkAllocateMemory(
+    device,
+    &amp;allocateInfo,
+    NULL,
+    &amp;memory);
+
+if (result == VK_SUCCESS) {
+    // Bind memory to image
+} else {
+    // Handle failure
+}</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Declare a constant vector of 4 integers with the value 42:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>%uint = OpTypeInt 32 0
-%uint_42 = OpConstant %uint 42
-%vector = OpTypeVector %uint 4
-%vector_of_42 = OpConstantCompositeReplicateEXT %vector %uint_42</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Construct a structure object whose all constituents have the value 1:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>%uint = OpTypeInt 32 0
-%uint_1 = OpConstant %uint 1
-%struct = OpTypeStruct %uint %uint %uint
-%struct_all_ones = OpCompositeConstructReplicateEXT %struct %uint_1</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Declare an array constant whose length is a specicialisation constant
-and all elements have the value 15:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>%uint = OpTypeInt 32 0
-%uint_1 = OpConstant %uint 1
-%uint_15 = OpConstant %uint 15
-%length = OpSpecConstant %uint %uint_1
-%array = OpTypeArray %uint %length
-%array_of_15 = OpSpecConstantCompositeReplicateEXT %array %uint_15</pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>None.</p>
+<p>None identified.</p>
 </div>
 </div>
 </div>

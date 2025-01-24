@@ -465,7 +465,7 @@ const std::vector&lt;const char*&gt; validationLayers = {
 <div class="paragraph">
 <p>We&#8217;ll add a new function <code>checkValidationLayerSupport</code> that checks if all of the requested layers are available.
 First list all of the available layers using the <code>vkEnumerateInstanceLayerProperties</code> function.
-Its usage is identical to that of <code>vkEnumerateInstanceExtensionProperties</code> which was discussed in the instance creation chapter.</p>
+Its usage is identical to that of <code>vkEnumerateInstanceExtensionProperties</code> which was discussed in the instance creation chapter. Next, check if all of the layers in <code>validationLayers</code> exist in the <code>availableLayers</code> list. You may need to include <code>&lt;cstring&gt;</code> for <code>strcmp</code>.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -476,32 +476,23 @@ Its usage is identical to that of <code>vkEnumerateInstanceExtensionProperties</
     std::vector&lt;VkLayerProperties&gt; availableLayers(layerCount);
     vkEnumerateInstanceLayerProperties(&amp;layerCount, availableLayers.data());
 
-    return false;
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Next, check if all of the layers in <code>validationLayers</code> exist in the <code>availableLayers</code> list.
-You may need to include <code>&lt;cstring&gt;</code> for <code>strcmp</code>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (const char* layerName : validationLayers) {
-    bool layerFound = false;
+    for (const char* layerName : validationLayers) {
+        bool layerFound = false;
 
-    for (const auto&amp; layerProperties : availableLayers) {
-        if (strcmp(layerName, layerProperties.layerName) == 0) {
-            layerFound = true;
-            break;
+        for (const auto&amp; layerProperties : availableLayers) {
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
+        }
+
+        if (!layerFound) {
+            return false;
         }
     }
 
-    if (!layerFound) {
-        return false;
-    }
-}
-
-return true;</code></pre>
+    return true;
+}</code></pre>
 </div>
 </div>
 <div class="paragraph">

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>VK_EXT_shader_replicated_composites :: Vulkan Documentation Project</title>
+    <title>VK_KHR_video_maintenance2 :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.10">
     <script>
       !function (theme) {
@@ -261,7 +261,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_shader_object.html">VK_EXT_shader_object</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -381,7 +381,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_video_maintenance1.html">VK_KHR_video_maintenance1</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -485,7 +485,7 @@
   <ul>
     <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
     <li>Feature Descriptions</li>
-    <li><a href="VK_EXT_shader_replicated_composites.html">VK_EXT_shader_replicated_composites</a></li>
+    <li><a href="VK_KHR_video_maintenance2.html">VK_KHR_video_maintenance2</a></li>
   </ul>
 </nav>
 </div>
@@ -494,27 +494,39 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">VK_EXT_shader_replicated_composites</h1>
+<h1 class="page">VK_KHR_video_maintenance2</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_problem_statement">1. Problem Statement</a></li>
-<li><a href="#_solution_space">2. Solution Space</a></li>
-<li><a href="#_proposal">3. Proposal</a>
+<li><a href="#_proposal">2. Proposal</a>
 <ul class="sectlevel2">
-<li><a href="#_spir_v">3.1. SPIR-V</a></li>
-<li><a href="#_vulkan_api">3.2. Vulkan API</a></li>
+<li><a href="#_new_features">2.1. New features</a></li>
+<li><a href="#_relaxed_requirements_on_video_session_parameters_objects">2.2. Relaxed requirements on video session parameters objects</a></li>
+<li><a href="#_inline_video_session_parameters">2.3. Inline video session parameters</a></li>
 </ul>
 </li>
-<li><a href="#_examples">4. Examples</a></li>
-<li><a href="#_issues">5. Issues</a></li>
+<li><a href="#_examples">3. Examples</a>
+<ul class="sectlevel2">
+<li><a href="#_reset_a_video_decode_session_that_uses_video_session_parameters_objects_without_binding_one">3.1. Reset a video decode session that uses video session parameters objects without binding one</a></li>
+<li><a href="#_decode_h_264_frame_with_inline_pps">3.2. Decode H.264 frame with inline PPS</a></li>
+</ul>
+</li>
+<li><a href="#_issues">4. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_resolved_do_we_want_to_relax_the_requirements_for_a_bound_video_session_parameters_object_for_video_encode_sessions">4.1. RESOLVED: Do we want to relax the requirements for a bound video session parameters object for video encode sessions?</a></li>
+<li><a href="#_resolved_do_we_want_to_support_inline_video_session_parameters_in_video_encode_sessions">4.2. RESOLVED: Do we want to support inline video session parameters in video encode sessions?</a></li>
+<li><a href="#_resolved_which_codec_specific_parameter_set_is_used_if_a_matching_one_is_available_in_the_bound_video_session_parameters_object_but_the_application_also_specifies_one_using_the_new_inline_parameter_specification_apis">4.3. RESOLVED: Which codec-specific parameter set is used if a matching one is available in the bound video session parameters object but the application also specifies one using the new inline parameter specification APIs?</a></li>
+<li><a href="#_resolved_should_we_require_vk_video_encode_rate_control_mode_disabled_bit_khr_for_all_video_encode_profiles">4.4. RESOLVED: Should we require <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> for all video encode profiles?</a></li>
+</ul>
+</li>
+<li><a href="#_further_functionality">5. Further Functionality</a></li>
 </ul>
 </div>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This document proposes adding support for new SPIR-V instructions to construct
-composites with a replicated value.</p>
+<p>This proposal details and addresses the issues solved by the <code>VK_KHR_video_maintenance2</code> extension.</p>
 </div>
 </div>
 </div>
@@ -522,145 +534,269 @@ composites with a replicated value.</p>
 <h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Several recent or in-development extensions require a way of constructing SPIR-V
-composite values whose top-level constituents all have the same value. Doing
-so with current SPIR-V requires the desired value to be repeated once for each
-constituent of the composite value. This is undesirable from a succinctness
-and code size point of view. As a result extensions have been modifying
-existing core SPIR-V instructions. For example, <code>SPV_KHR_cooperative_matrix</code>
-modifies the behavior of the core <strong>OpConstantComposite</strong> instruction
-for cooperative matrix types. Other extensions in development face the same
-issue and will likely adopt a similar solution if SPIR-V does not introduce
-standard support for this in time.</p>
+<p>Over time, a collection of minor features, none of which would warrant an entire extension of their own, requires the creation of a maintenance extension specific to video related functionalities in Vulkan.</p>
 </div>
 <div class="paragraph">
-<p>These modifications go against some of the key design principles for SPIR-V:
-that instructions should not behave differently depending on the types
-they operate on.</p>
-</div>
-<div class="paragraph">
-<p>Furthermore, there are scenarios in which the number of constituents of a
-composite is not known at SPIR-V module production time (e.g. an array
-whose <em>Length</em> is a specialization constant) and providing a value for
-each of the constituents is not only undesirable in that case but
-simply impossible.</p>
-</div>
-<div class="paragraph">
-<p>Lastly, high-level languages often allow the initialization of composite
-objects from a replicated value. Compilers currently have to duplicate
-those initialisers when generating SPIR-V modules.</p>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
-<div class="sectionbody">
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Do nothing. Some extensions can modify the behavior of core SPIR-V, in a way
-that is undesirable, or accept the code size issues. Some patterns are not
-expressible.</p>
-</li>
-<li>
-<p>Provide new SPIR-V instructions to create composites with a replicated value.
-This is the proposed solution.</p>
-</li>
-</ol>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
-<div class="sectionbody">
-<div class="sect2">
-<h3 id="_spir_v"><a class="anchor" href="#_spir_v"></a>3.1. SPIR-V</h3>
-<div class="paragraph">
-<p>Add three new instructions to SPIR-V that enable creating composite values
-from a replicated value:</p>
+<p>The following is a list of issues considered in this proposal:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>OpConstantCompositeReplicateEXT</strong> can be used to declare a new composite
-constant whose constituents all have the same value.</p>
+<p>Relax the requirement of having to specify a video session parameters object when calling <code>vkCmdBeginVideoCodingKHR</code> with a video decode session</p>
 </li>
 <li>
-<p><strong>OpSpecConstantCompositeReplicateEXT</strong> can be used to declare a new composite
-specialization constant whose constituents all have the same value.</p>
+<p>Allow applications to specify codec-specific parameter sets inline for each decode operation instead of having to construct video session parameters objects (this may simplify the workflow for decoder applications when the parameter sets show low chance of reuse or are received each frame at the potential cost of redundant parameter parsing by the implementation)</p>
 </li>
 <li>
-<p><strong>OpCompositeConstructReplicateEXT</strong> can be used to construct a new composite
-object whose constituents all have the same value.</p>
+<p>Require support for <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> in all applicable video encode profiles</p>
+</li>
+<li>
+<p>Provide additional guarantees on Video Std parameters that the encoder implementation will not override</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_proposal"><a class="anchor" href="#_proposal"></a>2. Proposal</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_new_features"><a class="anchor" href="#_new_features"></a>2.1. New features</h3>
+<div class="paragraph">
+<p>The following features are exposed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceVideoMaintenance2FeaturesKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           videoMaintenance2;
+} VkPhysicalDeviceVideoMaintenance2FeaturesKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where the <code>videoMaintenance2</code> feature indicates support for all the individual sub-features defined in this proposal.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_relaxed_requirements_on_video_session_parameters_objects"><a class="anchor" href="#_relaxed_requirements_on_video_session_parameters_objects"></a>2.2. Relaxed requirements on video session parameters objects</h3>
+<div class="paragraph">
+<p>Before this proposal, the application is required to specify a video session parameters object to bind when beginning a video coding scope with the <code>vkCmdBeginVideoCodingKHR</code> command in case the used video codec operation has codec-specific parameter sets that are sourced from these objects. This is unnecessarily restrictive, particularly when considering the new inline video session parameter specification support introduced in this extension.</p>
+</div>
+<div class="paragraph">
+<p>Accordingly, this proposal relaxes the need for specifying a video session parameters object when calling the <code>vkCmdBeginVideoCodingKHR</code> command with a video decode session. This also enables application to record video session reset operations without the need to have to construct a placeholder video session parameters object that would not otherwise be necessary. This proposal does that by moving the valid usage requirements related to the need for a bound video session parameters object from the <code>vkCmdBeginVideoCodingKHR</code> command to the <code>vkCmdDecodeVideoKHR</code> command when the new <code>videoMaintenance2</code> feature is enabled. Those valid usage requirements are then further relaxed when all codec-specific parameter sets are specified inline, when applicable, as described later.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_inline_video_session_parameters"><a class="anchor" href="#_inline_video_session_parameters"></a>2.3. Inline video session parameters</h3>
+<div class="paragraph">
+<p>There are certain cases where having to record codec-specific parameter sets into video session parameters objects is unnecessary overhead/complexity for application developers. In particular, having a way to specify these codec-specific parameter sets inline to the actual video coding operations thus may be preferred in one of the following scenarios:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>When the codec-specific parameter set is not expected to be reused across multiple video coding commands</p>
+</li>
+<li>
+<p>When the codec-specific parameter sets change at a very high frequency that their reuse across multiple video coding commands is unlikely</p>
+</li>
+<li>
+<p>For debugging purposes</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>A new <strong>ReplicatedCompositesEXT</strong> capability enables the three new instructions.</p>
+<p>This proposal suggests the addition of new APIs that enable the application to opt in to using inline video session parameters in these cases to eliminate frequent updates and the creation of video session parameters objects.</p>
+</div>
+<div class="paragraph">
+<p>In case of video encode sessions, however, video session parameters objects may also contain additional information beyond just the codec-specific parameter sets such as the used video encode quality level that may have an effect on parameter overrides. More importantly, in case of video encoding, the video session parameters objects are used to construct and encode the final codec-specific parameter sets to include in the bitstream so they are needed for purposes beyond just specifying the parameters as input to the actual picture encoding commands. Accordingly, this proposal only allows inline video session parameters for video decode sessions.</p>
+</div>
+<div class="paragraph">
+<p>The application can opt in to allow the use of inline video session parameters in video decode sessions using the new <code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code> video session creation flag. This new creation flag can only be used when the <code>videoMaintenance2</code> feature is enabled.</p>
+</div>
+<div class="paragraph">
+<p>When creating a video decode session with this new flag, the application can use one of the newly introduced codec-specific structures to specify the codec-specific parameter set(s) used by the video decode operations issued in response to a <code>vkCmdDecodeVideoKHR</code> command by including them in the <code>pNext</code> chain of the <code>pDecodeInfo</code> parameter of the command.</p>
+</div>
+<div class="paragraph">
+<p>The proposed API allows mixing and matching codec-specific parameter sets specified inline and sourced from video session parameters objects. This may be useful when the application would like to continue to source sequence level parameters (e.g. H.264 SPS) from video session parameters object but would like to specify other parameter sets inline (e.g. H.264 PPS).</p>
+</div>
+<div class="paragraph">
+<p>It is important to note that applications should still prefer to store and source all codec-specific parameter sets in/from video session parameters objects, as parsing the parameter sets inline can be expensive and cannot be amortized across multiple decode commands without the use of video session parameters objects.</p>
+</div>
+<div class="paragraph">
+<p>For H.264 decode sessions created with <code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, the following new structure can be included in the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR</code> to specify inline video session parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeH264InlineSessionParametersInfoKHR {
+    VkStructureType                         sType;
+    void*                                   pNext;
+    const StdVideoH264SequenceParameterSet* pStdSPS;
+    const StdVideoH264PictureParameterSet*  pStdPPS;
+} VkVideoDecodeH264InlineSessionParametersInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the <code>pStdSPS</code> and/or <code>pStdPPS</code> members are not <code>NULL</code>, the H.264 SPS and/or PPS, respectively, specified through the structures pointed to by them will be used by the video decode operations instead of those parameter sets being sourced from the bound video session parameters object. When both are non-<code>NULL</code>, a bound video session parameters object is not even required by the video decode command.</p>
+</div>
+<div class="paragraph">
+<p>For H.265 decode sessions created with <code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, the following new structure can be included in the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR</code> to specify inline video session parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeH265InlineSessionParametersInfoKHR {
+    VkStructureType                         sType;
+    void*                                   pNext;
+    const StdVideoH265VideoParameterSet*    pStdVPS;
+    const StdVideoH265SequenceParameterSet* pStdSPS;
+    const StdVideoH265PictureParameterSet*  pStdPPS;
+} VkVideoDecodeH265InlineSessionParametersInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the <code>pStdVPS</code>, <code>pStdSPS</code>, and/or <code>pStdPPS</code> members are not <code>NULL</code>, the H.265 VPS, SPS, and/or PPS, respectively, specified through the structures pointed to by them will be used by the video decode operations instead of those parameter sets being sourced from the bound video session parameters object. When all three are non-<code>NULL</code>, a bound video session parameters object is not even required by the video decode command.</p>
+</div>
+<div class="paragraph">
+<p>For AV1 decode sessions created with <code>VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR</code>, the following new structure can be included in the <code>pNext</code> chain of <code>VkVideoDecodeInfoKHR</code> to specify inline video session parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkVideoDecodeAV1InlineSessionParametersInfoKHR {
+    VkStructureType                         sType;
+    void*                                   pNext;
+    const StdVideoAV1SequenceHeader*        pStdSequenceHeader;
+} VkVideoDecodeAV1InlineSessionParametersInfoKHR;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When the <code>pStdSequenceHeader</code> member is not <code>NULL</code>, the AV1 sequence header specified through the structure pointed to by it will be used by the video decode operations instead of the AV1 sequence header being sourced from the bound video session parameters object. When <code>pStdSequenceHeader</code> is not <code>NULL</code>, a bound video session parameters object is not even required by the video decode command.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_examples"><a class="anchor" href="#_examples"></a>3. Examples</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_reset_a_video_decode_session_that_uses_video_session_parameters_objects_without_binding_one"><a class="anchor" href="#_reset_a_video_decode_session_that_uses_video_session_parameters_objects_without_binding_one"></a>3.1. Reset a video decode session that uses video session parameters objects without binding one</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Begin video coding scope with given video session but no parameters object
+VkVideoBeginCodingInfoKHR beginInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
+    .pNext = NULL,
+    .flags = 0,
+    .videoSession = videoSession,
+    .videoSessionParameters = VK_NULL_HANDLE, // can always be VK_NULL_HANDLE for all codecs if videoMaintenance2 is enabled
+    ...
+};
+
+vkCmdBeginVideoCodingKHR(commandBuffer, &amp;beginInfo);
+
+// Reset video session before starting to use it for video coding operations
+VkVideoCodingControlInfoKHR controlInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR,
+    .pNext = NULL,
+    .flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR
+};
+
+vkCmdControlVideoCodingKHR(commandBuffer, &amp;controlInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, &amp;endInfo);</code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_vulkan_api"><a class="anchor" href="#_vulkan_api"></a>3.2. Vulkan API</h3>
-<div class="paragraph">
-<p>Add a <code>VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT</code> structure that comprises
-a single <code>shaderReplicatedComposites</code> feature that specifies whether the <strong>ReplicatedCompositesEXT</strong>
-capability can be used in shader modules:</p>
-</div>
+<h3 id="_decode_h_264_frame_with_inline_pps"><a class="anchor" href="#_decode_h_264_frame_with_inline_pps"></a>3.2. Decode H.264 frame with inline PPS</h3>
 <div class="listingblock">
 <div class="content">
-<pre>typedef struct VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT {
-    VkStructureType sType;
-    void*           pNext;
-    VkBool32        shaderReplicatedComposites;
-} VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT;</pre>
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Create a video session with inline session parameters support
+VkVideoSessionKHR videoSession = VK_NULL_HANDLE;
+
+VkVideoSessionCreateInfoKHR createInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR,
+    .pNext = NULL,
+    .flags = VK_VIDEO_SESSION_CREATE_INLINE_SESSION_PARAMETERS_BIT_KHR,
+    ...
+};
+
+vkCreateVideoSessionKHR(device, &amp;createInfo, NULL, &amp;videoSession);
+
+...
+
+// Begin video coding scope with video session parameters object but we will only source the SPS from there
+VkVideoBeginCodingInfoKHR beginInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR,
+    .pNext = NULL,
+    .flags = 0,
+    .videoSession = videoSession,
+    .videoSessionParameters = videoSessionParameters,
+    ...
+};
+
+vkCmdBeginVideoCodingKHR(commandBuffer, &amp;beginInfo);
+
+// We will use an inline PPS
+StdVideoH264PictureParameterSet pps = { ... };
+
+VkVideoDecodeH264InlineSessionParametersInfoKHR decodeH264ParamsInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_INFO_KHR,
+    .pNext = NULL,
+    .pStdSPS = NULL,    // source SPS from the bound video session parameters object
+    .pStdPPS = &amp;pps     // use inline PPS
+};
+
+VkVideoDecodeH264PictureInfoKHR decodeH264PictureInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR,
+    .pNext = &amp;decodeH264ParamsInfo,
+    ...
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = &amp;decodeH264PictureInfo,
+    ...
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &amp;decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_examples"><a class="anchor" href="#_examples"></a>4. Examples</h2>
+<h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_resolved_do_we_want_to_relax_the_requirements_for_a_bound_video_session_parameters_object_for_video_encode_sessions"><a class="anchor" href="#_resolved_do_we_want_to_relax_the_requirements_for_a_bound_video_session_parameters_object_for_video_encode_sessions"></a>4.1. RESOLVED: Do we want to relax the requirements for a bound video session parameters object for video encode sessions?</h3>
 <div class="paragraph">
-<p>Declare a constant vector of 4 integers with the value 42:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>%uint = OpTypeInt 32 0
-%uint_42 = OpConstant %uint 42
-%vector = OpTypeVector %uint 4
-%vector_of_42 = OpConstantCompositeReplicateEXT %vector %uint_42</pre>
+<p>Not in this extension. While being able to reset or perform other control operations on video encode sessions without a bound video session parameters object could be useful/convenient, this proposal only relaxes the requirements for video decode sessions.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_resolved_do_we_want_to_support_inline_video_session_parameters_in_video_encode_sessions"><a class="anchor" href="#_resolved_do_we_want_to_support_inline_video_session_parameters_in_video_encode_sessions"></a>4.2. RESOLVED: Do we want to support inline video session parameters in video encode sessions?</h3>
 <div class="paragraph">
-<p>Construct a structure object whose all constituents have the value 1:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>%uint = OpTypeInt 32 0
-%uint_1 = OpConstant %uint 1
-%struct = OpTypeStruct %uint %uint %uint
-%struct_all_ones = OpCompositeConstructReplicateEXT %struct %uint_1</pre>
+<p>No. Video session parameters objects created against a video encode session contain additional information that may affect implementation parameter overrides such as the used video encode quality level and are also used to encode the codec-specific parameter sets which would make specifying inline video session parameters in video encode sessions problematic. Inline video session parameters are anyway expected to only be handy in video decoding use cases so this proposal only allows using them in video decode sessions.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_resolved_which_codec_specific_parameter_set_is_used_if_a_matching_one_is_available_in_the_bound_video_session_parameters_object_but_the_application_also_specifies_one_using_the_new_inline_parameter_specification_apis"><a class="anchor" href="#_resolved_which_codec_specific_parameter_set_is_used_if_a_matching_one_is_available_in_the_bound_video_session_parameters_object_but_the_application_also_specifies_one_using_the_new_inline_parameter_specification_apis"></a>4.3. RESOLVED: Which codec-specific parameter set is used if a matching one is available in the bound video session parameters object but the application also specifies one using the new inline parameter specification APIs?</h3>
 <div class="paragraph">
-<p>Declare an array constant whose length is a specicialisation constant
-and all elements have the value 15:</p>
+<p>The codec-specific parameter sets specified inline are used. This enables the application to override the parameter sets available in the bound video session parameters object for each command.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre>%uint = OpTypeInt 32 0
-%uint_1 = OpConstant %uint 1
-%uint_15 = OpConstant %uint 15
-%length = OpSpecConstant %uint %uint_1
-%array = OpTypeArray %uint %length
-%array_of_15 = OpSpecConstantCompositeReplicateEXT %array %uint_15</pre>
+</div>
+<div class="sect2">
+<h3 id="_resolved_should_we_require_vk_video_encode_rate_control_mode_disabled_bit_khr_for_all_video_encode_profiles"><a class="anchor" href="#_resolved_should_we_require_vk_video_encode_rate_control_mode_disabled_bit_khr_for_all_video_encode_profiles"></a>4.4. RESOLVED: Should we require <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> for all video encode profiles?</h3>
+<div class="paragraph">
+<p>For all existing video encode profiles. We still want to reserve the right to not require <code>VK_VIDEO_ENCODE_RATE_CONTROL_MODE_DISABLED_BIT_KHR</code> for any future video encode profile if the mode is not applicable for the video codec.</p>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_issues"><a class="anchor" href="#_issues"></a>5. Issues</h2>
+<h2 id="_further_functionality"><a class="anchor" href="#_further_functionality"></a>5. Further Functionality</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>None.</p>
