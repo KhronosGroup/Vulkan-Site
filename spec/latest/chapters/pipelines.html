@@ -7079,6 +7079,10 @@ static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_PROTECTED_ACCESS_ONL
 // Provided by VK_AMDX_shader_enqueue with VK_KHR_maintenance5 or VK_VERSION_1_4
 static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_EXECUTION_GRAPH_BIT_AMDX = 0x100000000ULL;
 #endif
+// Provided by VK_KHR_ray_tracing_pipeline
+static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_BUILT_IN_PRIMITIVES_BIT_KHR = 0x00001000ULL;
+// Provided by VK_NV_ray_tracing_linear_swept_spheres
+static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_RAY_TRACING_ALLOW_SPHERES_AND_LINEAR_SWEPT_SPHERES_BIT_NV = 0x200000000ULL;
 // Provided by VK_EXT_legacy_dithering with (VK_KHR_dynamic_rendering or VK_VERSION_1_3) and (VK_KHR_maintenance5 or VK_VERSION_1_4)
 static const VkPipelineCreateFlagBits2 VK_PIPELINE_CREATE_2_ENABLE_LEGACY_DITHERING_BIT_EXT = 0x400000000ULL;
 // Provided by VK_KHR_maintenance5
@@ -7260,8 +7264,14 @@ consisting entirely of zeros.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR</code> specifies
-that triangle primitives will be skipped during traversal using
-<a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions.</p>
+that all built-in primitives
+including triangles, spheres and LSS primitives
+will be skipped during traversal using <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">    pipeline trace ray</a> instructions.</p>
+</li>
+<li>
+<p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_BUILT_IN_PRIMITIVES_BIT_KHR</code>
+is an alias for
+<code>VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR</code>.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SKIP_AABBS_BIT_KHR</code> specifies that
@@ -7272,6 +7282,12 @@ AABB primitives will be skipped during traversal using
 <p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_SHADER_GROUP_HANDLE_CAPTURE_REPLAY_BIT_KHR</code>
 specifies that the shader group handles <strong>can</strong> be saved and reused on a
 subsequent run (e.g. for trace capture and replay).</p>
+</li>
+<li>
+<p><code>VK_PIPELINE_CREATE_2_RAY_TRACING_ALLOW_SPHERES_AND_LINEAR_SWEPT_SPHERES_BIT_NV</code>
+specifies that the pipeline is allowed to use spheres or linear swept
+spheres as a geometry type in the acceleration structures.
+Using this flag <strong>may</strong> affect performance.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_2_INDIRECT_BINDABLE_BIT_NV</code> specifies that the
@@ -7661,7 +7677,9 @@ consisting entirely of zeros.</p>
 </li>
 <li>
 <p><code>VK_PIPELINE_CREATE_RAY_TRACING_SKIP_TRIANGLES_BIT_KHR</code> specifies
-that triangle primitives will be skipped during traversal using
+that
+sphere, LSS and
+triangle primitives will be skipped during traversal using
 <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instructions.</p>
 </li>
 <li>
@@ -10370,6 +10388,12 @@ is computed as described in <a href="raytracing.html#ray-tracing-pipeline-stack"
 structure, <a href="#VkPipelineCreateFlags2CreateInfo">VkPipelineCreateFlags2CreateInfo</a>::<code>flags</code> from that
 structure is used instead of <code>flags</code> from this structure.</p>
 </div>
+<div class="paragraph">
+<p>If the <code>pNext</code> chain includes a
+<a href="#VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV">VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV</a>
+structure, then that structure controls whether cluster acceleration
+structures are allowed in this ray tracing pipeline.</p>
+</div>
 <div class="sidebarblock">
 <div class="content">
 <div class="title">Valid Usage</div>
@@ -10737,7 +10761,7 @@ bit set</p>
 </li>
 <li>
 <p><a id="VUID-VkRayTracingPipelineCreateInfoKHR-pNext-pNext" href="#VUID-VkRayTracingPipelineCreateInfoKHR-pNext-pNext"></a> <span class="vuid">VUID-VkRayTracingPipelineCreateInfoKHR-pNext-pNext</span><br>
- Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkPipelineBinaryInfoKHR">VkPipelineBinaryInfoKHR</a>, <a href="#VkPipelineCreateFlags2CreateInfo">VkPipelineCreateFlags2CreateInfo</a>, <a href="#VkPipelineCreationFeedbackCreateInfo">VkPipelineCreationFeedbackCreateInfo</a>, or <a href="#VkPipelineRobustnessCreateInfo">VkPipelineRobustnessCreateInfo</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkPipelineBinaryInfoKHR">VkPipelineBinaryInfoKHR</a>, <a href="#VkPipelineCreateFlags2CreateInfo">VkPipelineCreateFlags2CreateInfo</a>, <a href="#VkPipelineCreationFeedbackCreateInfo">VkPipelineCreationFeedbackCreateInfo</a>, <a href="#VkPipelineRobustnessCreateInfo">VkPipelineRobustnessCreateInfo</a>, or <a href="#VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV">VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV</a></p>
 </li>
 <li>
 <p><a id="VUID-VkRayTracingPipelineCreateInfoKHR-sType-unique" href="#VUID-VkRayTracingPipelineCreateInfoKHR-sType-unique"></a> <span class="vuid">VUID-VkRayTracingPipelineCreateInfoKHR-sType-unique</span><br>
@@ -10770,6 +10794,72 @@ bit set</p>
 <li>
 <p><a id="VUID-VkRayTracingPipelineCreateInfoKHR-commonparent" href="#VUID-VkRayTracingPipelineCreateInfoKHR-commonparent"></a> <span class="vuid">VUID-VkRayTracingPipelineCreateInfoKHR-commonparent</span><br>
  Both of <code>basePipelineHandle</code>, and <code>layout</code> that are valid handles of non-ignored parameters <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <a href="#VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV">VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV</a>
+structure is defined as:</p>
+</div>
+<div id="VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_ray_tracing_pipeline with VK_NV_cluster_acceleration_structure
+typedef struct VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           allowClusterAccelerationStructure;
+} VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>allowClusterAccelerationStructure</code> controls if cluster acceleration
+structures are allowed in the ray tracing pipeline.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If no cluster acceleration structures are present in the ray tracing
+pipeline, <code>allowClusterAccelerationStructure</code> <strong>should</strong> not be used to
+prevent traversal penalty on some implementations.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV-clusterAccelerationStructure-10576" href="#VUID-VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV-clusterAccelerationStructure-10576"></a> <span class="vuid">VUID-VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV-clusterAccelerationStructure-10576</span><br>
+
+The <a href="features.html#features-clusterAccelerationStructure" class="xref page">    <code>VkPhysicalDeviceClusterAccelerationStructureFeaturesNV</code>::<code>clusterAccelerationStructure</code></a>
+feature <strong>must</strong> be enabled</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV-sType-sType" href="#VUID-VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV-sType-sType"></a> <span class="vuid">VUID-VkRayTracingPipelineClusterAccelerationStructureCreateInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CLUSTER_ACCELERATION_STRUCTURE_CREATE_INFO_NV</code></p>
 </li>
 </ul>
 </div>

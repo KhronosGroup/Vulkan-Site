@@ -6165,7 +6165,7 @@ a view created with an <code>image</code> created with
 </li>
 <li>
 <p><a id="VUID-VkWriteDescriptorSet-pNext-pNext" href="#VUID-VkWriteDescriptorSet-pNext-pNext"></a> <span class="vuid">VUID-VkWriteDescriptorSet-pNext-pNext</span><br>
- Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkWriteDescriptorSetAccelerationStructureKHR">VkWriteDescriptorSetAccelerationStructureKHR</a>, <a href="#VkWriteDescriptorSetAccelerationStructureNV">VkWriteDescriptorSetAccelerationStructureNV</a>, or <a href="#VkWriteDescriptorSetInlineUniformBlock">VkWriteDescriptorSetInlineUniformBlock</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkWriteDescriptorSetAccelerationStructureKHR">VkWriteDescriptorSetAccelerationStructureKHR</a>, <a href="#VkWriteDescriptorSetAccelerationStructureNV">VkWriteDescriptorSetAccelerationStructureNV</a>, <a href="#VkWriteDescriptorSetInlineUniformBlock">VkWriteDescriptorSetInlineUniformBlock</a>, or <a href="#VkWriteDescriptorSetPartitionedAccelerationStructureNV">VkWriteDescriptorSetPartitionedAccelerationStructureNV</a></p>
 </li>
 <li>
 <p><a id="VUID-VkWriteDescriptorSet-sType-unique" href="#VUID-VkWriteDescriptorSet-sType-unique"></a> <span class="vuid">VUID-VkWriteDescriptorSet-sType-unique</span><br>
@@ -6223,6 +6223,8 @@ typedef enum VkDescriptorType {
     VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM = 1000440001,
   // Provided by VK_EXT_mutable_descriptor_type
     VK_DESCRIPTOR_TYPE_MUTABLE_EXT = 1000351000,
+  // Provided by VK_NV_partitioned_acceleration_structure
+    VK_DESCRIPTOR_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_NV = 1000570000,
   // Provided by VK_EXT_inline_uniform_block
     VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK_EXT = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK,
   // Provided by VK_VALVE_mutable_descriptor_type
@@ -6799,6 +6801,94 @@ enabled, each element of <code>pAccelerationStructures</code> <strong>must</stro
 </li>
 <li>
 <p><a id="VUID-VkWriteDescriptorSetAccelerationStructureKHR-accelerationStructureCount-arraylength" href="#VUID-VkWriteDescriptorSetAccelerationStructureKHR-accelerationStructureCount-arraylength"></a> <span class="vuid">VUID-VkWriteDescriptorSetAccelerationStructureKHR-accelerationStructureCount-arraylength</span><br>
+ <code>accelerationStructureCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>If the <code>descriptorType</code> member of <a href="#VkWriteDescriptorSet">VkWriteDescriptorSet</a> is
+<code>VK_DESCRIPTOR_TYPE_PARTITIONED_ACCELERATION_STRUCTURE_NV</code>, then the
+data to write to the descriptor set is specified through a
+<code>VkWriteDescriptorSetPartitionedAccelerationStructureNV</code> structure
+included in the <code>pNext</code> chain of <code>VkWriteDescriptorSet</code>.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkWriteDescriptorSetPartitionedAccelerationStructureNV</code> structure
+is defined as:</p>
+</div>
+<div id="VkWriteDescriptorSetPartitionedAccelerationStructureNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_partitioned_acceleration_structure
+typedef struct VkWriteDescriptorSetPartitionedAccelerationStructureNV {
+    VkStructureType           sType;
+    void*                     pNext;
+    uint32_t                  accelerationStructureCount;
+    const VkDeviceAddress*    pAccelerationStructures;
+} VkWriteDescriptorSetPartitionedAccelerationStructureNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>accelerationStructureCount</code> is the number of elements in
+<code>pAccelerationStructures</code>.</p>
+</li>
+<li>
+<p><code>pAccelerationStructures</code> is a pointer to an array of
+<code>accelerationStructureCount</code> device addresses pointing to previously
+built PTLAS.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-accelerationStructureCount-10511" href="#VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-accelerationStructureCount-10511"></a> <span class="vuid">VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-accelerationStructureCount-10511</span><br>
+
+<code>accelerationStructureCount</code> <strong>must</strong> be equal to <code>descriptorCount</code>
+in the extended structure</p>
+</li>
+<li>
+<p><a id="VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-pAccelerationStructures-10512" href="#VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-pAccelerationStructures-10512"></a> <span class="vuid">VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-pAccelerationStructures-10512</span><br>
+
+Each entry in <code>pAccelerationStructures</code> <strong>must</strong> be a valid address of
+a PTLAS</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-sType-sType" href="#VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-sType-sType"></a> <span class="vuid">VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_PARTITIONED_ACCELERATION_STRUCTURE_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-pAccelerationStructures-parameter" href="#VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-pAccelerationStructures-parameter"></a> <span class="vuid">VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-pAccelerationStructures-parameter</span><br>
+ <code>pAccelerationStructures</code> <strong>must</strong> be a valid pointer to an array of <code>accelerationStructureCount</code> or <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> <code>VkDeviceAddress</code> values</p>
+</li>
+<li>
+<p><a id="VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-accelerationStructureCount-arraylength" href="#VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-accelerationStructureCount-arraylength"></a> <span class="vuid">VUID-VkWriteDescriptorSetPartitionedAccelerationStructureNV-accelerationStructureCount-arraylength</span><br>
  <code>accelerationStructureCount</code> <strong>must</strong> be greater than <code>0</code></p>
 </li>
 </ul>

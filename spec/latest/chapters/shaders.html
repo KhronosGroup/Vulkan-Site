@@ -6054,7 +6054,7 @@ scope.</p>
 </div>
 <div id="VkComponentTypeKHR" class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_cooperative_matrix
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_KHR_cooperative_matrix, VK_NV_cooperative_vector
 typedef enum VkComponentTypeKHR {
     VK_COMPONENT_TYPE_FLOAT16_KHR = 0,
     VK_COMPONENT_TYPE_FLOAT32_KHR = 1,
@@ -6067,6 +6067,14 @@ typedef enum VkComponentTypeKHR {
     VK_COMPONENT_TYPE_UINT16_KHR = 8,
     VK_COMPONENT_TYPE_UINT32_KHR = 9,
     VK_COMPONENT_TYPE_UINT64_KHR = 10,
+  // Provided by VK_NV_cooperative_vector
+    VK_COMPONENT_TYPE_SINT8_PACKED_NV = 1000491000,
+  // Provided by VK_NV_cooperative_vector
+    VK_COMPONENT_TYPE_UINT8_PACKED_NV = 1000491001,
+  // Provided by VK_NV_cooperative_vector
+    VK_COMPONENT_TYPE_FLOAT_E4M3_NV = 1000491002,
+  // Provided by VK_NV_cooperative_vector
+    VK_COMPONENT_TYPE_FLOAT_E5M2_NV = 1000491003,
   // Provided by VK_NV_cooperative_matrix
     VK_COMPONENT_TYPE_FLOAT16_NV = VK_COMPONENT_TYPE_FLOAT16_KHR,
   // Provided by VK_NV_cooperative_matrix
@@ -6147,7 +6155,880 @@ typedef VkComponentTypeKHR VkComponentTypeNV;</code></pre>
 <p><code>VK_COMPONENT_TYPE_UINT64_KHR</code> corresponds to SPIR-V <code>OpTypeInt</code>
 64 0/1.</p>
 </li>
+<li>
+<p><code>VK_COMPONENT_TYPE_SINT8_PACKED_NV</code> corresponds to four 8-bit signed
+integers packed in a 32-bit unsigned integer.</p>
+</li>
+<li>
+<p><code>VK_COMPONENT_TYPE_UINT8_PACKED_NV</code> corresponds to four 8-bit
+unsigned integers packed in a 32-bit unsigned integer.</p>
+</li>
+<li>
+<p><code>VK_COMPONENT_TYPE_FLOAT_E4M3_NV</code> corresponds to a floating-point
+type with a sign bit in the most significant bit, followed by four
+exponent bits, followed by three mantissa bits.</p>
+</li>
+<li>
+<p><code>VK_COMPONENT_TYPE_FLOAT_E5M2_NV</code> corresponds to a floating-point
+type with a sign bit in the most significant bit, followed by five
+exponent bits, followed by two mantissa bits.</p>
+</li>
 </ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cooperative_vectors"><a class="anchor" href="#_cooperative_vectors"></a>Cooperative Vectors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <em>cooperative vector</em> type is a SPIR-V vector type optimized for the
+evaluation of small neural networks.</p>
+</div>
+<div class="paragraph">
+<p>SPIR-V defines the types and instructions, but does not specify rules about
+what combinations of types are valid, and it is expected that different
+implementations <strong>may</strong> support different combinations.</p>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To enumerate the supported cooperative vector types combinations, call:</p>
+</div>
+<div id="vkGetPhysicalDeviceCooperativeVectorPropertiesNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_vector
+VkResult vkGetPhysicalDeviceCooperativeVectorPropertiesNV(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pPropertyCount,
+    VkCooperativeVectorPropertiesNV*            pProperties);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>physicalDevice</code> is the physical device.</p>
+</li>
+<li>
+<p><code>pPropertyCount</code> is a pointer to an integer related to the number of
+cooperative vector properties available or queried.</p>
+</li>
+<li>
+<p><code>pProperties</code> is either <code>NULL</code> or a pointer to an array of
+<a href="#VkCooperativeVectorPropertiesNV">VkCooperativeVectorPropertiesNV</a> structures.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pProperties</code> is <code>NULL</code>, then the number of cooperative vector
+properties available is returned in <code>pPropertyCount</code>.
+Otherwise, <code>pPropertyCount</code> <strong>must</strong> point to a variable set by the user to
+the number of elements in the <code>pProperties</code> array, and on return the
+variable is overwritten with the number of structures actually written to
+<code>pProperties</code>.
+If <code>pPropertyCount</code> is less than the number of cooperative vector
+properties available, at most <code>pPropertyCount</code> structures will be
+written, and <code>VK_INCOMPLETE</code> will be returned instead of
+<code>VK_SUCCESS</code>, to indicate that not all the available cooperative vector
+properties were returned.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-physicalDevice-parameter" href="#VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-physicalDevice-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-physicalDevice-parameter</span><br>
+ <code>physicalDevice</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkPhysicalDevice" class="xref page">VkPhysicalDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-pPropertyCount-parameter" href="#VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-pPropertyCount-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-pPropertyCount-parameter</span><br>
+ <code>pPropertyCount</code> <strong>must</strong> be a valid pointer to a <code>uint32_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-pProperties-parameter" href="#VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-pProperties-parameter"></a> <span class="vuid">VUID-vkGetPhysicalDeviceCooperativeVectorPropertiesNV-pProperties-parameter</span><br>
+ If the value referenced by <code>pPropertyCount</code> is not <code>0</code>, and <code>pProperties</code> is not <code>NULL</code>, <code>pProperties</code> <strong>must</strong> be a valid pointer to an array of <code>pPropertyCount</code> <a href="#VkCooperativeVectorPropertiesNV">VkCooperativeVectorPropertiesNV</a> structures</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+<li>
+<p><code>VK_ERROR_OUT_OF_DEVICE_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Each <code>VkCooperativeVectorPropertiesNV</code> structure describes a single
+supported combination of types for a matrix-vector multiply (or
+multiply-add) operation (<code>OpCooperativeVectorMatrixMulNV</code> or
+<code>OpCooperativeVectorMatrixMulAddNV</code>).</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkCooperativeVectorPropertiesNV</code> structure is defined as:</p>
+</div>
+<div id="VkCooperativeVectorPropertiesNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_vector
+typedef struct VkCooperativeVectorPropertiesNV {
+    VkStructureType       sType;
+    void*                 pNext;
+    VkComponentTypeKHR    inputType;
+    VkComponentTypeKHR    inputInterpretation;
+    VkComponentTypeKHR    matrixInterpretation;
+    VkComponentTypeKHR    biasInterpretation;
+    VkComponentTypeKHR    resultType;
+    VkBool32              transpose;
+} VkCooperativeVectorPropertiesNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>inputType</code> is the component type of vector <code>Input</code>, of type
+<a href="#VkComponentTypeKHR">VkComponentTypeKHR</a>.</p>
+</li>
+<li>
+<p><code>inputInterpretation</code> is the value of <code>InputInterpretation</code>, of
+type <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a>.</p>
+</li>
+<li>
+<p><code>matrixInterpretation</code> is the value of <code>MatrixInterpretation</code>, of
+type <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a>.</p>
+</li>
+<li>
+<p><code>biasInterpretation</code> is the value of <code>BiasInterpretation</code>, of
+type <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a>.</p>
+</li>
+<li>
+<p><code>resultType</code> is the component type of <code>Result</code> <code>Type</code>, of type
+<a href="#VkComponentTypeKHR">VkComponentTypeKHR</a>.</p>
+</li>
+<li>
+<p><code>transpose</code> is a boolean indicating whether opaque layout matrices
+with this combination of input and output types supports transposition.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>VK_COMPONENT_TYPE_SINT8_PACKED_NV</code> and
+<code>VK_COMPONENT_TYPE_UINT8_PACKED_NV</code> <strong>must</strong> not be used for members other
+than <code>inputType</code>.</p>
+</div>
+<div class="paragraph">
+<p>The following combinations <strong>must</strong> be supported (each row is a required
+combination):</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">inputType</th>
+<th class="tableblock halign-left valign-top">inputInterpretation</th>
+<th class="tableblock halign-left valign-top">matrixInterpretation</th>
+<th class="tableblock halign-left valign-top">biasInterpretation</th>
+<th class="tableblock halign-left valign-top">resultType</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8_PACKED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT32</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT32</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT32</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT32</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT32</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT32</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SINT32</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT_E4M3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT_E4M3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT_E5M2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT_E5M2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">FLOAT16</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-sType-sType" href="#VUID-VkCooperativeVectorPropertiesNV-sType-sType"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_COOPERATIVE_VECTOR_PROPERTIES_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-pNext-pNext" href="#VUID-VkCooperativeVectorPropertiesNV-pNext-pNext"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-inputType-parameter" href="#VUID-VkCooperativeVectorPropertiesNV-inputType-parameter"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-inputType-parameter</span><br>
+ <code>inputType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-inputInterpretation-parameter" href="#VUID-VkCooperativeVectorPropertiesNV-inputInterpretation-parameter"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-inputInterpretation-parameter</span><br>
+ <code>inputInterpretation</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-matrixInterpretation-parameter" href="#VUID-VkCooperativeVectorPropertiesNV-matrixInterpretation-parameter"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-matrixInterpretation-parameter</span><br>
+ <code>matrixInterpretation</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-biasInterpretation-parameter" href="#VUID-VkCooperativeVectorPropertiesNV-biasInterpretation-parameter"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-biasInterpretation-parameter</span><br>
+ <code>biasInterpretation</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkCooperativeVectorPropertiesNV-resultType-parameter" href="#VUID-VkCooperativeVectorPropertiesNV-resultType-parameter"></a> <span class="vuid">VUID-VkCooperativeVectorPropertiesNV-resultType-parameter</span><br>
+ <code>resultType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To query the size of a cooperative vector matrix, or to convert a matrix to
+another layout and type, call:</p>
+</div>
+<div id="vkConvertCooperativeVectorMatrixNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_vector
+VkResult vkConvertCooperativeVectorMatrixNV(
+    VkDevice                                    device,
+    const VkConvertCooperativeVectorMatrixInfoNV* pInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>device</code> is the device.</p>
+</li>
+<li>
+<p><code>pInfo</code> is a pointer to a
+<a href="#VkConvertCooperativeVectorMatrixInfoNV">VkConvertCooperativeVectorMatrixInfoNV</a> structure containing
+information about the layout conversion.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If <code>pInfo-&gt;dstData</code> is <code>NULL</code>, then the number of bytes required to
+store the converted matrix is returned in <code>pDstSize</code>.
+Otherwise, <code>pInfo-&gt;pDstSize</code> <strong>must</strong> point to a variable set by the user
+to the number of bytes in <code>pInfo-&gt;dstData</code>, and on return the variable
+is overwritten with the number of bytes actually written to
+<code>pInfo-&gt;dstData</code>.
+<code>pInfo-&gt;srcData</code> <strong>can</strong> be <code>NULL</code> when <code>pInfo-&gt;dstData</code> is <code>NULL</code>.
+If <code>pInfo-&gt;pDstSize</code> is less than the number of bytes required to store
+the converted matrix, no bytes will be written, and <code>VK_INCOMPLETE</code> will
+be returned instead of <code>VK_SUCCESS</code>, to indicate that not enough space
+was provided.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10073" href="#VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10073"></a> <span class="vuid">VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10073</span><br>
+
+If <code>pInfo-&gt;srcData.hostAddress</code> is <code>NULL</code>, then
+<code>pInfo-&gt;dstData.hostAddress</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10074" href="#VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10074"></a> <span class="vuid">VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10074</span><br>
+
+If <code>pInfo-&gt;srcData.hostAddress</code> is not <code>NULL</code>, then
+<code>pInfo-&gt;srcSize</code> <strong>must</strong> be large enough to contain the source matrix,
+based either on the standard matrix layout or based on the size filled
+out by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10075" href="#VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10075"></a> <span class="vuid">VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10075</span><br>
+
+If <code>pInfo-&gt;dstData.hostAddress</code> is not <code>NULL</code>, then the value
+pointed to by <code>pInfo-&gt;pDstSize</code> <strong>must</strong> be large enough to contain the
+destination matrix, based either on the standard matrix layout or based
+on the size filled out by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10076" href="#VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10076"></a> <span class="vuid">VUID-vkConvertCooperativeVectorMatrixNV-pInfo-10076</span><br>
+
+If <code>pInfo-&gt;dstData.hostAddress</code> is not <code>NULL</code>, the source and
+destination memory ranges <strong>must</strong> not overlap</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkConvertCooperativeVectorMatrixNV-device-parameter" href="#VUID-vkConvertCooperativeVectorMatrixNV-device-parameter"></a> <span class="vuid">VUID-vkConvertCooperativeVectorMatrixNV-device-parameter</span><br>
+ <code>device</code> <strong>must</strong> be a valid <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkConvertCooperativeVectorMatrixNV-pInfo-parameter" href="#VUID-vkConvertCooperativeVectorMatrixNV-pInfo-parameter"></a> <span class="vuid">VUID-vkConvertCooperativeVectorMatrixNV-pInfo-parameter</span><br>
+ <code>pInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkConvertCooperativeVectorMatrixInfoNV">VkConvertCooperativeVectorMatrixInfoNV</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Return Codes</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-successcodes" class="xref page">Success</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_SUCCESS</code></p>
+</li>
+<li>
+<p><code>VK_INCOMPLETE</code></p>
+</li>
+</ul>
+</div>
+</dd>
+<dt class="hdlist1"><a href="fundamentals.html#fundamentals-errorcodes" class="xref page">Failure</a></dt>
+<dd>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_ERROR_OUT_OF_HOST_MEMORY</code></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Each <code>VkConvertCooperativeVectorMatrixInfoNV</code> structure describes a
+request to convert the layout and type of a cooperative vector matrix.</p>
+</div>
+<div class="paragraph">
+<p>The <code>VkConvertCooperativeVectorMatrixInfoNV</code> structure is defined as:</p>
+</div>
+<div id="VkConvertCooperativeVectorMatrixInfoNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_vector
+typedef struct VkConvertCooperativeVectorMatrixInfoNV {
+    VkStructureType                      sType;
+    const void*                          pNext;
+    size_t                               srcSize;
+    VkDeviceOrHostAddressConstKHR        srcData;
+    size_t*                              pDstSize;
+    VkDeviceOrHostAddressKHR             dstData;
+    VkComponentTypeKHR                   srcComponentType;
+    VkComponentTypeKHR                   dstComponentType;
+    uint32_t                             numRows;
+    uint32_t                             numColumns;
+    VkCooperativeVectorMatrixLayoutNV    srcLayout;
+    size_t                               srcStride;
+    VkCooperativeVectorMatrixLayoutNV    dstLayout;
+    size_t                               dstStride;
+} VkConvertCooperativeVectorMatrixInfoNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>srcSize</code> is the length in bytes of <code>srcData</code>.</p>
+</li>
+<li>
+<p><code>srcData</code> is either <code>NULL</code> or a pointer to the source data in the
+source layout.</p>
+</li>
+<li>
+<p><code>pDstSize</code> is a pointer to an integer related to the number of bytes
+required or requested to convert.</p>
+</li>
+<li>
+<p><code>dstData</code> is either <code>NULL</code> or a pointer to the destination data in
+the destination layout.</p>
+</li>
+<li>
+<p><code>srcComponentType</code> is the type of a source matrix element.</p>
+</li>
+<li>
+<p><code>dstComponentType</code> is the type of a destination matrix element.</p>
+</li>
+<li>
+<p><code>numRows</code> is the number of rows in the matrix.</p>
+</li>
+<li>
+<p><code>numColumns</code> is the number of columns in the matrix.</p>
+</li>
+<li>
+<p><code>srcLayout</code> is the layout of the source matrix.</p>
+</li>
+<li>
+<p><code>srcStride</code> is the number of bytes between a consecutive row or
+column (depending on <code>srcLayout</code>) of the source matrix, if it is
+row-major or column-major.</p>
+</li>
+<li>
+<p><code>dstLayout</code> is the layout the matrix is converted to.</p>
+</li>
+<li>
+<p><code>dstStride</code> is the number of bytes between a consecutive row or
+column (depending on <code>dstLayout</code>) of destination matrix, if it is
+row-major or column-major.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When called from <a href="#vkCmdConvertCooperativeVectorMatrixNV">vkCmdConvertCooperativeVectorMatrixNV</a>, the
+<code>deviceAddress</code> members of <code>srcData</code> and <code>dstData</code> are used.
+When called from <a href="#vkConvertCooperativeVectorMatrixNV">vkConvertCooperativeVectorMatrixNV</a>, the
+<code>hostAddress</code> members of <code>srcData</code> and <code>dstData</code> are used.</p>
+</div>
+<div class="paragraph">
+<p>For each of the source and destination matrix, if the layout is not either
+<code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_ROW_MAJOR_NV</code> or
+<code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_COLUMN_MAJOR_NV</code>, then the
+corresponding stride parameter is ignored.</p>
+</div>
+<div class="paragraph">
+<p>The size of the destination is only a function of the destination layout
+information, and does not depend on the source layout information.</p>
+</div>
+<div class="paragraph">
+<p>Conversion <strong>can</strong> be used to convert between
+<code>VK_COMPONENT_TYPE_FLOAT32_KHR</code> or <code>VK_COMPONENT_TYPE_FLOAT16_KHR</code>
+and any supported lower-precision floating-point type.
+In this case, the conversion uses round-to-nearest-even rounding.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-srcLayout-10077" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-srcLayout-10077"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-srcLayout-10077</span><br>
+
+If <code>srcLayout</code> is row-major or column-major, then <code>srcStride</code>
+<strong>must</strong> be greater than the length of a row/column, and a multiple of the
+element size</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-dstLayout-10078" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-dstLayout-10078"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-dstLayout-10078</span><br>
+
+If <code>dstLayout</code> is row-major or column-major, then <code>dstStride</code>
+<strong>must</strong> be greater than the length of a row/column, and a multiple of the
+element size</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-10079" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-10079"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-10079</span><br>
+
+If <code>srcComponentType</code> is not a supported
+<a href="#VkCooperativeVectorPropertiesNV">VkCooperativeVectorPropertiesNV</a>::<code>matrixInterpretation</code> value
+as reported by <a href="#vkGetPhysicalDeviceCooperativeVectorPropertiesNV">vkGetPhysicalDeviceCooperativeVectorPropertiesNV</a>,
+then <code>srcComponentType</code> <strong>must</strong> be <code>VK_COMPONENT_TYPE_FLOAT32_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-10080" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-10080"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-10080</span><br>
+
+If <code>dstComponentType</code> is not a supported
+<a href="#VkCooperativeVectorPropertiesNV">VkCooperativeVectorPropertiesNV</a>::<code>matrixInterpretation</code> value
+as reported by <a href="#vkGetPhysicalDeviceCooperativeVectorPropertiesNV">vkGetPhysicalDeviceCooperativeVectorPropertiesNV</a>,
+then <code>dstComponentType</code> <strong>must</strong> be <code>VK_COMPONENT_TYPE_FLOAT32_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-10081" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-10081"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-10081</span><br>
+
+If <code>srcComponentType</code> and <code>dstComponentType</code> are not equal, then
+one <strong>must</strong> be <code>VK_COMPONENT_TYPE_FLOAT32_KHR</code> or
+<code>VK_COMPONENT_TYPE_FLOAT16_KHR</code> and the other <strong>must</strong> be a
+lower-precision floating-point type</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-10082" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-10082"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-10082</span><br>
+
+If <code>dstComponentType</code> is <code>VK_COMPONENT_TYPE_FLOAT_E4M3_NV</code> or
+<code>VK_COMPONENT_TYPE_FLOAT_E5M2_NV</code>, then <code>dstLayout</code> <strong>must</strong> be
+<code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_INFERENCING_OPTIMAL_NV</code> or
+<code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_TRAINING_OPTIMAL_NV</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-sType-sType" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-sType-sType"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_CONVERT_COOPERATIVE_VECTOR_MATRIX_INFO_NV</code></p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-pNext-pNext" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-pNext-pNext"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-srcData-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-srcData-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-srcData-parameter</span><br>
+ <code>srcData</code> <strong>must</strong> be a valid <a href="accelstructures.html#VkDeviceOrHostAddressConstKHR" class="xref page">VkDeviceOrHostAddressConstKHR</a> union</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-pDstSize-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-pDstSize-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-pDstSize-parameter</span><br>
+ <code>pDstSize</code> <strong>must</strong> be a valid pointer to a <code>size_t</code> value</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-dstData-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-dstData-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-dstData-parameter</span><br>
+ <code>dstData</code> <strong>must</strong> be a valid <a href="accelstructures.html#VkDeviceOrHostAddressKHR" class="xref page">VkDeviceOrHostAddressKHR</a> union</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-srcComponentType-parameter</span><br>
+ <code>srcComponentType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-dstComponentType-parameter</span><br>
+ <code>dstComponentType</code> <strong>must</strong> be a valid <a href="#VkComponentTypeKHR">VkComponentTypeKHR</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-srcLayout-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-srcLayout-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-srcLayout-parameter</span><br>
+ <code>srcLayout</code> <strong>must</strong> be a valid <a href="#VkCooperativeVectorMatrixLayoutNV">VkCooperativeVectorMatrixLayoutNV</a> value</p>
+</li>
+<li>
+<p><a id="VUID-VkConvertCooperativeVectorMatrixInfoNV-dstLayout-parameter" href="#VUID-VkConvertCooperativeVectorMatrixInfoNV-dstLayout-parameter"></a> <span class="vuid">VUID-VkConvertCooperativeVectorMatrixInfoNV-dstLayout-parameter</span><br>
+ <code>dstLayout</code> <strong>must</strong> be a valid <a href="#VkCooperativeVectorMatrixLayoutNV">VkCooperativeVectorMatrixLayoutNV</a> value</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>Possible values for <a href="#VkCooperativeVectorMatrixLayoutNV">VkCooperativeVectorMatrixLayoutNV</a> include:</p>
+</div>
+<div id="VkCooperativeVectorMatrixLayoutNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_vector
+typedef enum VkCooperativeVectorMatrixLayoutNV {
+    VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_ROW_MAJOR_NV = 0,
+    VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_COLUMN_MAJOR_NV = 1,
+    VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_INFERENCING_OPTIMAL_NV = 2,
+    VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_TRAINING_OPTIMAL_NV = 3,
+} VkCooperativeVectorMatrixLayoutNV;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_ROW_MAJOR_NV</code> corresponds to
+SPIR-V <code>RowMajorNV</code> layout.</p>
+</li>
+<li>
+<p><code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_COLUMN_MAJOR_NV</code> corresponds to
+SPIR-V <code>ColumnMajorNV</code> layout.</p>
+</li>
+<li>
+<p><code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_INFERENCING_OPTIMAL_NV</code>
+corresponds to SPIR-V <code>InferencingOptimalNV</code> layout.</p>
+</li>
+<li>
+<p><code>VK_COOPERATIVE_VECTOR_MATRIX_LAYOUT_TRAINING_OPTIMAL_NV</code>
+corresponds to SPIR-V <code>TrainingOptimalNV</code> layout.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>All enum values match the corresponding SPIR-V value.</p>
+</div>
+<div class="paragraph">
+<p>Row-major layout has elements of each row stored consecutively in memory,
+with a controllable stride from the start of one row to the start of the
+next row.
+Column-major layout has elements of each column stored consecutively in
+memory, with a controllable stride from the start of one column to the start
+of the next column.
+Inferencing-optimal and Training-optimal layouts are
+implementation-dependent, and the application <strong>can</strong> convert a matrix to those
+layouts using <a href="#vkConvertCooperativeVectorMatrixNV">vkConvertCooperativeVectorMatrixNV</a> or
+<a href="#vkCmdConvertCooperativeVectorMatrixNV">vkCmdConvertCooperativeVectorMatrixNV</a>.
+Training-optimal layout with <code>VK_COMPONENT_TYPE_FLOAT16_KHR</code> or
+<code>VK_COMPONENT_TYPE_FLOAT32_KHR</code> type has the additional guarantee that
+the application <strong>can</strong> reinterpret the data as an array of elements and
+perform element-wise operations on the data, and finite values in any
+padding elements do not affect the result of a matrix-vector multiply
+(inf/NaN values <strong>may</strong> still cause NaN values in the result).</p>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To convert a matrix to another layout and type, call:</p>
+</div>
+<div id="vkCmdConvertCooperativeVectorMatrixNV" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_NV_cooperative_vector
+void vkCmdConvertCooperativeVectorMatrixNV(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    infoCount,
+    const VkConvertCooperativeVectorMatrixInfoNV* pInfos);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>infoCount</code> is the number of layout conversions to perform.</p>
+</li>
+<li>
+<p><code>pInfos</code> is a pointer to an array of
+<a href="#VkConvertCooperativeVectorMatrixInfoNV">VkConvertCooperativeVectorMatrixInfoNV</a> structures containing
+information about the layout conversion.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command does the same conversions as
+<a href="#vkConvertCooperativeVectorMatrixNV">vkConvertCooperativeVectorMatrixNV</a>, but executes on the device.
+One conversion is performed for each of the <code>infoCount</code> elements of
+<code>pInfos</code>.</p>
+</div>
+<div class="paragraph">
+<p>This command&#8217;s execution is synchronized using
+<code>VK_PIPELINE_STAGE_2_CONVERT_COOPERATIVE_VECTOR_MATRIX_BIT_NV</code>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10083" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10083"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10083</span><br>
+
+For each element of <code>pInfo</code>, <code>srcData</code>::<code>deviceAddress</code> and
+<code>dstData</code>::<code>deviceAddress</code> <strong>must</strong> be valid device addresses</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10084" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10084"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10084</span><br>
+
+For each element of <code>pInfo</code>, <code>srcData</code>::<code>deviceAddress</code>
+<strong>must</strong> be 64 byte aligned</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10085" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10085"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10085</span><br>
+
+For each element of <code>pInfo</code>, <code>dstData</code>::<code>deviceAddress</code>
+<strong>must</strong> be 64 byte aligned</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10086" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10086"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10086</span><br>
+
+For each element of <code>pInfo</code>, <code>srcSize</code> <strong>must</strong> be large enough to
+contain the source matrix, based either on the standard matrix layout or
+based on the size filled out by <a href="#vkConvertCooperativeVectorMatrixNV">vkConvertCooperativeVectorMatrixNV</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10087" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10087"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfo-10087</span><br>
+
+For each element of <code>pInfo</code>, the value pointed to by <code>pDstSize</code>
+<strong>must</strong> be large enough to contain the destination matrix, based either on
+the standard matrix layout or based on the size filled out by
+<a href="#vkConvertCooperativeVectorMatrixNV">vkConvertCooperativeVectorMatrixNV</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-None-10088" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-None-10088"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-None-10088</span><br>
+
+Memory accessed by the sources and destinations of all of the
+conversions <strong>must</strong> not overlap</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-parameter" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfos-parameter" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfos-parameter"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-pInfos-parameter</span><br>
+ <code>pInfos</code> <strong>must</strong> be a valid pointer to an array of <code>infoCount</code> valid <a href="#VkConvertCooperativeVectorMatrixInfoNV">VkConvertCooperativeVectorMatrixInfoNV</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-recording" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-cmdpool" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics, or compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-renderpass" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-renderpass"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-videocoding" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-videocoding"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdConvertCooperativeVectorMatrixNV-infoCount-arraylength" href="#VUID-vkCmdConvertCooperativeVectorMatrixNV-infoCount-arraylength"></a> <span class="vuid">VUID-vkCmdConvertCooperativeVectorMatrixNV-infoCount-arraylength</span><br>
+ <code>infoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics<br>
+Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 </div>

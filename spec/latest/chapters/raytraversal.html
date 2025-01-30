@@ -589,6 +589,21 @@ If the ray was traced with a <a href="../appendices/glossary.html#glossary-pipel
 floating-point values in the <code>HitAttributeKHR</code> storage class.</p>
 </div>
 <div class="paragraph">
+<p>For linear swept sphere intersection candidate, the ray <span class="eq">t</span> value along
+with a single <span class="eq">u</span> parameter suffice to identify the hit.
+The <span class="eq">u</span> value specifies the position of the hit along the LSS
+midsection, within the range <span class="eq">[0, 1]</span>.
+If the <span class="eq">u</span> value is exactly <code>0</code> or <code>1</code>, then the intersection occurred
+on the respective endcap <code>0</code>, or endcap <code>1</code>.
+For pure sphere primitives, <span class="eq">u</span> is always set to 0.
+LSS primitives may be self-enclosing if one of the endcap spheres is
+completely enclosed within the other, and both endcaps are enabled.
+In these instances, only the outer of the two endcaps is intersection
+tested, and <span class="eq">u</span> will be returned as <code>0</code> or <code>1</code> accordingly.
+For rays that originate inside a LSS or sphere primitive, or enter through
+an absent endcap, no intersections will be reported.</p>
+</div>
+<div class="paragraph">
 <p>Once an intersection candidate is determined, it proceeds through the
 following operations, in order:</p>
 </div>
@@ -658,6 +673,17 @@ by a series of the above shared edges.</p>
 <div class="paragraph">
 <p>Implementations <strong>should</strong> not double-hit or miss when a ray intersects a
 shared edge, or a shared vertex of a closed fan.</p>
+</div>
+<div class="paragraph">
+<p>For LSS primitives, connected LSS might overlap not only at the shared
+vertex endcap but also along their midsections.
+This applies even if an LSS disables the shared endcap.
+As such, there is no clear equivalent edge or vertex that could
+deterministically map a hit to just one of the LSS.
+So, unlike the ray-triangle intersection, the ray-LSS intersection provides
+no single-hit guarantee for LSS, including those that share a vertex causing
+the LSS to overlap.
+However, as with triangles, LSS intersection still returns the closest hit.</p>
 </div>
 </div>
 </div>
@@ -779,7 +805,9 @@ of this.</p>
 <p>If the ray was traced with a <a href="../appendices/glossary.html#glossary-pipeline-trace-ray" class="xref page">pipeline trace ray</a> instruction, the <code>HitKindKHR</code> built-in is set to
 <code>HitKindFrontFacingTriangleKHR</code> if the intersection is with front-facing
 geometry, and <code>HitKindBackFacingTriangleKHR</code> if the intersection is with
-back-facing geometry, for shader stages considering this intersection.</p>
+back-facing geometry, for shader stages considering this intersection.
+For LSS or sphere intersections, the <code>HitKindKHR</code> built-in is set to
+<code>HitKindLssPrimitiveNV</code> or <code>HitKindSpherePrimitiveNV</code> respectively.</p>
 </div>
 <div class="paragraph">
 <p>If the ray was traced with <code>OpRayQueryProceedKHR</code>,
