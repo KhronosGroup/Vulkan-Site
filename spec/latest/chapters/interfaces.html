@@ -634,95 +634,73 @@ write to a matching output variable, as described above.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="interfaces-iointerfaces-locations"><a class="anchor" href="#interfaces-iointerfaces-locations"></a>Location Assignment</h3>
+<h3 id="interfaces-iointerfaces-locations"><a class="anchor" href="#interfaces-iointerfaces-locations"></a>Location and Component Assignment</h3>
 <div class="paragraph">
-<p>This section describes <code>Location</code> assignments for user-defined variables
-and how many <code>Location</code> slots are consumed by a given user-variable type.
-<a href="#interfaces-iointerfaces-matching">As mentioned above</a>, some inputs and
-outputs have an additional level of arrayness relative to other shader
-inputs and outputs.
-This outer array level is removed from the type before considering how many
-<code>Location</code> slots the type consumes.</p>
+<p><a href="#interfaces-iointerfaces-user">User-defined variables</a> in interfaces
+between shader stages in the graphics pipeline consume a unique set of
+<code>Location</code> and <code>Component</code> values.</p>
 </div>
 <div class="paragraph">
-<p>The <code>Location</code> value specifies an interface slot comprised of a 32-bit
-four-component vector conveyed between stages.
-The <code>Component</code> specifies <a href="#interfaces-iointerfaces-components">word components</a> within these vector <code>Location</code> slots.
-Only types with widths of
-16,
-32 or 64 are supported in shader interfaces.</p>
+<p>Available space for user-defined interface variables is partitioned into a
+number of 32-bit four-component vectors, each identified by a <code>Location</code>
+value.
+Each individual 32-bit component of a vector is then further identified by a
+<code>Component</code> value.</p>
 </div>
 <div class="paragraph">
-<p>Inputs and outputs of the following types consume a single interface
-<code>Location</code>:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>16-bit scalar and vector types, and</p>
-</li>
-<li>
-<p>32-bit scalar and vector types, and</p>
-</li>
-<li>
-<p>64-bit scalar and 2-component vector types.</p>
-</li>
-</ul>
+<p>16-bit scalar or vector values consume one <code>Component</code> slot per 16-bit
+component and <strong>must</strong> be specified within a single <code>Location</code>.
+32-bit scalar or vector values consume one <code>Component</code> slot per 32-bit
+component and <strong>must</strong> be specified within a single <code>Location</code>.
+64-bit scalar or vector values consume two consecutive <code>Component</code> slots
+per 64-bit component from up to two consecutive <code>Location</code> slots.</p>
 </div>
 <div class="paragraph">
-<p>64-bit three- and four-component vectors consume two consecutive
-<code>Location</code> slots.</p>
+<p>For any shader interface variable where <a href="#interfaces-iointerfaces-matching">one level of the array is disregarded for type matching</a>, the outer array
+level is also disregarded when assigning <code>Location</code> slots.</p>
 </div>
 <div class="paragraph">
-<p>If a declared input or output is an array of size <em>n</em> and each element takes
-<em>m</em> <code>Location</code> slots, it will be assigned <em>m</em> × <em>n</em> consecutive
-<code>Location</code> slots starting with the specified <code>Location</code>.</p>
+<p>An array of size <span class="eq">n</span> with elements consuming <span class="eq">l</span> <code>Location</code> slots
+each will consume <span class="eq">l × n</span> <code>Location</code> slots.
+Each element of the array will consume all four <code>Component</code> slots in each
+<code>Location</code> slot.</p>
 </div>
 <div class="paragraph">
-<p>If the declared input or output is an <em>n</em> × <em>m</em>
-16-,
-32- or 64-bit matrix, it will be assigned multiple <code>Location</code> slots
-starting with the specified <code>Location</code>.
-The number of <code>Location</code> slots assigned for each matrix will be the same
-as for an <em>n</em>-element array of <em>m</em>-component vectors.</p>
+<p>Matrices of size <span class="eq">n × m</span> are assigned locations identically to
+arrays of size <span class="eq">n</span> of vectors of length 4 (consuming all <code>Component</code>
+slots) with an identical element type.</p>
 </div>
 <div class="paragraph">
-<p>An <code>OpVariable</code> with a structure type that is not a block <strong>must</strong> be
-decorated with a <code>Location</code>.</p>
+<p>When an <code>OpVariable</code> with a structure type is decorated with a
+<code>Location</code>, the members in the structure type <strong>must</strong> not be decorated with
+a <code>Location</code>.
+The <code>OpVariable</code>&#8217;s members are assigned consecutive locations in
+declaration order, starting from the first member, which is assigned the
+location decoration from the <code>OpVariable</code>.
+The <code>Location</code> slots consumed by structure members are determined by
+applying the rules above in a depth-first traversal of the instantiated
+members as though the structure or block member were declared as an input or
+output variable of the same type.</p>
 </div>
 <div class="paragraph">
-<p>When an <code>OpVariable</code> with a structure type (either block or non-block) is
-decorated with a <code>Location</code>, the members in the structure type <strong>must</strong> not
-be decorated with a <code>Location</code>.
-The <code>OpVariable</code>&#8217;s members are assigned consecutive <code>Location</code> slots
-in declaration order, starting from the first member, which is assigned the
-<code>Location</code> decoration from the <code>OpVariable</code>.</p>
+<p>An <code>OpVariable</code> with a structure type that is not decorated with
+<code>Block</code> <strong>must</strong> be decorated with a <code>Location</code>.</p>
 </div>
 <div class="paragraph">
-<p>When a block-type <code>OpVariable</code> is declared without a <code>Location</code>
-decoration, each member in its structure type <strong>must</strong> be decorated with a
-<code>Location</code>.
+<p>When an <code>OpVariable</code> with a structure type decorated with <code>Block</code> is
+declared without a <code>Location</code> decoration, each member in the structure
+<strong>must</strong> be decorated with a <code>Location</code>.
 Types nested deeper than the top-level members <strong>must</strong> not have <code>Location</code>
 decorations.</p>
 </div>
 <div class="paragraph">
-<p>The <code>Location</code> slots consumed by block and structure members are
-determined by applying the rules above in a depth-first traversal of the
-instantiated members as though the structure or block member were declared
-as an input or output variable of the same type.</p>
+<p>Multiple variable declarations in the same storage class <strong>must</strong> not have
+overlapping <code>Component</code> slots within the same <code>Location</code>.</p>
 </div>
 <div class="paragraph">
-<p>Any two inputs listed as operands on the same <code>OpEntryPoint</code> <strong>must</strong> not be
-assigned the same <code>Location</code> slot and <code>Component</code> word, either
-explicitly or implicitly.
-Any two outputs listed as operands on the same <code>OpEntryPoint</code> <strong>must</strong> not
-be assigned the same <code>Location</code> slot and <code>Component</code> word, either
-explicitly or implicitly.</p>
-</div>
-<div class="paragraph">
-<p>The number of input and output <code>Location</code> slots available for a shader
-input or output interface is limited, and dependent on the shader stage as
-described in <a href="#interfaces-iointerfaces-limits">Shader Input and Output Locations</a>.
+<p>The number of input and output locations available for a shader input or
+output interface depend on the shader stage as described in
+<a href="#interfaces-iointerfaces-limits">Shader Input and Output Locations</a>.
 All variables in both the <a href="#interfaces-builtin-variables">built-in interface block</a> and the <a href="#interfaces-iointerfaces-user">user-defined variable interface</a> count against these limits.
 Each effective <code>Location</code> <strong>must</strong> have a value less than the number of
 <code>Location</code> slots available for the given interface, as specified in the
@@ -792,41 +770,6 @@ Each effective <code>Location</code> <strong>must</strong> have a value less tha
 </tbody>
 </table>
 </div>
-<div class="sect2">
-<h3 id="interfaces-iointerfaces-components"><a class="anchor" href="#interfaces-iointerfaces-components"></a>Component Assignment</h3>
-<div class="paragraph">
-<p>The <code>Component</code> decoration allows the <code>Location</code> to be more finely
-specified for scalars and vectors, down to the individual <code>Component</code>
-word within a <code>Location</code> slot that are consumed.
-The <code>Component</code> word within a <code>Location</code> are 0, 1, 2, and 3.
-A variable or block member starting at <code>Component</code> N will consume
-<code>Component</code> words N, N+1, N+2, &#8230;&#8203;
-up through its size.
-For 16-, and 32-bit types,
-it is invalid if this sequence of <code>Component</code> words gets larger than 3.
-A scalar 64-bit type will consume two of these <code>Component</code> words in
-sequence, and a two-component 64-bit vector type will consume all four
-<code>Component</code> words available within a <code>Location</code>.
-A three- or four-component 64-bit vector type <strong>must</strong> not specify a non-zero
-<code>Component</code> decoration.
-A three-component 64-bit vector type will consume all four <code>Component</code>
-words of the first <code>Location</code> and <code>Component</code> 0 and 1 of the second
-<code>Location</code>.
-This leaves <code>Component</code> 2 and 3 available for other component-qualified
-declarations.</p>
-</div>
-<div class="paragraph">
-<p>A scalar or two-component 64-bit data type <strong>must</strong> not specify a
-<code>Component</code> decoration of 1 or 3.
-A <code>Component</code> decoration <strong>must</strong> not be specified for any type that is not
-a scalar or vector.</p>
-</div>
-<div class="paragraph">
-<p>A four-component 64-bit data type will consume all four <code>Component</code> words
-of the first <code>Location</code> and all four <code>Component</code> words of the second
-<code>Location</code>.</p>
-</div>
-</div>
 </div>
 </div>
 <div class="sect1">
@@ -861,6 +804,13 @@ structure.</p>
 <p>All vertex shader inputs declared as above <strong>must</strong> have a corresponding
 attribute and binding in the pipeline.</p>
 </div>
+<div class="paragraph">
+<p>Components and locations are consumed as defined for
+<a href="#interfaces-iointerfaces-locations">Location and Component Assignment</a>.
+Multiple <a href="#interfaces-iointerfaces-user">user-defined input variable</a>
+declarations <strong>must</strong> not have overlapping <code>Component</code> slots within the same
+<code>Location</code>.</p>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -894,8 +844,6 @@ the color attachment indicated by
 <a href="renderpass.html#VkSubpassDescription" class="xref page">VkSubpassDescription</a>::<code>pColorAttachments</code>[<em>i</em>].
 Values are written to those attachments after passing through the blending
 unit as described in <a href="framebuffer.html#framebuffer-blending" class="xref page">Blending</a>, if enabled.
-Locations are consumed as described in
-<a href="#interfaces-iointerfaces-locations">Location Assignment</a>.
 The number of available fragment output <code>Location</code> slots is given by the
 <code>maxFragmentOutputAttachments</code> member of the
 <code>VkPhysicalDeviceLimits</code> structure.</p>
@@ -1231,9 +1179,7 @@ If the invocation does not set a value for them, the input values to those
 blending or color attachment writes are <strong>undefined</strong>.</p>
 </div>
 <div class="paragraph">
-<p>Components of the output variables are assigned as described in
-<a href="#interfaces-iointerfaces-components">Component Assignment</a>.
-Output <code>Component</code> words identified as 0, 1, 2, and 3 will be directed to
+<p>Output <code>Component</code> words identified as 0, 1, 2, and 3 will be directed to
 the R, G, B, and A inputs to the blending unit, respectively, or to the
 output attachment if blending is disabled.
 If two variables are placed within the same <code>Location</code>, they <strong>must</strong> have
@@ -1250,9 +1196,11 @@ Outputs identified with an <code>Index</code> of one are directed to the second
 input of the corresponding blending unit.</p>
 </div>
 <div class="paragraph">
-<p>There <strong>must</strong> be no output variable which has the same <code>Location</code>,
-<code>Component</code>, and <code>Index</code> as any other, either explicitly declared or
-implied.</p>
+<p>Components and locations are consumed as defined for
+<a href="#interfaces-iointerfaces-locations">Location and Component Assignment</a>.
+Output variable declarations <strong>must</strong> not consume any of the same
+<code>Component</code> slots within the same <code>Location</code> and with the same
+<code>Index</code> value as any other output variable declaration.</p>
 </div>
 <div class="paragraph">
 <p>Output values written by a fragment shader <strong>must</strong> be declared with either
