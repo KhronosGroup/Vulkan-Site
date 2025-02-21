@@ -2748,7 +2748,7 @@ any of its members.
 An empty structure has a base alignment equal to the size of the
 smallest scalar type permitted by the capabilities declared in the
 SPIR-V module.
-(e.g., for a 1 byte aligned empty struct in the <code>StorageBuffer</code>
+(e.g., for a 1 byte aligned empty structure in the <code>StorageBuffer</code>
 storage class, <code>StorageBuffer8BitAccess</code> or
 <code>UniformAndStorageBuffer8BitAccess</code> <strong>must</strong> be declared in the SPIR-V
 module.)</p>
@@ -2804,8 +2804,9 @@ of 16.</p>
 <div class="paragraph">
 <p>Every member of an <code>OpTypeStruct</code> that is required to be explicitly laid
 out <strong>must</strong> be aligned according to the first matching rule as follows.
-If the struct is contained in pointer types of multiple storage classes, it
-<strong>must</strong> satisfy the requirements for every storage class used to reference it.</p>
+If the structure is contained in pointer types of multiple storage classes,
+it <strong>must</strong> satisfy the requirements for every storage class used to reference
+it.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -2878,8 +2879,8 @@ of the alignment of the array or matrix as defined above.</p>
 or <code>PushConstant</code>, and the <a href="features.html#features-scalarBlockLayout" class="xref page">    <code>scalarBlockLayout</code></a> feature is not enabled.</p>
 </li>
 <li>
-<p>The storage class is <code>Workgroup</code>, and either the struct member is not
-part of a <code>Block</code> or the
+<p>The storage class is <code>Workgroup</code>, and either the structure member is
+not part of a <code>Block</code> or the
 <a href="features.html#features-workgroupMemoryExplicitLayoutScalarBlockLayout" class="xref page">    <code>workgroupMemoryExplicitLayoutScalarBlockLayout</code></a> feature is not
 enabled.</p>
 </li>
@@ -3830,14 +3831,29 @@ using the <code>Output</code> <code>Storage</code> <code>Class</code></p>
 <li>
 <p><a id="VUID-CullPrimitiveEXT-CullPrimitiveEXT-07036" href="#VUID-CullPrimitiveEXT-CullPrimitiveEXT-07036"></a> <span class="vuid">VUID-CullPrimitiveEXT-CullPrimitiveEXT-07036</span><br>
 
-The variable decorated with <code>CullPrimitiveEXT</code> <strong>must</strong> be declared as
-an array of boolean values</p>
+<code>CullPrimitiveEXT</code> <strong>must</strong> decorate a scalar boolean member of a
+structure decorated as <code>Block</code>, or decorate a variable of type
+<code>OpTypeArray</code> of boolean values.</p>
 </li>
 <li>
-<p><a id="VUID-CullPrimitiveEXT-CullPrimitiveEXT-07037" href="#VUID-CullPrimitiveEXT-CullPrimitiveEXT-07037"></a> <span class="vuid">VUID-CullPrimitiveEXT-CullPrimitiveEXT-07037</span><br>
+<p><a id="VUID-CullPrimitiveEXT-CullPrimitiveEXT-10589" href="#VUID-CullPrimitiveEXT-CullPrimitiveEXT-10589"></a> <span class="vuid">VUID-CullPrimitiveEXT-CullPrimitiveEXT-10589</span><br>
 
-The size of the array decorated with <code>CullPrimitiveEXT</code> <strong>must</strong> match
-the value specified by <code>OutputPrimitivesEXT</code></p>
+If <code>CullPrimitiveEXT</code> is declared as an array of boolean values, the
+size of the array <strong>must</strong> match the value specified by
+<code>OutputPrimitivesEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-CullPrimitiveEXT-CullPrimitiveEXT-10590" href="#VUID-CullPrimitiveEXT-CullPrimitiveEXT-10590"></a> <span class="vuid">VUID-CullPrimitiveEXT-CullPrimitiveEXT-10590</span><br>
+
+If <code>CullPrimitiveEXT</code> decorates a member of a structure, the variable
+declaration of the containing <code>Block</code> type <strong>must</strong> have an array size
+that matches the value specified by <code>OutputPrimitivesEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-CullPrimitiveEXT-CullPrimitiveEXT-10591" href="#VUID-CullPrimitiveEXT-CullPrimitiveEXT-10591"></a> <span class="vuid">VUID-CullPrimitiveEXT-CullPrimitiveEXT-10591</span><br>
+
+There must be only one declaration of the <code>CullPrimitiveEXT</code>
+associated with a entry point&#8217;s interface.</p>
 </li>
 <li>
 <p><a id="VUID-CullPrimitiveEXT-CullPrimitiveEXT-07038" href="#VUID-CullPrimitiveEXT-CullPrimitiveEXT-07038"></a> <span class="vuid">VUID-CullPrimitiveEXT-CullPrimitiveEXT-07038</span><br>
@@ -5331,7 +5347,8 @@ The variable decorated with <code>Layer</code> within the <code>Fragment</code>
 <p><a id="VUID-Layer-Layer-04276" href="#VUID-Layer-Layer-04276"></a> <span class="vuid">VUID-Layer-Layer-04276</span><br>
 
 The variable decorated with <code>Layer</code> <strong>must</strong> be declared as a scalar
-32-bit integer value</p>
+32-bit integer value for all supported execution models except
+<code>MeshEXT</code>.</p>
 </li>
 <li>
 <p><a id="VUID-Layer-Layer-07039" href="#VUID-Layer-Layer-07039"></a> <span class="vuid">VUID-Layer-Layer-07039</span><br>
@@ -5339,6 +5356,27 @@ The variable decorated with <code>Layer</code> <strong>must</strong> be declared
 The variable decorated with <code>Layer</code> within the <code>MeshEXT</code>
 <code>Execution</code> <code>Model</code> <strong>must</strong> also be decorated with the <code>PerPrimitiveEXT</code>
 decoration</p>
+</li>
+<li>
+<p><a id="VUID-Layer-Layer-10592" href="#VUID-Layer-Layer-10592"></a> <span class="vuid">VUID-Layer-Layer-10592</span><br>
+
+<code>Layer</code> within the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> <strong>must</strong> decorate a
+scalar 32-bit integer member of a structure decorated as <code>Block</code>, or
+decorate a variable of type <code>OpTypeArray</code> of scalar 32-bit integer
+values.</p>
+</li>
+<li>
+<p><a id="VUID-Layer-Layer-10593" href="#VUID-Layer-Layer-10593"></a> <span class="vuid">VUID-Layer-Layer-10593</span><br>
+
+If <code>Layer</code> is declared as an array of boolean values, the size of the
+array <strong>must</strong> match the value specified by <code>OutputPrimitivesEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-Layer-Layer-10594" href="#VUID-Layer-Layer-10594"></a> <span class="vuid">VUID-Layer-Layer-10594</span><br>
+
+If <code>Layer</code> decorates a member of a structure, the variable
+declaration of the containing <code>Block</code> type <strong>must</strong> have an array size
+that matches the value specified by <code>OutputPrimitivesEXT</code></p>
 </li>
 </ul>
 </div>
@@ -6326,7 +6364,8 @@ The variable decorated with <code>PrimitiveId</code> within the <code>MeshEXT</c
 <p><a id="VUID-PrimitiveId-PrimitiveId-04337" href="#VUID-PrimitiveId-PrimitiveId-04337"></a> <span class="vuid">VUID-PrimitiveId-PrimitiveId-04337</span><br>
 
 The variable decorated with <code>PrimitiveId</code> <strong>must</strong> be declared as a
-scalar 32-bit integer value</p>
+scalar 32-bit integer value for all supported execution models except
+<code>MeshEXT</code></p>
 </li>
 <li>
 <p><a id="VUID-PrimitiveId-PrimitiveId-07040" href="#VUID-PrimitiveId-PrimitiveId-07040"></a> <span class="vuid">VUID-PrimitiveId-PrimitiveId-07040</span><br>
@@ -6334,6 +6373,28 @@ scalar 32-bit integer value</p>
 The variable decorated with <code>PrimitiveId</code> within the <code>MeshEXT</code>
 <code>Execution</code> <code>Model</code> <strong>must</strong> also be decorated with the <code>PerPrimitiveEXT</code>
 decoration</p>
+</li>
+<li>
+<p><a id="VUID-PrimitiveId-PrimitiveId-10595" href="#VUID-PrimitiveId-PrimitiveId-10595"></a> <span class="vuid">VUID-PrimitiveId-PrimitiveId-10595</span><br>
+
+<code>PrimitiveId</code> within the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> <strong>must</strong> decorate
+a scalar 32-bit integer member of a structure decorated as <code>Block</code>,
+or decorate a variable of type <code>OpTypeArray</code> of 32-bit integer
+values.</p>
+</li>
+<li>
+<p><a id="VUID-PrimitiveId-PrimitiveId-10596" href="#VUID-PrimitiveId-PrimitiveId-10596"></a> <span class="vuid">VUID-PrimitiveId-PrimitiveId-10596</span><br>
+
+If <code>PrimitiveId</code> is declared as an array of 32-bit integer values,
+within the <code>MeshEXT</code> <code>Execution</code> <code>Model</code>, size of the array <strong>must</strong> match
+the value specified by <code>OutputPrimitivesEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-PrimitiveId-PrimitiveId-10597" href="#VUID-PrimitiveId-PrimitiveId-10597"></a> <span class="vuid">VUID-PrimitiveId-PrimitiveId-10597</span><br>
+
+If <code>PrimitiveId</code> decorates a member of a structure, the variable
+declaration of the containing <code>Block</code> type <strong>must</strong> have an array size
+that matches the value specified by <code>OutputPrimitivesEXT</code></p>
 </li>
 </ul>
 </div>
@@ -6657,7 +6718,8 @@ declared using the <code>Output</code> <code>Storage</code> <code>Class</code></
 <p><a id="VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-04486" href="#VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-04486"></a> <span class="vuid">VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-04486</span><br>
 
 The variable decorated with <code>PrimitiveShadingRateKHR</code> <strong>must</strong> be
-declared as a scalar 32-bit integer value</p>
+declared as a scalar 32-bit integer value for all supported execution
+models except <code>MeshEXT</code></p>
 </li>
 <li>
 <p><a id="VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-04487" href="#VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-04487"></a> <span class="vuid">VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-04487</span><br>
@@ -6684,6 +6746,28 @@ enumerants in the SPIR-V specification</p>
 The variable decorated with <code>PrimitiveShadingRateKHR</code> within the
 <code>MeshEXT</code> <code>Execution</code> <code>Model</code> <strong>must</strong> also be decorated with the
 <code>PerPrimitiveEXT</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10598" href="#VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10598"></a> <span class="vuid">VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10598</span><br>
+
+<code>PrimitiveShadingRateKHR</code> within the <code>MeshEXT</code> <code>Execution</code> <code>Model</code>
+<strong>must</strong> decorate a scalar 32-bit integer member of a structure decorated
+as <code>Block</code>, or decorate a variable of type <code>OpTypeArray</code> of 32-bit
+integer values.</p>
+</li>
+<li>
+<p><a id="VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10599" href="#VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10599"></a> <span class="vuid">VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10599</span><br>
+
+If <code>PrimitiveShadingRateKHR</code> is declared as an array of boolean
+values, the size of the array <strong>must</strong> match the value specified by
+<code>OutputPrimitivesEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10600" href="#VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10600"></a> <span class="vuid">VUID-PrimitiveShadingRateKHR-PrimitiveShadingRateKHR-10600</span><br>
+
+If <code>PrimitiveShadingRateKHR</code> decorates a member of a structure, the
+variable declaration of the containing <code>Block</code> type <strong>must</strong> have an
+array size that matches the value specified by <code>OutputPrimitivesEXT</code></p>
 </li>
 </ul>
 </div>
@@ -8064,7 +8148,8 @@ The variable decorated with <code>ViewportIndex</code> within the <code>Fragment
 <p><a id="VUID-ViewportIndex-ViewportIndex-04408" href="#VUID-ViewportIndex-ViewportIndex-04408"></a> <span class="vuid">VUID-ViewportIndex-ViewportIndex-04408</span><br>
 
 The variable decorated with <code>ViewportIndex</code> <strong>must</strong> be declared as a
-scalar 32-bit integer value</p>
+scalar 32-bit integer value for all supported execution models except
+<code>MeshEXT</code></p>
 </li>
 <li>
 <p><a id="VUID-ViewportIndex-ViewportIndex-07060" href="#VUID-ViewportIndex-ViewportIndex-07060"></a> <span class="vuid">VUID-ViewportIndex-ViewportIndex-07060</span><br>
@@ -8072,6 +8157,27 @@ scalar 32-bit integer value</p>
 The variable decorated with <code>ViewportIndex</code> within the <code>MeshEXT</code>
 <code>Execution</code> <code>Model</code> <strong>must</strong> also be decorated with the <code>PerPrimitiveEXT</code>
 decoration</p>
+</li>
+<li>
+<p><a id="VUID-ViewportIndex-ViewportIndex-10601" href="#VUID-ViewportIndex-ViewportIndex-10601"></a> <span class="vuid">VUID-ViewportIndex-ViewportIndex-10601</span><br>
+
+<code>ViewportIndex</code> within the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> <strong>must</strong>
+decorate a scalar boolean member of a structure decorated as <code>Block</code>,
+or decorate a variable of type <code>OpTypeArray</code> of boolean values.</p>
+</li>
+<li>
+<p><a id="VUID-ViewportIndex-ViewportIndex-10602" href="#VUID-ViewportIndex-ViewportIndex-10602"></a> <span class="vuid">VUID-ViewportIndex-ViewportIndex-10602</span><br>
+
+If <code>ViewportIndex</code> is declared as an array of boolean values, the
+size of the array <strong>must</strong> match the value specified by
+<code>OutputPrimitivesEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-ViewportIndex-ViewportIndex-10603" href="#VUID-ViewportIndex-ViewportIndex-10603"></a> <span class="vuid">VUID-ViewportIndex-ViewportIndex-10603</span><br>
+
+If <code>ViewportIndex</code> decorates a member of a structure, the variable
+declaration of the containing <code>Block</code> type <strong>must</strong> have an array size
+that matches the value specified by <code>OutputPrimitivesEXT</code></p>
 </li>
 </ul>
 </div>
