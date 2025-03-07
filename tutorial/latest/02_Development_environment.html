@@ -659,7 +659,7 @@ Run these to confirm your machine supports Vulkan.</p>
 The loader looks up the functions in the driver at runtime, similarly to GLEW for OpenGL - if you&#8217;re familiar with that.</p>
 </li>
 <li>
-<p><code>sudo apt install vulkan-validationlayers spirv-tools</code> or <code>sudo dnf install mesa-vulkan-devel vulkan-validation-layers-devel</code>: Installs the standard validation layers and required SPIR-V tools. These are crucial when debugging Vulkan applications, and we&#8217;ll discuss them in the upcoming chapter.</p>
+<p><code>sudo apt install vulkan-validationlayers spirv-tools</code> or <code>sudo dnf install mesa-vulkan-drivers vulkan-validation-layers-devel</code>: Installs the standard validation layers and required SPIR-V tools. These are crucial when debugging Vulkan applications, and we&#8217;ll discuss them in the upcoming chapter.</p>
 </li>
 </ul>
 </div>
@@ -985,8 +985,18 @@ There is no native support for Vulkan on MacOS, so what MoltenVK does is actuall
 With this you can take advantage of debugging and performance benefits of Apple&#8217;s Metal framework.</p>
 </div>
 <div class="paragraph">
-<p>After downloading it, simply extract the contents to a folder of your choice (keep in mind you will need to reference it when creating your projects on Xcode).
-Inside the extracted folder, in the <code>Applications</code> folder you should have some executable files that will run a few demos using the SDK.
+<p>After downloading the installer for MacOS, double-click the installer and follow the prompts. Keep a note of the installation location during the "Installation Folder" step. You will need to reference it when creating your projects in Xcode.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/images/sdk_install_mac.png" alt="sdk install mac">
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Note</strong>: In this tutorial, <code>vulkansdk</code> will refer to the path where you intalled the VulkanSDK.</p>
+</div>
+<div class="paragraph">
+<p>Within the <code>vulkansdk/Applications</code> folder you should have some executable files that will run a few demos using the SDK.
 Run the <code>vkcube</code> executable and you will see the following:</p>
 </div>
 <div class="imageblock">
@@ -998,7 +1008,7 @@ Run the <code>vkcube</code> executable and you will see the following:</p>
 <div class="sect2">
 <h3 id="_glfw_3"><a class="anchor" href="#_glfw_3"></a>GLFW</h3>
 <div class="paragraph">
-<p>As mentioned before, Vulkan by itself is a platform agnostic API and does not include tools for creation a window to display the rendered results.
+<p>As mentioned before, Vulkan by itself is a platform agnostic API and does not include tools for creating a window to display the rendered results.
 We&#8217;ll use the <a href="https://www.glfw.org/">GLFW library</a> to create a window, which supports Windows, Linux and MacOS.
 There are other libraries available for this purpose, like <a href="https://www.libsdl.org/">SDL</a>, but the advantage of GLFW is that it also abstracts away some of the other platform-specific things in Vulkan besides just window creation.</p>
 </div>
@@ -1097,17 +1107,47 @@ int main() {
 </div>
 <div class="paragraph">
 <p>Xcode should already be showing some errors such as libraries it cannot find.
-We will now start configuring the project to get rid of those errors.
-On the <em>Project Navigator</em> panel select your project.
+We will now start configuring the project to get rid of those errors.</p>
+</div>
+<div class="paragraph">
+<p>To do this, you will need the install location of glfw and glm. The default homebrew folder varies if you are on an Intel Mac <code>/usr/local</code> or Apple Silicon Mac <code>/opt/homebrew</code>. You can determine your homebrew install location using <code>--prefix</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">brew --prefix</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On the <em>Project Navigator</em> panel select your project.
 Open the <em>Build Settings</em> tab and then:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>Find the <strong>Header Search Paths</strong> field and add a link to <code>/usr/local/include</code> (this is where Homebrew installs headers, so the glm and glfw3 header files should be there) and a link to <code>vulkansdk/macOS/include</code> for the Vulkan headers.</p>
+<p>Find the <strong>Header Search Paths</strong> field.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Add a link to <code>/opt/homebrew/include</code> (or <code>/usr/local/include</code> for Intel Mac). The glm and glfw3 header files should be in this directory.</p>
 </li>
 <li>
-<p>Find the <strong>Library Search Paths</strong> field and add a link to <code>/usr/local/lib</code> (again, this is where Homebrew installs libraries, so the glm and glfw3 lib files should be there) and a link to <code>vulkansdk/macOS/lib</code>.</p>
+<p>Add a link to <code>vulkansdk/macOS/include</code> for the Vulkan headers.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Find the <strong>Library Search Paths</strong> field.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Add a link to <code>/opt/homebrew/lib</code> (again, <code>/usr/local/lib</code> for Intel Mac)</p>
+</li>
+<li>
+<p>Add a link to <code>vulkansdk/macOS/lib</code>.</p>
+</li>
+</ul>
+</div>
 </li>
 </ul>
 </div>
@@ -1126,14 +1166,17 @@ To make things easier we will be adding the dynamic libraries in the project (yo
 <div class="ulist">
 <ul>
 <li>
-<p>For glfw open the folder <code>/usr/local/lib</code> and there you will find a file name like <code>libglfw.3.x.dylib</code> ("x" is the library&#8217;s version number, it might be different depending on when you downloaded the package from Homebrew).
-Simply drag that file to the Linked Frameworks and Libraries tab on Xcode.</p>
+<p>For glfw open the folder <code>/opt/homebrew/lib</code> and there you will find a file name like <code>libglfw.3.x.dylib</code> ("x" is the library&#8217;s version number, it might be different depending on when you downloaded the package from Homebrew).
+Simply drag that file to the Link Binary With Libraries section on Xcode.</p>
 </li>
 <li>
 <p>For vulkan, go to <code>vulkansdk/macOS/lib</code>.
-Do the same for the both files <code>libvulkan.1.dylib</code> and <code>libvulkan.1.x.xx.dylib</code> (where "x" will be the version number of the the SDK you downloaded).</p>
+Once open in Finder, look for <code>libvulkan.1.dylib</code> and <code>libvulkan.1.x.xxx.dylib</code> (where "x" will be the version number of the the SDK you downloaded). Select both files and drag them together into the Link Binary With Libraries section as well.</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p><strong>Note:</strong> If you drag the vulkan files in separately, the dynamic libraries may be incorrectly associated at runtime.</p>
 </div>
 <div class="paragraph">
 <p>After adding those libraries, in the same tab on <strong>Copy Files</strong> change <code>Destination</code> to "Frameworks", clear the subpath and deselect "Copy only when installing".
@@ -1162,7 +1205,7 @@ On Xcode toolbar go to <code>Product</code> &gt; <code>Scheme</code> &gt; <code>
 </ul>
 </div>
 <div class="paragraph">
-<p>It should look like so:</p>
+<p>Uncheck 'shared'. It should look like so:</p>
 </div>
 <div class="imageblock">
 <div class="content">

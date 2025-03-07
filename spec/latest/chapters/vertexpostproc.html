@@ -547,7 +547,9 @@ For matrix types, outputs are written as an array of column vectors.</p>
 <div class="paragraph">
 <p>If any component of an output with an assigned transform feedback offset was
 not written to by its shader, the value recorded for that component is
-<strong>undefined</strong>.
+<strong>undefined</strong>, and the primitives needed and primitives written counts in the
+corresponding <code>VK_QUERY_TYPE_TRANSFORM_FEEDBACK_STREAM_EXT</code> query will
+increment as normal.
 All components of an output variable <strong>must</strong> be written at an offset aligned
 to the size of the component.
 The size of each component of an output variable <strong>must</strong> be at least 32-bits.
@@ -859,6 +861,14 @@ to start capturing vertex data.
 If the byte offset stored to the counter buffer location was done using
 <a href="#vkCmdEndTransformFeedbackEXT">vkCmdEndTransformFeedbackEXT</a> it can be used to resume transform
 feedback from the previous location.
+In that case, a pipeline barrier is required between the calls to
+<code>vkCmdEndTransformFeedbackEXT</code> and
+<code>vkCmdBeginTransformFeedbackEXT</code>, with
+<code>VK_PIPELINE_STAGE_TRANSFORM_FEEDBACK_BIT_EXT</code> as the source and
+destination stages,
+<code>VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_WRITE_BIT_EXT</code> as the source
+access and <code>VK_ACCESS_TRANSFORM_FEEDBACK_COUNTER_READ_BIT_EXT</code> as
+the destination access.
 If <code>pCounterBuffers</code> is <code>NULL</code>, then transform feedback will start
 capturing vertex data to byte offset zero in all bound transform
 feedback buffers.
@@ -3462,7 +3472,7 @@ be greater than or equal to
 </li>
 <li>
 <p><a id="VUID-VkPipelineViewportStateCreateInfo-sType-unique" href="#VUID-VkPipelineViewportStateCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkPipelineViewportStateCreateInfo-sType-unique</span><br>
- The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
 </li>
 <li>
 <p><a id="VUID-VkPipelineViewportStateCreateInfo-flags-zerobitmask" href="#VUID-VkPipelineViewportStateCreateInfo-flags-zerobitmask"></a> <span class="vuid">VUID-VkPipelineViewportStateCreateInfo-flags-zerobitmask</span><br>

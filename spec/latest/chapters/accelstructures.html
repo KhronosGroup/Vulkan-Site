@@ -612,8 +612,8 @@ structure.</p>
 <div class="paragraph">
 <p>If the original acceleration structure was built using opacity micromaps and
 <code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_DATA_UPDATE_EXT</code>
-was set in <code>flags</code>, the application <strong>must</strong> provide the corresponding
-micromap information to the update operation.
+was set in <code>flags</code>, the application <strong>must</strong> provide a micromap matching
+the original micromap in structure with only opacity values updated.
 The application is prohibited from changing anything other than the specific
 opacity values assigned to the triangles.</p>
 </div>
@@ -642,6 +642,13 @@ associated with any acceleration-structure triangle.</p>
 <code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_UPDATE_EXT</code> was
 set in <code>flags</code>, the application <strong>must</strong> provide a micromap to the update
 operation.</p>
+</div>
+<div class="paragraph">
+<p>If <a href="resources.html#VkMicromapBuildSizesInfoEXT" class="xref page">VkMicromapBuildSizesInfoEXT</a>::<code>discardable</code> is <code>VK_FALSE</code>, a
+<code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_DATA_UPDATE_EXT</code>
+or <code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_OPACITY_MICROMAP_UPDATE_EXT</code>
+operation transfers the reference in the acceleration structure to the new
+micromap.</p>
 </div>
 <div class="paragraph">
 <p>If the original acceleration structure was built using opacity micromaps and
@@ -1752,6 +1759,19 @@ device address containing a value obtained from
 <a href="resources.html#vkGetAccelerationStructureDeviceAddressKHR" class="xref page">vkGetAccelerationStructureDeviceAddressKHR</a> or <code>0</code></p>
 </li>
 <li>
+<p><a id="VUID-vkCmdBuildAccelerationStructuresKHR-pInfos-10607" href="#VUID-vkCmdBuildAccelerationStructuresKHR-pInfos-10607"></a> <span class="vuid">VUID-vkCmdBuildAccelerationStructuresKHR-pInfos-10607</span><br>
+
+For any element of <code>pInfos</code>[i].<code>pGeometries</code> or
+<code>pInfos</code>[i].<code>ppGeometries</code> with a <code>geometryType</code> of
+<code>VK_GEOMETRY_TYPE_INSTANCES_KHR</code>, if
+<code>VK_GEOMETRY_INSTANCE_DISABLE_OPACITY_MICROMAPS_EXT</code> is set in
+<a href="#VkAccelerationStructureInstanceKHR">VkAccelerationStructureInstanceKHR</a>::<code>flags</code> then
+<code>geometry.instances.data.deviceAddress</code> <strong>must</strong> refer to an
+acceleration structure that was built with
+<code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DISABLE_OPACITY_MICROMAPS_EXT</code>
+set in <a href="#VkAccelerationStructureBuildGeometryInfoKHR">VkAccelerationStructureBuildGeometryInfoKHR</a>::<code>flags</code></p>
+</li>
+<li>
 <p><a id="VUID-vkCmdBuildAccelerationStructuresKHR-commandBuffer-09547" href="#VUID-vkCmdBuildAccelerationStructuresKHR-commandBuffer-09547"></a> <span class="vuid">VUID-vkCmdBuildAccelerationStructuresKHR-commandBuffer-09547</span><br>
 
 <code>commandBuffer</code> <strong>must</strong> not be a protected command buffer</p>
@@ -2536,6 +2556,19 @@ device address containing a value obtained from
 <a href="resources.html#vkGetAccelerationStructureDeviceAddressKHR" class="xref page">vkGetAccelerationStructureDeviceAddressKHR</a> or <code>0</code></p>
 </li>
 <li>
+<p><a id="VUID-vkCmdBuildAccelerationStructuresIndirectKHR-pInfos-10607" href="#VUID-vkCmdBuildAccelerationStructuresIndirectKHR-pInfos-10607"></a> <span class="vuid">VUID-vkCmdBuildAccelerationStructuresIndirectKHR-pInfos-10607</span><br>
+
+For any element of <code>pInfos</code>[i].<code>pGeometries</code> or
+<code>pInfos</code>[i].<code>ppGeometries</code> with a <code>geometryType</code> of
+<code>VK_GEOMETRY_TYPE_INSTANCES_KHR</code>, if
+<code>VK_GEOMETRY_INSTANCE_DISABLE_OPACITY_MICROMAPS_EXT</code> is set in
+<a href="#VkAccelerationStructureInstanceKHR">VkAccelerationStructureInstanceKHR</a>::<code>flags</code> then
+<code>geometry.instances.data.deviceAddress</code> <strong>must</strong> refer to an
+acceleration structure that was built with
+<code>VK_BUILD_ACCELERATION_STRUCTURE_ALLOW_DISABLE_OPACITY_MICROMAPS_EXT</code>
+set in <a href="#VkAccelerationStructureBuildGeometryInfoKHR">VkAccelerationStructureBuildGeometryInfoKHR</a>::<code>flags</code></p>
+</li>
+<li>
 <p><a id="VUID-vkCmdBuildAccelerationStructuresIndirectKHR-commandBuffer-09547" href="#VUID-vkCmdBuildAccelerationStructuresIndirectKHR-commandBuffer-09547"></a> <span class="vuid">VUID-vkCmdBuildAccelerationStructuresIndirectKHR-commandBuffer-09547</span><br>
 
 <code>commandBuffer</code> <strong>must</strong> not be a protected command buffer</p>
@@ -3119,7 +3152,7 @@ describing additional properties of how the geometry should be built.</p>
 </li>
 <li>
 <p><a id="VUID-VkAccelerationStructureGeometryKHR-sType-unique" href="#VUID-VkAccelerationStructureGeometryKHR-sType-unique"></a> <span class="vuid">VUID-VkAccelerationStructureGeometryKHR-sType-unique</span><br>
- The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
 </li>
 <li>
 <p><a id="VUID-VkAccelerationStructureGeometryKHR-geometryType-parameter" href="#VUID-VkAccelerationStructureGeometryKHR-geometryType-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureGeometryKHR-geometryType-parameter</span><br>
@@ -3306,7 +3339,7 @@ The <a href="resources.html#resources-buffer-view-format-features" class="xref p
 </li>
 <li>
 <p><a id="VUID-VkAccelerationStructureGeometryTrianglesDataKHR-sType-unique" href="#VUID-VkAccelerationStructureGeometryTrianglesDataKHR-sType-unique"></a> <span class="vuid">VUID-VkAccelerationStructureGeometryTrianglesDataKHR-sType-unique</span><br>
- The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
 </li>
 <li>
 <p><a id="VUID-VkAccelerationStructureGeometryTrianglesDataKHR-vertexFormat-parameter" href="#VUID-VkAccelerationStructureGeometryTrianglesDataKHR-vertexFormat-parameter"></a> <span class="vuid">VUID-VkAccelerationStructureGeometryTrianglesDataKHR-vertexFormat-parameter</span><br>
@@ -9842,7 +9875,7 @@ The sum of <code>partitionCount</code> and
 </li>
 <li>
 <p><a id="VUID-VkPartitionedAccelerationStructureInstancesInputNV-sType-unique" href="#VUID-VkPartitionedAccelerationStructureInstancesInputNV-sType-unique"></a> <span class="vuid">VUID-VkPartitionedAccelerationStructureInstancesInputNV-sType-unique</span><br>
- The <code>sType</code> value of each struct in the <code>pNext</code> chain <strong>must</strong> be unique</p>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique</p>
 </li>
 <li>
 <p><a id="VUID-VkPartitionedAccelerationStructureInstancesInputNV-flags-parameter" href="#VUID-VkPartitionedAccelerationStructureInstancesInputNV-flags-parameter"></a> <span class="vuid">VUID-VkPartitionedAccelerationStructureInstancesInputNV-flags-parameter</span><br>

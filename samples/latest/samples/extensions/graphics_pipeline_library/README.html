@@ -405,6 +405,9 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="../vertex_dynamic_state/README.html">Vertex dynamic state</a>
   </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
 </ul>
   </li>
   <li class="nav-item" data-depth="1">
@@ -791,6 +794,33 @@ This may increase build times but can in turn result in lower runtime costs.</p>
 <div class="paragraph">
 <p>This sample demonstrates that functionality by creating the shared vertex input interface, pre-rasterization shader state and fragment output interface parts only once up-front, and then re-uses them to create pipelines with customized fragment shaders using random lighting models at runtime.
 Pipelines are created in a background thread and once they&#8217;re created, command buffers are updated to display a mesh using the new pipeline.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_independent_descriptor_sets"><a class="anchor" href="#_independent_descriptor_sets"></a>Independent Descriptor Sets</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While this sample doesn&#8217;t use it, this extension has a <code>VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT</code> flag that can be used.</p>
+</div>
+<div class="paragraph">
+<p>Imagine a situation where the vertex and fragment stage accesses two different descriptor sets:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Vertex Shader
+layout(set = 0) UBO_X;
+
+// Fragment Shader
+layout(set = 1) UBO_Y;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Normally when compiling a pipeline, both stages are together and internally a driver will reserve 2 separate descriptor slots for <code>UBO_X</code> and <code>UBO_Y</code>.
+When using graphics pipeline libraries, the driver will see the fragment shader only uses a single descriptor set.
+It might internally map it to <code>set 0</code>, but when linking the two libraries, there will be a collision.
+The <code>VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT</code> flag ensures the driver will be able to handle this case and not have any collisions.
+There are some extra constraints when using this flag, but the Validation Layers will detect them for you.</p>
 </div>
 </div>
 </div>
