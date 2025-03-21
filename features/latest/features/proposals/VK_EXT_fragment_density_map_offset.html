@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>VK_KHR_fragment_shader_barycentric :: Vulkan Documentation Project</title>
+    <title>VK_EXT_fragment_density_map_offset :: Vulkan Documentation Project</title>
     <meta name="generator" content="Antora 3.1.10">
     <script>
       !function (theme) {
@@ -192,7 +192,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_EXT_external_memory_metal.html">VK_EXT_external_memory_metal</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -300,7 +300,7 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a>
   </li>
   <li class="nav-item" data-depth="2">
@@ -503,7 +503,7 @@
   <ul>
     <li><a href="../index.html">Vulkan Feature Descriptions</a></li>
     <li>Feature Descriptions</li>
-    <li><a href="VK_KHR_fragment_shader_barycentric.html">VK_KHR_fragment_shader_barycentric</a></li>
+    <li><a href="VK_EXT_fragment_density_map_offset.html">VK_EXT_fragment_density_map_offset</a></li>
   </ul>
 </nav>
 </div>
@@ -512,7 +512,7 @@
   <div class="toc-menu"></div>
 </aside>
 <article class="doc">
-<h1 class="page">VK_KHR_fragment_shader_barycentric</h1>
+<h1 class="page">VK_EXT_fragment_density_map_offset</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -520,21 +520,44 @@
 <li><a href="#_solution_space">2. Solution Space</a></li>
 <li><a href="#_proposal">3. Proposal</a>
 <ul class="sectlevel2">
-<li><a href="#_new_spir_v_decorations">3.1. New SPIR-V decorations</a></li>
-<li><a href="#_barycentric_weights">3.2. Barycentric weights</a></li>
-<li><a href="#_per_vertex_attributes">3.3. Per-vertex attributes</a></li>
-<li><a href="#_properties">3.4. Properties</a></li>
-<li><a href="#_glsl_mapping">3.5. GLSL mapping</a></li>
-<li><a href="#_hlsl_mapping">3.6. HLSL mapping</a></li>
+<li><a href="#_features">3.1. Features</a></li>
+<li><a href="#_properties">3.2. Properties</a></li>
+<li><a href="#_functionality">3.3. Functionality</a></li>
 </ul>
 </li>
-<li><a href="#_issues">4. Issues</a></li>
+<li><a href="#_issues">4. Issues</a>
+<ul class="sectlevel2">
+<li><a href="#_how_should_suspending_and_resuming_render_passes_be_handled">4.1. How should suspending and resuming render passes be handled?</a></li>
+<li><a href="#_should_vkcmdendrendering2ext_be_provided_by_a_separate_extension">4.2. Should <code>vkCmdEndRendering2EXT</code> be provided by a separate extension?</a></li>
+<li><a href="#_should_vkrenderpassfragmentdensitymapoffsetendinfoext_be_usable_at_render_pass_begin_time">4.3. Should <code>VkRenderPassFragmentDensityMapOffsetEndInfoEXT</code> be usable at render pass begin time?</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div id="preamble">
 <div class="sectionbody">
 <div class="paragraph">
-<p>This document details the VK_KHR_fragment_shader_barcentric extension, which adds a cross-vendor way to access barycentric coordinates in a fragment shader.</p>
+<p>This extension extends
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_fragment_density_map">VK_EXT_fragment_density_map</a> to
+allow for finer control over the location of the local framebuffer regions in a
+render pass with a fragment density map attachment.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+This extension is a promotion of
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_fragment_density_map_offset">VK_QCOM_fragment_density_map_offset</a>,
+with the addition of support for
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering">dynamic rendering</a>. As that extension
+already shipped before proposal documents existed, this document has been
+written retroactively during promotion to EXT.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -542,8 +565,13 @@
 <h2 id="_problem_statement"><a class="anchor" href="#_problem_statement"></a>1. Problem Statement</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Barycentric coordinates are widely used in computer graphics, and are an important building block for various algorithms.  By being able to access the location of a pixel within a primitive and
-the non-interpolated attributes at the vertices, pixel shaders are able to perform things such as custom attribute interpolation or effects based on the pixel&#8217;s location within a primitive.</p>
+<p>Some use-cases for
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_fragment_density_map">VK_EXT_fragment_density_map</a>, such
+as eye-tracking foveation, require the fragment density map to be updated
+often. This can cause a distracting flickering effect for the user as local
+framebuffer regions pop in and out of high-density portion of the fragment
+density map. A method is needed for finer-grained control over the location of
+the high-density region without sudden jumps.</p>
 </div>
 </div>
 </div>
@@ -551,260 +579,148 @@ the non-interpolated attributes at the vertices, pixel shaders are able to perfo
 <h2 id="_solution_space"><a class="anchor" href="#_solution_space"></a>2. Solution Space</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Two options have been considered:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Take VK_NV_fragment_shader_barycentric and add any new required properties and behaviors.</p>
-</li>
-<li>
-<p>Start afresh</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>This proposal focuses on the first option.</p>
+<p>The location and sizes of the local framebuffer regions are purposefully made
+opaque in the original extension, so there is no way to directly control them.
+The typical use-case involves translating a given fixed fragment density map,
+with independent control needed for each layer of the framebuffer, so the
+simplest solution is to give the implementation a per-layer offset for sampling
+the fragment density map with the expectation that the implementation should
+offset the location of the local framebuffer regions in the opposite direction
+whenever possible in order to smoothly scroll the local framebuffer regions.</p>
 </div>
 </div>
 </div>
 <div class="sect1">
 <h2 id="_proposal"><a class="anchor" href="#_proposal"></a>3. Proposal</h2>
 <div class="sectionbody">
-<div class="sect2">
-<h3 id="_new_spir_v_decorations"><a class="anchor" href="#_new_spir_v_decorations"></a>3.1. New SPIR-V decorations</h3>
 <div class="paragraph">
-<p>A new SPIR-V extension <a href="https://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_fragment_shader_barycentric.html">SPV_KHR_fragment_shader_barycentric</a>
-adds three fragment shader variable decorations:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><code>PerVertexKHR</code>, which indicates that a fragment shader input will not
-have interpolated values, but instead must be accessed with an extra
-array index that identifies one of the vertices of the primitive
-producing the fragment</p>
-</li>
-<li>
-<p><code>BaryCoordKHR</code>, which indicates that the variable is a three-component
-floating-point vector holding barycentric weights for the fragment
-produced using perspective interpolation</p>
-</li>
-<li>
-<p><code>BaryCoordNoPerspKHR</code>, which indicates that the variable is a
-three-component floating-point vector holding barycentric weights for
-the fragment produced using linear interpolation</p>
-</li>
-</ul>
-</div>
+<p>A new structure is added that can be chained to
+<a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkSubpassEndInfo">VkSubpassEndInfo</a> or
+<a href="https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkRenderingEndInfoEXT">VkRenderingEndInfoEXT</a>
+which adds per-layer offsets to the fragment density map.</p>
 </div>
 <div class="sect2">
-<h3 id="_barycentric_weights"><a class="anchor" href="#_barycentric_weights"></a>3.2. Barycentric weights</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>For point primitives, <code>BaryCoordKHR</code> and <code>BaryCoordNoPerspKHR</code> are assigned the value (1,0,0).</p>
-</li>
-<li>
-<p>For line primitives, <code>BaryCoordKHR</code> and <code>BaryCoordNoPerspKHR</code> are assigned the values (1,0,0) and (0,1,0) at the ends of the primitive.</p>
-</li>
-<li>
-<p>For polygon primitives, <code>BaryCoordKHR</code> and <code>BaryCoordNoPerspKHR</code> are assigned the values (1,0,0), (0,1,0), and (0,0,1) at the three vertices.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_per_vertex_attributes"><a class="anchor" href="#_per_vertex_attributes"></a>3.3. Per-vertex attributes</h3>
+<h3 id="_features"><a class="anchor" href="#_features"></a>3.1. Features</h3>
 <div class="paragraph">
-<p>Per-vertex attributes for "missing" vertices, such as the third vertex of a line primitive, will return values from the valid vertex with the highest index.</p>
-</div>
-<div class="paragraph">
-<p>Vertices are numbered as follows:</p>
-</div>
-<table class="tableblock frame-all grid-all" style="width: 80%;">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Primitive Topology</th>
-<th class="tableblock halign-left valign-top">Vertex 0</th>
-<th class="tableblock halign-left valign-top">Vertex 1</th>
-<th class="tableblock halign-left valign-top">Vertex 2</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_POINT_LIST</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_LINE_LIST</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_LINE_STRIP</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3i+2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP</code> (even)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP</code> (odd)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4i+2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6i+4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY</code> (even)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY</code> (odd)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+2</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>When the provoking vertex mode is <code>VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT</code>, the original vertex numbers used are the same as above except as indicated in the table below.</p>
-</div>
-<table class="tableblock frame-all grid-all" style="width: 80%;">
-<colgroup>
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-<col style="width: 25%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Primitive Topology</th>
-<th class="tableblock halign-left valign-top">Vertex 0</th>
-<th class="tableblock halign-left valign-top">Vertex 1</th>
-<th class="tableblock halign-left valign-top">Vertex 2</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP (odd, and <code>triStripVertexOrderIndependentOfProvokingVertex</code>  is <code>VK_FALSE</code>)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">i+2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY (odd)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2i+4</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_properties"><a class="anchor" href="#_properties"></a>3.4. Properties</h3>
-<div class="paragraph">
-<p>A new property structure is added:</p>
+<p>There is a single new feature:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR {
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT {
     VkStructureType    sType;
     void*              pNext;
-    VkBool32           triStripVertexOrderIndependentOfProvokingVertex;
-} VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR;</code></pre>
+    VkBool32           fragmentDensityMapOffset;
+} VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT;</code></pre>
 </div>
-</div>
-<div class="paragraph">
-<p>The <code>triStripVertexOrderIndependentOfProvokingVertex</code> property indicates that the implementation does not change its vertex numbering for triangle strip primitives
-when the <a href="https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#VkProvokingVertexModeEXT">provoking vertex mode</a> is <code>VK_PROVOKING_VERTEX_MODE_LAST_VERTEX_EXT</code>.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_glsl_mapping"><a class="anchor" href="#_glsl_mapping"></a>3.5. GLSL mapping</h3>
+<h3 id="_properties"><a class="anchor" href="#_properties"></a>3.2. Properties</h3>
 <div class="paragraph">
-<p>The following variables from <a href="https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GLSL_EXT_fragment_shader_barycentric.txt"><code>GL_EXT_fragment_shader_barycentric</code></a>
-map to these SPIR-V built-in decorations:</p>
+<p>Implementations may require an alignment for the offset, so this extension
+adds a property for the granularity that the offset must be aligned to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkExtent2D         fragmentDensityOffsetGranularity;
+} VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_functionality"><a class="anchor" href="#_functionality"></a>3.3. Functionality</h3>
+<div class="sect3">
+<h4 id="_image_creation"><a class="anchor" href="#_image_creation"></a>3.3.1. Image Creation</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">#define VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_EXT  ((VkImageCreateFlagBits)0x00008000)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When fragment density offsets are used, the images for all attachments in the
+render pass, including color attachments, resolve attachments, and the fragment
+density map attachment, must be created with the new
+<code>VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_EXT</code> usage.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dynamic_rendering_with_fragment_density_map_offsets"><a class="anchor" href="#_dynamic_rendering_with_fragment_density_map_offsets"></a>3.3.2. Dynamic Rendering with fragment density map offsets</h4>
+<div class="paragraph">
+<p>Dynamic rendering support has been added since the original
+<a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_fragment_density_map_offset">VK_QCOM_fragment_density_map_offset</a>
+extension was released. This requires the addition of a new command to terminate a dynamic
+rendering pass:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">VKAPI_ATTR void VKAPI_CALL vkCmdEndRendering2EXT(
+    VkCommandBuffer                             commandBuffer,
+    const VkRenderingEndInfoEXT*                pRenderingEndInfo);</code></pre>
+</div>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>in vec3 gl_BaryCoordEXT; → BaryCoordKHR</p>
+<p><code>commandBuffer</code> is the command buffer into which the command is recorded.</p>
 </li>
 <li>
-<p>in vec3 gl_BaryCoordNoPerspEXT; → BaryCoordNoPerspKHR</p>
+<p><code>pRenderingEndInfo</code> is an optional pointer to a <code>VkRenderingEndInfoEXT</code> struct which can utilize a <code>pNext</code> chain to provide additional rendering info.</p>
 </li>
 </ul>
 </div>
-<div class="paragraph">
-<p>GLSL variables declared using the <code>__pervertexEXT</code> GLSL qualifier are expected to be decorated with <code>PerVertexKHR</code> in SPIR-V.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkRenderingEndInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkRenderingEndInfoEXT;</code></pre>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_hlsl_mapping"><a class="anchor" href="#_hlsl_mapping"></a>3.6. HLSL mapping</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>in float3 barycentrics : SV_Barycentrics; → BaryCoordKHR</p>
+<p><code>sType</code> is <code>VK_STRUCTURE_TYPE_RENDERING_END_INFO_EXT</code>.</p>
 </li>
 <li>
-<p>in noperspective float3 barycentrics : SV_Barycentrics; → BaryCoordNoPerspKHR</p>
+<p><code>pNext</code> can be used to chain a pointer to a <code>VkRenderPassFragmentDensityMapOffsetEndInfoEXT</code> struct.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_specifying_fragment_density_map_offsets"><a class="anchor" href="#_specifying_fragment_density_map_offsets"></a>3.3.3. Specifying fragment density map offsets</h4>
+<div class="paragraph">
+<p>Fragment density map offsets are set using the following struct chained to either a
+<code>VkRenderingEndInfoEXT</code> or <code>VkSubpassEndInfo</code> struct:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">typedef struct VkRenderPassFragmentDensityMapOffsetEndInfoEXT {
+    VkStructureType      sType;
+    const void*          pNext;
+    uint32_t             fragmentDensityOffsetCount;
+    const VkOffset2D*    pFragmentDensityOffsets;
+} VkRenderPassFragmentDensityMapOffsetEndInfoEXT;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>fragmentDensityOffsetCount</code> is the number of offsets being specified.</p>
+</li>
+<li>
+<p><code>pFragmentDensityOffsets`</code> is a pointer to an array of <code>VkOffset2D</code> structs, each of which describes the offset per layer.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Values of per-vertex attributes provided by <code>GetAttributeAtVertex</code> are expected to be decorated with <code>PerVertexKHR</code> in SPIR-V.</p>
+<p>Before sampling the fragment density map, the framebuffer region center coordinates are
+offsetted using the values in <code>pFragmentDensityOffsets</code> and clamped to the
+framebuffer dimensions.</p>
+</div>
 </div>
 </div>
 </div>
@@ -812,8 +728,30 @@ map to these SPIR-V built-in decorations:</p>
 <div class="sect1">
 <h2 id="_issues"><a class="anchor" href="#_issues"></a>4. Issues</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="_how_should_suspending_and_resuming_render_passes_be_handled"><a class="anchor" href="#_how_should_suspending_and_resuming_render_passes_be_handled"></a>4.1. How should suspending and resuming render passes be handled?</h3>
 <div class="paragraph">
-<p>None</p>
+<p>Suspending and resuming render passes are merged into one larger render pass,
+so we have to choose choose one of the passes to provide the offsets. We
+somewhat arbitrarily choose the last render pass in submission order. That is,
+<code>VkRenderPassFragmentDensityMapOffsetEndInfoEXT</code> is ignored unless the render
+pass is not suspending.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_vkcmdendrendering2ext_be_provided_by_a_separate_extension"><a class="anchor" href="#_should_vkcmdendrendering2ext_be_provided_by_a_separate_extension"></a>4.2. Should <code>vkCmdEndRendering2EXT</code> be provided by a separate extension?</h3>
+<div class="paragraph">
+<p>No. There is no expectation that other extensions will require this functionality
+in the very near future, and it should be trivial to promote this method to core
+in an upcoming maintenance extension.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_vkrenderpassfragmentdensitymapoffsetendinfoext_be_usable_at_render_pass_begin_time"><a class="anchor" href="#_should_vkrenderpassfragmentdensitymapoffsetendinfoext_be_usable_at_render_pass_begin_time"></a>4.3. Should <code>VkRenderPassFragmentDensityMapOffsetEndInfoEXT</code> be usable at render pass begin time?</h3>
+<div class="paragraph">
+<p>No. It is provided at the end of the render pass to reduce latency caused by the CPU time required
+to record a render pass.</p>
+</div>
 </div>
 </div>
 </div>

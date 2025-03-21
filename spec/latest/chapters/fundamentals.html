@@ -1417,6 +1417,92 @@ Query commands <strong>must</strong> not return a pointer to implementation allo
 storage in any output structure.</p>
 </div>
 </div>
+<div class="sect2">
+<h3 id="fundamentals-binaryresults"><a class="anchor" href="#fundamentals-binaryresults"></a>Opaque Binary Data Results</h3>
+<div class="paragraph">
+<p>Some query commands of the form <code>vkGet*</code> retrieve opaque binary data in
+the form of a byte array and have a possible result code of
+<code>VK_ERROR_NOT_ENOUGH_SPACE_KHR</code>.
+Such commands always have two pointer arguments as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A binary data size pointer pointing to a <code>size_t</code> variable,
+conventionally named as <code>p*Size</code> where <code>*</code> is the capitalized
+form of the name of the retrieved binary data.</p>
+</li>
+<li>
+<p>A pointer to a byte array where the binary data is retrieved,
+conventionally named as <code>p*</code> where <code>*</code> is the capitalized form
+of the name of the retrieved binary data.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If such commands are called with the binary pointer not set to <code>NULL</code>, the
+binary size pointer <strong>must</strong> point to a variable set by the application to the
+allocated size of the binary pointer.
+If the input binary size is less than the total retrievable binary size, the
+query will not write any data to the location pointed to the binary pointer,
+and the command will return <code>VK_ERROR_NOT_ENOUGH_SPACE_KHR</code> instead of
+<code>VK_SUCCESS</code>.</p>
+</div>
+<div class="paragraph">
+<p>If the return code is <code>VK_SUCCESS</code> or
+<code>VK_ERROR_NOT_ENOUGH_SPACE_KHR</code>, the total size of the binary data that
+<strong>can</strong> be retrieved is returned in the variable pointed to by the binary size
+pointer.</p>
+</div>
+<div class="paragraph">
+<p>If multiple binaries are being retrieved,
+<code>VK_ERROR_NOT_ENOUGH_SPACE_KHR</code> will be returned if any input binary
+sizes are less than their respective total retrievable binary sizes.
+Unless otherwise specified, this command will determine writing data to each
+binary individually based on if their input binary sizes are sufficiently
+sized, following the behavior for single binary retrieval.</p>
+</div>
+<div class="paragraph">
+<p>For all other error codes, the contents of the return structures are
+<strong>undefined</strong>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If <code>VK_ERROR_NOT_ENOUGH_SPACE_KHR</code> is returned with a command that
+returns multiple binaries, the application <strong>can</strong> determine which binaries are
+undersized by comparing the total binary size that is returned for each
+binary against the allocated size that was provided to the command.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Some binary queries do not behave consistently with this pattern for
+historical reasons, primarily that the <code>VK_ERROR_NOT_ENOUGH_SPACE_KHR</code>
+error code was not defined until after those queries were written.</p>
+</div>
+<div class="paragraph">
+<p>A NOTE is added to each such query, describing such inconsistent behavior.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2529,6 +2615,9 @@ These implicit parameters are documented as described below.</p>
 <p>The <code>indirectExecutionSet</code> parameter in <a href="device_generated_commands/generatedcommands.html#vkUpdateIndirectExecutionSetShaderEXT" class="xref page">vkUpdateIndirectExecutionSetShaderEXT</a></p>
 </li>
 <li>
+<p>The <code>commandBuffer</code> parameter in <a href="renderpass.html#vkCmdEndRendering2EXT" class="xref page">vkCmdEndRendering2EXT</a></p>
+</li>
+<li>
 <p>The <code>accelerationStructure</code> parameter in <a href="resources.html#vkDestroyAccelerationStructureKHR" class="xref page">vkDestroyAccelerationStructureKHR</a></p>
 </li>
 <li>
@@ -3419,6 +3508,9 @@ The implicit parameters and their associated object are listed below.</p>
 </li>
 <li>
 <p>The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from, in <a href="device_generated_commands/generatedcommands.html#vkCmdExecuteGeneratedCommandsEXT" class="xref page">vkCmdExecuteGeneratedCommandsEXT</a></p>
+</li>
+<li>
+<p>The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from, in <a href="renderpass.html#vkCmdEndRendering2EXT" class="xref page">vkCmdEndRendering2EXT</a></p>
 </li>
 <li>
 <p>The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from, in <a href="accelstructures.html#vkCmdBuildAccelerationStructuresKHR" class="xref page">vkCmdBuildAccelerationStructuresKHR</a></p>
@@ -5926,6 +6018,8 @@ typedef enum VkStructureType {
 #endif
   // Provided by VK_AMD_mixed_attachment_samples with VK_VERSION_1_3 or VK_KHR_dynamic_rendering
     VK_STRUCTURE_TYPE_ATTACHMENT_SAMPLE_COUNT_INFO_AMD = 1000044008,
+  // Provided by VK_KHR_shader_bfloat16
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_BFLOAT16_FEATURES_KHR = 1000141000,
   // Provided by VK_EXT_sample_locations
     VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT = 1000143000,
   // Provided by VK_EXT_sample_locations
@@ -6638,12 +6732,6 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_INFO_ARM = 1000424003,
   // Provided by VK_ARM_render_pass_striped
     VK_STRUCTURE_TYPE_RENDER_PASS_STRIPE_SUBMIT_INFO_ARM = 1000424004,
-  // Provided by VK_QCOM_fragment_density_map_offset
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM = 1000425000,
-  // Provided by VK_QCOM_fragment_density_map_offset
-    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_QCOM = 1000425001,
-  // Provided by VK_QCOM_fragment_density_map_offset
-    VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM = 1000425002,
   // Provided by VK_NV_copy_memory_indirect
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COPY_MEMORY_INDIRECT_FEATURES_NV = 1000426000,
   // Provided by VK_NV_copy_memory_indirect
@@ -7072,6 +7160,14 @@ typedef enum VkStructureType {
   // Provided by VK_NV_present_metering
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRESENT_METERING_FEATURES_NV = 1000613001,
 #endif
+  // Provided by VK_EXT_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT = 1000425000,
+  // Provided by VK_EXT_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT = 1000425001,
+  // Provided by VK_EXT_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT = 1000425002,
+  // Provided by VK_EXT_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_RENDERING_END_INFO_EXT = 1000619003,
   // Provided by VK_VERSION_1_1
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
   // Provided by VK_VERSION_1_1
@@ -7489,6 +7585,12 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES_KHR = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_ROTATE_FEATURES,
   // Provided by VK_EXT_depth_clamp_zero_one
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_EXT = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_KHR,
+  // Provided by VK_QCOM_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_QCOM = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_FEATURES_EXT,
+  // Provided by VK_QCOM_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_QCOM = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_DENSITY_MAP_OFFSET_PROPERTIES_EXT,
+  // Provided by VK_QCOM_fragment_density_map_offset
+    VK_STRUCTURE_TYPE_SUBPASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_QCOM = VK_STRUCTURE_TYPE_RENDER_PASS_FRAGMENT_DENSITY_MAP_OFFSET_END_INFO_EXT,
   // Provided by VK_EXT_pipeline_protected_access
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES_EXT = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_PROTECTED_ACCESS_FEATURES,
   // Provided by VK_KHR_maintenance5

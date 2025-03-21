@@ -3784,7 +3784,7 @@ handle types specified in
 If the <code>pNext</code> chain includes a
 <a href="#VkExternalMemoryImageCreateInfoNV">VkExternalMemoryImageCreateInfoNV</a> structure, its <code>handleTypes</code>
 member <strong>must</strong> only contain bits that are also in
-<a href="capabilities.html#VkExternalImageFormatPropertiesNV" class="xref page">VkExternalImageFormatPropertiesNV</a>::<code>externalMemoryProperties.compatibleHandleTypes</code>,
+<a href="capabilities.html#VkExternalImageFormatPropertiesNV" class="xref page">VkExternalImageFormatPropertiesNV</a>::<code>externalMemoryFeatures.compatibleHandleTypes</code>,
 as returned by <a href="capabilities.html#vkGetPhysicalDeviceExternalImageFormatPropertiesNV" class="xref page">vkGetPhysicalDeviceExternalImageFormatPropertiesNV</a>
 with <code>format</code>, <code>imageType</code>, <code>tiling</code>, <code>usage</code>, and
 <code>flags</code> equal to those in this structure, and with
@@ -5958,10 +5958,10 @@ implementation <strong>should</strong> return the smallest alignment which is su
 </div>
 <div class="paragraph">
 <p>If an implementation needs to disable image compression for
-<code>maximumRequestedAlignment</code> to be honored -
-where a larger alignment would enable image compression -
-the implementation <strong>should</strong> not use <code>maximumRequestedAlignment</code>, and
-<strong>should</strong> return the smallest alignment which does not compromise compression.
+<code>maximumRequestedAlignment</code> to be honored - where a larger alignment
+would enable image compression - the implementation <strong>should</strong> not use
+<code>maximumRequestedAlignment</code>, and <strong>should</strong> return the smallest alignment
+which does not compromise compression.
 If the <a href="features.html#features-imageCompressionControl" class="xref page"><code>imageCompressionControl</code></a>
 feature is enabled, the application <strong>can</strong> chain a
 <a href="#VkImageCompressionControlEXT">VkImageCompressionControlEXT</a> with
@@ -6314,10 +6314,10 @@ typedef enum VkImageCreateFlagBits {
     VK_IMAGE_CREATE_MULTISAMPLED_RENDER_TO_SINGLE_SAMPLED_BIT_EXT = 0x00040000,
   // Provided by VK_EXT_image_2d_view_of_3d
     VK_IMAGE_CREATE_2D_VIEW_COMPATIBLE_BIT_EXT = 0x00020000,
-  // Provided by VK_QCOM_fragment_density_map_offset
-    VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM = 0x00008000,
   // Provided by VK_KHR_video_maintenance1
     VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR = 0x00100000,
+  // Provided by VK_EXT_fragment_density_map_offset
+    VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_EXT = 0x00008000,
   // Provided by VK_KHR_bind_memory2 with VK_KHR_device_group
     VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT_KHR = VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT,
   // Provided by VK_KHR_maintenance1
@@ -6330,6 +6330,8 @@ typedef enum VkImageCreateFlagBits {
     VK_IMAGE_CREATE_DISJOINT_BIT_KHR = VK_IMAGE_CREATE_DISJOINT_BIT,
   // Provided by VK_KHR_bind_memory2
     VK_IMAGE_CREATE_ALIAS_BIT_KHR = VK_IMAGE_CREATE_ALIAS_BIT,
+  // Provided by VK_QCOM_fragment_density_map_offset
+    VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM = VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_EXT,
 } VkImageCreateFlagBits;</code></pre>
 </div>
 </div>
@@ -6477,8 +6479,8 @@ the image is stored as a render pass attachment.</p>
 </div>
 </li>
 <li>
-<p><code>VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_QCOM</code> specifies
-that an image <strong>can</strong> be used in a render pass with non-zero
+<p><code>VK_IMAGE_CREATE_FRAGMENT_DENSITY_MAP_OFFSET_BIT_EXT</code> specifies that
+an image <strong>can</strong> be used in a render pass with non-zero
 <a href="renderpass.html#renderpass-fragmentdensitymapoffsets" class="xref page">fragment density map offsets</a>.
 In a render pass with non-zero offsets, fragment density map
 attachments, input attachments, color attachments, depth/stencil
@@ -9024,8 +9026,8 @@ create the sampler <strong>must</strong> be passed to <a href="#vkCreateImageVie
 <a href="samplers.html#VkSamplerYcbcrConversionInfo" class="xref page">VkSamplerYcbcrConversionInfo</a> included in the <code>pNext</code> chain of
 <a href="#VkImageViewCreateInfo">VkImageViewCreateInfo</a>.
 Conversely, if a <a href="samplers.html#VkSamplerYcbcrConversion" class="xref page">VkSamplerYcbcrConversion</a> object is passed to
-<a href="#vkCreateImageView">vkCreateImageView</a>, an identically defined
-<a href="samplers.html#VkSamplerYcbcrConversion" class="xref page">VkSamplerYcbcrConversion</a> object <strong>must</strong> be used when sampling the image.</p>
+<a href="#vkCreateImageView">vkCreateImageView</a>, an <a href="../appendices/glossary.html#glossary-identically-defined" class="xref page">identically defined</a> <a href="samplers.html#VkSamplerYcbcrConversion" class="xref page">VkSamplerYcbcrConversion</a> object <strong>must</strong> be used when sampling
+the image.</p>
 </div>
 <div id="image-views-requiring-sampler-ycbcr-conversion" class="paragraph">
 <p>If the image has a <a href="formats.html#formats-multiplanar" class="xref page">multi-planar format</a>,
@@ -19455,9 +19457,8 @@ controlling host memory allocation as described in the
 <a href="memory.html#memory-allocation" class="xref page">Memory Allocation</a> chapter</p>
 </li>
 <li>
-<p><code>pBufferCollection</code> is a pointer to a
-<a href="#VkBufferCollectionFUCHSIA">VkBufferCollectionFUCHSIA</a> handle in which the resulting buffer
-collection object is returned</p>
+<p><code>pCollection</code> is a pointer to a <a href="#VkBufferCollectionFUCHSIA">VkBufferCollectionFUCHSIA</a>
+handle in which the resulting buffer collection object is returned</p>
 </li>
 </ul>
 </div>
@@ -20358,7 +20359,7 @@ typedef struct VkBufferConstraintsInfoFUCHSIA {
 structure</p>
 </li>
 <li>
-<p><code>pBufferCreateInfo</code> a pointer to a <a href="#VkBufferCreateInfo">VkBufferCreateInfo</a> struct
+<p><code>createInfo</code> a pointer to a <a href="#VkBufferCreateInfo">VkBufferCreateInfo</a> struct
 describing the buffer attributes for the buffer collection</p>
 </li>
 <li>

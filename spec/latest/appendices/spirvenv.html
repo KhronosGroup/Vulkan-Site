@@ -1119,6 +1119,18 @@ the <a href="../chapters/devsandqueues.html#VkDevice" class="xref page">VkDevice
 &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-shaderQuadControl" class="xref page"><code>VkPhysicalDeviceShaderQuadControlFeaturesKHR</code>::<code>shaderQuadControl</code></a></p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="spirvenv-capabilities-table-BFloat16TypeKHR"></a><code>BFloat16TypeKHR</code><br>
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-shaderBFloat16Type" class="xref page"><code>VkPhysicalDeviceShaderBfloat16FeaturesKHR</code>::<code>shaderBFloat16Type</code></a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="spirvenv-capabilities-table-BFloat16DotProductKHR"></a><code>BFloat16DotProductKHR</code><br>
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-shaderBFloat16DotProduct" class="xref page"><code>VkPhysicalDeviceShaderBfloat16FeaturesKHR</code>::<code>shaderBFloat16DotProduct</code></a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="spirvenv-capabilities-table-BFloat16CooperativeMatrixKHR"></a><code>BFloat16CooperativeMatrixKHR</code><br>
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-shaderBFloat16CooperativeMatrix" class="xref page"><code>VkPhysicalDeviceShaderBfloat16FeaturesKHR</code>::<code>shaderBFloat16CooperativeMatrix</code></a></p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a id="spirvenv-capabilities-table-RawAccessChainsNV"></a><code>RawAccessChainsNV</code><br>
 &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-shaderRawAccessChains" class="xref page"><code>VkPhysicalDeviceRawAccessChainsFeaturesNV</code>::<code>shaderRawAccessChains</code></a></p></td>
 </tr>
@@ -1569,6 +1581,10 @@ parameter of <a href="../chapters/shaders.html#vkCreateShaderModule" class="xref
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>SPV_KHR_quad_control</code><br>
 &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <code><a href="extensions.html#VK_KHR_shader_quad_control" class="xref page">VK_KHR_shader_quad_control</a></code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>SPV_KHR_bfloat16</code><br>
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <code><a href="extensions.html#VK_KHR_shader_bfloat16" class="xref page">VK_KHR_shader_bfloat16</a></code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>SPV_NV_raw_access_chains</code><br>
@@ -2639,6 +2655,13 @@ The <code>Storage</code> <code>Class</code> of the <code>Pointer</code> operand 
 <code>OpCooperativeMatrixLoadKHR</code> or <code>OpCooperativeMatrixStoreKHR</code>
 <strong>must</strong> be limited to <code>Workgroup</code>, <code>StorageBuffer</code>, or
 <code>PhysicalStorageBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeFloat-10370" href="#VUID-StandaloneSpirv-OpTypeFloat-10370"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeFloat-10370</span><br>
+
+Variables with a type of <code>OpTypeFloat</code> and an encoding of
+<code>BFloat16KHR</code> <strong>must</strong> not be declared with a <code>Storage</code> <code>Class</code> of
+<code>Input</code> or <code>Output</code></p>
 </li>
 <li>
 <p><a id="VUID-StandaloneSpirv-UniformBufferArrayDynamicIndexing-10127" href="#VUID-StandaloneSpirv-UniformBufferArrayDynamicIndexing-10127"></a> <span class="vuid">VUID-StandaloneSpirv-UniformBufferArrayDynamicIndexing-10127</span><br>
@@ -4980,15 +5003,15 @@ or <code>TaskNV</code> <code>Execution</code> <code>Model</code></p>
 <h2 id="spirvenv-precision-operation"><a class="anchor" href="#spirvenv-precision-operation"></a>Precision and Operation of SPIR-V Instructions</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>The following rules apply to half, single, and double-precision
-floating-point instructions:</p>
+<p>The following rules apply to operations on all floating-point values:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
 <p>Positive and negative infinities and positive and negative zeros are
-generated as dictated by <a href="../chapters/introduction.html#ieee-754" class="xref page">IEEE 754</a>, but subject to the
-precisions allowed in the <a href="#spirvenv-precision-core-table">table below</a>.</p>
+generated as dictated by <a href="../chapters/introduction.html#ieee-754" class="xref page">IEEE 754</a> for the specified
+encoding, but subject to the precisions allowed by each operation for a
+given encoding, as specified in <a href="#spirvenv-op-prec">Precision of    Individual Operations</a>.</p>
 </li>
 <li>
 <p>Signaling <span class="eq">NaN</span>s are not required to be generated and exceptions
@@ -5089,10 +5112,9 @@ flush denormalized values: <code>OpConstant</code>, <code>OpConstantComposite</c
 <div class="ulist">
 <ul>
 <li>
-<p>By default, any half, single, or double-precision denormalized value
-input into a shader or potentially generated by any instruction (except
-those listed above) or any extended instructions for GLSL in a shader
-<strong>may</strong> be flushed to zero.</p>
+<p>By default any denormalized floating-point value input into a shader or
+potentially generated by any instruction (except those listed above) or
+any extended instructions for GLSL in a shader <strong>may</strong> be flushed to zero.</p>
 </li>
 <li>
 <p>If the entry point is declared with the <code>DenormFlushToZero</code>
@@ -5132,8 +5154,9 @@ floating-point numbers <strong>must</strong> be flushed to zero.</p>
 </li>
 <li>
 <p>The following core SPIR-V instructions <strong>must</strong> respect the
-     <code>DenormPreserve</code> <code>Execution</code> <code>Mode</code>: <code>OpSpecConstantOp</code>,
-     <code>OpFConvert</code>, <code>OpFNegate</code>, <code>OpFAdd</code>, <code>OpFSub</code>, <code>OpFMul</code>,
+     <code>DenormPreserve</code> <code>Execution</code> <code>Mode</code> for floating-point values with an
+     <a href="../chapters/introduction.html#ieee-754" class="xref page">IEEE 754</a> encoding: <code>OpSpecConstantOp</code>, <code>OpFConvert</code>,
+     <code>OpFNegate</code>, <code>OpFAdd</code>, <code>OpFSub</code>, <code>OpFMul</code>,
      <code>OpVectorTimesScalar</code>, <code>OpMatrixTimesScalar</code>,
      <code>OpVectorTimesMatrix</code>, <code>OpMatrixTimesVector</code>,
      <code>OpMatrixTimesMatrix</code>, <code>OpOuterProduct</code>, <code>OpDot</code>,
@@ -5240,6 +5263,8 @@ If the entry point is declared with the <code>RoundingModeRTE</code> or the
 <code>RoundingModeRTZ</code> <code>Execution</code> <code>Mode</code> then this is done according to
 <a href="../chapters/introduction.html#ieee-754" class="xref page">IEEE 754</a> &#8220;roundTiesToEven&#8221; or &#8220;roundTowardZero&#8221; rounding
 directions, respectively.
+These execution modes do not affect operations on floating-point values with
+the <code>BFloat16KHR</code> encoding.
 Otherwise, they are rounded with
 <a href="#spirvenv-correctly-rounded-impl-defined">implementation-defined rounding mode</a>.</p>
 </div>
@@ -5309,8 +5334,13 @@ If the entry point is declared with the <code>DenormPreserve</code> <code>Execut
 then denormals <strong>must</strong> be preserved throughout the formula.</p>
 </div>
 <div class="paragraph">
-<p>For half- (16 bit) and single- (32 bit) precision instructions, precisions
-are <strong>required</strong> to be at least as follows:</p>
+<p>The precision of all instructions on float values with the <code>BFloat16KHR</code>
+encoding is required to be
+<a href="#spirvenv-correctly-rounded-impl-defined">correctly rounded with implementation defined rounding mode</a>.</p>
+</div>
+<div class="paragraph">
+<p>For IEEE754 half- (16 bit) and single- (32 bit) precision instructions,
+precisions are <strong>required</strong> to be at least as follows:</p>
 </div>
 <table id="spirvenv-precision-core-table" class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 3. Precision of Core SPIR-V Instructions</caption>
