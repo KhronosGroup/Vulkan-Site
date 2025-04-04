@@ -421,7 +421,7 @@ a number of different interfaces.</p>
 </li>
 </ul>
 </div>
-<div class="paragraph">
+<div id="interfaces-explicit-layout-decorations" class="paragraph">
 <p>This chapter describes valid uses for a set of SPIR-V decorations.
 Any other use of one of these decorations is invalid, with the exception
 that, when using SPIR-V versions 1.4 and earlier: <code>Block</code>,
@@ -1309,6 +1309,109 @@ attachment, or the values read from the tile image variables are <strong>undefin
 </div>
 </div>
 <div class="sect1">
+<h2 id="interfaces-tile-attachment"><a class="anchor" href="#interfaces-tile-attachment"></a>Tile Attachment Interface</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The image variables declared with <code>TileAttachmentQCOM</code> storage class form
+the <em>tile attachment interface</em>.</p>
+</div>
+<div class="paragraph">
+<p>These <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachment variables</a> correspond to a per-tile view of the color, depth, or input
+attachment of the current subpass or render pass instance.</p>
+</div>
+<div class="paragraph">
+<p>Such variables <strong>must</strong> only be declared and accessed in compute and fragment
+shaders invoked within a render pass instance that
+<a href="renderpass.html#renderpass-tile-shading" class="xref page">enables tile shading</a>.
+Access of such variables in a fragment shader, additionally requires that
+the <a href="features.html#features-tileShadingFragmentStage" class="xref page">tileShadingFragmentStage</a> feature
+<strong>must</strong> be enabled.</p>
+</div>
+<div class="paragraph">
+<p>Tile attachment variables <strong>must</strong> not include a <code>Component</code> decoration.
+Tile attachment variables <strong>must</strong> not be consumed by <code>OpImageQuery*</code>
+instructions.
+Tile attachment variables <strong>can</strong> be declared as either single-sampled with
+<code>MS</code> operand of <code>0</code>, or as multi-sampled with <code>MS</code> operand of <code>1</code>.
+The image subresources of the tile attachment image <strong>must</strong> not be in
+<code>VK_IMAGE_LAYOUT_UNDEFINED</code>
+or <code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code>
+layout in order to access its data in a shader.</p>
+</div>
+<div class="paragraph">
+<p>Tile attachment variables statically accessed by a fragment or compute
+shader <strong>must</strong> be backed by a descriptor that is equivalent to the
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> in the <a href="renderpass.html#VkFramebuffer" class="xref page">VkFramebuffer</a>
+or the <a href="renderpass.html#VkRenderingAttachmentInfo" class="xref page">VkRenderingAttachmentInfo</a>
+except for <code>subresourceRange.aspectMask</code>.
+The <code>aspectMask</code> <strong>must</strong> be equal to the aspect accessed by the shader.</p>
+</div>
+<div class="paragraph">
+<p><em>Tile attachment variables</em> are further subdivided into <em>storage tile
+attachment</em>, <em>sampled tile attachment</em>, and <em>input tile attachment</em>
+variables.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>Sampled tile attachment</em> variables <strong>must</strong> be declared with a
+<code>Sampled</code> operand of <code>1</code>, <strong>must</strong> be backed by a descriptor of type
+<code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+<code>VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM</code>,
+<code>VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM</code>,
+or <code>VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</code>, and <strong>can</strong> be used
+with <code>OpImageFetch</code>, <code>OpImageSparseFetch</code>, or used to construct an
+<code>OpTypeSampledImage</code> that is subsequently consumed by
+<code>OpImageSample*</code>, <code>OpImageSparseSample*</code>,
+<code>OpImageSampleWeightedQCOM</code>, <code>OpImageBoxFilterQCOM</code>,
+<code>OpImageBlockMatch*QCOM</code>,
+<code>OpImage*Gather</code>, or <code>OpImageSparse*Gather</code>.
+<em>Sampled tile attachment</em> variables are managed by the
+<a href="#interfaces-resources-descset">Descriptor Set Interface</a> as sampled
+images.</p>
+</li>
+<li>
+<p><em>Storage tile attachment</em> variables <strong>must</strong> be declared with a
+<code>Sampled</code> operand of <code>2</code>, <strong>must</strong> be backed by a descriptor of type
+<code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, and <strong>can</strong> be used with
+<code>OpImageRead</code>, <code>OpImageSparseRead</code>, and <code>OpImageWrite</code>
+instructions.
+<em>Storage tile attachment</em> variables <strong>can</strong> be consumed by
+<code>OpImageTexelPointer</code> for compatibility with atomic operations.
+<em>Sampled tile attachment</em> variables are managed by the
+<a href="#interfaces-resources-descset">Descriptor Set Interface</a> as storage
+images.</p>
+</li>
+<li>
+<p><em>Input tile attachment</em> variables <strong>must</strong> be declared with a <code>Sampled</code>
+operand of <code>2</code>, <strong>must</strong> be backed by a descriptor of type
+<code>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code>, and <strong>can</strong> be used with
+<code>OpImageRead</code> instructions.
+<em>Input tile attachment</em> variables are managed by the
+<a href="#interfaces-resources-descset">Descriptor Set Interface</a> as input
+attachment images.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Tile attachment access using <code>OpImageWrite</code> instructions <strong>must</strong> be used
+only in the compute stage.
+Tile attachment access using <code>OpImageWrite</code> instructions <strong>must</strong> not be
+used on a variable whose underlying descriptor references the same
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> bound as a depth or stencil attachment.</p>
+</div>
+<div class="paragraph">
+<p>The basic data type (floating-point, integer, unsigned integer) of the tile
+attachment variable <strong>must</strong> match the basic format of the corresponding input,
+depth, or color attachment, otherwise the result of loads/stores for tile
+attachment variables is <strong>undefined</strong>.
+If the render pass attachment contains both depth and stencil aspects, the
+basic data type of the tile attachment variable determines if depth or
+stencil aspect is accessed by the shader.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="interfaces-inputattachment"><a class="anchor" href="#interfaces-inputattachment"></a>Fragment Input Attachment Interface</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -1955,6 +2058,7 @@ be accessed with <em>dynamically uniform</em> indices.</p>
 <p>The <em>descriptor set interface</em> is comprised of the shader variables with the
 storage class of
 <code>StorageBuffer</code>,
+<code>TileAttachmentQCOM</code>,
 <code>Uniform</code> or <code>UniformConstant</code> (including the variables in the
 <a href="#interfaces-inputattachment">fragment input attachment interface</a>) that are
 statically used by the shader entry points for the pipeline.</p>
@@ -2068,6 +2172,16 @@ aggregated into arrays of that type.
 Further, the <code>Offset</code> decoration for any member of such a variable <strong>must</strong>
 not cause the space required for that variable to extend outside the range
 <span class="eq">[0,<code>maxInlineUniformBlockSize</code>)</span>.</p>
+</div>
+<div class="paragraph">
+<p><em>Storage tile attachment</em> and <em>sampled tile attachment</em> variables declared
+as described in the <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachment interface</a> are also managed by this interface.
+The requirements in this section for storage image variables also applies to
+<em>storage tile attachment</em> variables.
+The requirements in this section for sampled image variables also applies to
+<em>sampled tile attachment</em> variables.
+The requirements in this section for input attachment variables also applies
+to <em>input tile attachment</em> variables.</p>
 </div>
 <div class="paragraph">
 <p>Variables identified with a storage class of <code>UniformConstant</code> and a
@@ -2359,22 +2473,25 @@ or
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">sampled image</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code>
+or + <code>TileAttachmentQCOM</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpTypeImage</code> (<code>Sampled</code>=1)</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">storage image</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code>
+or + <code>TileAttachmentQCOM</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpTypeImage</code> (<code>Sampled</code>=2)</p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">combined image sampler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code>
+or + <code>TileAttachmentQCOM</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpTypeSampledImage</code><br>
-                                 <code>OpTypeImage</code> (<code>Sampled</code>=1)<br>
-                                 <code>OpTypeSampler</code></p></td>
+          <code>OpTypeImage</code> (<code>Sampled</code>=1)<br>
+          <code>OpTypeSampler</code></p></td>
 <td class="tableblock halign-left valign-top"></td>
 </tr>
 <tr>
@@ -2407,7 +2524,8 @@ or
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">input attachment</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code>
+or + <code>TileAttachmentQCOM</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpTypeImage</code> (<code>Dim</code>=<code>SubpassData</code>, <code>Sampled</code>=2)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>InputAttachmentIndex</code></p></td>
 </tr>
@@ -2425,16 +2543,18 @@ or
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">sample weight image</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code>
+or + <code>TileAttachmentQCOM</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpTypeImage</code> (<code>Depth</code>=0, <code>Dim</code>=<code>2D</code>,<br>
-                                 <code>Arrayed</code>=1, <code>MS</code>=0, <code>Sampled</code>=1)</p></td>
+                            <code>Arrayed</code>=1, <code>MS</code>=0, <code>Sampled</code>=1)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>WeightTextureQCOM</code></p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">block matching image</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>UniformConstant</code>
+or + <code>TileAttachmentQCOM</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>OpTypeImage</code> (<code>Depth</code>=0, <code>Dim</code>=<code>2D</code>,<br>
-                                 <code>Arrayed</code>=0, <code>MS</code>=0, <code>Sampled</code>=1)</p></td>
+                            <code>Arrayed</code>=0, <code>MS</code>=0, <code>Sampled</code>=1)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>BlockMatchTextureQCOM</code></p></td>
 </tr>
 </tbody>
@@ -7885,6 +8005,159 @@ array of size two, containing 32-bit floating-point values</p>
 </div>
 </div>
 </div>
+<div id="interfaces-builtin-variables-tileoffset" class="openblock">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>TileOffsetQCOM</code></dt>
+<dd>
+<p>The <code>TileOffsetQCOM</code> decoration <strong>can</strong> be applied to a shader input which
+will be filled with the framebuffer coordinates of the active tile.</p>
+<div class="paragraph">
+<p>When <a href="renderpass.html#renderpass-tile-shading" class="xref page">per-tile execution model</a> is enabled, for
+the current shader invocation <span class="eq">x</span> and <span class="eq">y</span> components of
+<code>TileOffsetQCOM</code> reflect the framebuffer integer coordinates of the
+top-left texel of the tile corresponding to the shader invocation.</p>
+</div>
+<div class="paragraph">
+<p>Otherwise, the <span class="eq">x</span> and <span class="eq">y</span> components of <code>TileOffsetQCOM</code> are
+filled with <span class="eq">(0,0)</span>.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-TileOffsetQCOM-TileOffsetQCOM-10626" href="#VUID-TileOffsetQCOM-TileOffsetQCOM-10626"></a> <span class="vuid">VUID-TileOffsetQCOM-TileOffsetQCOM-10626</span><br>
+
+The <code>TileOffsetQCOM</code> decoration <strong>must</strong> be used only within the
+<code>Fragment</code> <code>Execution</code> <code>Model</code> or <code>GLCompute</code> <code>Execution</code> <code>Model</code>.</p>
+</li>
+<li>
+<p><a id="VUID-TileOffsetQCOM-TileOffsetQCOM-10627" href="#VUID-TileOffsetQCOM-TileOffsetQCOM-10627"></a> <span class="vuid">VUID-TileOffsetQCOM-TileOffsetQCOM-10627</span><br>
+
+The variable decorated with <code>TileOffsetQCOM</code> <strong>must</strong> be declared using
+the <code>Input</code> <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><a id="VUID-TileOffsetQCOM-TileOffsetQCOM-10628" href="#VUID-TileOffsetQCOM-TileOffsetQCOM-10628"></a> <span class="vuid">VUID-TileOffsetQCOM-TileOffsetQCOM-10628</span><br>
+
+The variable decorated with <code>TileOffsetQCOM</code> <strong>must</strong> be declared as a
+two-component vector of 32-bit integer values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="interfaces-builtin-variables-tilesize" class="openblock">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>TileDimensionQCOM</code></dt>
+<dd>
+<p>The <code>TileDimensionQCOM</code> decoration <strong>can</strong> be applied to a shader input
+which will be filled with the width and height of the active tile.</p>
+<div class="paragraph">
+<p>When <a href="renderpass.html#renderpass-tile-shading" class="xref page">per-tile execution model</a> is enabled, for
+the current shader invocation <span class="eq">x</span> and <span class="eq">y</span> components of
+<code>TileDimensionQCOM</code> reflect the with and height of the tile corresponding
+to the shader invocation.</p>
+</div>
+<div class="paragraph">
+<p>Otherwise, the <span class="eq">x</span> and <span class="eq">y</span> components of <code>TileDimensionQCOM</code> are
+filled with <span class="eq">(0,0)</span>.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-TileDimensionQCOM-TileDimensionQCOM-10629" href="#VUID-TileDimensionQCOM-TileDimensionQCOM-10629"></a> <span class="vuid">VUID-TileDimensionQCOM-TileDimensionQCOM-10629</span><br>
+
+The <code>TileDimensionQCOM</code> decoration <strong>must</strong> be used only within the
+<code>Fragment</code> <code>Execution</code> <code>Model</code> or <code>GLCompute</code> <code>Execution</code> <code>Model</code>.</p>
+</li>
+<li>
+<p><a id="VUID-TileDimensionQCOM-TileDimensionQCOM-10630" href="#VUID-TileDimensionQCOM-TileDimensionQCOM-10630"></a> <span class="vuid">VUID-TileDimensionQCOM-TileDimensionQCOM-10630</span><br>
+
+The variable decorated with <code>TileDimensionQCOM</code> <strong>must</strong> be declared
+using the <code>Input</code> <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><a id="VUID-TileDimensionQCOM-TileDimensionQCOM-10631" href="#VUID-TileDimensionQCOM-TileDimensionQCOM-10631"></a> <span class="vuid">VUID-TileDimensionQCOM-TileDimensionQCOM-10631</span><br>
+
+The variable decorated with <code>TileDimensionQCOM</code> <strong>must</strong> be declared as
+a two-component vector of 32-bit integer values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="interfaces-builtin-variables-tileapronsize" class="openblock">
+<div class="content">
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><code>TileApronSizeQCOM</code></dt>
+<dd>
+<p>The <code>TileApronSizeQCOM</code> decoration <strong>can</strong> be applied to a shader input
+which will be filled with the width and height of the active tile&#8217;s apron.</p>
+<div class="paragraph">
+<p>If <a href="renderpass.html#renderpass-tile-shading" class="xref page">per-tile execution model</a> is enabled for the
+current shader invocation, and is executing in a dynamic render pass or is
+executing in a subpass where
+<code>VK_SUBPASS_DESCRIPTION_TILE_SHADING_APRON_BIT_QCOM</code> is included in its
+<code>flags</code>, <span class="eq">x</span> and <span class="eq">y</span> components of <code>TileApronSizeQCOM</code>
+reflect the with and height of the tile apron corresponding to the shader
+invocation.</p>
+</div>
+<div class="paragraph">
+<p>Otherwise, the <span class="eq">x</span> and <span class="eq">y</span> components of <code>TileApronSizeQCOM</code> are
+filled with <span class="eq">(0,0)</span>.</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-TileApronSizeQCOM-TileApronSizeQCOM-10632" href="#VUID-TileApronSizeQCOM-TileApronSizeQCOM-10632"></a> <span class="vuid">VUID-TileApronSizeQCOM-TileApronSizeQCOM-10632</span><br>
+
+The <code>TileApronSizeQCOM</code> decoration <strong>must</strong> be used only within the
+<code>Fragment</code> <code>Execution</code> <code>Model</code> or <code>GLCompute</code> <code>Execution</code> <code>Model</code>.</p>
+</li>
+<li>
+<p><a id="VUID-TileApronSizeQCOM-TileApronSizeQCOM-10633" href="#VUID-TileApronSizeQCOM-TileApronSizeQCOM-10633"></a> <span class="vuid">VUID-TileApronSizeQCOM-TileApronSizeQCOM-10633</span><br>
+
+The variable decorated with <code>TileApronSizeQCOM</code> <strong>must</strong> be declared
+using the <code>Input</code> <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><a id="VUID-TileApronSizeQCOM-TileApronSizeQCOM-10634" href="#VUID-TileApronSizeQCOM-TileApronSizeQCOM-10634"></a> <span class="vuid">VUID-TileApronSizeQCOM-TileApronSizeQCOM-10634</span><br>
+
+The variable decorated with <code>TileApronSizeQCOM</code> <strong>must</strong> be declared as
+a two-component vector of 32-bit integer values</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
 <div id="interfaces-builtin-variables-vertexcounthuawei" class="openblock">
 <div class="content">
 <div class="dlist">
@@ -8519,6 +8792,13 @@ constant or a constant</p>
 
 The variable decorated with <code>WorkgroupSize</code> <strong>must</strong> be declared as a
 three-component vector of 32-bit integer values</p>
+</li>
+<li>
+<p><a id="VUID-WorkgroupSize-TileShadingRateQCOM-10635" href="#VUID-WorkgroupSize-TileShadingRateQCOM-10635"></a> <span class="vuid">VUID-WorkgroupSize-TileShadingRateQCOM-10635</span><br>
+
+If the <code>TileShadingRateQCOM</code> <code>Execution</code> <code>Mode</code> is used,
+variables decorated with<code>WorkgroupSize</code> <strong>must</strong> be declared using the
+<code>Input</code> <code>Storage</code> <code>Class</code></p>
 </li>
 </ul>
 </div>

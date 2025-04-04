@@ -770,16 +770,6 @@ state specified statically in the <a href="pipelines.html#VkPipeline" class="xre
 pipeline bind point used by this command, since that pipeline was bound</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdDispatch-None-08607" href="#VUID-vkCmdDispatch-None-08607"></a> <span class="vuid">VUID-vkCmdDispatch-None-08607</span><br>
-
-If the <a href="features.html#features-shaderObject" class="xref page"><code>shaderObject</code></a> feature is enabled,
-either a valid pipeline <strong>must</strong> be bound to the pipeline bind point used
-by this command, or a valid combination of valid and
-<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> shader objects <strong>must</strong> be bound to every supported
-shader stage corresponding to the pipeline bind point used by this
-command</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdDispatch-uniformBuffers-06935" href="#VUID-vkCmdDispatch-uniformBuffers-06935"></a> <span class="vuid">VUID-vkCmdDispatch-uniformBuffers-06935</span><br>
 
 If any stage of the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
@@ -832,23 +822,6 @@ If <code>commandBuffer</code> is an unprotected command buffer and
 <a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
 any resource accessed by <a href="shaders.html#shaders-binding" class="xref page">bound shaders</a> <strong>must</strong> not be
 a protected resource</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdDispatch-None-06550" href="#VUID-vkCmdDispatch-None-06550"></a> <span class="vuid">VUID-vkCmdDispatch-None-06550</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> only be used with <code>OpImageSample*</code> or <code>OpImageSparseSample*</code>
-instructions</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdDispatch-ConstOffset-06551" href="#VUID-vkCmdDispatch-ConstOffset-06551"></a> <span class="vuid">VUID-vkCmdDispatch-ConstOffset-06551</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> not use the <code>ConstOffset</code> and <code>Offset</code> operands</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdDispatch-viewType-07752" href="#VUID-vkCmdDispatch-viewType-07752"></a> <span class="vuid">VUID-vkCmdDispatch-viewType-07752</span><br>
@@ -1055,6 +1028,66 @@ If a descriptor with type equal to any of
 this command, all image subresources identified by that descriptor <strong>must</strong>
 be in the image layout identified when the descriptor was written</p>
 </li>
+<li>
+<p><a id="VUID-vkCmdDispatch-None-10678" href="#VUID-vkCmdDispatch-None-10678"></a> <span class="vuid">VUID-vkCmdDispatch-None-10678</span><br>
+
+If this command is recorded inside a <a href="renderpass.html#renderpass-tile-shading" class="xref page">tile    shading render pass</a> instance, the stages corresponding to the pipeline
+bind point used by this command <strong>must</strong> only include
+<code>VK_SHADER_STAGE_VERTEX_BIT</code>, <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>,
+and/or <code>VK_SHADER_STAGE_COMPUTE_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatch-None-10679" href="#VUID-vkCmdDispatch-None-10679"></a> <span class="vuid">VUID-vkCmdDispatch-None-10679</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, there <strong>must</strong> be no access to any image while the image was be
+transitioned to the
+<code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code> layout</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatch-None-10672" href="#VUID-vkCmdDispatch-None-10672"></a> <span class="vuid">VUID-vkCmdDispatch-None-10672</span><br>
+
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is not enabled,
+this command <strong>must</strong> be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatch-aspectMask-10673" href="#VUID-vkCmdDispatch-aspectMask-10673"></a> <span class="vuid">VUID-vkCmdDispatch-aspectMask-10673</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, and if the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
+point used by this command writes to a variable of storage class
+<code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>, the corresponding
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> using <strong>must</strong> not have been created with an
+<code>aspectMask</code> that contains <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatch-None-10674" href="#VUID-vkCmdDispatch-None-10674"></a> <span class="vuid">VUID-vkCmdDispatch-None-10674</span><br>
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is enabled, the
+<a href="features.html#features-tileShadingPerTileDispatch" class="xref page">tileShadingPerTileDispatch</a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatch-None-10675" href="#VUID-vkCmdDispatch-None-10675"></a> <span class="vuid">VUID-vkCmdDispatch-None-10675</span><br>
+
+Memory backing image subresources used as
+<a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachments</a> in the
+current render pass <strong>must</strong> not be written in any way other than as a tile
+attachment by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatch-None-10676" href="#VUID-vkCmdDispatch-None-10676"></a> <span class="vuid">VUID-vkCmdDispatch-None-10676</span><br>
+
+If any recorded command in the current subpass will write to an image
+subresource as a <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile    attachment</a>, this command <strong>must</strong> not read from the memory backing that
+image subresource in any other way than as a tile attachment</p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -1126,10 +1159,6 @@ buffer</p>
  The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdDispatch-renderpass" href="#VUID-vkCmdDispatch-renderpass"></a> <span class="vuid">VUID-vkCmdDispatch-renderpass</span><br>
- This command <strong>must</strong> only be called outside of a render pass instance</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdDispatch-videocoding" href="#VUID-vkCmdDispatch-videocoding"></a> <span class="vuid">VUID-vkCmdDispatch-videocoding</span><br>
  This command <strong>must</strong> only be called outside of a video coding scope</p>
 </li>
@@ -1176,7 +1205,7 @@ buffer</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
 Secondary</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
@@ -1556,16 +1585,6 @@ state specified statically in the <a href="pipelines.html#VkPipeline" class="xre
 pipeline bind point used by this command, since that pipeline was bound</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdDispatchIndirect-None-08607" href="#VUID-vkCmdDispatchIndirect-None-08607"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-08607</span><br>
-
-If the <a href="features.html#features-shaderObject" class="xref page"><code>shaderObject</code></a> feature is enabled,
-either a valid pipeline <strong>must</strong> be bound to the pipeline bind point used
-by this command, or a valid combination of valid and
-<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> shader objects <strong>must</strong> be bound to every supported
-shader stage corresponding to the pipeline bind point used by this
-command</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdDispatchIndirect-uniformBuffers-06935" href="#VUID-vkCmdDispatchIndirect-uniformBuffers-06935"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-uniformBuffers-06935</span><br>
 
 If any stage of the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
@@ -1618,23 +1637,6 @@ If <code>commandBuffer</code> is an unprotected command buffer and
 <a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
 any resource accessed by <a href="shaders.html#shaders-binding" class="xref page">bound shaders</a> <strong>must</strong> not be
 a protected resource</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdDispatchIndirect-None-06550" href="#VUID-vkCmdDispatchIndirect-None-06550"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-06550</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> only be used with <code>OpImageSample*</code> or <code>OpImageSparseSample*</code>
-instructions</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdDispatchIndirect-ConstOffset-06551" href="#VUID-vkCmdDispatchIndirect-ConstOffset-06551"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-ConstOffset-06551</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> not use the <code>ConstOffset</code> and <code>Offset</code> operands</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdDispatchIndirect-viewType-07752" href="#VUID-vkCmdDispatchIndirect-viewType-07752"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-viewType-07752</span><br>
@@ -1841,6 +1843,66 @@ If a descriptor with type equal to any of
 this command, all image subresources identified by that descriptor <strong>must</strong>
 be in the image layout identified when the descriptor was written</p>
 </li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-None-10678" href="#VUID-vkCmdDispatchIndirect-None-10678"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-10678</span><br>
+
+If this command is recorded inside a <a href="renderpass.html#renderpass-tile-shading" class="xref page">tile    shading render pass</a> instance, the stages corresponding to the pipeline
+bind point used by this command <strong>must</strong> only include
+<code>VK_SHADER_STAGE_VERTEX_BIT</code>, <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>,
+and/or <code>VK_SHADER_STAGE_COMPUTE_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-None-10679" href="#VUID-vkCmdDispatchIndirect-None-10679"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-10679</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, there <strong>must</strong> be no access to any image while the image was be
+transitioned to the
+<code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code> layout</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-None-10672" href="#VUID-vkCmdDispatchIndirect-None-10672"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-10672</span><br>
+
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is not enabled,
+this command <strong>must</strong> be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-aspectMask-10673" href="#VUID-vkCmdDispatchIndirect-aspectMask-10673"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-aspectMask-10673</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, and if the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
+point used by this command writes to a variable of storage class
+<code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>, the corresponding
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> using <strong>must</strong> not have been created with an
+<code>aspectMask</code> that contains <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-None-10674" href="#VUID-vkCmdDispatchIndirect-None-10674"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-10674</span><br>
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is enabled, the
+<a href="features.html#features-tileShadingPerTileDispatch" class="xref page">tileShadingPerTileDispatch</a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-None-10675" href="#VUID-vkCmdDispatchIndirect-None-10675"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-10675</span><br>
+
+Memory backing image subresources used as
+<a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachments</a> in the
+current render pass <strong>must</strong> not be written in any way other than as a tile
+attachment by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchIndirect-None-10676" href="#VUID-vkCmdDispatchIndirect-None-10676"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-None-10676</span><br>
+
+If any recorded command in the current subpass will write to an image
+subresource as a <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile    attachment</a>, this command <strong>must</strong> not read from the memory backing that
+image subresource in any other way than as a tile attachment</p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -1899,10 +1961,6 @@ The sum of <code>offset</code> and the size of <code>VkDispatchIndirectCommand</
  The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdDispatchIndirect-renderpass" href="#VUID-vkCmdDispatchIndirect-renderpass"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-renderpass</span><br>
- This command <strong>must</strong> only be called outside of a render pass instance</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdDispatchIndirect-videocoding" href="#VUID-vkCmdDispatchIndirect-videocoding"></a> <span class="vuid">VUID-vkCmdDispatchIndirect-videocoding</span><br>
  This command <strong>must</strong> only be called outside of a video coding scope</p>
 </li>
@@ -1953,7 +2011,7 @@ The sum of <code>offset</code> and the size of <code>VkDispatchIndirectCommand</
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
 Secondary</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
@@ -2437,16 +2495,6 @@ state specified statically in the <a href="pipelines.html#VkPipeline" class="xre
 pipeline bind point used by this command, since that pipeline was bound</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdDispatchBase-None-08607" href="#VUID-vkCmdDispatchBase-None-08607"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-08607</span><br>
-
-If the <a href="features.html#features-shaderObject" class="xref page"><code>shaderObject</code></a> feature is enabled,
-either a valid pipeline <strong>must</strong> be bound to the pipeline bind point used
-by this command, or a valid combination of valid and
-<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> shader objects <strong>must</strong> be bound to every supported
-shader stage corresponding to the pipeline bind point used by this
-command</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdDispatchBase-uniformBuffers-06935" href="#VUID-vkCmdDispatchBase-uniformBuffers-06935"></a> <span class="vuid">VUID-vkCmdDispatchBase-uniformBuffers-06935</span><br>
 
 If any stage of the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
@@ -2499,23 +2547,6 @@ If <code>commandBuffer</code> is an unprotected command buffer and
 <a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
 any resource accessed by <a href="shaders.html#shaders-binding" class="xref page">bound shaders</a> <strong>must</strong> not be
 a protected resource</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdDispatchBase-None-06550" href="#VUID-vkCmdDispatchBase-None-06550"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-06550</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> only be used with <code>OpImageSample*</code> or <code>OpImageSparseSample*</code>
-instructions</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdDispatchBase-ConstOffset-06551" href="#VUID-vkCmdDispatchBase-ConstOffset-06551"></a> <span class="vuid">VUID-vkCmdDispatchBase-ConstOffset-06551</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> not use the <code>ConstOffset</code> and <code>Offset</code> operands</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdDispatchBase-viewType-07752" href="#VUID-vkCmdDispatchBase-viewType-07752"></a> <span class="vuid">VUID-vkCmdDispatchBase-viewType-07752</span><br>
@@ -2722,6 +2753,66 @@ If a descriptor with type equal to any of
 this command, all image subresources identified by that descriptor <strong>must</strong>
 be in the image layout identified when the descriptor was written</p>
 </li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-None-10678" href="#VUID-vkCmdDispatchBase-None-10678"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-10678</span><br>
+
+If this command is recorded inside a <a href="renderpass.html#renderpass-tile-shading" class="xref page">tile    shading render pass</a> instance, the stages corresponding to the pipeline
+bind point used by this command <strong>must</strong> only include
+<code>VK_SHADER_STAGE_VERTEX_BIT</code>, <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>,
+and/or <code>VK_SHADER_STAGE_COMPUTE_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-None-10679" href="#VUID-vkCmdDispatchBase-None-10679"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-10679</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, there <strong>must</strong> be no access to any image while the image was be
+transitioned to the
+<code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code> layout</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-None-10672" href="#VUID-vkCmdDispatchBase-None-10672"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-10672</span><br>
+
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is not enabled,
+this command <strong>must</strong> be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-aspectMask-10673" href="#VUID-vkCmdDispatchBase-aspectMask-10673"></a> <span class="vuid">VUID-vkCmdDispatchBase-aspectMask-10673</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, and if the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
+point used by this command writes to a variable of storage class
+<code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>, the corresponding
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> using <strong>must</strong> not have been created with an
+<code>aspectMask</code> that contains <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-None-10674" href="#VUID-vkCmdDispatchBase-None-10674"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-10674</span><br>
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is enabled, the
+<a href="features.html#features-tileShadingPerTileDispatch" class="xref page">tileShadingPerTileDispatch</a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-None-10675" href="#VUID-vkCmdDispatchBase-None-10675"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-10675</span><br>
+
+Memory backing image subresources used as
+<a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachments</a> in the
+current render pass <strong>must</strong> not be written in any way other than as a tile
+attachment by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchBase-None-10676" href="#VUID-vkCmdDispatchBase-None-10676"></a> <span class="vuid">VUID-vkCmdDispatchBase-None-10676</span><br>
+
+If any recorded command in the current subpass will write to an image
+subresource as a <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile    attachment</a>, this command <strong>must</strong> not read from the memory backing that
+image subresource in any other way than as a tile attachment</p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -2823,10 +2914,6 @@ or the bound compute shader object <strong>must</strong> have been created with 
  The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdDispatchBase-renderpass" href="#VUID-vkCmdDispatchBase-renderpass"></a> <span class="vuid">VUID-vkCmdDispatchBase-renderpass</span><br>
- This command <strong>must</strong> only be called outside of a render pass instance</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdDispatchBase-videocoding" href="#VUID-vkCmdDispatchBase-videocoding"></a> <span class="vuid">VUID-vkCmdDispatchBase-videocoding</span><br>
  This command <strong>must</strong> only be called outside of a video coding scope</p>
 </li>
@@ -2873,13 +2960,886 @@ or the bound compute shader object <strong>must</strong> have been created with 
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
 Secondary</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
 </tr>
 </tbody>
 </table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To record an area-based dispatch, call:</p>
+</div>
+<div id="vkCmdDispatchTileQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_tile_shading
+void vkCmdDispatchTileQCOM(
+    VkCommandBuffer                             commandBuffer);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer into which the command will be
+recorded.</p>
+</li>
+<li>
+<p><code>pDispatchTileInfo</code> is a pointer to a <a href="#VkDispatchTileInfoQCOM">VkDispatchTileInfoQCOM</a>
+structure containing information about the area-based dispatch.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This command operates in the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>, invoking a separate dispatch for each <em>covered tile</em>.
+The global workgroup count and local workgroup size of each dispatch are
+defined by the implementation to efficiently iterate over a uniform grid of
+pixel blocks within the area of its <em>active tile</em>.</p>
+</div>
+<div class="paragraph">
+<p>Each shader invocation operates on a single pixel block and its size is
+determined by the shader&#8217;s tiling rate, which <strong>must</strong> be defined by shaders
+executed by this command.
+The <code>TileShadingRateQCOM</code> execution mode operand defines the shader&#8217;s
+tiling rate.
+Its <code>x</code> and <code>y</code> <strong>must</strong> be a power of two and less than or equal to
+the <a href="limits.html#limits-maxTileShadingRate" class="xref page">maxTileShadingRate</a> limit.
+Its <code>z</code> <strong>must</strong> be less than or equal to the active tile&#8217;s depth as
+reported by <a href="../appendices/extensions.html#VK_QCOM_tile_properties" class="xref page">VK_QCOM_tile_properties</a>, and
+<span class="eq"><a href="renderpass.html#VkTilePropertiesQCOM" class="xref page">VkTilePropertiesQCOM</a>::<code>tileSize</code>::<code>z</code> %
+<code>TileShadingRateQCOM</code>::<code>z</code></span> <strong>must</strong> equal <code>0</code>.</p>
+</div>
+<div class="paragraph">
+<p>The start location of the shader invocation&#8217;s pixel block is
+<span class="eq">vec3(<code>TileOffsetQCOM</code>, 0) + (<code>GlobalInvocationId</code> *
+<code>TileShadingRateQCOM</code>)</span></p>
+</div>
+<div class="paragraph">
+<p>Shader invocations <strong>can</strong> perform tile attachment load/store operations at any
+location within the <em>active tile</em>, but the most efficient access <strong>may</strong> be
+limited to fragment locations within and local to the shader invocation&#8217;s
+pixel block.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-magFilter-04553" href="#VUID-vkCmdDispatchTileQCOM-magFilter-04553"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-magFilter-04553</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>magFilter</code> or <code>minFilter</code>
+equal to <code>VK_FILTER_LINEAR</code>,
+<code>reductionMode</code> equal to
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code>,
+and <code>compareEnable</code> equal to <code>VK_FALSE</code> is used to sample a
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-magFilter-09598" href="#VUID-vkCmdDispatchTileQCOM-magFilter-09598"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-magFilter-09598</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>magFilter</code> or <code>minFilter</code>
+equal to <code>VK_FILTER_LINEAR</code> and <code>reductionMode</code> equal to either
+<code>VK_SAMPLER_REDUCTION_MODE_MIN</code> or
+<code>VK_SAMPLER_REDUCTION_MODE_MAX</code> is used to sample a
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-mipmapMode-04770" href="#VUID-vkCmdDispatchTileQCOM-mipmapMode-04770"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-mipmapMode-04770</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>mipmapMode</code> equal to
+<code>VK_SAMPLER_MIPMAP_MODE_LINEAR</code>,
+<code>reductionMode</code> equal to
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE</code>,
+and <code>compareEnable</code> equal to <code>VK_FALSE</code> is used to sample a
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-mipmapMode-09599" href="#VUID-vkCmdDispatchTileQCOM-mipmapMode-09599"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-mipmapMode-09599</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>mipmapMode</code> equal to
+<code>VK_SAMPLER_MIPMAP_MODE_LINEAR</code> and <code>reductionMode</code> equal to
+either <code>VK_SAMPLER_REDUCTION_MODE_MIN</code> or
+<code>VK_SAMPLER_REDUCTION_MODE_MAX</code> is used to sample a
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-unnormalizedCoordinates-09635" href="#VUID-vkCmdDispatchTileQCOM-unnormalizedCoordinates-09635"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-unnormalizedCoordinates-09635</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>unnormalizedCoordinates</code> equal to
+<code>VK_TRUE</code> is used to sample a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this
+command, then the image view&#8217;s <code>levelCount</code> and <code>layerCount</code>
+<strong>must</strong> be 1</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08609" href="#VUID-vkCmdDispatchTileQCOM-None-08609"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08609</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>unnormalizedCoordinates</code> equal to
+<code>VK_TRUE</code> is used to sample a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this
+command, then the image view&#8217;s <code>viewType</code> <strong>must</strong> be
+<code>VK_IMAGE_VIEW_TYPE_1D</code> or <code>VK_IMAGE_VIEW_TYPE_2D</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08610" href="#VUID-vkCmdDispatchTileQCOM-None-08610"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08610</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>unnormalizedCoordinates</code> equal to
+<code>VK_TRUE</code> is used to sample a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this
+command, then the sampler <strong>must</strong> not be used with any of the SPIR-V
+<code>OpImageSample*</code> or <code>OpImageSparseSample*</code> instructions with
+<code>ImplicitLod</code>, <code>Dref</code> or <code>Proj</code> in their name</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08611" href="#VUID-vkCmdDispatchTileQCOM-None-08611"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08611</span><br>
+
+If a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> created with <code>unnormalizedCoordinates</code> equal to
+<code>VK_TRUE</code> is used to sample a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this
+command, then the sampler <strong>must</strong> not be used with any of the SPIR-V
+<code>OpImageSample*</code> or <code>OpImageSparseSample*</code> instructions that includes a
+LOD bias or any offset values</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-06479" href="#VUID-vkCmdDispatchTileQCOM-None-06479"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-06479</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> is sampled with
+<a href="textures.html#textures-depth-compare-operation" class="xref page">depth comparison</a>, the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_DEPTH_COMPARISON_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-02691" href="#VUID-vkCmdDispatchTileQCOM-None-02691"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-02691</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> is accessed using atomic operations as a result
+of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-07888" href="#VUID-vkCmdDispatchTileQCOM-None-07888"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-07888</span><br>
+
+If a <code>VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</code> descriptor is
+accessed using atomic operations as a result of this command, then the
+storage texel buffer&#8217;s <a href="resources.html#resources-buffer-view-format-features" class="xref page">format    features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-02692" href="#VUID-vkCmdDispatchTileQCOM-None-02692"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-02692</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> is sampled with <code>VK_FILTER_CUBIC_EXT</code> as a
+result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_CUBIC_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-02693" href="#VUID-vkCmdDispatchTileQCOM-None-02693"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-02693</span><br>
+
+If
+the <a href="../appendices/extensions.html#VK_EXT_filter_cubic" class="xref page">VK_EXT_filter_cubic</a> extension is not enabled and
+any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> is sampled with <code>VK_FILTER_CUBIC_EXT</code> as a
+result of this command, it <strong>must</strong> not have a <a href="resources.html#VkImageViewType" class="xref page">VkImageViewType</a> of
+<code>VK_IMAGE_VIEW_TYPE_3D</code>, <code>VK_IMAGE_VIEW_TYPE_CUBE</code>, or
+<code>VK_IMAGE_VIEW_TYPE_CUBE_ARRAY</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-filterCubic-02694" href="#VUID-vkCmdDispatchTileQCOM-filterCubic-02694"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-filterCubic-02694</span><br>
+
+Any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being sampled with <code>VK_FILTER_CUBIC_EXT</code> as a
+result of this command <strong>must</strong> have a <a href="resources.html#VkImageViewType" class="xref page">VkImageViewType</a> and format
+that supports cubic filtering, as specified by
+<a href="capabilities.html#VkFilterCubicImageViewImageFormatPropertiesEXT" class="xref page">VkFilterCubicImageViewImageFormatPropertiesEXT</a>::<code>filterCubic</code>
+returned by <a href="capabilities.html#vkGetPhysicalDeviceImageFormatProperties2" class="xref page">vkGetPhysicalDeviceImageFormatProperties2</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-filterCubicMinmax-02695" href="#VUID-vkCmdDispatchTileQCOM-filterCubicMinmax-02695"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-filterCubicMinmax-02695</span><br>
+
+Any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being sampled with <code>VK_FILTER_CUBIC_EXT</code> with
+a reduction mode of either <code>VK_SAMPLER_REDUCTION_MODE_MIN</code> or
+<code>VK_SAMPLER_REDUCTION_MODE_MAX</code> as a result of this command <strong>must</strong>
+have a <a href="resources.html#VkImageViewType" class="xref page">VkImageViewType</a> and format that supports cubic filtering
+together with minmax filtering, as specified by
+<a href="capabilities.html#VkFilterCubicImageViewImageFormatPropertiesEXT" class="xref page">VkFilterCubicImageViewImageFormatPropertiesEXT</a>::<code>filterCubicMinmax</code>
+returned by <a href="capabilities.html#vkGetPhysicalDeviceImageFormatProperties2" class="xref page">vkGetPhysicalDeviceImageFormatProperties2</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-cubicRangeClamp-09212" href="#VUID-vkCmdDispatchTileQCOM-cubicRangeClamp-09212"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-cubicRangeClamp-09212</span><br>
+
+If the <a href="features.html#features-cubicRangeClamp" class="xref page"><code>cubicRangeClamp</code></a> feature is
+not enabled, then any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being sampled with
+<code>VK_FILTER_CUBIC_EXT</code> as a result of this command <strong>must</strong> not have a
+<a href="samplers.html#VkSamplerReductionModeCreateInfo" class="xref page">VkSamplerReductionModeCreateInfo</a>::<code>reductionMode</code> equal to
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_RANGECLAMP_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-reductionMode-09213" href="#VUID-vkCmdDispatchTileQCOM-reductionMode-09213"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-reductionMode-09213</span><br>
+
+Any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being sampled with a
+<a href="samplers.html#VkSamplerReductionModeCreateInfo" class="xref page">VkSamplerReductionModeCreateInfo</a>::<code>reductionMode</code> equal to
+<code>VK_SAMPLER_REDUCTION_MODE_WEIGHTED_AVERAGE_RANGECLAMP_QCOM</code> as a
+result of this command <strong>must</strong> sample with <code>VK_FILTER_CUBIC_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-selectableCubicWeights-09214" href="#VUID-vkCmdDispatchTileQCOM-selectableCubicWeights-09214"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-selectableCubicWeights-09214</span><br>
+
+If the <a href="features.html#features-selectableCubicWeights" class="xref page"><code>selectableCubicWeights</code></a>
+feature is not enabled, then any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being sampled with
+<code>VK_FILTER_CUBIC_EXT</code> as a result of this command <strong>must</strong> have
+<a href="samplers.html#VkSamplerCubicWeightsCreateInfoQCOM" class="xref page">VkSamplerCubicWeightsCreateInfoQCOM</a>::<code>cubicWeights</code> equal to
+<code>VK_CUBIC_FILTER_WEIGHTS_CATMULL_ROM_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-flags-02696" href="#VUID-vkCmdDispatchTileQCOM-flags-02696"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-flags-02696</span><br>
+
+Any <a href="resources.html#VkImage" class="xref page">VkImage</a> created with a <a href="resources.html#VkImageCreateInfo" class="xref page">VkImageCreateInfo</a>::<code>flags</code>
+containing <code>VK_IMAGE_CREATE_CORNER_SAMPLED_BIT_NV</code> sampled as a
+result of this command <strong>must</strong> only be sampled using a
+<a href="samplers.html#VkSamplerAddressMode" class="xref page">VkSamplerAddressMode</a> of
+<code>VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpTypeImage-07027" href="#VUID-vkCmdDispatchTileQCOM-OpTypeImage-07027"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpTypeImage-07027</span><br>
+
+For any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being written as a storage image where the
+image format field of the <code>OpTypeImage</code> is <code>Unknown</code>, the view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpTypeImage-07028" href="#VUID-vkCmdDispatchTileQCOM-OpTypeImage-07028"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpTypeImage-07028</span><br>
+
+For any <a href="resources.html#VkImageView" class="xref page">VkImageView</a> being read as a storage image where the image
+format field of the <code>OpTypeImage</code> is <code>Unknown</code>, the view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpTypeImage-07029" href="#VUID-vkCmdDispatchTileQCOM-OpTypeImage-07029"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpTypeImage-07029</span><br>
+
+For any <a href="resources.html#VkBufferView" class="xref page">VkBufferView</a> being written as a storage texel buffer where
+the image format field of the <code>OpTypeImage</code> is <code>Unknown</code>, the
+view&#8217;s <a href="formats.html#VkFormatProperties3" class="xref page">buffer features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_STORAGE_WRITE_WITHOUT_FORMAT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpTypeImage-07030" href="#VUID-vkCmdDispatchTileQCOM-OpTypeImage-07030"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpTypeImage-07030</span><br>
+
+Any <a href="resources.html#VkBufferView" class="xref page">VkBufferView</a> being read as a storage texel buffer where the
+image format field of the <code>OpTypeImage</code> is <code>Unknown</code> then the
+view&#8217;s <a href="formats.html#VkFormatProperties3" class="xref page">buffer features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_STORAGE_READ_WITHOUT_FORMAT_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08600" href="#VUID-vkCmdDispatchTileQCOM-None-08600"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08600</span><br>
+
+For each set <em>n</em> that is statically used by <a href="shaders.html#shaders-binding" class="xref page">a bound    shader</a>, a descriptor set <strong>must</strong> have been bound to <em>n</em> at the same
+pipeline bind point, with a <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> that is compatible
+for set <em>n</em>, with the <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> used to create the current
+<a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a>
+or the <a href="descriptorsets.html#VkDescriptorSetLayout" class="xref page">VkDescriptorSetLayout</a> array used to create the current
+<a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a>
+, as described in <a href="descriptorsets.html#descriptorsets-compatibility" class="xref page">Pipeline Layout Compatibility</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08601" href="#VUID-vkCmdDispatchTileQCOM-None-08601"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08601</span><br>
+
+For each push constant that is statically used by <a href="shaders.html#shaders-binding" class="xref page">a    bound shader</a>, a push constant value <strong>must</strong> have been set for the same
+pipeline bind point, with a <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> that is compatible
+for push constants, with the <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a> used to create the
+current <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a>
+or the <a href="descriptorsets.html#VkDescriptorSetLayout" class="xref page">VkDescriptorSetLayout</a> array used to create the current
+<a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a>
+, as described in <a href="descriptorsets.html#descriptorsets-compatibility" class="xref page">Pipeline Layout Compatibility</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10068" href="#VUID-vkCmdDispatchTileQCOM-None-10068"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10068</span><br>
+
+For each array of resources that is used by <a href="shaders.html#shaders-binding" class="xref page">a bound    shader</a>, the indices used to access members of the array <strong>must</strong> be less
+than the descriptor count for the identified binding in the descriptor
+sets used by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-maintenance4-08602" href="#VUID-vkCmdDispatchTileQCOM-maintenance4-08602"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-maintenance4-08602</span><br>
+
+If the <a href="features.html#features-maintenance4" class="xref page"><code>maintenance4</code></a> feature is not
+enabled, then for each push constant that is statically used by
+<a href="shaders.html#shaders-binding" class="xref page">a bound shader</a>, a push constant value <strong>must</strong> have
+been set for the same pipeline bind point, with a <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a>
+that is compatible for push constants, with the <a href="descriptorsets.html#VkPipelineLayout" class="xref page">VkPipelineLayout</a>
+used to create the current <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a>
+or the <a href="descriptorsets.html#VkDescriptorSetLayout" class="xref page">VkDescriptorSetLayout</a> and <a href="descriptorsets.html#VkPushConstantRange" class="xref page">VkPushConstantRange</a> arrays
+used to create the current <a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a>
+, as described in <a href="descriptorsets.html#descriptorsets-compatibility" class="xref page">Pipeline Layout Compatibility</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08114" href="#VUID-vkCmdDispatchTileQCOM-None-08114"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08114</span><br>
+
+Descriptors in each bound descriptor set, specified via
+<a href="descriptorsets.html#vkCmdBindDescriptorSets" class="xref page">vkCmdBindDescriptorSets</a>, <strong>must</strong> be valid as described by
+<a href="descriptorsets.html#descriptor-validity" class="xref page">descriptor validity</a> if they are statically used
+by
+the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline bind point used by this
+command and the bound <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> was not created with
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08115" href="#VUID-vkCmdDispatchTileQCOM-None-08115"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08115</span><br>
+
+If the descriptors used by the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline
+bind point were specified via <a href="descriptorsets.html#vkCmdBindDescriptorSets" class="xref page">vkCmdBindDescriptorSets</a>, the bound
+<a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> <strong>must</strong> have been created without
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08116" href="#VUID-vkCmdDispatchTileQCOM-None-08116"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08116</span><br>
+
+Descriptors in bound descriptor buffers, specified via
+<a href="descriptorsets.html#vkCmdSetDescriptorBufferOffsetsEXT" class="xref page">vkCmdSetDescriptorBufferOffsetsEXT</a>, <strong>must</strong> be valid if they are
+dynamically used by the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline bind
+point used by this command and the bound <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> was created
+with <code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08604" href="#VUID-vkCmdDispatchTileQCOM-None-08604"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08604</span><br>
+
+Descriptors in bound descriptor buffers, specified via
+<a href="descriptorsets.html#vkCmdSetDescriptorBufferOffsetsEXT" class="xref page">vkCmdSetDescriptorBufferOffsetsEXT</a>, <strong>must</strong> be valid if they are
+dynamically used by any <a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a> bound to a stage corresponding
+to the pipeline bind point used by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08117" href="#VUID-vkCmdDispatchTileQCOM-None-08117"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08117</span><br>
+
+If the descriptors used by the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> bound to the pipeline
+bind point were specified via <a href="descriptorsets.html#vkCmdSetDescriptorBufferOffsetsEXT" class="xref page">vkCmdSetDescriptorBufferOffsetsEXT</a>,
+the bound <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> <strong>must</strong> have been created with
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08119" href="#VUID-vkCmdDispatchTileQCOM-None-08119"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08119</span><br>
+
+If a descriptor is dynamically used with a <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> created with
+<code>VK_PIPELINE_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code>, the descriptor
+memory <strong>must</strong> be resident</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08605" href="#VUID-vkCmdDispatchTileQCOM-None-08605"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08605</span><br>
+
+If a descriptor is dynamically used with a <a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a> created
+with a <code>VkDescriptorSetLayout</code> that was created with
+<code>VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT</code>, the
+descriptor memory <strong>must</strong> be resident</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08606" href="#VUID-vkCmdDispatchTileQCOM-None-08606"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08606</span><br>
+
+If the <a href="features.html#features-shaderObject" class="xref page"><code>shaderObject</code></a> feature is not
+enabled, a
+valid pipeline <strong>must</strong> be bound to the pipeline bind point used by this
+command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08608" href="#VUID-vkCmdDispatchTileQCOM-None-08608"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08608</span><br>
+
+If a pipeline is bound to the pipeline bind point used by this command,
+there
+<strong>must</strong> not have been any calls to dynamic state setting commands for any
+state specified statically in the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the
+pipeline bind point used by this command, since that pipeline was bound</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-uniformBuffers-06935" href="#VUID-vkCmdDispatchTileQCOM-uniformBuffers-06935"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-uniformBuffers-06935</span><br>
+
+If any stage of the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
+point used by this command accesses a uniform buffer,
+and that stage was created without enabling either
+<code>VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS</code> or
+<code>VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2</code> for
+<code>uniformBuffers</code>,
+and the <a href="features.html#features-robustBufferAccess" class="xref page"><code>robustBufferAccess</code></a>
+feature is not enabled, that stage <strong>must</strong> not access values outside of
+the range of the buffer as specified in the descriptor set bound to the
+same pipeline bind point</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08612" href="#VUID-vkCmdDispatchTileQCOM-None-08612"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08612</span><br>
+
+If the <a href="features.html#features-robustBufferAccess" class="xref page"><code>robustBufferAccess</code></a> feature
+is not enabled, and any <a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a> bound to a stage corresponding
+to the pipeline bind point used by this command accesses a uniform
+buffer, it <strong>must</strong> not access values outside of the range of the buffer as
+specified in the descriptor set bound to the same pipeline bind point</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-storageBuffers-06936" href="#VUID-vkCmdDispatchTileQCOM-storageBuffers-06936"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-storageBuffers-06936</span><br>
+
+If any stage of the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
+point used by this command accesses a storage buffer,
+and that stage was created without enabling either
+<code>VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS</code> or
+<code>VK_PIPELINE_ROBUSTNESS_BUFFER_BEHAVIOR_ROBUST_BUFFER_ACCESS_2</code> for
+<code>storageBuffers</code>,
+and the <a href="features.html#features-robustBufferAccess" class="xref page"><code>robustBufferAccess</code></a>
+feature is not enabled, that stage <strong>must</strong> not access values outside of
+the range of the buffer as specified in the descriptor set bound to the
+same pipeline bind point</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-08613" href="#VUID-vkCmdDispatchTileQCOM-None-08613"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-08613</span><br>
+
+If the <a href="features.html#features-robustBufferAccess" class="xref page"><code>robustBufferAccess</code></a> feature
+is not enabled, and any <a href="shaders.html#VkShaderEXT" class="xref page">VkShaderEXT</a> bound to a stage corresponding
+to the pipeline bind point used by this command accesses a storage
+buffer, it <strong>must</strong> not access values outside of the range of the buffer as
+specified in the descriptor set bound to the same pipeline bind point</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-02707" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-02707"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-02707</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+any resource accessed by <a href="shaders.html#shaders-binding" class="xref page">bound shaders</a> <strong>must</strong> not be
+a protected resource</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-viewType-07752" href="#VUID-vkCmdDispatchTileQCOM-viewType-07752"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-viewType-07752</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> is accessed as a result of this command, then the
+image view&#8217;s <code>viewType</code> <strong>must</strong> match the <code>Dim</code> operand of the
+<code>OpTypeImage</code> as described in <a href="../appendices/spirvenv.html#spirvenv-image-dimensions" class="xref page">Compatibility Between SPIR-V Image Dimensions and Vulkan ImageView Types</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-format-07753" href="#VUID-vkCmdDispatchTileQCOM-format-07753"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-format-07753</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> or <a href="resources.html#VkBufferView" class="xref page">VkBufferView</a> is accessed as a result of
+this command, then the <a href="formats.html#formats-numericformat" class="xref page">numeric type</a> of the
+view&#8217;s <code>format</code> and the <code>Sampled</code> <code>Type</code> operand of the
+<code>OpTypeImage</code> <strong>must</strong> match</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWrite-08795" href="#VUID-vkCmdDispatchTileQCOM-OpImageWrite-08795"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWrite-08795</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a>
+created with a format other than <code>VK_FORMAT_A8_UNORM</code>
+is accessed using <code>OpImageWrite</code> as a result of this command, then
+the <code>Type</code> of the <code>Texel</code> operand of that instruction <strong>must</strong> have
+at least as many components as the image view&#8217;s format</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWrite-08796" href="#VUID-vkCmdDispatchTileQCOM-OpImageWrite-08796"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWrite-08796</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> created with the format <code>VK_FORMAT_A8_UNORM</code>
+is accessed using <code>OpImageWrite</code> as a result of this command, then
+the <code>Type</code> of the <code>Texel</code> operand of that instruction <strong>must</strong> have
+four components</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWrite-04469" href="#VUID-vkCmdDispatchTileQCOM-OpImageWrite-04469"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWrite-04469</span><br>
+
+If a <a href="resources.html#VkBufferView" class="xref page">VkBufferView</a> is accessed using <code>OpImageWrite</code> as a result
+of this command, then the <code>Type</code> of the <code>Texel</code> operand of that
+instruction <strong>must</strong> have at least as many components as the buffer view&#8217;s
+format</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-SampledType-04470" href="#VUID-vkCmdDispatchTileQCOM-SampledType-04470"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-SampledType-04470</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> with a <a href="formats.html#VkFormat" class="xref page">VkFormat</a> that has a 64-bit component
+width is accessed as a result of this command, the <code>SampledType</code> of
+the <code>OpTypeImage</code> operand of that instruction <strong>must</strong> have a <code>Width</code>
+of 64</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-SampledType-04471" href="#VUID-vkCmdDispatchTileQCOM-SampledType-04471"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-SampledType-04471</span><br>
+
+If a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> with a <a href="formats.html#VkFormat" class="xref page">VkFormat</a> that has a component width
+less than 64-bit is accessed as a result of this command, the
+<code>SampledType</code> of the <code>OpTypeImage</code> operand of that instruction
+<strong>must</strong> have a <code>Width</code> of 32</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-SampledType-04472" href="#VUID-vkCmdDispatchTileQCOM-SampledType-04472"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-SampledType-04472</span><br>
+
+If a <a href="resources.html#VkBufferView" class="xref page">VkBufferView</a> with a <a href="formats.html#VkFormat" class="xref page">VkFormat</a> that has a 64-bit
+component width is accessed as a result of this command, the
+<code>SampledType</code> of the <code>OpTypeImage</code> operand of that instruction
+<strong>must</strong> have a <code>Width</code> of 64</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-SampledType-04473" href="#VUID-vkCmdDispatchTileQCOM-SampledType-04473"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-SampledType-04473</span><br>
+
+If a <a href="resources.html#VkBufferView" class="xref page">VkBufferView</a> with a <a href="formats.html#VkFormat" class="xref page">VkFormat</a> that has a component width
+less than 64-bit is accessed as a result of this command, the
+<code>SampledType</code> of the <code>OpTypeImage</code> operand of that instruction
+<strong>must</strong> have a <code>Width</code> of 32</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-sparseImageInt64Atomics-04474" href="#VUID-vkCmdDispatchTileQCOM-sparseImageInt64Atomics-04474"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-sparseImageInt64Atomics-04474</span><br>
+
+If the <a href="features.html#features-sparseImageInt64Atomics" class="xref page">    <code>sparseImageInt64Atomics</code></a> feature is not enabled, <a href="resources.html#VkImage" class="xref page">VkImage</a>
+objects created with the <code>VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT</code> flag
+<strong>must</strong> not be accessed by atomic instructions through an <code>OpTypeImage</code>
+with a <code>SampledType</code> with a <code>Width</code> of 64 by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-sparseImageInt64Atomics-04475" href="#VUID-vkCmdDispatchTileQCOM-sparseImageInt64Atomics-04475"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-sparseImageInt64Atomics-04475</span><br>
+
+If the <a href="features.html#features-sparseImageInt64Atomics" class="xref page">    <code>sparseImageInt64Atomics</code></a> feature is not enabled, <a href="resources.html#VkBuffer" class="xref page">VkBuffer</a>
+objects created with the <code>VK_BUFFER_CREATE_SPARSE_RESIDENCY_BIT</code>
+flag <strong>must</strong> not be accessed by atomic instructions through an
+<code>OpTypeImage</code> with a <code>SampledType</code> with a <code>Width</code> of 64 by this
+command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06971" href="#VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06971"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06971</span><br>
+
+If <code>OpImageWeightedSampleQCOM</code> is used to sample a <a href="resources.html#VkImageView" class="xref page">VkImageView</a>
+as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_WEIGHT_SAMPLED_IMAGE_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06972" href="#VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06972"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06972</span><br>
+
+If <code>OpImageWeightedSampleQCOM</code> uses a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a sample
+weight image as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_WEIGHT_IMAGE_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBoxFilterQCOM-06973" href="#VUID-vkCmdDispatchTileQCOM-OpImageBoxFilterQCOM-06973"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBoxFilterQCOM-06973</span><br>
+
+If <code>OpImageBoxFilterQCOM</code> is used to sample a <a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a
+result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_BOX_FILTER_SAMPLED_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSSDQCOM-06974" href="#VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSSDQCOM-06974"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSSDQCOM-06974</span><br>
+
+If <code>OpImageBlockMatchSSDQCOM</code> is used to read from an
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_BLOCK_MATCHING_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSADQCOM-06975" href="#VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSADQCOM-06975"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSADQCOM-06975</span><br>
+
+If <code>OpImageBlockMatchSADQCOM</code> is used to read from an
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_BLOCK_MATCHING_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSADQCOM-06976" href="#VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSADQCOM-06976"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchSADQCOM-06976</span><br>
+
+If <code>OpImageBlockMatchSADQCOM</code> or OpImageBlockMatchSSDQCOM is used to
+read from a reference image as result of this command, then the
+specified reference coordinates <strong>must</strong> not fail
+<a href="textures.html#textures-integer-coordinate-validation" class="xref page">integer texel coordinate    validation</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06977" href="#VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06977"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06977</span><br>
+
+If <code>OpImageWeightedSampleQCOM</code>, <code>OpImageBoxFilterQCOM</code>,
+<code>OpImageBlockMatchWindowSSDQCOM</code>,
+<code>OpImageBlockMatchWindowSADQCOM</code>,
+<code>OpImageBlockMatchGatherSSDQCOM</code>,
+<code>OpImageBlockMatchGatherSADQCOM</code>,
+<code>OpImageBlockMatchSSDQCOM</code>, or <code>OpImageBlockMatchSADQCOM</code> uses a
+<a href="samplers.html#VkSampler" class="xref page">VkSampler</a> as a result of this command, then the sampler <strong>must</strong> have
+been created with <code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06978" href="#VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06978"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageWeightedSampleQCOM-06978</span><br>
+
+If any command other than <code>OpImageWeightedSampleQCOM</code>,
+<code>OpImageBoxFilterQCOM</code>,
+<code>OpImageBlockMatchWindowSSDQCOM</code>,
+<code>OpImageBlockMatchWindowSADQCOM</code>,
+<code>OpImageBlockMatchGatherSSDQCOM</code>,
+<code>OpImageBlockMatchGatherSADQCOM</code>,
+<code>OpImageBlockMatchSSDQCOM</code>, or <code>OpImageBlockMatchSADQCOM</code> uses a
+<a href="samplers.html#VkSampler" class="xref page">VkSampler</a> as a result of this command, then the sampler <strong>must</strong> not
+have been created with <code>VK_SAMPLER_CREATE_IMAGE_PROCESSING_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09215" href="#VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09215"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09215</span><br>
+
+If a <code>OpImageBlockMatchWindow*QCOM</code> or
+<code>OpImageBlockMatchGather*QCOM</code> instruction is used to read from an
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+<a href="resources.html#resources-image-view-format-features" class="xref page">format features</a> <strong>must</strong> contain
+<code>VK_FORMAT_FEATURE_2_BLOCK_MATCHING_BIT_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09216" href="#VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09216"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09216</span><br>
+
+If a <code>OpImageBlockMatchWindow*QCOM</code> or
+<code>OpImageBlockMatchGather*QCOM</code> instruction is used to read from an
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> as a result of this command, then the image view&#8217;s
+format <strong>must</strong> be a single-component format</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09217" href="#VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09217"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-OpImageBlockMatchWindow-09217</span><br>
+
+If a <code>OpImageBlockMatchWindow*QCOM</code> or
+<code>OpImageBlockMatchGather*QCOM</code> read from a reference image as result
+of this command, then the specified reference coordinates <strong>must</strong> not fail
+<a href="textures.html#textures-integer-coordinate-validation" class="xref page">integer texel coordinate    validation</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-07288" href="#VUID-vkCmdDispatchTileQCOM-None-07288"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-07288</span><br>
+
+Any shader invocation executed by this command <strong>must</strong>
+<a href="shaders.html#shaders-termination" class="xref page">terminate</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-09600" href="#VUID-vkCmdDispatchTileQCOM-None-09600"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-09600</span><br>
+
+If a descriptor with type equal to any of
+<code>VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM</code>,
+<code>VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM</code>,
+<code>VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</code>,
+<code>VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</code>, or
+<code>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code> is accessed as a result of
+this command, all image subresources identified by that descriptor <strong>must</strong>
+be in the image layout identified when the descriptor was written</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10678" href="#VUID-vkCmdDispatchTileQCOM-None-10678"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10678</span><br>
+
+If this command is recorded inside a <a href="renderpass.html#renderpass-tile-shading" class="xref page">tile    shading render pass</a> instance, the stages corresponding to the pipeline
+bind point used by this command <strong>must</strong> only include
+<code>VK_SHADER_STAGE_VERTEX_BIT</code>, <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>,
+and/or <code>VK_SHADER_STAGE_COMPUTE_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10679" href="#VUID-vkCmdDispatchTileQCOM-None-10679"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10679</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, there <strong>must</strong> be no access to any image while the image was be
+transitioned to the
+<code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code> layout</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10672" href="#VUID-vkCmdDispatchTileQCOM-None-10672"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10672</span><br>
+
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is not enabled,
+this command <strong>must</strong> be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-aspectMask-10673" href="#VUID-vkCmdDispatchTileQCOM-aspectMask-10673"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-aspectMask-10673</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, and if the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
+point used by this command writes to a variable of storage class
+<code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>, the corresponding
+<a href="resources.html#VkImageView" class="xref page">VkImageView</a> using <strong>must</strong> not have been created with an
+<code>aspectMask</code> that contains <code>VK_IMAGE_ASPECT_DEPTH_BIT</code> or
+<code>VK_IMAGE_ASPECT_STENCIL_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10674" href="#VUID-vkCmdDispatchTileQCOM-None-10674"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10674</span><br>
+
+If the <a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is enabled, the
+<a href="features.html#features-tileShadingPerTileDispatch" class="xref page">tileShadingPerTileDispatch</a>
+feature <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10675" href="#VUID-vkCmdDispatchTileQCOM-None-10675"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10675</span><br>
+
+Memory backing image subresources used as
+<a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachments</a> in the
+current render pass <strong>must</strong> not be written in any way other than as a tile
+attachment by this command</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10676" href="#VUID-vkCmdDispatchTileQCOM-None-10676"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10676</span><br>
+
+If any recorded command in the current subpass will write to an image
+subresource as a <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile    attachment</a>, this command <strong>must</strong> not read from the memory backing that
+image subresource in any other way than as a tile attachment</p>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-02712" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-02712"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-02712</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+any resource written to by the <code>VkPipeline</code> object bound to the
+pipeline bind point used by this command <strong>must</strong> not be an unprotected
+resource</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-02713" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-02713"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-02713</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+pipeline stages other than the framebuffer-space and compute stages in
+the <code>VkPipeline</code> object bound to the pipeline bind point used by
+this command <strong>must</strong> not write to any resource</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-04617" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-04617"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-04617</span><br>
+
+If any of the shader stages of the <code>VkPipeline</code> bound to the
+pipeline bind point used by this command uses the
+<a href="../appendices/spirvenv.html#spirvenv-capabilities-table-RayQueryKHR" class="xref page"><code>RayQueryKHR</code></a>
+capability, then <code>commandBuffer</code> <strong>must</strong> not be a protected command
+buffer</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10668" href="#VUID-vkCmdDispatchTileQCOM-None-10668"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10668</span><br>
+
+When this command is recorded
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> <strong>must</strong>
+be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-None-10669" href="#VUID-vkCmdDispatchTileQCOM-None-10669"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-None-10669</span><br>
+
+The <a href="features.html#features-tileShadingDispatchTile" class="xref page">tileShadingDispatchTile</a> <strong>must</strong>
+enabled</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-parameter" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-recording" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-commandBuffer-cmdpool" href="#VUID-vkCmdDispatchTileQCOM-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-renderpass" href="#VUID-vkCmdDispatchTileQCOM-renderpass"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-renderpass</span><br>
+ This command <strong>must</strong> only be called inside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdDispatchTileQCOM-videocoding" href="#VUID-vkCmdDispatchTileQCOM-videocoding"></a> <span class="vuid">VUID-vkCmdDispatchTileQCOM-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Inside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Action</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkDispatchTileInfoQCOM</code> structure is defined as:</p>
+</div>
+<div id="VkDispatchTileInfoQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_tile_shading
+typedef struct VkDispatchTileInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkDispatchTileInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+</ul>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDispatchTileInfoQCOM-sType-sType" href="#VUID-VkDispatchTileInfoQCOM-sType-sType"></a> <span class="vuid">VUID-VkDispatchTileInfoQCOM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_DISPATCH_TILE_INFO_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDispatchTileInfoQCOM-pNext-pNext" href="#VUID-VkDispatchTileInfoQCOM-pNext-pNext"></a> <span class="vuid">VUID-VkDispatchTileInfoQCOM-pNext-pNext</span><br>
+ <code>pNext</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 </div>
@@ -3247,16 +4207,6 @@ state specified statically in the <a href="pipelines.html#VkPipeline" class="xre
 pipeline bind point used by this command, since that pipeline was bound</p>
 </li>
 <li>
-<p><a id="VUID-vkCmdSubpassShadingHUAWEI-None-08607" href="#VUID-vkCmdSubpassShadingHUAWEI-None-08607"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-None-08607</span><br>
-
-If the <a href="features.html#features-shaderObject" class="xref page"><code>shaderObject</code></a> feature is enabled,
-either a valid pipeline <strong>must</strong> be bound to the pipeline bind point used
-by this command, or a valid combination of valid and
-<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> shader objects <strong>must</strong> be bound to every supported
-shader stage corresponding to the pipeline bind point used by this
-command</p>
-</li>
-<li>
 <p><a id="VUID-vkCmdSubpassShadingHUAWEI-uniformBuffers-06935" href="#VUID-vkCmdSubpassShadingHUAWEI-uniformBuffers-06935"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-uniformBuffers-06935</span><br>
 
 If any stage of the <a href="pipelines.html#VkPipeline" class="xref page">VkPipeline</a> object bound to the pipeline bind
@@ -3309,23 +4259,6 @@ If <code>commandBuffer</code> is an unprotected command buffer and
 <a href="devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
 any resource accessed by <a href="shaders.html#shaders-binding" class="xref page">bound shaders</a> <strong>must</strong> not be
 a protected resource</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdSubpassShadingHUAWEI-None-06550" href="#VUID-vkCmdSubpassShadingHUAWEI-None-06550"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-None-06550</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> only be used with <code>OpImageSample*</code> or <code>OpImageSparseSample*</code>
-instructions</p>
-</li>
-<li>
-<p><a id="VUID-vkCmdSubpassShadingHUAWEI-ConstOffset-06551" href="#VUID-vkCmdSubpassShadingHUAWEI-ConstOffset-06551"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-ConstOffset-06551</span><br>
-
-If <a href="shaders.html#shaders-binding" class="xref page">a bound shader</a> accesses a <a href="samplers.html#VkSampler" class="xref page">VkSampler</a> or
-<a href="resources.html#VkImageView" class="xref page">VkImageView</a> object that enables
-<a href="samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a>, that object
-<strong>must</strong> not use the <code>ConstOffset</code> and <code>Offset</code> operands</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdSubpassShadingHUAWEI-viewType-07752" href="#VUID-vkCmdSubpassShadingHUAWEI-viewType-07752"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-viewType-07752</span><br>
@@ -3531,6 +4464,23 @@ If a descriptor with type equal to any of
 <code>VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</code> is accessed as a result of
 this command, all image subresources identified by that descriptor <strong>must</strong>
 be in the image layout identified when the descriptor was written</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSubpassShadingHUAWEI-None-10678" href="#VUID-vkCmdSubpassShadingHUAWEI-None-10678"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-None-10678</span><br>
+
+If this command is recorded inside a <a href="renderpass.html#renderpass-tile-shading" class="xref page">tile    shading render pass</a> instance, the stages corresponding to the pipeline
+bind point used by this command <strong>must</strong> only include
+<code>VK_SHADER_STAGE_VERTEX_BIT</code>, <code>VK_SHADER_STAGE_FRAGMENT_BIT</code>,
+and/or <code>VK_SHADER_STAGE_COMPUTE_BIT</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdSubpassShadingHUAWEI-None-10679" href="#VUID-vkCmdSubpassShadingHUAWEI-None-10679"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-None-10679</span><br>
+
+If this command is recorded where
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled, there <strong>must</strong> be no access to any image while the image was be
+transitioned to the
+<code>VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT</code> layout</p>
 </li>
 <li>
 <p><a id="VUID-vkCmdSubpassShadingHUAWEI-None-04931" href="#VUID-vkCmdSubpassShadingHUAWEI-None-04931"></a> <span class="vuid">VUID-vkCmdSubpassShadingHUAWEI-None-04931</span><br>

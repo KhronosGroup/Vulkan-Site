@@ -4397,7 +4397,9 @@ be enabled on a device simultaneously with
 <code>descriptorBindingUniformTexelBufferUpdateAfterBind</code>, and/or
 <code>descriptorBindingStorageTexelBufferUpdateAfterBind</code>.
 If this is <code>VK_FALSE</code>, then either <code>robustBufferAccess</code> <strong>must</strong> be
-disabled or all of these update-after-bind features <strong>must</strong> be disabled.</p>
+disabled or all of these update-after-bind features <strong>must</strong> be disabled.
+Similarly, if this property is <code>VK_FALSE</code>, robustness <strong>must</strong> not be
+enabled through the <a href="pipelines.html#VkPipelineRobustnessCreateInfo" class="xref page">VkPipelineRobustnessCreateInfo</a> mechanism.</p>
 </li>
 <li>
 <p><a id="extension-limits-quadDivergentImplicitLod"></a>
@@ -9733,6 +9735,78 @@ corresponding implementation-dependent property.</p>
 </div>
 </div>
 </div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkPhysicalDeviceTileShadingPropertiesQCOM</code> structure is defined as:</p>
+</div>
+<div id="VkPhysicalDeviceTileShadingPropertiesQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_tile_shading
+typedef struct VkPhysicalDeviceTileShadingPropertiesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           maxApronSize;
+    VkBool32           preferNonCoherent;
+    VkExtent2D         tileGranularity;
+    VkExtent2D         maxTileShadingRate;
+} VkPhysicalDeviceTileShadingPropertiesQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="fundamentals.html#VkStructureType" class="xref page">VkStructureType</a> value identifying this structure</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><a id="limits-maxApronSize"></a> <code>maxApronSize</code> is the maximum value
+supported which can be specified for
+<a href="renderpass.html#VkRenderPassTileShadingCreateInfoQCOM" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>apronSize</code> or
+<code>width</code> and <code>height</code>.</p>
+</li>
+<li>
+<p><a id="limits-preferNonCoherent"></a> <code>preferNonCoherent</code> indicates that the
+implementation prefers tile attachments declared in shaders with the
+<code>NonCoherentTileAttachmentReadQCOM</code> decoration.
+Use of the decoration <strong>may</strong> offer performance or power advantages.</p>
+</li>
+<li>
+<p><a id="limits-tileGranularity"></a> <code>tileGranularity</code> provides a guarantee on
+the granularity of each tile.
+Each tile will have dimensions that are a multiple of this granularity
+in width and height.</p>
+</li>
+<li>
+<p><a id="limits-maxTileShadingRate"></a> <code>maxTileShadingRate</code> is the maximum
+value of <code>TileShadingRateQCOM</code> and <strong>must</strong> be a power of 2.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If the <code>VkPhysicalDeviceTileShadingPropertiesQCOM</code> structure is included in the <code>pNext</code> chain of the
+<a href="devsandqueues.html#VkPhysicalDeviceProperties2" class="xref page">VkPhysicalDeviceProperties2</a> structure passed to
+<a href="devsandqueues.html#vkGetPhysicalDeviceProperties2" class="xref page">vkGetPhysicalDeviceProperties2</a>, it is filled in with each
+corresponding implementation-dependent property.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkPhysicalDeviceTileShadingPropertiesQCOM-sType-sType" href="#VUID-VkPhysicalDeviceTileShadingPropertiesQCOM-sType-sType"></a> <span class="vuid">VUID-VkPhysicalDeviceTileShadingPropertiesQCOM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TILE_SHADING_PROPERTIES_QCOM</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -11405,6 +11479,26 @@ whether or not the feature is enabled.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>VkBool32</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>cooperativeVectorTrainingFloat32Accumulation</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>uint32_t</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>maxApronSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="features.html#features-tileShadingApron" class="xref page"><code>tileShadingApron</code></a></code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VkBool32</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>preferNonCoherent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="features.html#features-tileShading" class="xref page"><code>tileShading</code></a></code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2 × <code>uint32_t</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>tileGranularity</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="features.html#features-tileShading" class="xref page"><code>tileShading</code></a></code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2 × <code>uint32_t</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>maxTileShadingRate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="features.html#features-tileShadingDispatchTile" class="xref page"><code>tileShadingDispatchTile</code></a></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -13745,6 +13839,30 @@ whether or not the feature is enabled.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>maxCooperativeVectorComponents</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">128</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>maxApronSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>preferNonCoherent</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">implementation-dependent</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>tileGranularity</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(16,16)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>maxTileShadingRate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">(8,8)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">min</p></td>
 </tr>
 </tbody>

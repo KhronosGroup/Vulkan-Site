@@ -2238,6 +2238,10 @@ static const VkAccessFlagBits2 VK_ACCESS_2_VIDEO_DECODE_WRITE_BIT_KHR = 0x100000
 static const VkAccessFlagBits2 VK_ACCESS_2_VIDEO_ENCODE_READ_BIT_KHR = 0x2000000000ULL;
 // Provided by VK_KHR_video_encode_queue
 static const VkAccessFlagBits2 VK_ACCESS_2_VIDEO_ENCODE_WRITE_BIT_KHR = 0x4000000000ULL;
+// Provided by VK_QCOM_tile_shading
+static const VkAccessFlagBits2 VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM = 0x8000000000000ULL;
+// Provided by VK_QCOM_tile_shading
+static const VkAccessFlagBits2 VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM = 0x10000000000000ULL;
 // Provided by VK_KHR_synchronization2
 static const VkAccessFlagBits2 VK_ACCESS_2_NONE_KHR = 0ULL;
 // Provided by VK_KHR_synchronization2
@@ -2419,6 +2423,9 @@ is equivalent to the logical OR of:</p>
 </li>
 <li>
 <p><code>VK_ACCESS_2_SHADER_STORAGE_READ_BIT</code></p>
+</li>
+<li>
+<p><code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code></p>
 </li>
 </ul>
 </div>
@@ -2661,6 +2668,18 @@ Such access occurs in the
 <code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code> and
 <code>VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code> pipeline
 stages.</p>
+</li>
+<li>
+<p><code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code> specifies read
+access to a <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile    attachment</a>.
+Such access occurs in the <code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code>
+or <code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code> pipeline stages.</p>
+</li>
+<li>
+<p><code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code> specifies write
+access to a <a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile    attachment</a>.
+Such access occurs in the <code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code>
+or <code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code> pipeline stages.</p>
 </li>
 </ul>
 </div>
@@ -3467,6 +3486,16 @@ perform that type of access.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_ACCESS_2_OPTICAL_FLOW_WRITE_BIT_NV</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PIPELINE_STAGE_2_OPTICAL_FLOW_BIT_NV</code></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code>,
+	<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code>,
+	<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code></p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3549,6 +3578,13 @@ These stages are:</p>
 </ul>
 </div>
 <div class="paragraph">
+<p>For commands recorded where the
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is enabled,
+the <code>VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</code> and
+<code>VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT</code> are included as framebuffer-space
+pipeline stages.</p>
+</div>
+<div class="paragraph">
 <p>For these pipeline stages, an execution or memory dependency from the first
 set of operations to the second set <strong>can</strong> either be a single
 <em>framebuffer-global</em> dependency, or split into multiple <em>framebuffer-local</em>
@@ -3612,6 +3648,11 @@ or
 the framebuffer region is a fragment region and it is a pixel granularity
 dependency.</p>
 </div>
+<div class="paragraph">
+<p>For commands recorded within a render pass that enables
+<a href="renderpass.html#renderpass-tile-shading" class="xref page">tile shading</a>, the framebuffer region is a tile
+region and it is a tile granularity dependency.</p>
+</div>
 <div class="admonitionblock note">
 <table>
 <tr>
@@ -3620,7 +3661,13 @@ dependency.</p>
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Since fragment shader invocations are not specified to run in any particular
+<p>For commands recorded within a render pass instance that enables
+<a href="renderpass.html#renderpass-tile-shading" class="xref page">tile shading</a>, the fragment shader invocations
+for a given tile will be grouped together, but the tiles do not run in any
+particular order, and the fragment shader invocations within a tile do not
+run in any particular order.
+Otherwise,
+fragment shader invocations are not specified to run in any particular
 groupings, the size of a framebuffer region is implementation-dependent, not
 known to the application, and <strong>must</strong> be assumed to be no larger than
 specified above.</p>
@@ -3650,6 +3697,12 @@ To access samples that are not covered,
 either the <code>VkSubpassDescription</code>::<code>flags</code>
 <code>VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_QCOM</code> flag is required, or
 a framebuffer-global dependency is required.</p>
+</div>
+<div class="paragraph">
+<p>For a tile granularity dependency, a fragment shader <strong>can</strong> use
+<a href="renderpass.html#renderpass-tile-shading-attachment-access" class="xref page">tile attachment variables</a> to
+access any pixel or sample within the <em>active tile</em> for color, depth/stencil
+or input attachments even if only framebuffer-local dependencies are used.</p>
 </div>
 </td>
 </tr>
@@ -12100,6 +12153,13 @@ enabled, The <code>dependencyFlags</code> members of any element of
 <code>pDependencyInfos</code> <strong>must</strong> not include
 <code>VK_DEPENDENCY_QUEUE_FAMILY_OWNERSHIP_TRANSFER_USE_ALL_STAGES_BIT_KHR</code></p>
 </li>
+<li>
+<p><a id="VUID-vkCmdWaitEvents2-None-10654" href="#VUID-vkCmdWaitEvents2-None-10654"></a> <span class="vuid">VUID-vkCmdWaitEvents2-None-10654</span><br>
+
+This command <strong>must</strong> not be recorded when
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled</p>
+</li>
 </ul>
 </div>
 </div>
@@ -12643,6 +12703,13 @@ physical device</p>
 
 Elements of <code>pEvents</code> <strong>must</strong> not have been signaled by
 <a href="#vkCmdSetEvent2">vkCmdSetEvent2</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdWaitEvents-None-10655" href="#VUID-vkCmdWaitEvents-None-10655"></a> <span class="vuid">VUID-vkCmdWaitEvents-None-10655</span><br>
+
+This command <strong>must</strong> not be recorded when
+<a href="renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled</p>
 </li>
 </ul>
 </div>
@@ -14430,6 +14497,24 @@ If <code>srcAccessMask</code> includes
 <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, or one of
 <code>VK_PIPELINE_STAGE_*_SHADER_BIT</code> stages</p>
 </li>
+<li>
+<p><a id="VUID-VkMemoryBarrier2-srcAccessMask-10670" href="#VUID-VkMemoryBarrier2-srcAccessMask-10670"></a> <span class="vuid">VUID-VkMemoryBarrier2-srcAccessMask-10670</span><br>
+
+If <code>srcAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code>,
+<code>srcStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryBarrier2-srcAccessMask-10671" href="#VUID-VkMemoryBarrier2-srcAccessMask-10671"></a> <span class="vuid">VUID-VkMemoryBarrier2-srcAccessMask-10671</span><br>
+
+If <code>srcAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code>,
+<code>srcStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -14892,6 +14977,24 @@ If <code>dstAccessMask</code> includes
 <strong>must</strong> include <code>VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT</code>,
 <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, or one of
 <code>VK_PIPELINE_STAGE_*_SHADER_BIT</code> stages</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryBarrier2-dstAccessMask-10670" href="#VUID-VkMemoryBarrier2-dstAccessMask-10670"></a> <span class="vuid">VUID-VkMemoryBarrier2-dstAccessMask-10670</span><br>
+
+If <code>dstAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code>,
+<code>dstStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
+<li>
+<p><a id="VUID-VkMemoryBarrier2-dstAccessMask-10671" href="#VUID-VkMemoryBarrier2-dstAccessMask-10671"></a> <span class="vuid">VUID-VkMemoryBarrier2-dstAccessMask-10671</span><br>
+
+If <code>dstAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code>,
+<code>dstStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
 </li>
 </ul>
 </div>
@@ -15608,6 +15711,24 @@ If <code>srcAccessMask</code> includes
 <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, or one of
 <code>VK_PIPELINE_STAGE_*_SHADER_BIT</code> stages</p>
 </li>
+<li>
+<p><a id="VUID-VkBufferMemoryBarrier2-srcAccessMask-10670" href="#VUID-VkBufferMemoryBarrier2-srcAccessMask-10670"></a> <span class="vuid">VUID-VkBufferMemoryBarrier2-srcAccessMask-10670</span><br>
+
+If <code>srcAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code>,
+<code>srcStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
+<li>
+<p><a id="VUID-VkBufferMemoryBarrier2-srcAccessMask-10671" href="#VUID-VkBufferMemoryBarrier2-srcAccessMask-10671"></a> <span class="vuid">VUID-VkBufferMemoryBarrier2-srcAccessMask-10671</span><br>
+
+If <code>srcAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code>,
+<code>srcStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -16070,6 +16191,24 @@ If <code>dstAccessMask</code> includes
 <strong>must</strong> include <code>VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT</code>,
 <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, or one of
 <code>VK_PIPELINE_STAGE_*_SHADER_BIT</code> stages</p>
+</li>
+<li>
+<p><a id="VUID-VkBufferMemoryBarrier2-dstAccessMask-10670" href="#VUID-VkBufferMemoryBarrier2-dstAccessMask-10670"></a> <span class="vuid">VUID-VkBufferMemoryBarrier2-dstAccessMask-10670</span><br>
+
+If <code>dstAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code>,
+<code>dstStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
+<li>
+<p><a id="VUID-VkBufferMemoryBarrier2-dstAccessMask-10671" href="#VUID-VkBufferMemoryBarrier2-dstAccessMask-10671"></a> <span class="vuid">VUID-VkBufferMemoryBarrier2-dstAccessMask-10671</span><br>
+
+If <code>dstAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code>,
+<code>dstStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
 </li>
 </ul>
 </div>
@@ -17131,6 +17270,24 @@ If <code>srcAccessMask</code> includes
 <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, or one of
 <code>VK_PIPELINE_STAGE_*_SHADER_BIT</code> stages</p>
 </li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-srcAccessMask-10670" href="#VUID-VkImageMemoryBarrier2-srcAccessMask-10670"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-srcAccessMask-10670</span><br>
+
+If <code>srcAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code>,
+<code>srcStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-srcAccessMask-10671" href="#VUID-VkImageMemoryBarrier2-srcAccessMask-10671"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-srcAccessMask-10671</span><br>
+
+If <code>srcAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code>,
+<code>srcStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
 </ul>
 </div>
 <div class="ulist">
@@ -17593,6 +17750,24 @@ If <code>dstAccessMask</code> includes
 <strong>must</strong> include <code>VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT</code>,
 <code>VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT</code>, or one of
 <code>VK_PIPELINE_STAGE_*_SHADER_BIT</code> stages</p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-dstAccessMask-10670" href="#VUID-VkImageMemoryBarrier2-dstAccessMask-10670"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-dstAccessMask-10670</span><br>
+
+If <code>dstAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM</code>,
+<code>dstStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
+</li>
+<li>
+<p><a id="VUID-VkImageMemoryBarrier2-dstAccessMask-10671" href="#VUID-VkImageMemoryBarrier2-dstAccessMask-10671"></a> <span class="vuid">VUID-VkImageMemoryBarrier2-dstAccessMask-10671</span><br>
+
+If <code>dstAccessMask</code> includes
+<code>VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM</code>,
+<code>dstStageMask</code> <strong>must</strong> include
+<code>VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT</code> or
+<code>VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT</code>.</p>
 </li>
 </ul>
 </div>

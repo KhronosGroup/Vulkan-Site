@@ -1182,6 +1182,10 @@ the <a href="../chapters/devsandqueues.html#VkDevice" class="xref page">VkDevice
 <td class="tableblock halign-left valign-top"><p class="tableblock"><a id="spirvenv-capabilities-table-CooperativeVectorTrainingNV"></a><code>CooperativeVectorTrainingNV</code><br>
 &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-cooperativeVectorTraining" class="xref page"><code>VkPhysicalDeviceCooperativeVectorFeaturesNV</code>::<code>cooperativeVectorTraining</code></a></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="spirvenv-capabilities-table-TileShadingQCOM"></a><code>TileShadingQCOM</code><br>
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <a href="../chapters/features.html#features-tileShading" class="xref page"><code>VkPhysicalDeviceTileShadingFeaturesQCOM</code>::<code>tileShading</code></a></p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -1621,6 +1625,10 @@ parameter of <a href="../chapters/shaders.html#vkCreateShaderModule" class="xref
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>SPV_NV_cooperative_vector</code><br>
 &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <code><a href="extensions.html#VK_NV_cooperative_vector" class="xref page">VK_NV_cooperative_vector</a></code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>SPV_QCOM_tile_shading</code><br>
+&#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; <code><a href="extensions.html#VK_QCOM_tile_shading" class="xref page">VK_QCOM_tile_shading</a></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -2103,6 +2111,12 @@ The pointers of any <code>Input</code> or <code>Output</code>
 not contain any <code>PhysicalStorageBuffer</code> <code>Storage</code> <code>Class</code> pointers</p>
 </li>
 <li>
+<p><a id="VUID-StandaloneSpirv-None-10684" href="#VUID-StandaloneSpirv-None-10684"></a> <span class="vuid">VUID-StandaloneSpirv-None-10684</span><br>
+
+All variables <strong>must</strong> have valid explicit layout decorations
+<a href="../chapters/interfaces.html#interfaces-explicit-layout-decorations" class="xref page">as described in Shader    Interfaces</a></p>
+</li>
+<li>
 <p><a id="VUID-StandaloneSpirv-GLSLShared-04669" href="#VUID-StandaloneSpirv-GLSLShared-04669"></a> <span class="vuid">VUID-StandaloneSpirv-GLSLShared-04669</span><br>
 
 The <code>GLSLShared</code> and <code>GLSLPacked</code> decorations <strong>must</strong> not be used</p>
@@ -2247,11 +2261,12 @@ any-hit, closest hit, miss, fragment, vertex, tessellation evaluation,
 or geometry shaders, the execution Scope <strong>must</strong> be <code>Subgroup</code></p>
 </li>
 <li>
-<p><a id="VUID-StandaloneSpirv-LocalSize-06426" href="#VUID-StandaloneSpirv-LocalSize-06426"></a> <span class="vuid">VUID-StandaloneSpirv-LocalSize-06426</span><br>
+<p><a id="VUID-StandaloneSpirv-None-10685" href="#VUID-StandaloneSpirv-None-10685"></a> <span class="vuid">VUID-StandaloneSpirv-None-10685</span><br>
 
-For each compute shader entry point, either a <code>LocalSize</code> or
-<code>LocalSizeId</code> <code>Execution</code> <code>Mode</code>, or an object decorated with the
-<code>WorkgroupSize</code> decoration <strong>must</strong> be specified</p>
+For each compute shader entry point, either a
+<code>TileShadingRateQCOM</code>,
+<code>LocalSize</code>, or <code>LocalSizeId</code> <code>Execution</code> <code>Mode</code>, or an object
+decorated with the <code>WorkgroupSize</code> decoration <strong>must</strong> be specified</p>
 </li>
 <li>
 <p><a id="VUID-StandaloneSpirv-DerivativeGroupQuadsNV-04684" href="#VUID-StandaloneSpirv-DerivativeGroupQuadsNV-04684"></a> <span class="vuid">VUID-StandaloneSpirv-DerivativeGroupQuadsNV-04684</span><br>
@@ -2717,7 +2732,80 @@ buffer, the uniform texel buffer through which that memory is accessed
 If the <code>StorageTexelBufferArrayDynamicIndexing</code> capability is not
 declared, and an instruction accesses memory through a storage texel
 buffer, the storage texel buffer through which that memory is accessed
-<strong>must</strong> be determined by <a href="glossary.html#glossary-constant-integral-expression" class="xref page">constant    integral expressions</a></p>
+<strong>must</strong> be determined by <a href="glossary.html#glossary-constant-integral-expression" class="xref page">constant    integral expressions</a> <code>PhysicalStorageBuffer</code>.</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileShadingQCOM-10686" href="#VUID-StandaloneSpirv-TileShadingQCOM-10686"></a> <span class="vuid">VUID-StandaloneSpirv-TileShadingQCOM-10686</span><br>
+
+<code>TileShadingQCOM</code> capability <strong>must</strong> not be enabled in any stage other
+than compute or fragment</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Execution-10687" href="#VUID-StandaloneSpirv-Execution-10687"></a> <span class="vuid">VUID-StandaloneSpirv-Execution-10687</span><br>
+
+<code>Execution</code> <code>Mode</code> <code>NonCoherentTileAttachmentReadQCOM</code> <strong>must</strong>
+not be used in any stage other than fragment</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Execution-10688" href="#VUID-StandaloneSpirv-Execution-10688"></a> <span class="vuid">VUID-StandaloneSpirv-Execution-10688</span><br>
+
+<code>Execution</code> <code>Mode</code> <code>TileShadingRateQCOM</code> <strong>must</strong> not be used in
+any stage other than compute</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10689" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10689"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10689</span><br>
+
+If the <code>TileAttachmentQCOM</code> <code>Storage</code> <code>Class</code> is used, the
+<code>TileShadingQCOM</code> capability <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-NonCoherentTileAttachmentReadQCOM-10690" href="#VUID-StandaloneSpirv-NonCoherentTileAttachmentReadQCOM-10690"></a> <span class="vuid">VUID-StandaloneSpirv-NonCoherentTileAttachmentReadQCOM-10690</span><br>
+
+If the <code>NonCoherentTileAttachmentReadQCOM</code> <code>Execution</code> <code>Mode</code>
+is used, the <code>TileShadingQCOM</code> capability <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileShadingRateQCOM-10691" href="#VUID-StandaloneSpirv-TileShadingRateQCOM-10691"></a> <span class="vuid">VUID-StandaloneSpirv-TileShadingRateQCOM-10691</span><br>
+
+If the <code>TileShadingRateQCOM</code> <code>Execution</code> <code>Mode</code> is used, the
+<code>TileShadingQCOM</code> capability <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileShadingRateQCOM-10692" href="#VUID-StandaloneSpirv-TileShadingRateQCOM-10692"></a> <span class="vuid">VUID-StandaloneSpirv-TileShadingRateQCOM-10692</span><br>
+
+If the <code>TileShadingRateQCOM</code> <code>Execution</code> <code>Mode</code> is used,
+<code>LocalSize</code> and <code>LocalSizeId</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> not be
+specified</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-10693" href="#VUID-StandaloneSpirv-OpTypeImage-10693"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-10693</span><br>
+
+<code>OpTypeImage</code> variables in the <code>TileAttachmentQCOM</code> <code>Storage</code>
+<code>Class</code> <strong>must</strong> have <code>Dim</code> equal to <code>2D</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-10694" href="#VUID-StandaloneSpirv-OpTypeImage-10694"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-10694</span><br>
+
+<code>OpTypeImage</code> variables in the <code>TileAttachmentQCOM</code> <code>Storage</code>
+<code>Class</code> <strong>must</strong> <code>Sampled</code> equal to <code>1</code> or <code>2</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10695" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10695"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10695</span><br>
+
+Any variable in the <code>TileAttachmentQCOM</code> <code>Storage</code> <code>Class</code>
+<strong>must</strong> be decorated with <code>DescriptorSet</code> and <code>Binding</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10696" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10696"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10696</span><br>
+
+Any variable in the <code>TileAttachmentQCOM</code> <code>Storage</code> <code>Class</code>
+<strong>must</strong> not be decorated with <code>Component</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10697" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10697"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10697</span><br>
+
+An OpTypeImage variables in the <code>TileAttachmentQCOM</code> <code>Storage</code>
+<code>Class</code> <strong>must</strong> not be consumed by an <code>OpImageQuery*</code> instruction</p>
 </li>
 </ul>
 </div>
@@ -4989,6 +5077,217 @@ If <a href="../chapters/limits.html#limits-meshAndTaskShaderDerivatives" class="
 <code>DerivativeGroupLinearKHR</code> and <code>DerivativeGroupQuadsKHR</code> execution
 modes <strong>must</strong> not be used in the <code>MeshEXT</code>, <code>MeshNV</code>, <code>TaskEXT</code>,
 or <code>TaskNV</code> <code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-TileShadingQCOM-10698" href="#VUID-RuntimeSpirv-TileShadingQCOM-10698"></a> <span class="vuid">VUID-RuntimeSpirv-TileShadingQCOM-10698</span><br>
+
+<code>TileShadingQCOM</code> capability <strong>must</strong> not be declared in the compute
+stage unless the <a href="../chapters/features.html#features-tileShading" class="xref page">tileShading</a> feature is enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-TileShadingQCOM-10699" href="#VUID-RuntimeSpirv-TileShadingQCOM-10699"></a> <span class="vuid">VUID-RuntimeSpirv-TileShadingQCOM-10699</span><br>
+
+The <code>TileShadingQCOM</code> capability <strong>must</strong> not be declared in the
+fragment stage unless the
+<a href="../chapters/features.html#features-tileShadingFragmentStage" class="xref page">tileShadingFragmentStage</a> feature
+is enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-TileShadingQCOM-10700" href="#VUID-RuntimeSpirv-TileShadingQCOM-10700"></a> <span class="vuid">VUID-RuntimeSpirv-TileShadingQCOM-10700</span><br>
+
+A shader that enables SPIR-V capability <code>TileShadingQCOM</code> <strong>must</strong> not
+be invoked outside a <a href="../chapters/renderpass.html#renderpass-tile-shading" class="xref page">tile shading render    pass</a></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-TileShadingQCOM-10701" href="#VUID-RuntimeSpirv-TileShadingQCOM-10701"></a> <span class="vuid">VUID-RuntimeSpirv-TileShadingQCOM-10701</span><br>
+
+A compute shader that enables SPIR-V capability <code>TileShadingQCOM</code>
+<strong>must</strong> only be invoked inside those portions of a command buffer where
+<a href="../chapters/renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> is
+enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-x-10702" href="#VUID-RuntimeSpirv-x-10702"></a> <span class="vuid">VUID-RuntimeSpirv-x-10702</span><br>
+
+In compute shaders that enables SPIR-V capability <code>TileShadingQCOM</code>,
+the <code>x</code> size in <code>TileShadingRateQCOM</code> <strong>must</strong> be less than or equal
+to
+<a href="../chapters/limits.html#VkPhysicalDeviceTileShadingPropertiesQCOM" class="xref page">VkPhysicalDeviceTileShadingPropertiesQCOM</a>::<code>maxTileShadingRate</code>::<code>x</code></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-y-10703" href="#VUID-RuntimeSpirv-y-10703"></a> <span class="vuid">VUID-RuntimeSpirv-y-10703</span><br>
+
+In compute shaders that enables SPIR-V capability <code>TileShadingQCOM</code>,
+the <code>y</code> size in <code>TileShadingRateQCOM</code> <strong>must</strong> be less than or equal
+to
+<a href="../chapters/limits.html#VkPhysicalDeviceTileShadingPropertiesQCOM" class="xref page">VkPhysicalDeviceTileShadingPropertiesQCOM</a>::<code>maxTileShadingRate</code>::<code>y</code></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-z-10704" href="#VUID-RuntimeSpirv-z-10704"></a> <span class="vuid">VUID-RuntimeSpirv-z-10704</span><br>
+
+In compute shaders that enables SPIR-V capability <code>TileShadingQCOM</code>,
+the <code>z</code> size in <code>TileShadingRateQCOM</code> <strong>must</strong> be less than or equal
+to <a href="../chapters/renderpass.html#VkTilePropertiesQCOM" class="xref page">VkTilePropertiesQCOM</a>::<code>tileSize</code>::<code>z</code></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-tileSize-10705" href="#VUID-RuntimeSpirv-tileSize-10705"></a> <span class="vuid">VUID-RuntimeSpirv-tileSize-10705</span><br>
+
+In compute shaders that enables SPIR-V capability <code>TileShadingQCOM</code>,
+<span class="eq"><a href="../chapters/renderpass.html#VkTilePropertiesQCOM" class="xref page">VkTilePropertiesQCOM</a>::<code>tileSize</code>::<code>z</code> %
+<code>TileShadingRateQCOM</code>::<code>z</code></span> <strong>must</strong> equal <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpImage-10706" href="#VUID-RuntimeSpirv-OpImage-10706"></a> <span class="vuid">VUID-RuntimeSpirv-OpImage-10706</span><br>
+
+An <code>OpImage</code> with <code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>
+<strong>must</strong> not be consumed by <code>OpImageTexelPointer</code> unless the
+<a href="../chapters/features.html#features-tileShadingFragmentStage" class="xref page">tileShadingAtomicOps</a> feature is
+enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpTypeImage-10707" href="#VUID-RuntimeSpirv-OpTypeImage-10707"></a> <span class="vuid">VUID-RuntimeSpirv-OpTypeImage-10707</span><br>
+
+An <code>OpTypeImage</code> with <code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>
+<strong>must</strong> not be backed by a view equivalent to the color attachment of the
+current subpass instance unless the
+<a href="../chapters/features.html#features-tileShadingColorAttachments" class="xref page">tileShadingColorAttachments</a>
+feature is enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpTypeImage-10708" href="#VUID-RuntimeSpirv-OpTypeImage-10708"></a> <span class="vuid">VUID-RuntimeSpirv-OpTypeImage-10708</span><br>
+
+An <code>OpTypeImage</code> with <code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>
+<strong>must</strong> not be backed by a view equivalent to the depth aspect of the
+depth/stencil attachment of the current subpass instance unless the
+<a href="../chapters/features.html#features-tileShadingDepthAttachments" class="xref page">tileShadingDepthAttachments</a></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpTypeImage-10709" href="#VUID-RuntimeSpirv-OpTypeImage-10709"></a> <span class="vuid">VUID-RuntimeSpirv-OpTypeImage-10709</span><br>
+
+An <code>OpTypeImage</code> with <code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>
+<strong>must</strong> not be backed by a view equivalent to the stencil aspect of the
+depth/stencil attachment of the current subpass instance unless the
+<a href="../chapters/features.html#features-tileShadingStencilAttachments" class="xref page">tileShadingStencilAttachments</a>
+feature is enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpTypeImage-10710" href="#VUID-RuntimeSpirv-OpTypeImage-10710"></a> <span class="vuid">VUID-RuntimeSpirv-OpTypeImage-10710</span><br>
+
+An <code>OpTypeImage</code> with <code>Storage</code> <code>Class</code> <code>TileAttachmentQCOM</code>
+<strong>must</strong> not be backed by a view equivalent to the input attachment of the
+current subpass instance unless the
+<a href="../chapters/features.html#features-tileShadingInputAttachments" class="xref page">tileShadingInputAttachments</a>
+feature is enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpTypeSampledImage-10711" href="#VUID-RuntimeSpirv-OpTypeSampledImage-10711"></a> <span class="vuid">VUID-RuntimeSpirv-OpTypeSampledImage-10711</span><br>
+
+An <code>OpTypeSampledImage</code> with <code>Storage</code> <code>Class</code>
+<code>TileAttachmentQCOM</code> <strong>must</strong> not be backed by a view equivalent to an
+attachment of the current subpass instance unless the
+<a href="../chapters/features.html#features-tileShadingSampledAttachments" class="xref page">tileShadingSampledAttachments</a>
+feature is enabled</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-tileShadingImageProcessing-10712" href="#VUID-RuntimeSpirv-tileShadingImageProcessing-10712"></a> <span class="vuid">VUID-RuntimeSpirv-tileShadingImageProcessing-10712</span><br>
+
+If an <code>OpTypeSampledImage</code> with <code>Storage</code> <code>Class</code>
+<code>TileAttachmentQCOM</code> is consumed by any argument of the following
+operations,
+<a href="../chapters/features.html#features-tileShadingImageProcessing" class="xref page"><code>tileShadingImageProcessing</code></a>
+<strong>must</strong> be enabled:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpImageSampleWeightedQCOM</code></p>
+</li>
+<li>
+<p><code>OpImageBoxFilterQCOM</code></p>
+</li>
+<li>
+<p><code>OpImageBlockMatch*QCOM</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-Coordinate-10713" href="#VUID-RuntimeSpirv-Coordinate-10713"></a> <span class="vuid">VUID-RuntimeSpirv-Coordinate-10713</span><br>
+
+The <code>Coordinate</code> operand of any <code>OpImageRead</code>,
+<code>OpImageSparseRead</code>, <code>OpImageWrite</code>, or <code>OpImageTexelPointer</code>
+instruction that consumes an <code>OpTypeImage</code> with an image <code>Storage</code>
+<code>Class</code> <code>TileAttachmentQCOM</code> <strong>must</strong> not result in any texels
+accessed outside the boundaries of the current tile, computed as
+described in <a href="../chapters/renderpass.html#renderpass-tile-shading-offset-validation" class="xref page">Tile    Attachments</a></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-Coordinate-10714" href="#VUID-RuntimeSpirv-Coordinate-10714"></a> <span class="vuid">VUID-RuntimeSpirv-Coordinate-10714</span><br>
+
+The <code>Coordinate</code> operand(s) of any of the following instructions that
+consumes an <code>OpTypeSampledImage</code> with an image of <code>Storage</code>
+<code>Class</code> <code>TileAttachmentQCOM</code> <strong>must</strong> not result in any texels
+accessed outside boundaries of the current tile, computed as described
+in <a href="../chapters/renderpass.html#renderpass-tile-shading-offset-validation" class="xref page">Tile Attachments</a>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>OpImageSample*</code></p>
+</li>
+<li>
+<p><code>OpImageSparseSample*</code></p>
+</li>
+<li>
+<p><code>OpImageFetch</code></p>
+</li>
+<li>
+<p><code>OpImageSparseFetch</code></p>
+</li>
+<li>
+<p><code>OpImage*Gather</code></p>
+</li>
+<li>
+<p><code>OpImageSparse*Gather</code></p>
+</li>
+<li>
+<p><code>OpImageSampleWeightedQCOM</code></p>
+</li>
+<li>
+<p><code>OpImageBoxFilterQCOM</code></p>
+</li>
+<li>
+<p><code>OpImageBlockMatch*QCOM</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-None-10715" href="#VUID-RuntimeSpirv-None-10715"></a> <span class="vuid">VUID-RuntimeSpirv-None-10715</span><br>
+
+If a <a href="../chapters/samplers.html#VkSampler" class="xref page">VkSampler</a> object that enables
+<a href="../chapters/samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> is accessed in
+a shader, both the sampler and image accessed <strong>must</strong> be determined by
+<a href="glossary.html#glossary-constant-integral-expression" class="xref page">constant integral expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-None-10716" href="#VUID-RuntimeSpirv-None-10716"></a> <span class="vuid">VUID-RuntimeSpirv-None-10716</span><br>
+
+If a <a href="../chapters/samplers.html#VkSampler" class="xref page">VkSampler</a> object that enables
+<a href="../chapters/samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> is statically
+used, it <strong>must</strong> only be used with <code>OpImageSample*</code> or
+<code>OpImageSparseSample*</code> instructions</p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-OpImage-10717" href="#VUID-RuntimeSpirv-OpImage-10717"></a> <span class="vuid">VUID-RuntimeSpirv-OpImage-10717</span><br>
+
+An <code>OpImage</code> instruction <strong>must</strong> not be used on a <a href="../chapters/samplers.html#VkSampler" class="xref page">VkSampler</a>
+object that enables <a href="../chapters/samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub>    conversion</a></p>
+</li>
+<li>
+<p><a id="VUID-RuntimeSpirv-ConstOffset-10718" href="#VUID-RuntimeSpirv-ConstOffset-10718"></a> <span class="vuid">VUID-RuntimeSpirv-ConstOffset-10718</span><br>
+
+If a <a href="../chapters/samplers.html#VkSampler" class="xref page">VkSampler</a> object that enables
+<a href="../chapters/samplers.html#samplers-YCbCr-conversion" class="xref page">sampler Y′C<sub>B</sub>C<sub>R</sub> conversion</a> is statically
+used, it <strong>must</strong> not use the <code>ConstOffset</code> or <code>Offset</code> operands</p>
 </li>
 </ul>
 </div>
