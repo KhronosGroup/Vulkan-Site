@@ -9,6 +9,42 @@ name: CI
 on:
   push:
   workflow_dispatch:
+    inputs:
+      Antora_UI_Hash:
+        description: 'Antora UI hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
+      GLSL_Commit_Hash:
+        description: 'GLSL Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
+      Guide_Commit_Hash:
+        description: 'Guide Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
+      DOC_Commit_Hash:
+        description: 'Docs Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
+      Samples_Commit_Hash:
+        description: 'Samples Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
+      Tutorial_Commit_Hash:
+        description: 'Tutorial Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
+      Publish_Local:
+        description: 'Should publish to the local github pages https://${GITHUB_REPOSITORY}.github.io'
+        default: true
+        required: false
+        type: boolean
 
 jobs:
   build:
@@ -25,12 +61,19 @@ jobs:
         with:
           ruby-version: '3.0'
 
+      - name: "checkout Antora UI"
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/antora-ui-khronos
+          path: ./antora-ui-khronos
+          ref: ${{ inputs.Antora_UI_Hash > '' && inputs.Antora_UI_Hash || 'main' }}
+
       - name: "checkout GLSL"
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/GLSL
           path: ./GLSL
-          ref: main
+          ref: ${{ inputs.GLSL_Commit_Hash > '' && inputs.GLSL_Commit_Hash || 'main' }}
           submodules: recursive
 
       - name: "checkout Vulkan Guide"
@@ -38,7 +81,7 @@ jobs:
         with:
           repository: KhronosGroup/Vulkan-Guide
           path: ./Vulkan-Guide
-          ref: main
+          ref: ${{ inputs.Guide_Commit_Hash > '' && inputs.Guide_Commit_Hash || 'main' }}
           submodules: recursive
 
       - name: "Checkout Vulkan Docs"
@@ -46,7 +89,7 @@ jobs:
         with:
           repository: KhronosGroup/Vulkan-Docs
           path: ./Vulkan-Docs
-          ref: main
+          ref: ${{ inputs.DOC_Commit_Hash > '' && inputs.DOC_Commit_Hash || 'main' }}
           submodules: recursive
 
       - name: "Checkout Vulkan Samples"
@@ -54,7 +97,7 @@ jobs:
         with:
           repository: KhronosGroup/Vulkan-Samples
           path: ./Vulkan-Samples
-          ref: main
+          ref: ${{ inputs.Samples_Commit_Hash > '' && inputs.Samples_Commit_Hash || 'main' }}
           submodules: recursive
 
       - name: "Checkout Vulkan Tutorial"
@@ -62,7 +105,7 @@ jobs:
         with:
           repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
-          ref: main
+          ref: ${{ inputs.Tutorial_Commit_Hash > '' && inputs.Tutorial_Commit_Hash || 'main' }}
           submodules: recursive
 
       - name: "setup npm"
@@ -138,6 +181,7 @@ jobs:
           retention-days: 5
 
       - name: Publish to GitHub Pages
+        if: "${{ github.event.inputs.Publish_Local || github.event_name == 'pull_request'}}"
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
