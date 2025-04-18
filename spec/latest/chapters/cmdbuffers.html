@@ -498,9 +498,13 @@ when this occurs.</p>
 </dd>
 <dt class="hdlist1">Invalid</dt>
 <dd>
-<p>Some operations, such as <a href="fundamentals.html#fundamentals-objectmodel-lifetime-cmdbuffers" class="xref page">    modifying or deleting a resource</a> that was used in a command recorded
-to a command buffer, will transition the state of that command buffer
-into the <em>invalid state</em>.
+<p>Other than
+<a href="#VkCommandPool">VkCommandPool</a> objects, destroying or freeing any object or memory
+that <strong>may</strong> be accessed when the command buffer is accessed (e.g. an
+object bound to the command buffer) will transition the state of that
+command buffer to the <em>invalid state</em>.
+The command buffer <strong>must</strong> not be in the <em>pending state</em> when this
+happens.
 Command buffers in the invalid state <strong>can</strong> only be reset or freed.</p>
 </dd>
 </dl>
@@ -1275,7 +1279,9 @@ VkResult vkAllocateCommandBuffers(
 </li>
 <li>
 <p><code>pAllocateInfo</code> is a pointer to a <a href="#VkCommandBufferAllocateInfo">VkCommandBufferAllocateInfo</a>
-structure describing parameters of the allocation.</p>
+structure describing parameters of the allocation.
+<code>commandPool</code> <strong>may</strong> be accessed any time one of the resulting command
+buffers is accessed.</p>
 </li>
 <li>
 <p><code>pCommandBuffers</code> is a pointer to an array of <a href="#VkCommandBuffer">VkCommandBuffer</a>
@@ -1334,18 +1340,6 @@ contents.</p>
 <li>
 <p><a id="VUID-vkAllocateCommandBuffers-pAllocateInfo::commandBufferCount-arraylength" href="#VUID-vkAllocateCommandBuffers-pAllocateInfo::commandBufferCount-arraylength"></a> <span class="vuid">VUID-vkAllocateCommandBuffers-pAllocateInfo::commandBufferCount-arraylength</span><br>
  <code>pAllocateInfo-&gt;commandBufferCount</code> <strong>must</strong> be greater than <code>0</code></p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
-<div class="title">Host Synchronization</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Host access to <code>pAllocateInfo-&gt;commandPool</code> <strong>must</strong> be externally synchronized</p>
 </li>
 </ul>
 </div>
@@ -1450,6 +1444,18 @@ from the pool.</p>
 </div>
 </div>
 </div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandPool</code> <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="openblock">
@@ -1511,6 +1517,11 @@ controlling the reset operation.</p>
 <div class="paragraph">
 <p>Any primary command buffer that is in the <a href="#commandbuffers-lifecycle">recording or executable state</a> and has <code>commandBuffer</code> recorded into
 it, becomes <a href="#commandbuffers-lifecycle">invalid</a>.</p>
+</div>
+<div class="paragraph">
+<p>After a command buffer is reset, any objects or memory specified by commands
+recorded into the command buffer <strong>must</strong> no longer be accessed when the
+command buffer is accessed by the implementation.</p>
 </div>
 <div class="sidebarblock">
 <div class="content">
@@ -2262,7 +2273,7 @@ If the <a href="features.html#features-pipelineStatisticsQuery" class="xref page
 </li>
 <li>
 <p><a id="VUID-VkCommandBufferInheritanceInfo-pNext-pNext" href="#VUID-VkCommandBufferInheritanceInfo-pNext-pNext"></a> <span class="vuid">VUID-VkCommandBufferInheritanceInfo-pNext-pNext</span><br>
- Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkAttachmentSampleCountInfoAMD">VkAttachmentSampleCountInfoAMD</a>, <a href="#VkCommandBufferInheritanceConditionalRenderingInfoEXT">VkCommandBufferInheritanceConditionalRenderingInfoEXT</a>, <a href="#VkCommandBufferInheritanceRenderPassTransformInfoQCOM">VkCommandBufferInheritanceRenderPassTransformInfoQCOM</a>, <a href="#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo</a>, <a href="#VkCommandBufferInheritanceViewportScissorInfoNV">VkCommandBufferInheritanceViewportScissorInfoNV</a>, <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>, <a href="renderpass.html#VkMultiviewPerViewAttributesInfoNVX" class="xref page">VkMultiviewPerViewAttributesInfoNVX</a>, <a href="renderpass.html#VkRenderPassTileShadingCreateInfoQCOM" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>, <a href="interfaces.html#VkRenderingAttachmentLocationInfo" class="xref page">VkRenderingAttachmentLocationInfo</a>, or <a href="interfaces.html#VkRenderingInputAttachmentIndexInfo" class="xref page">VkRenderingInputAttachmentIndexInfo</a></p>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="#VkAttachmentSampleCountInfoAMD">VkAttachmentSampleCountInfoAMD</a>, <a href="#VkCommandBufferInheritanceConditionalRenderingInfoEXT">VkCommandBufferInheritanceConditionalRenderingInfoEXT</a>, <a href="#VkCommandBufferInheritanceRenderPassTransformInfoQCOM">VkCommandBufferInheritanceRenderPassTransformInfoQCOM</a>, <a href="#VkCommandBufferInheritanceRenderingInfo">VkCommandBufferInheritanceRenderingInfo</a>, <a href="#VkCommandBufferInheritanceViewportScissorInfoNV">VkCommandBufferInheritanceViewportScissorInfoNV</a>, <a href="resources.html#VkExternalFormatANDROID" class="xref page">VkExternalFormatANDROID</a>, <a href="renderpass.html#VkMultiviewPerViewAttributesInfoNVX" class="xref page">VkMultiviewPerViewAttributesInfoNVX</a>, <a href="renderpass.html#VkRenderPassTileShadingCreateInfoQCOM" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>, <a href="interfaces.html#VkRenderingAttachmentLocationInfo" class="xref page">VkRenderingAttachmentLocationInfo</a>, <a href="interfaces.html#VkRenderingInputAttachmentIndexInfo" class="xref page">VkRenderingInputAttachmentIndexInfo</a>, or <a href="memory.html#VkTileMemoryBindInfoQCOM" class="xref page">VkTileMemoryBindInfoQCOM</a></p>
 </li>
 <li>
 <p><a id="VUID-VkCommandBufferInheritanceInfo-sType-unique" href="#VUID-VkCommandBufferInheritanceInfo-sType-unique"></a> <span class="vuid">VUID-VkCommandBufferInheritanceInfo-sType-unique</span><br>
@@ -3252,13 +3263,18 @@ VkResult vkQueueSubmit2KHR(
 </li>
 <li>
 <p><code>pSubmits</code> is a pointer to an array of <a href="#VkSubmitInfo2">VkSubmitInfo2</a>
-structures, each specifying a command buffer submission batch.</p>
+structures, each specifying a command buffer submission batch.
+Command buffers and semaphores specified in this array <strong>may</strong> be accessed
+at any point until the <a href="devsandqueues.html#devsandqueues-submission" class="xref page">queue operations</a>
+they define complete execution on the device.</p>
 </li>
 <li>
 <p><code>fence</code> is an <strong>optional</strong> handle to a fence to be signaled once all
 submitted command buffers have completed execution.
 If <code>fence</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, it defines a
-<a href="synchronization.html#synchronization-fences-signaling" class="xref page">fence signal operation</a>.</p>
+<a href="synchronization.html#synchronization-fences-signaling" class="xref page">fence signal operation</a>.
+If it is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>fence</code> <strong>may</strong> be accessed at any
+point until this command completes on the device.</p>
 </li>
 </ul>
 </div>
@@ -3971,6 +3987,27 @@ enabled, <code>stageMask</code> <strong>must</strong> not contain
 <code>VK_PIPELINE_STAGE_2_RAY_TRACING_SHADER_BIT_KHR</code></p>
 </li>
 <li>
+<p><a id="VUID-VkSemaphoreSubmitInfo-stageMask-10751" href="#VUID-VkSemaphoreSubmitInfo-stageMask-10751"></a> <span class="vuid">VUID-VkSemaphoreSubmitInfo-stageMask-10751</span><br>
+
+If the <a href="features.html#features-accelerationStructure" class="xref page"><code>accelerationStructure</code></a>
+feature is not enabled, <code>stageMask</code> <strong>must</strong> not contain
+<code>VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSemaphoreSubmitInfo-stageMask-10752" href="#VUID-VkSemaphoreSubmitInfo-stageMask-10752"></a> <span class="vuid">VUID-VkSemaphoreSubmitInfo-stageMask-10752</span><br>
+
+If the <a href="features.html#features-rayTracingMaintenance1" class="xref page"><code>rayTracingMaintenance1</code></a>
+feature is not enabled, <code>stageMask</code> <strong>must</strong> not contain
+<code>VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSemaphoreSubmitInfo-stageMask-10753" href="#VUID-VkSemaphoreSubmitInfo-stageMask-10753"></a> <span class="vuid">VUID-VkSemaphoreSubmitInfo-stageMask-10753</span><br>
+
+If the <a href="features.html#features-micromap" class="xref page"><code>micromap</code></a> feature is not enabled,
+<code>stageMask</code> <strong>must</strong> not contain
+<code>VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT</code></p>
+</li>
+<li>
 <p><a id="VUID-VkSemaphoreSubmitInfo-device-03888" href="#VUID-VkSemaphoreSubmitInfo-device-03888"></a> <span class="vuid">VUID-VkSemaphoreSubmitInfo-device-03888</span><br>
 
 If the <code>device</code> that <code>semaphore</code> was created on is not a device
@@ -4250,13 +4287,18 @@ VkResult vkQueueSubmit(
 </li>
 <li>
 <p><code>pSubmits</code> is a pointer to an array of <a href="#VkSubmitInfo">VkSubmitInfo</a>
-structures, each specifying a command buffer submission batch.</p>
+structures, each specifying a command buffer submission batch.
+Command buffers and semaphores specified in this array <strong>may</strong> be accessed
+at any point until the <a href="devsandqueues.html#devsandqueues-submission" class="xref page">queue operations</a>
+they define complete execution on the device.</p>
 </li>
 <li>
 <p><code>fence</code> is an <strong>optional</strong> handle to a fence to be signaled once all
 submitted command buffers have completed execution.
 If <code>fence</code> is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, it defines a
-<a href="synchronization.html#synchronization-fences-signaling" class="xref page">fence signal operation</a>.</p>
+<a href="synchronization.html#synchronization-fences-signaling" class="xref page">fence signal operation</a>.
+If it is not <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, <code>fence</code> <strong>may</strong> be accessed at any
+point until this command completes on the device.</p>
 </li>
 </ul>
 </div>
@@ -4712,6 +4754,13 @@ If neither the <a href="../appendices/extensions.html#VK_NV_ray_tracing" class="
 <a href="features.html#features-rayTracingPipeline" class="xref page"><code>rayTracingPipeline</code></a> feature are
 enabled, <code>pWaitDstStageMask</code> <strong>must</strong> not contain
 <code>VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR</code></p>
+</li>
+<li>
+<p><a id="VUID-VkSubmitInfo-pWaitDstStageMask-10754" href="#VUID-VkSubmitInfo-pWaitDstStageMask-10754"></a> <span class="vuid">VUID-VkSubmitInfo-pWaitDstStageMask-10754</span><br>
+
+If the <a href="features.html#features-accelerationStructure" class="xref page"><code>accelerationStructure</code></a>
+feature is not enabled, <code>pWaitDstStageMask</code> <strong>must</strong> not contain
+<code>VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code></p>
 </li>
 <li>
 <p><a id="VUID-VkSubmitInfo-pCommandBuffers-00075" href="#VUID-VkSubmitInfo-pCommandBuffers-00075"></a> <span class="vuid">VUID-VkSubmitInfo-pCommandBuffers-00075</span><br>
@@ -6308,6 +6357,17 @@ instance begun with <a href="renderpass.html#vkCmdBeginRendering" class="xref pa
 mapping state specified by <a href="interfaces.html#VkRenderingInputAttachmentIndexInfo" class="xref page">VkRenderingInputAttachmentIndexInfo</a> in
 the inheritance info of each element of <code>pCommandBuffers</code> and in the
 current state of <code>commandBuffer</code> <strong>must</strong> match</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-memory-10724" href="#VUID-vkCmdExecuteCommands-memory-10724"></a> <span class="vuid">VUID-vkCmdExecuteCommands-memory-10724</span><br>
+
+If <code>vkCmdExecuteCommands</code> is being called within a render pass
+instance, the size of <code>memory</code> member of the
+<a href="memory.html#VkTileMemoryBindInfoQCOM" class="xref page">VkTileMemoryBindInfoQCOM</a> structure included in the <code>pNext</code>
+chain of <a href="#VkCommandBufferBeginInfo">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to
+the active bound <a href="memory.html#memory-bind-tile-memory" class="xref page">bound tile memory object</a>
+in <code>commandBuffer</code></p>
 </li>
 <li>
 <p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-10620" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-10620"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-10620</span><br>

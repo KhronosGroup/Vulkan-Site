@@ -1276,6 +1276,47 @@ memory heap which is considered to be equally &#8220;local&#8221; to the host an
 the device, and such an implementation <strong>must</strong> advertise the heap as
 device-local.</p>
 </div>
+<div id="memory-tile-heaps" class="paragraph">
+<p>Memory contents within a tile memory heap, denoted by
+<code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code>, are only visible across the
+command buffers executed in a single command buffer submission batch within
+a <a href="cmdbuffers.html#vkQueueSubmit" class="xref page">vkQueueSubmit</a> or <a href="cmdbuffers.html#vkQueueSubmit2" class="xref page">vkQueueSubmit2</a> call.
+If the
+<a href="limits.html#VkPhysicalDeviceTileMemoryHeapPropertiesQCOM" class="xref page">VkPhysicalDeviceTileMemoryHeapPropertiesQCOM</a>::<code>queueSubmitBoundary</code>
+property is set, the visibility is extended across all batches in the submit
+call.
+Memory contents are discarded and made <strong>undefined</strong> after the respective
+submission batch or submit call.
+Tile memory <strong>may</strong> have different performance characteristics than non tile
+memory.
+Tile memory <strong>can</strong> be used simultaneously by command buffers in other queues
+without invalidating each others contents.
+Collectively, these rules define the <em>tile memory scope</em>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Tile memory heaps work differently than most heaps as it is allowing
+addressing on device cache memory.
+Therefore, the heap&#8217;s address space is aliased across the different queues,
+with each queue retaining its individual copy of the heap.
+The implementation takes care of any required saving and restoring of the
+tile memory contents.</p>
+</div>
+<div class="paragraph">
+<p>Effectively, this means that the same address in the heap in different
+queues have simultaneously different defined contents and the contents has a
+lifespan scoped to the submit or batch for that specific queues.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
 <div id="memory-device-bitmask-list" class="paragraph">
 <p>Each memory type returned by <a href="#vkGetPhysicalDeviceMemoryProperties">vkGetPhysicalDeviceMemoryProperties</a> <strong>must</strong>
 have its <code>propertyFlags</code> set to one of the following values:</p>
@@ -1696,6 +1737,8 @@ typedef enum VkMemoryHeapFlagBits {
     VK_MEMORY_HEAP_DEVICE_LOCAL_BIT = 0x00000001,
   // Provided by VK_VERSION_1_1
     VK_MEMORY_HEAP_MULTI_INSTANCE_BIT = 0x00000002,
+  // Provided by VK_QCOM_tile_memory_heap
+    VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM = 0x00000008,
   // Provided by VK_KHR_device_group_creation
     VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR = VK_MEMORY_HEAP_MULTI_INSTANCE_BIT,
 } VkMemoryHeapFlagBits;</code></pre>
@@ -1715,6 +1758,10 @@ device representing more than one physical device, there is a
 per-physical device instance of the heap memory.
 By default, an allocation from such a heap will be replicated to each
 physical device&#8217;s instance of the heap.</p>
+</li>
+<li>
+<p><code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> bit specifies that the heap
+corresponds to tile memory.</p>
 </li>
 </ul>
 </div>
@@ -2137,6 +2184,15 @@ The overallocation behavior <strong>can</strong> be specified through the
 <code><a href="../appendices/extensions.html#VK_AMD_memory_overallocation_behavior" class="xref page">VK_AMD_memory_overallocation_behavior</a></code> extension.</p>
 </div>
 <div class="paragraph">
+<p>If the <code>memoryTypeIndex</code> belongs to a heap with the
+<code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> bit included in its properties,
+this allocation is backed by tile memory, which is an on device cache.
+Unlike other heaps, allocations out of the tile memory will always have a
+starting address at the start of the heap and its contents are aliased with
+all other <a href="#VkDeviceMemory">VkDeviceMemory</a> objects bound to the same range while
+executing within the same <a href="#memory-tile-heaps"><em>tile memory scope</em></a>.</p>
+</div>
+<div class="paragraph">
 <p>If the
 <a href="features.html#VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT" class="xref page">VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT</a>::<code>pageableDeviceLocalMemory</code>
 feature is enabled, memory allocations made from a heap that includes
@@ -2195,6 +2251,14 @@ identify a memory type supporting
 There <strong>must</strong> be less than
 <code>VkPhysicalDeviceLimits</code>::<code>maxMemoryAllocationCount</code> device
 memory allocations currently allocated on the device</p>
+</li>
+<li>
+<p><a id="VUID-VkTileMemoryBindInfoQCOM-memoryTypeIndex" href="#VUID-VkTileMemoryBindInfoQCOM-memoryTypeIndex"></a> <span class="vuid">VUID-VkTileMemoryBindInfoQCOM-memoryTypeIndex</span><br>
+
+If the <a href="features.html#features-tileMemoryHeap" class="xref page"><code>tileMemoryHeap</code></a> feature is not
+enabled, <code>pAllocateInfo-&gt;memoryTypeIndex</code> <strong>must</strong> not identify a
+memory type that corresponds to a <a href="#VkMemoryHeap">VkMemoryHeap</a> with the
+<code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> property</p>
 </li>
 </ul>
 </div>
@@ -3162,6 +3226,194 @@ imported memory</p>
 <li>
 <p><a id="VUID-VkMemoryDedicatedAllocateInfo-commonparent" href="#VUID-VkMemoryDedicatedAllocateInfo-commonparent"></a> <span class="vuid">VUID-VkMemoryDedicatedAllocateInfo-commonparent</span><br>
  Both of <code>buffer</code>, and <code>image</code> that are valid handles of non-ignored parameters <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="memory-bind-tile-memory" class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>To bind a range of tile memory to the command buffer, call:</p>
+</div>
+<div id="vkCmdBindTileMemoryQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_tile_memory_heap
+void vkCmdBindTileMemoryQCOM(
+    VkCommandBuffer                             commandBuffer,
+    const VkTileMemoryBindInfoQCOM*             pTileMemoryBindInfo);</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer that the tile memory will be
+bound to.</p>
+</li>
+<li>
+<p><code>pTileMemoryBindInfo</code> is <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> or a pointer to a
+<a href="#VkTileMemoryBindInfoQCOM">VkTileMemoryBindInfoQCOM</a> structure defining how tile memory is
+bound.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Calling <a href="#vkCmdBindTileMemoryQCOM">vkCmdBindTileMemoryQCOM</a> when <code>pTileMemoryBindInfo</code> is
+<a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a> is equivalent to binding no tile memory to the command
+buffer.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindTileMemoryQCOM-commandBuffer-parameter" href="#VUID-vkCmdBindTileMemoryQCOM-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdBindTileMemoryQCOM-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="cmdbuffers.html#VkCommandBuffer" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindTileMemoryQCOM-pTileMemoryBindInfo-parameter" href="#VUID-vkCmdBindTileMemoryQCOM-pTileMemoryBindInfo-parameter"></a> <span class="vuid">VUID-vkCmdBindTileMemoryQCOM-pTileMemoryBindInfo-parameter</span><br>
+ If <code>pTileMemoryBindInfo</code> is not <code>NULL</code>, <code>pTileMemoryBindInfo</code> <strong>must</strong> be a valid pointer to a valid <a href="#VkTileMemoryBindInfoQCOM">VkTileMemoryBindInfoQCOM</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindTileMemoryQCOM-commandBuffer-recording" href="#VUID-vkCmdBindTileMemoryQCOM-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdBindTileMemoryQCOM-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindTileMemoryQCOM-commandBuffer-cmdpool" href="#VUID-vkCmdBindTileMemoryQCOM-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdBindTileMemoryQCOM-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support graphics, or compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindTileMemoryQCOM-renderpass" href="#VUID-vkCmdBindTileMemoryQCOM-renderpass"></a> <span class="vuid">VUID-vkCmdBindTileMemoryQCOM-renderpass</span><br>
+ This command <strong>must</strong> only be called outside of a render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindTileMemoryQCOM-videocoding" href="#VUID-vkCmdBindTileMemoryQCOM-videocoding"></a> <span class="vuid">VUID-vkCmdBindTileMemoryQCOM-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graphics<br>
+Compute</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>The <code>VkTileMemoryBindInfoQCOM</code> structure is defined as:</p>
+</div>
+<div id="VkTileMemoryBindInfoQCOM" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Provided by VK_QCOM_tile_memory_heap
+typedef struct VkTileMemoryBindInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkDeviceMemory     memory;
+} VkTileMemoryBindInfoQCOM;</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>memory</code> is the tile memory object to be bound.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><code>memory</code> is used to bind this memory object to tile memory for all
+subsequent commands in the <code>commandBuffer</code>.
+Tile memory contents for ranges in the heap outside the bound <code>memory</code>
+are discarded and become <strong>undefined</strong> for the <a href="#memory-tile-heaps">active <em>tile memory scope</em></a> if an action command is executed.</p>
+</div>
+<div class="paragraph">
+<p>For secondary command buffers executing within a render pass instance, the
+active bound tile memory object is provided with this structure included in
+the <code>pNext</code> chain of <code>VkCommandBufferInheritanceInfo</code>.</p>
+</div>
+<div class="paragraph">
+<p>If this structure was not specified since recording started for
+<code>commandBuffer</code>, no tile memory is bound to the command buffer and all
+contents become <strong>undefined</strong> for the <em>tile memory scope</em> if an action command
+is executed.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkTileMemoryBindInfoQCOM-memory-10726" href="#VUID-VkTileMemoryBindInfoQCOM-memory-10726"></a> <span class="vuid">VUID-VkTileMemoryBindInfoQCOM-memory-10726</span><br>
+
+<code>memory</code> <strong>must</strong> have been allocated from a <a href="#VkMemoryHeap">VkMemoryHeap</a> with
+the <code>VK_MEMORY_HEAP_TILE_MEMORY_BIT_QCOM</code> property.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkTileMemoryBindInfoQCOM-sType-sType" href="#VUID-VkTileMemoryBindInfoQCOM-sType-sType"></a> <span class="vuid">VUID-VkTileMemoryBindInfoQCOM-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <code>VK_STRUCTURE_TYPE_TILE_MEMORY_BIND_INFO_QCOM</code></p>
+</li>
+<li>
+<p><a id="VUID-VkTileMemoryBindInfoQCOM-memory-parameter" href="#VUID-VkTileMemoryBindInfoQCOM-memory-parameter"></a> <span class="vuid">VUID-VkTileMemoryBindInfoQCOM-memory-parameter</span><br>
+ <code>memory</code> <strong>must</strong> be a valid <a href="#VkDeviceMemory">VkDeviceMemory</a> handle</p>
 </li>
 </ul>
 </div>
@@ -12035,8 +12287,14 @@ specify them during replay.</p>
 <li>
 <p><a id="VUID-vkGetDeviceMemoryOpaqueCaptureAddress-None-03334" href="#VUID-vkGetDeviceMemoryOpaqueCaptureAddress-None-03334"></a> <span class="vuid">VUID-vkGetDeviceMemoryOpaqueCaptureAddress-None-03334</span><br>
 
-The <a href="features.html#features-bufferDeviceAddress" class="xref page"><code>bufferDeviceAddress</code></a> feature
-<strong>must</strong> be enabled</p>
+The <a href="features.html#features-bufferDeviceAddress" class="xref page"><code>bufferDeviceAddress</code></a> and
+<a href="features.html#features-bufferDeviceAddressCaptureReplay" class="xref page">    <code>bufferDeviceAddressCaptureReplay</code></a> features <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkGetDeviceMemoryOpaqueCaptureAddress-pInfo-10727" href="#VUID-vkGetDeviceMemoryOpaqueCaptureAddress-pInfo-10727"></a> <span class="vuid">VUID-vkGetDeviceMemoryOpaqueCaptureAddress-pInfo-10727</span><br>
+
+<code>pInfo</code>::<code>memory</code> <strong>must</strong> have been allocated using the
+<code>VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT</code> flag</p>
 </li>
 <li>
 <p><a id="VUID-vkGetDeviceMemoryOpaqueCaptureAddress-device-03335" href="#VUID-vkGetDeviceMemoryOpaqueCaptureAddress-device-03335"></a> <span class="vuid">VUID-vkGetDeviceMemoryOpaqueCaptureAddress-device-03335</span><br>

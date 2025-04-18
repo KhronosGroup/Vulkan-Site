@@ -2911,7 +2911,9 @@ pipeline layout.</p>
 </li>
 <li>
 <p><code>pSetLayouts</code> is a pointer to an array of
-<code>VkDescriptorSetLayout</code> objects.</p>
+<code>VkDescriptorSetLayout</code> objects.
+The implementation <strong>must</strong> not access these objects outside of the
+duration of the command this structure is passed to.</p>
 </li>
 <li>
 <p><code>pushConstantRangeCount</code> is the number of push constant ranges
@@ -4816,18 +4818,6 @@ from this command, set all entries of the <code>pDescriptorSets</code> array to
 </div>
 <div class="sidebarblock">
 <div class="content">
-<div class="title">Host Synchronization</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Host access to <code>pAllocateInfo-&gt;descriptorPool</code> <strong>must</strong> be externally synchronized</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
 <div class="title">Return Codes</div>
 <div class="dlist">
 <dl>
@@ -5008,6 +4998,18 @@ Each element of <code>pSetLayouts</code> <strong>must</strong> not have been cre
 <li>
 <p><a id="VUID-VkDescriptorSetAllocateInfo-commonparent" href="#VUID-VkDescriptorSetAllocateInfo-commonparent"></a> <span class="vuid">VUID-VkDescriptorSetAllocateInfo-commonparent</span><br>
  Both of <code>descriptorPool</code>, and the elements of <code>pSetLayouts</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="devsandqueues.html#VkDevice" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>descriptorPool</code> <strong>must</strong> be externally synchronized</p>
 </li>
 </ul>
 </div>
@@ -7517,7 +7519,9 @@ All descriptor sets which are going to be updated through the newly
 created descriptor update template <strong>must</strong> be created with a layout that
 matches (is the same as, or defined identically to) this layout.
 This parameter is ignored if <code>templateType</code> is not
-<code>VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET</code>.</p>
+<code>VK_DESCRIPTOR_UPDATE_TEMPLATE_TYPE_DESCRIPTOR_SET</code>.
+The implementation <strong>must</strong> not access this object outside of the duration
+of the command this structure is passed to.</p>
 </li>
 <li>
 <p><code>pipelineBindPoint</code> is a <a href="pipelines.html#VkPipelineBindPoint" class="xref page">VkPipelineBindPoint</a> indicating the
@@ -10641,7 +10645,25 @@ usage passes, if it exists.</p>
 
 The <a href="features.html#features-bufferDeviceAddress" class="xref page"><code>bufferDeviceAddress</code></a>
 or <a href="features.html#features-bufferDeviceAddressEXT" class="xref page">    <code>VkPhysicalDeviceBufferDeviceAddressFeaturesEXT</code>::<code>bufferDeviceAddress</code></a>
-feature <strong>must</strong> be enabled</p>
+feature <strong>must</strong> be enabled, and at least one of the following conditions
+<strong>must</strong> be met</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>buffer</code> is sparse</p>
+</li>
+<li>
+<p><code>buffer</code> is bound completely and contiguously to a single
+<code>VkDeviceMemory</code> object</p>
+</li>
+<li>
+<p><code>buffer</code> was created with the
+<code>VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT</code> flag and
+<a href="features.html#features-bufferDeviceAddressEXT" class="xref page">     <code>VkPhysicalDeviceBufferDeviceAddressFeaturesEXT</code>::<code>bufferDeviceAddress</code></a>
+is enabled on the device</p>
+</li>
+</ul>
+</div>
 </li>
 <li>
 <p><a id="VUID-vkGetBufferDeviceAddress-device-03325" href="#VUID-vkGetBufferDeviceAddress-device-03325"></a> <span class="vuid">VUID-vkGetBufferDeviceAddress-device-03325</span><br>
@@ -10727,14 +10749,6 @@ structure.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><a id="VUID-VkBufferDeviceAddressInfo-buffer-02600" href="#VUID-VkBufferDeviceAddressInfo-buffer-02600"></a> <span class="vuid">VUID-VkBufferDeviceAddressInfo-buffer-02600</span><br>
-
-If <code>buffer</code> is non-sparse and was not created with the
-<code>VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT</code> flag, then it
-<strong>must</strong> be bound completely and contiguously to a single
-<code>VkDeviceMemory</code> object</p>
-</li>
-<li>
 <p><a id="VUID-VkBufferDeviceAddressInfo-buffer-02601" href="#VUID-VkBufferDeviceAddressInfo-buffer-02601"></a> <span class="vuid">VUID-VkBufferDeviceAddressInfo-buffer-02601</span><br>
 
 <code>buffer</code> <strong>must</strong> have been created with
@@ -10819,8 +10833,14 @@ return value <strong>must</strong> be the same address.</p>
 <li>
 <p><a id="VUID-vkGetBufferOpaqueCaptureAddress-None-03326" href="#VUID-vkGetBufferOpaqueCaptureAddress-None-03326"></a> <span class="vuid">VUID-vkGetBufferOpaqueCaptureAddress-None-03326</span><br>
 
-The <a href="features.html#features-bufferDeviceAddress" class="xref page"><code>bufferDeviceAddress</code></a> feature
-<strong>must</strong> be enabled</p>
+The <a href="features.html#features-bufferDeviceAddress" class="xref page"><code>bufferDeviceAddress</code></a> and
+<a href="features.html#features-bufferDeviceAddressCaptureReplay" class="xref page">    <code>bufferDeviceAddressCaptureReplay</code></a> features <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkGetBufferOpaqueCaptureAddress-pInfo-10725" href="#VUID-vkGetBufferOpaqueCaptureAddress-pInfo-10725"></a> <span class="vuid">VUID-vkGetBufferOpaqueCaptureAddress-pInfo-10725</span><br>
+
+<code>pInfo</code>::<code>buffer</code> <strong>must</strong> have been created with the
+<code>VK_BUFFER_CREATE_DEVICE_ADDRESS_CAPTURE_REPLAY_BIT</code> flag</p>
 </li>
 <li>
 <p><a id="VUID-vkGetBufferOpaqueCaptureAddress-device-03327" href="#VUID-vkGetBufferOpaqueCaptureAddress-device-03327"></a> <span class="vuid">VUID-vkGetBufferOpaqueCaptureAddress-device-03327</span><br>

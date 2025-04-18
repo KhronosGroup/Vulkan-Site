@@ -627,10 +627,12 @@ VkResult vkCreateComputePipelines(
 <p><code>device</code> is the logical device that creates the compute pipelines.</p>
 </li>
 <li>
-<p><code>pipelineCache</code> is either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that
-pipeline caching is disabled; or the handle of a valid
-<a href="#pipelines-cache">pipeline cache</a> object, in which case use of that
-cache is enabled for the duration of the command.</p>
+<p><code>pipelineCache</code> is
+either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that pipeline caching is
+disabled, or to enable caching,
+the handle of a valid <a href="#VkPipelineCache">VkPipelineCache</a> object.
+The implementation <strong>must</strong> not access this object outside of the duration
+of this command.</p>
 </li>
 <li>
 <p><code>createInfoCount</code> is the length of the <code>pCreateInfos</code> and
@@ -851,7 +853,14 @@ describing the compute shader.</p>
 </li>
 <li>
 <p><code>layout</code> is the description of binding locations used by both the
-pipeline and descriptor sets used with the pipeline.</p>
+    pipeline and descriptor sets used with the pipeline.
+    If
+    <a href="devsandqueues.html#VkPhysicalDeviceProperties" class="xref page">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> is greater than or
+    equal to Vulkan 1.3
+or
+    <a href="../appendices/extensions.html#VK_KHR_maintenance4" class="xref page">VK_KHR_maintenance4</a> is enabled
+    <code>layout</code> <strong>must</strong> not be accessed outside of the duration of the
+    command this structure is passed to.</p>
 </li>
 <li>
 <p><code>basePipelineHandle</code> is a pipeline to derive from.</p>
@@ -1164,8 +1173,11 @@ specifying how the pipeline shader stage will be generated.</p>
 pipeline stage.</p>
 </li>
 <li>
-<p><code>module</code> is optionally a <a href="shaders.html#VkShaderModule" class="xref page">VkShaderModule</a> object containing the
-shader code for this stage.</p>
+<p><code>module</code> is
+optionally
+a <a href="shaders.html#VkShaderModule" class="xref page">VkShaderModule</a> object containing the shader code for this stage.
+The implementation <strong>must</strong> not access this object outside of the duration
+of the command this structure is passed to.</p>
 </li>
 <li>
 <p><code>pName</code> is a pointer to a null-terminated UTF-8 string specifying
@@ -1473,19 +1485,19 @@ dimension of the pipeline <strong>must</strong> be a multiple of <a href="devsan
 
 If <code>module</code> uses the <code>OpTypeCooperativeMatrixKHR</code> instruction
 with a <code>Scope</code> equal to <code>Subgroup</code>, then the local workgroup size
-in the X dimension of the pipeline <strong>must</strong> be a multiple of
-<a href="devsandqueues.html#limits-subgroupSize" class="xref page"><code>subgroupSize</code></a></p>
+in the X dimension of the pipeline <strong>must</strong> be a multiple of the
+<a href="interfaces.html#interfaces-builtin-variables-sgs" class="xref page">effective subgroup size</a>.</p>
 </li>
 <li>
 <p><a id="VUID-VkPipelineShaderStageCreateInfo-module-10169" href="#VUID-VkPipelineShaderStageCreateInfo-module-10169"></a> <span class="vuid">VUID-VkPipelineShaderStageCreateInfo-module-10169</span><br>
 
 If <code>module</code> uses the <code>OpTypeCooperativeMatrixKHR</code> instruction
 with a <code>Scope</code> equal to <code>Workgroup</code>, then the local workgroup size
-in the X dimension of the pipeline <strong>must</strong> be a multiple of
-<a href="devsandqueues.html#limits-subgroupSize" class="xref page"><code>subgroupSize</code></a> and the total local workgroup
-size <strong>must</strong> be a power of two multiple of
-<a href="devsandqueues.html#limits-subgroupSize" class="xref page"><code>subgroupSize</code></a> and <strong>must</strong> be less than or
-equal to
+in the X dimension of the pipeline <strong>must</strong> be a multiple of the
+<a href="interfaces.html#interfaces-builtin-variables-sgs" class="xref page">effective subgroup size</a> and the
+total local workgroup size <strong>must</strong> be a power of two multiple of the
+<a href="interfaces.html#interfaces-builtin-variables-sgs" class="xref page">effective subgroup size</a> and <strong>must</strong>
+be less than or equal to
 <a href="limits.html#limits-cooperativeMatrixWorkgroupScopeMaxWorkgroupSize" class="xref page">cooperativeMatrixWorkgroupScopeMaxWorkgroupSize</a></p>
 </li>
 <li>
@@ -1961,7 +1973,9 @@ environment in which the pipeline will be used.
 The pipeline <strong>must</strong> only be used with a render pass instance compatible
 with the one provided.
 See <a href="renderpass.html#renderpass-compatibility" class="xref page">Render Pass Compatibility</a> for more
-information.</p>
+information.
+The implementation <strong>must</strong> not access this object outside of the duration
+of the command this structure is passed to.</p>
 </li>
 <li>
 <p><code>subpass</code> is the index of the subpass in the render pass where this
@@ -2938,10 +2952,12 @@ VkResult vkCreateGraphicsPipelines(
 <p><code>device</code> is the logical device that creates the graphics pipelines.</p>
 </li>
 <li>
-<p><code>pipelineCache</code> is either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that
-pipeline caching is disabled; or the handle of a valid
-<a href="#pipelines-cache">pipeline cache</a> object, in which case use of that
-cache is enabled for the duration of the command.</p>
+<p><code>pipelineCache</code> is
+either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that pipeline caching is
+disabled, or to enable caching,
+the handle of a valid <a href="#VkPipelineCache">VkPipelineCache</a> object.
+The implementation <strong>must</strong> not access this object outside of the duration
+of this command.</p>
 </li>
 <li>
 <p><code>createInfoCount</code> is the length of the <code>pCreateInfos</code> and
@@ -3308,7 +3324,14 @@ dynamic.</p>
 </li>
 <li>
 <p><code>layout</code> is the description of binding locations used by both the
-pipeline and descriptor sets used with the pipeline.</p>
+    pipeline and descriptor sets used with the pipeline.
+    If
+    <a href="devsandqueues.html#VkPhysicalDeviceProperties" class="xref page">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> is greater than or
+    equal to Vulkan 1.3
+or
+    <a href="../appendices/extensions.html#VK_KHR_maintenance4" class="xref page">VK_KHR_maintenance4</a> is enabled
+    <code>layout</code> <strong>must</strong> not be accessed outside of the duration of the
+    command this structure is passed to.</p>
 </li>
 <li>
 <p><code>renderPass</code> is a handle to a render pass object describing the
@@ -3316,7 +3339,9 @@ environment in which the pipeline will be used.
 The pipeline <strong>must</strong> only be used with a render pass instance compatible
 with the one provided.
 See <a href="renderpass.html#renderpass-compatibility" class="xref page">Render Pass Compatibility</a> for more
-information.</p>
+information.
+The implementation <strong>must</strong> not access this object outside of the duration
+of the command this structure is passed to.</p>
 </li>
 <li>
 <p><code>subpass</code> is the index of the subpass in the render pass where this
@@ -4231,8 +4256,7 @@ count for those subpass attachments</p>
 <li>
 <p><a id="VUID-VkGraphicsPipelineCreateInfo-coverageReductionMode-02722" href="#VUID-VkGraphicsPipelineCreateInfo-coverageReductionMode-02722"></a> <span class="vuid">VUID-VkGraphicsPipelineCreateInfo-coverageReductionMode-02722</span><br>
 
-If the pipeline requires <a href="#pipelines-graphics-subsets-fragment-output">    fragment output interface state</a>, the
-<code><a href="../appendices/extensions.html#VK_NV_coverage_reduction_mode" class="xref page">VK_NV_coverage_reduction_mode</a></code> extension is enabled, and
+If the pipeline requires <a href="#pipelines-graphics-subsets-fragment-output">    fragment output interface state</a>, the <a href="features.html#features-coverageReductionMode" class="xref page">    <code>coverageReductionMode</code></a> feature is enabled, and
 <code>rasterizationSamples</code> is not dynamic, the coverage reduction mode
 specified by
 <a href="fragops.html#VkPipelineCoverageReductionStateCreateInfoNV" class="xref page">VkPipelineCoverageReductionStateCreateInfoNV</a>::<code>coverageReductionMode</code>,
@@ -9486,10 +9510,12 @@ VkResult vkCreateRayTracingPipelinesNV(
 pipelines.</p>
 </li>
 <li>
-<p><code>pipelineCache</code> is either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that
-pipeline caching is disabled, or the handle of a valid
-<a href="#pipelines-cache">pipeline cache</a> object, in which case use of that
-cache is enabled for the duration of the command.</p>
+<p><code>pipelineCache</code> is
+either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that pipeline caching is
+disabled, or to enable caching,
+the handle of a valid <a href="#VkPipelineCache">VkPipelineCache</a> object.
+The implementation <strong>must</strong> not access this object outside of the duration
+of this command.</p>
 </li>
 <li>
 <p><code>createInfoCount</code> is the length of the <code>pCreateInfos</code> and
@@ -9714,10 +9740,12 @@ pipelines.</p>
 <a href="VK_KHR_deferred_host_operations/deferred_host_operations.html#VkDeferredOperationKHR" class="xref page">VkDeferredOperationKHR</a> <a href="VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting" class="xref page">    request deferral</a> object for this command.</p>
 </li>
 <li>
-<p><code>pipelineCache</code> is either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that
-pipeline caching is disabled, or the handle of a valid
-<a href="#pipelines-cache">pipeline cache</a> object, in which case use of that
-cache is enabled for the duration of the command.</p>
+<p><code>pipelineCache</code> is
+either <a href="../appendices/boilerplate.html#VK_NULL_HANDLE" class="xref page">VK_NULL_HANDLE</a>, indicating that pipeline caching is
+disabled, or to enable caching,
+the handle of a valid <a href="#VkPipelineCache">VkPipelineCache</a> object.
+The implementation <strong>must</strong> not access this object outside of the duration
+of this command.</p>
 </li>
 <li>
 <p><code>createInfoCount</code> is the length of the <code>pCreateInfos</code> and
@@ -10009,7 +10037,14 @@ tracing pipeline.</p>
 </li>
 <li>
 <p><code>layout</code> is the description of binding locations used by both the
-pipeline and descriptor sets used with the pipeline.</p>
+    pipeline and descriptor sets used with the pipeline.
+    If
+    <a href="devsandqueues.html#VkPhysicalDeviceProperties" class="xref page">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> is greater than or
+    equal to Vulkan 1.3
+or
+    <a href="../appendices/extensions.html#VK_KHR_maintenance4" class="xref page">VK_KHR_maintenance4</a> is enabled
+    <code>layout</code> <strong>must</strong> not be accessed outside of the duration of the
+    command this structure is passed to.</p>
 </li>
 <li>
 <p><code>basePipelineHandle</code> is a pipeline to derive from.</p>
@@ -10379,7 +10414,14 @@ dynamic.</p>
 </li>
 <li>
 <p><code>layout</code> is the description of binding locations used by both the
-pipeline and descriptor sets used with the pipeline.</p>
+    pipeline and descriptor sets used with the pipeline.
+    If
+    <a href="devsandqueues.html#VkPhysicalDeviceProperties" class="xref page">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> is greater than or
+    equal to Vulkan 1.3
+or
+    <a href="../appendices/extensions.html#VK_KHR_maintenance4" class="xref page">VK_KHR_maintenance4</a> is enabled
+    <code>layout</code> <strong>must</strong> not be accessed outside of the duration of the
+    command this structure is passed to.</p>
 </li>
 <li>
 <p><code>basePipelineHandle</code> is a pipeline to derive from.</p>
@@ -10781,8 +10823,10 @@ bit set</p>
 <li>
 <p><a id="VUID-VkRayTracingPipelineCreateInfoKHR-flags-10392" href="#VUID-VkRayTracingPipelineCreateInfoKHR-flags-10392"></a> <span class="vuid">VUID-VkRayTracingPipelineCreateInfoKHR-flags-10392</span><br>
 
-<code>flags</code> <strong>must</strong> not include both
-<code>VK_PIPELINE_CREATE_RAY_TRACING_OPACITY_MICROMAP_BIT_EXT</code> and
+If the <code>pNext</code> chain includes a
+<a href="#VkPipelineCreateFlags2CreateInfo">VkPipelineCreateFlags2CreateInfo</a> structure, <code>flags</code> <strong>must</strong> not
+include both
+<code>VK_PIPELINE_CREATE_2_RAY_TRACING_OPACITY_MICROMAP_BIT_EXT</code> and
 <code>VK_PIPELINE_CREATE_2_DISALLOW_OPACITY_MICROMAP_BIT_ARM</code></p>
 </li>
 </ul>
@@ -13249,8 +13293,8 @@ If a shader module identifier is used instead of a shader module, the
 <code>pPipelineKey</code> generated <strong>must</strong> be equal to the key generated when using
 the shader module from which the identifier was queried.
 If the content of two <code>pPipelineKey</code> are equal, pipelines created with
-the two <code>pPipelineCreateInfo-&gt;pname</code>:pNext create infos <strong>must</strong> produce
-the same <a href="#VkPipelineBinaryKHR">VkPipelineBinaryKHR</a> contents.</p>
+the two <code>pPipelineCreateInfo-&gt;pNext</code> create infos <strong>must</strong> produce the same
+<a href="#VkPipelineBinaryKHR">VkPipelineBinaryKHR</a> contents.</p>
 </div>
 <div class="paragraph">
 <p>The pipeline key is distinct from pipeline binary key.
@@ -14210,18 +14254,6 @@ created, <code>pAllocator</code> <strong>must</strong> be <code>NULL</code></p>
 </div>
 <div class="sidebarblock">
 <div class="content">
-<div class="title">Host Synchronization</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Host access to <code>pInfo-&gt;pipeline</code> <strong>must</strong> be externally synchronized</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sidebarblock">
-<div class="content">
 <div class="title">Return Codes</div>
 <div class="dlist">
 <dl>
@@ -14312,6 +14344,18 @@ from.</p>
 <li>
 <p><a id="VUID-VkReleaseCapturedPipelineDataInfoKHR-pipeline-parameter" href="#VUID-VkReleaseCapturedPipelineDataInfoKHR-pipeline-parameter"></a> <span class="vuid">VUID-VkReleaseCapturedPipelineDataInfoKHR-pipeline-parameter</span><br>
  <code>pipeline</code> <strong>must</strong> be a valid <a href="#VkPipeline">VkPipeline</a> handle</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>pipeline</code> <strong>must</strong> be externally synchronized</p>
 </li>
 </ul>
 </div>
