@@ -45,6 +45,11 @@ on:
         default: true
         required: false
         type: boolean
+      Generate_Man_Pages:
+        description: 'Generate LLM output manpages and markdown'
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   build:
@@ -173,28 +178,11 @@ jobs:
           npx antora antora-playbook.yml --stacktrace
           touch build/site/.nojekyll
 
-      - name: 'Generate man pages and combine with markdown index'
+      - name: "Remove site-docs when not generating man pages"
+        if: "${{ github.event.inputs.Generate_Man_Pages != 'true' }}"
+        working-directory: docs-site
         run: |
-          # Create a common output directory
-          mkdir -p combined_output
-
-          # Run the makefile task to generate man pages
-          cd Vulkan-Docs
-          make manhtmlpages
-
-          # move man pages to the common output directory
-          mv gen/out/man/html/* ../combined_output/
-
-          # move the markdown index files to the common output directory
-          mv ../docs-site/build/site/site-docs/* ../combined_output/
-          mv ../docs-site/build/site/site-index.md ../combined_output/
-
-      - name: 'Upload LLM output artifact'
-        uses: actions/upload-artifact@v4
-        with:
-          name: combinedOutput
-          path: combined_output
-          retention-days: 5
+          rm -rf build/site/site-docs
 
       - name: 'Upload site artifact'
         uses: actions/upload-artifact@v4
@@ -209,3 +197,64 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site
+
+  generate-man-pages:
+    runs-on: ubuntu-latest
+    if: "${{ github.event.inputs.Generate_Man_Pages == 'true' }}"
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: "Checkout Vulkan Docs"
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Docs
+          path: ./Vulkan-Docs
+          ref: ${{ inputs.DOC_Commit_Hash > '' && inputs.DOC_Commit_Hash || 'main' }}
+          submodules: recursive
+
+      - name: "run npm install for Vulkan-Docs"
+        working-directory: Vulkan-Docs
+        run: npm install
+
+      - name: "ensure we have all dependencies for building man pages"
+        run: |
+          sudo gem install rouge
+          sudo apt-get update
+          sudo apt-get install -y asciidoctor
+          pip install lxml
+
+      - name: "Download site artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: fullSite
+          path: docs-site/build
+
+      - name: 'Generate man pages and combine with markdown index'
+        run: |
+          # Create a common output directory
+          mkdir -p combined_output
+
+          # Run the makefile task to generate man pages
+          cd Vulkan-Docs
+          make manhtmlpages
+
+          # move man pages to the common output directory
+          mv gen/out/man/html/* ../combined_output/
+
+          # move the markdown index files to the common output directory
+          mv ../docs-site/build/site/site-docs/* ../combined_output/
+
+      - name: 'Upload LLM output artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: combinedOutput
+          path: combined_output
+          retention-days: 5
