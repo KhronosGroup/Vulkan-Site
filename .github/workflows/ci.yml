@@ -246,11 +246,45 @@ jobs:
           cd Vulkan-Docs
           make manhtmlpages
 
-          # move man pages to the common output directory
-          mv gen/out/man/html/* ../combined_output/
+          # Create a Node.js script to convert HTML to Markdown
+          cd ..
+          cat > convert-html-to-md.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const { htmlToMarkdown } = require('./docs-site/node_modules/@antora/lunr-extension/lib/generate-index');
+
+          // Directory containing HTML files
+          const htmlDir = path.join(__dirname, 'Vulkan-Docs/gen/out/man/html');
+
+          // Process all HTML files in the directory
+          const files = fs.readdirSync(htmlDir);
+
+          files.forEach(file => {
+            if (path.extname(file).toLowerCase() === '.html') {
+              const htmlPath = path.join(htmlDir, file);
+              const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+
+              // Convert HTML to Markdown
+              const markdownContent = htmlToMarkdown(htmlContent);
+
+              // Create markdown file with the same name but .md extension
+              const mdFilename = path.basename(file, '.html') + '.md';
+              const mdPath = path.join(htmlDir, mdFilename);
+
+              fs.writeFileSync(mdPath, markdownContent);
+              console.log(`Converted ${file} to ${mdFilename}`);
+            }
+          });
+          EOF
+
+          # Run the conversion script
+          node convert-html-to-md.js
+
+          # move only the markdown files to the common output directory
+          mv Vulkan-Docs/gen/out/man/html/*.md combined_output/
 
           # move the markdown index files to the common output directory
-          mv ../docs-site/build/site/site-docs/* ../combined_output/
+          mv docs-site/build/site/site-docs/* combined_output/
 
       - name: 'Upload LLM output artifact'
         uses: actions/upload-artifact@v4
