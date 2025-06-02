@@ -46,6 +46,21 @@ function htmlToMarkdown(html) {
   // Remove doctype
   html = html.replace(/<!DOCTYPE[^>]*>/i, '');
 
+  // Remove elements with hidden attribute
+  html = html.replace(/<[^>]+hidden[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Remove elements with hidden class
+  html = html.replace(/<[^>]+class="[^"]*\bhidden\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  html = html.replace(/<[^>]+class='[^']*\bhidden\b[^']*'[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Remove elements with display:none style
+  html = html.replace(/<[^>]+style="[^"]*display:\s*none[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  html = html.replace(/<[^>]+style='[^']*display:\s*none[^']*'[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Remove elements with visibility:hidden style
+  html = html.replace(/<[^>]+style="[^"]*visibility:\s*hidden[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  html = html.replace(/<[^>]+style='[^']*visibility:\s*hidden[^']*'[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
   // Try to extract the main content
   // For man pages, we want to focus on the article content
   const articleMatch = html.match(/<article[^>]*class="doc"[^>]*>([\s\S]*?)<\/article>/i);
