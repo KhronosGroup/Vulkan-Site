@@ -263,6 +263,29 @@ jobs:
           // Directory containing HTML files
           const htmlDir = path.join(__dirname, 'Vulkan-Docs/gen/out/man/html');
 
+          // Custom function to safely decode URI components
+          function safeDecodeURIComponent(encodedString) {
+            try {
+              return decodeURIComponent(encodedString);
+            } catch (error) {
+              // If standard decoding fails, handle specific encoded characters manually
+              // Handle %5F (underscore) and other common encodings
+              return encodedString
+                .replace(/%5F/g, '_')
+                .replace(/%20/g, ' ')
+                .replace(/%22/g, '"')
+                .replace(/%3C/g, '<')
+                .replace(/%3E/g, '>')
+                .replace(/%23/g, '#')
+                .replace(/%25/g, '%')
+                .replace(/%2F/g, '/')
+                .replace(/%3A/g, ':')
+                .replace(/%3F/g, '?')
+                .replace(/%26/g, '&')
+                .replace(/%3D/g, '=');
+            }
+          }
+
           // Process all HTML files in the directory
           const files = fs.readdirSync(htmlDir);
 
@@ -270,7 +293,9 @@ jobs:
             if (path.extname(file).toLowerCase() === '.html') {
               const htmlPath = path.join(htmlDir, file);
               const htmlWithEncoded = fs.readFileSync(htmlPath, 'utf8');
-              const htmlContent = decodeURIComponent(htmlWithEncoded);
+
+              // Safely decode the HTML content
+              const htmlContent = safeDecodeURIComponent(htmlWithEncoded);
 
               // Convert HTML to Markdown
               const markdownContent = htmlToMarkdown(htmlContent);
