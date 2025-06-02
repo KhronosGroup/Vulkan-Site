@@ -259,6 +259,9 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           const { htmlToMarkdown } = require('./html-to-markdown');
+          const nhm = new NodeHtmlMarkdown({
+            ignore: ['[hidden]', '.hidden']  // Ignore elements with hidden attribute or class
+          });
 
           // Directory containing HTML files
           const htmlDir = path.join(__dirname, 'Vulkan-Docs/gen/out/man/html');
@@ -269,10 +272,11 @@ jobs:
           files.forEach(file => {
             if (path.extname(file).toLowerCase() === '.html') {
               const htmlPath = path.join(htmlDir, file);
-              const htmlContent = fs.readFileSync(htmlPath, 'utf8');
+              const htmlWithEncoded = fs.readFileSync(htmlPath, 'utf8');
+              const htmlContent = decodeURIComponent(htmlWithEncoded);
 
               // Convert HTML to Markdown
-              const markdownContent = htmlToMarkdown(htmlContent);
+              const markdownContent = nhm.translate(htmlContent);
 
               // Create markdown file with the same name but .md extension
               const mdFilename = path.basename(file, '.html') + '.md';
