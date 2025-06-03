@@ -95,6 +95,11 @@ function htmlToMarkdown(html) {
     markdown = '# ' + title + '\n\n' + markdown;
   }
 
+  // Post-process markdown to ensure %5F is properly decoded in all contexts, especially in links/anchors
+  markdown = markdown.replace(/\[\]\(#%5F([^)]*)\)/g, '[](_$1)');
+  markdown = markdown.replace(/\[([^\]]*)\]\(#%5F([^)]*)\)/g, '[$1](_$2)');
+  markdown = markdown.replace(/%5F/g, '_');
+
   return markdown;
 }
 
