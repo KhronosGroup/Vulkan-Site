@@ -265,25 +265,38 @@ jobs:
 
           // Custom function to safely decode URI components
           function safeDecodeURIComponent(encodedString) {
-            try {
-              return decodeURIComponent(encodedString);
-            } catch (error) {
-              // If standard decoding fails, handle specific encoded characters manually
-              // Handle %5F (underscore) and other common encodings
-              return encodedString
-                .replace(/%5F/g, '_')
-                .replace(/%20/g, ' ')
-                .replace(/%22/g, '"')
-                .replace(/%3C/g, '<')
-                .replace(/%3E/g, '>')
-                .replace(/%23/g, '#')
-                .replace(/%25/g, '%')
-                .replace(/%2F/g, '/')
-                .replace(/%3A/g, ':')
-                .replace(/%3F/g, '?')
-                .replace(/%26/g, '&')
-                .replace(/%3D/g, '=');
-            }
+            if (!encodedString) return '';
+
+            // Handle all percent-encoded characters in a general way
+            return encodedString.replace(/%([0-9A-F]{2})/gi, (match, hex) => {
+              try {
+                // Try to decode this specific percent-encoded sequence
+                return decodeURIComponent(match);
+              } catch (error) {
+                // If decoding fails, handle special cases
+                if (match === '%5F') return '_';  // Handle underscore
+                if (match === '%20') return ' ';  // Handle space
+                if (match === '%22') return '"';  // Handle double quote
+                if (match === '%3C') return '<';  // Handle less than
+                if (match === '%3E') return '>';  // Handle greater than
+                if (match === '%23') return '#';  // Handle hash
+                if (match === '%25') return '%';  // Handle percent
+                if (match === '%2F') return '/';  // Handle forward slash
+                if (match === '%3A') return ':';  // Handle colon
+                if (match === '%3F') return '?';  // Handle question mark
+                if (match === '%26') return '&';  // Handle ampersand
+                if (match === '%3D') return '=';  // Handle equals
+
+                // For other cases, try to convert the hex value to a character
+                try {
+                  const charCode = parseInt(hex, 16);
+                  return String.fromCharCode(charCode);
+                } catch (e) {
+                  // If all else fails, return the original encoded string
+                  return match;
+                }
+              }
+            });
           }
 
           // Process all HTML files in the directory
