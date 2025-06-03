@@ -96,8 +96,16 @@ function htmlToMarkdown(html) {
   }
 
   // Post-process markdown to ensure %5F is properly decoded in all contexts, especially in links/anchors
+  // Handle empty links with %5F in the anchor
   markdown = markdown.replace(/\[\]\(#%5F([^)]*)\)/g, '[](_$1)');
+
+  // Handle links with text and %5F in the anchor
   markdown = markdown.replace(/\[([^\]]*)\]\(#%5F([^)]*)\)/g, '[$1](_$2)');
+
+  // Handle headings with links containing %5F
+  markdown = markdown.replace(/(#+)\s+\[\]\(#%5F([^)]*)\)([^\n]*)/g, '$1 [](_$2)$3');
+
+  // Replace any remaining %5F with underscores
   markdown = markdown.replace(/%5F/g, '_');
 
   return markdown;
