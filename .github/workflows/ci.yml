@@ -45,6 +45,11 @@ on:
         default: true
         required: false
         type: boolean
+      Generate_Man_Pages:
+        description: 'Generate LLM output manpages and markdown'
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   build:
@@ -173,6 +178,12 @@ jobs:
           npx antora antora-playbook.yml --stacktrace
           touch build/site/.nojekyll
 
+      - name: "Remove site-docs when not generating man pages"
+        if: "${{ github.event.inputs.Generate_Man_Pages != 'true' }}"
+        working-directory: docs-site
+        run: |
+          rm -rf build/site/site-docs
+
       - name: 'Upload site artifact'
         uses: actions/upload-artifact@v4
         with:
@@ -186,3 +197,147 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site
+
+  generate-man-pages:
+    runs-on: ubuntu-latest
+    if: "${{ github.event.inputs.Generate_Man_Pages == 'true' }}"
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: "Checkout Vulkan Docs"
+        uses: actions/checkout@v4
+        with:
+          repository: KhronosGroup/Vulkan-Docs
+          path: ./Vulkan-Docs
+          ref: ${{ inputs.DOC_Commit_Hash > '' && inputs.DOC_Commit_Hash || 'main' }}
+          submodules: recursive
+
+      - name: "run npm install for Vulkan-Docs"
+        working-directory: Vulkan-Docs
+        run: npm install
+
+      - name: "run npm install for docs-site"
+        working-directory: docs-site
+        run: npm install
+
+      - name: "ensure we have all dependencies for building man pages"
+        run: |
+          sudo gem install rouge
+          sudo apt-get update
+          sudo apt-get install -y asciidoctor
+          pip install lxml
+
+      - name: "Download site artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: fullSite
+          path: docs-site/build
+
+      - name: 'Generate man pages and combine with markdown index'
+        run: |
+          # Create a common output directory
+          mkdir -p combined_output
+
+          # Run the makefile task to generate man pages
+          cd Vulkan-Docs
+          make manhtmlpages
+
+          # Install node-html-markdown package
+          cd ..
+          npm install node-html-markdown
+
+          # Create a Node.js script to convert HTML to Markdown
+          cat > convert-html-to-md.js << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+          const { htmlToMarkdown } = require('./html-to-markdown');
+
+          // Directory containing HTML files
+          const htmlDir = path.join(__dirname, 'Vulkan-Docs/gen/out/man/html');
+
+          // Custom function to safely decode URI components
+          function safeDecodeURIComponent(encodedString) {
+            if (!encodedString) return '';
+
+            // Handle all percent-encoded characters in a general way
+            return encodedString.replace(/%([0-9A-F]{2})/gi, (match, hex) => {
+              try {
+                // Try to decode this specific percent-encoded sequence
+                return decodeURIComponent(match);
+              } catch (error) {
+                // If decoding fails, handle special cases
+                if (match === '%5F') return '_';  // Handle underscore
+                if (match === '%20') return ' ';  // Handle space
+                if (match === '%22') return '"';  // Handle double quote
+                if (match === '%3C') return '<';  // Handle less than
+                if (match === '%3E') return '>';  // Handle greater than
+                if (match === '%23') return '#';  // Handle hash
+                if (match === '%25') return '%';  // Handle percent
+                if (match === '%2F') return '/';  // Handle forward slash
+                if (match === '%3A') return ':';  // Handle colon
+                if (match === '%3F') return '?';  // Handle question mark
+                if (match === '%26') return '&';  // Handle ampersand
+                if (match === '%3D') return '=';  // Handle equals
+
+                // For other cases, try to convert the hex value to a character
+                try {
+                  const charCode = parseInt(hex, 16);
+                  return String.fromCharCode(charCode);
+                } catch (e) {
+                  // If all else fails, return the original encoded string
+                  return match;
+                }
+              }
+            });
+          }
+
+          // Process all HTML files in the directory
+          const files = fs.readdirSync(htmlDir);
+
+          files.forEach(file => {
+            if (path.extname(file).toLowerCase() === '.html') {
+              const htmlPath = path.join(htmlDir, file);
+              const htmlWithEncoded = fs.readFileSync(htmlPath, 'utf8');
+
+              // Safely decode the HTML content
+              const htmlContent = safeDecodeURIComponent(htmlWithEncoded);
+
+              // Convert HTML to Markdown
+              const markdownContent = htmlToMarkdown(htmlContent);
+
+              // Create markdown file with the same name but .md extension
+              const mdFilename = path.basename(file, '.html') + '.md';
+              const mdPath = path.join(htmlDir, mdFilename);
+
+              fs.writeFileSync(mdPath, markdownContent);
+              console.log(`Converted ${file} to ${mdFilename}`);
+            }
+          });
+          EOF
+
+          # Run the conversion script
+          node convert-html-to-md.js
+
+          # Create a man folder under the combined_output directory
+          mkdir -p combined_output/man
+
+          # move only the markdown files to the man folder under combined_output directory
+          mv Vulkan-Docs/gen/out/man/html/*.md combined_output/man/
+
+          # move the markdown index files to the common output directory
+          mv docs-site/build/site/site-docs/* combined_output/
+
+      - name: 'Upload LLM output artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: combinedOutput
+          path: combined_output
+          retention-days: 5
