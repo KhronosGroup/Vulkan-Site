@@ -266,12 +266,21 @@ function makeAPIlink(context, parent, target, attrs, supported, aliases) {
         const [label, title] = xrefMap.xrefMap[target]
         const page = pageMap.pageMap[label]
         //return context.createInline(parent, 'quoted', `${target} -> ${label} -> ${page}`)
-        return context.createInline(parent, 'quoted', `xref:${page}#${target}[${target}]`, normalAttribs)
+
+        if (parent.getDocument().getAttribute('cross-file-links')) {
+            // This attribute is only set for independent refpages, so the
+            // link macros are to other refpages instead of to chapters
+            // of the specification.
+            return context.createInline(parent, 'quoted', `xref:source/${target}.adoc[${target}]`, normalAttribs)
+        } else {
+            parent.getLogger().info(`cross-file-links NOT SET, linking to spec ${target}`)
+            return context.createInline(parent, 'quoted', `xref:${page}#${target}[${target}]`, normalAttribs)
+        }
     }
 
     // The target doesn't exist in the xrefMap, so we don't know where to
     // direct it. Just return a text span.
-    return context.createInline(parent, 'quoted', `xref:${target}.html[${target}]`, normalAttribs)
+    return context.createInline(parent, 'quoted', `(ERROR: UNRESOLVED LINK: ${target})`, normalAttribs)
 }
 
 // reflink: - link to any entity with an anchor / refpage
@@ -283,7 +292,14 @@ function reflinkInlineMacro () {
 
     this.process((parent, target, attrs) => {
         parent.getLogger().warn('log message from reflink:')
-        return this.createInline(parent, 'quoted', `xref:${target}.html[${target}]`, normalAttribs)
+        if (parent.getDocument().getAttribute('cross-file-links')) {
+            // This attribute is only set for independent refpages, so the
+            // link macros are to other refpages instead of to chapters
+            // of the specification.
+            return this.createInline(parent, 'quoted', `xref:${target}.adoc[${target}]`, normalAttribs)
+        } else {
+            return this.createInline(parent, 'quoted', `xref:${target}.html[${target}]`, normalAttribs)
+        }
     })
 }
 
