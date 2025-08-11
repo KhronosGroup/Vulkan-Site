@@ -273,7 +273,7 @@ function makeAPIlink(context, parent, target, attrs, supported, aliases) {
             // of the specification.
             return context.createInline(parent, 'quoted', `xref:source/${target}.adoc[${target}]`, normalAttribs)
         } else {
-            parent.getLogger().info(`cross-file-links NOT SET, linking to spec ${target}`)
+            // parent.getLogger().info(`cross-file-links NOT SET, linking to spec ${target}`)
             return context.createInline(parent, 'quoted', `xref:${page}#${target}[${target}]`, normalAttribs)
         }
     }
@@ -291,12 +291,12 @@ function reflinkInlineMacro () {
     this.parseContentAs('text')
 
     this.process((parent, target, attrs) => {
-        parent.getLogger().warn('log message from reflink:')
+        // parent.getLogger().warn('log message from reflink:')
         if (parent.getDocument().getAttribute('cross-file-links')) {
             // This attribute is only set for independent refpages, so the
             // link macros are to other refpages instead of to chapters
             // of the specification.
-            return this.createInline(parent, 'quoted', `xref:${target}.adoc[${target}]`, normalAttribs)
+            return this.createInline(parent, 'quoted', `xref:source/${target}.adoc[${target}]`, normalAttribs)
         } else {
             return this.createInline(parent, 'quoted', `xref:${target}.html[${target}]`, normalAttribs)
         }
