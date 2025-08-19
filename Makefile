@@ -99,5 +99,5 @@ build-site:
 
 # Clean Antora site (but not prepared component sources)
 clean:
-	rm -rf docs-site/build
+	rm -rf docs-site/build/site
 
