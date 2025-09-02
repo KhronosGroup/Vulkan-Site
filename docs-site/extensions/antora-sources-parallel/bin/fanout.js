@@ -96,8 +96,15 @@ async function mergeDirs (srcDir, dstDir) {
 
 async function main () {
   const docsSiteDir = process.cwd()
-  const playbookArg = process.argv[2] || 'antora-playbook.yml'
+  const argv = process.argv.slice(2)
+  const playbookArg = argv[0] || 'antora-playbook.yml'
+  const disableLunr = argv.includes('--no-lunr') || process.env.ANTORA_NO_LUNR === '1'
   const playbookPath = path.resolve(docsSiteDir, playbookArg)
+
+  // Encourage cache reuse if not already configured
+  if (!process.env.ANTORA_CACHE_DIR) {
+    process.env.ANTORA_CACHE_DIR = path.join(docsSiteDir, 'build', '.cache')
+  }
 
   const playbook = await readYaml(playbookPath)
   const sources = playbook?.content?.sources
@@ -120,6 +127,12 @@ async function main () {
   for (const { src, idx } of tasks) {
     const pb = JSON.parse(JSON.stringify(playbook))
     pb.content.sources = [src]
+
+    // Optionally remove lunr extension to speed up CI builds
+    if (disableLunr && pb.antora && Array.isArray(pb.antora.extensions)) {
+      pb.antora.extensions = pb.antora.extensions.filter((e) => !(e && e.require === '@antora/lunr-extension'))
+    }
+
     // Ensure ui bundle reference remains relative and output writes to unique dir
     pb.output = pb.output || {}
     pb.output.dir = path.join('build', '.fanout', String(idx))

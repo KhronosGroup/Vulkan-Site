@@ -67,3 +67,26 @@ Tuning:
 Notes:
 - The standard build (npx antora antora-playbook.yml) remains unchanged; fan-out is opt-in
 - Collisions in generated files are resolved "last writer wins" during merge
+
+## CI usage and performance tips
+
+- Fast path in CI: run the parallel fan-out without Lunr indexing.
+  - From docs-site/: npm run antora:ci
+  - Equivalent: node ./extensions/antora-sources-parallel/bin/fanout.js antora-playbook.yml --no-lunr
+  - You can also set ANTORA_NO_LUNR=1 instead of passing --no-lunr.
+
+- Concurrency tuning:
+  - ANTORA_SOURCES_PARALLEL_WORKERS: hard limit for shard workers.
+  - ANTORA_CONCURRENCY / ANTORA_FETCH_CONCURRENCY: generic hints also used by some tools.
+  - Default worker count is max(cpu cores, 3).
+
+- Caching:
+  - The extension sets ANTORA_CACHE_DIR to build/.cache if not already set.
+  - Configure your CI to cache the docs-site/build/.cache directory between runs to reduce repeated work.
+
+- Release builds (with search index):
+  - Use npm run antora-fanout to keep Lunr enabled while still running per-source in parallel.
+  - Or run the standard Antora command if you prefer the traditional single-process path.
+
+- No Makefile changes required:
+  - Keep Makefile as-is; point CI to run the npm script from docs-site instead.

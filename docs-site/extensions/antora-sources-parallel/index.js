@@ -46,7 +46,13 @@ module.exports = function (registry) {
         if (!process.env[key]) process.env[key] = String(workers)
       }
 
-      logger.log(`[antora-sources-parallel] Enabled with workers=${workers}. Concurrency env hints set: ${envHints.join(', ')}.`)
+      // Encourage Antora cache reuse in CI/local unless already specified
+      if (!process.env.ANTORA_CACHE_DIR) {
+        // Use a project-local cache directory so CI can persist it as an artifact between runs
+        process.env.ANTORA_CACHE_DIR = require('path').join(process.cwd(), 'build', '.cache')
+      }
+
+      logger.log(`[antora-sources-parallel] Enabled with workers=${workers}. Concurrency env hints set: ${envHints.join(', ')}. Cache dir: ${process.env.ANTORA_CACHE_DIR}`)
 
       // Experimental fan-out guidance
       const experimental = selfEntry?.experimental_fanout === true
