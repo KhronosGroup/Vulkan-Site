@@ -302,6 +302,10 @@ async function main () {
           // Use ultra-conservative defaults to reduce memory pressure; can be overridden via env
           if (!env.ANTORA_LUNR_IO_WORKERS) env.ANTORA_LUNR_IO_WORKERS = '1'
           if (!env.ANTORA_LUNR_SIMPLE_PIPELINE) env.ANTORA_LUNR_SIMPLE_PIPELINE = '1'
+          // Allow increasing V8 heap for large index serialization
+          const maxOldSpace = env.ANTORA_LUNR_NODE_MAX_OLD_SPACE || '6144'
+          const existingNodeOptions = env.NODE_OPTIONS ? `${env.NODE_OPTIONS} ` : ''
+          env.NODE_OPTIONS = `${existingNodeOptions}--max-old-space-size=${maxOldSpace}`.trim()
           const child = require('child_process').spawn(process.execPath, [indexer, path.join(docsSiteDir, 'build', 'site')], {
             cwd: docsSiteDir,
             stdio: 'inherit',
