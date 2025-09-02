@@ -27,15 +27,15 @@ function getWorkers () {
     const v = process.env[k]
     if (v && +v > 0) return +v
   }
-  // Default to conservative IO concurrency to minimize memory pressure
-  return Math.min(cpuWorkers(3), 2)
+  // Default to ultra-conservative IO concurrency to minimize memory pressure
+  return 1
 }
 
 function getMaxCharsPerPage () {
   const v = process.env.ANTORA_LUNR_MAX_CHARS
   if (v && +v > 0) return +v
-  // Reasonable upper bound to avoid pathological pages blowing memory
-  return 200000
+  // Tighter upper bound to avoid pathological pages blowing memory
+  return 60000
 }
 
 function stripHtml (html) {
@@ -94,7 +94,12 @@ function toSiteUrl (siteDir, filePath) {
 }
 
 async function buildIndex (siteDir) {
-  const files = await listHtmlFiles(siteDir)
+  let files = await listHtmlFiles(siteDir)
+  // Index latest-only by default if such pages exist
+  const hasLatest = files.some((f) => f.includes(`${path.sep}latest${path.sep}`) || f.includes('/latest/'))
+  if (hasLatest) {
+    files = files.filter((f) => f.includes(`${path.sep}latest${path.sep}`) || f.includes('/latest/'))
+  }
   const ioWorkers = getWorkers()
   const maxChars = getMaxCharsPerPage()
 
@@ -106,6 +111,18 @@ async function buildIndex (siteDir) {
   builder.ref('id')
   builder.field('title', { boost: 10 })
   builder.field('text')
+
+  // Optional simplified pipeline to reduce memory/CPU
+  const simplePipeline = (process.env.ANTORA_LUNR_SIMPLE_PIPELINE || '1') === '1'
+  if (simplePipeline) {
+    // Remove heavy stemming/stopword filters; keep minimal trimmer
+    builder.pipeline.reset()
+    builder.searchPipeline.reset()
+    if (lunr.trimmer) {
+      builder.pipeline.add(lunr.trimmer)
+      builder.searchPipeline.add(lunr.trimmer)
+    }
+  }
 
   // Process files in small concurrent batches for IO, but add to index immediately
   let idxNext = 0

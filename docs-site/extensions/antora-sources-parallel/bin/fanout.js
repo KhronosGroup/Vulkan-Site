@@ -299,8 +299,9 @@ async function main () {
         // invoke Node child process to avoid leaking state
         await new Promise((resolve, reject) => {
           const env = { ...process.env }
-          // Use conservative IO concurrency by default to reduce memory pressure
-          if (!env.ANTORA_LUNR_IO_WORKERS) env.ANTORA_LUNR_IO_WORKERS = '2'
+          // Use ultra-conservative defaults to reduce memory pressure; can be overridden via env
+          if (!env.ANTORA_LUNR_IO_WORKERS) env.ANTORA_LUNR_IO_WORKERS = '1'
+          if (!env.ANTORA_LUNR_SIMPLE_PIPELINE) env.ANTORA_LUNR_SIMPLE_PIPELINE = '1'
           const child = require('child_process').spawn(process.execPath, [indexer, path.join(docsSiteDir, 'build', 'site')], {
             cwd: docsSiteDir,
             stdio: 'inherit',
