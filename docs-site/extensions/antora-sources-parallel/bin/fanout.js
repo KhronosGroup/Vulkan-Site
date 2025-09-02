@@ -59,7 +59,12 @@ async function mkdirp (p) {
 
 function runAntora (cwd, playbookPath) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', ['antora', playbookPath, '--stacktrace'], {
+    const cacheDir = process.env.ANTORA_CACHE_DIR
+    const args = ['antora', playbookPath, '--stacktrace']
+    if (cacheDir) {
+      args.push('--cache-dir', cacheDir)
+    }
+    const child = spawn(process.platform === 'win32' ? 'npx.cmd' : 'npx', args, {
       cwd,
       stdio: 'inherit',
       env: process.env,
@@ -145,6 +150,8 @@ async function main () {
   if (!process.env.ANTORA_CACHE_DIR) {
     process.env.ANTORA_CACHE_DIR = path.join(docsSiteDir, 'build', '.cache')
   }
+  await mkdirp(process.env.ANTORA_CACHE_DIR)
+  console.log(`[fanout] Using Antora cache dir: ${process.env.ANTORA_CACHE_DIR}`)
 
   const playbook = await readYaml(playbookPath)
   const sources = playbook?.content?.sources
@@ -246,50 +253,85 @@ async function main () {
   console.log(`[fanout] Completed per-source build for ${tasks.length} sources with workers=${workers}`)
   console.log(`[fanout] Output merged to: ${finalOut}`)
 
-  // If Lunr is not explicitly disabled, do one additional pass to build a global search index only
+  // If Lunr is not explicitly disabled, build a global search index
   if (!disableLunr) {
-    const indexOut = path.join(docsSiteDir, 'build', '.fanout', 'index')
-    // Prepare a playbook for the index pass: keep all sources and ensure lunr extension is present
-    let indexPb = JSON.parse(JSON.stringify(playbook))
-    // Ensure Lunr extension is included
-    if (indexPb.antora && Array.isArray(indexPb.antora.extensions)) {
-      const hasLunr = indexPb.antora.extensions.some((e) => e && e.require === '@antora/lunr-extension')
-      if (!hasLunr) indexPb.antora.extensions.unshift({ require: '@antora/lunr-extension', index_latest_only: true })
-    }
-    // Rebase paths for the index pass and direct output to temp index dir
-    indexPb = rebasePlaybookPaths(indexPb, docsSiteDir)
-    indexPb.output = indexPb.output || {}
-    indexPb.output.dir = path.relative(docsSiteDir, indexOut)
-
-    const indexPlaybookFile = path.join(fanoutRoot, 'playbook-index.yml')
-    await writeYaml(indexPlaybookFile, indexPb)
-
-    console.log('[fanout] Building global Lunr index (single pass)...')
-    try {
-      await runAntora(docsSiteDir, indexPlaybookFile)
-    } catch (e) {
-      console.error('[fanout] Global Lunr index build failed:', e && e.message ? e.message : e)
-      process.exitCode = 1
-      return
-    }
-
-    // Copy search-index artifacts from indexOut into finalOut
-    try {
-      const entries = await fsp.readdir(indexOut)
-      const indexFiles = entries.filter((name) => /^search-index\..*/.test(name))
-      for (const name of indexFiles) {
-        const src = path.join(indexOut, name)
-        const dst = path.join(finalOut, name)
-        await mkdirp(path.dirname(dst))
-        await fsp.copyFile(src, dst)
+    const mode = (process.env.ANTORA_LUNR_MODE || 'fast').toLowerCase()
+    if (mode === 'antora') {
+      // Legacy path: run Antora lunr extension once
+      const indexOut = path.join(docsSiteDir, 'build', '.fanout', 'index')
+      let indexPb = JSON.parse(JSON.stringify(playbook))
+      if (indexPb.antora && Array.isArray(indexPb.antora.extensions)) {
+        const hasLunr = indexPb.antora.extensions.some((e) => e && e.require === '@antora/lunr-extension')
+        if (!hasLunr) indexPb.antora.extensions.unshift({ require: '@antora/lunr-extension', index_latest_only: true })
       }
-      if (indexFiles.length) {
-        console.log(`[fanout] Copied global Lunr artifacts to final site: ${indexFiles.join(', ')}`)
-      } else {
-        console.warn('[fanout] No search-index.* artifacts found to copy. Verify lunr extension configuration.')
+      indexPb = rebasePlaybookPaths(indexPb, docsSiteDir)
+      indexPb.output = indexPb.output || {}
+      indexPb.output.dir = path.relative(docsSiteDir, indexOut)
+      const indexPlaybookFile = path.join(fanoutRoot, 'playbook-index.yml')
+      await writeYaml(indexPlaybookFile, indexPb)
+      console.log('[fanout] Building global Lunr index with Antora (legacy)...')
+      try {
+        await runAntora(docsSiteDir, indexPlaybookFile)
+        // Copy search-index artifacts from indexOut into finalOut
+        const entries = await fsp.readdir(indexOut)
+        const indexFiles = entries.filter((name) => /^search-index\..*/.test(name))
+        for (const name of indexFiles) {
+          const src = path.join(indexOut, name)
+          const dst = path.join(finalOut, name)
+          await mkdirp(path.dirname(dst))
+          await fsp.copyFile(src, dst)
+        }
+        if (indexFiles.length) {
+          console.log(`[fanout] Copied global Lunr artifacts to final site: ${indexFiles.join(', ')}`)
+        } else {
+          console.warn('[fanout] No search-index.* artifacts found to copy. Verify lunr extension configuration.')
+        }
+      } catch (e) {
+        console.error('[fanout] Global Lunr index build failed (Antora):', e && e.message ? e.message : e)
+        process.exitCode = 1
+        return
       }
-    } catch (e) {
-      console.warn('[fanout] Failed to copy Lunr artifacts:', e && e.message ? e.message : e)
+    } else {
+      // Fast path: build directly from merged site
+      const indexer = path.join(__dirname, 'build-lunr-from-site.js')
+      console.log('[fanout] Building global Lunr index from merged site (fast path)...')
+      try {
+        // invoke Node child process to avoid leaking state
+        await new Promise((resolve, reject) => {
+          const child = require('child_process').spawn(process.execPath, [indexer, path.join(docsSiteDir, 'build', 'site')], {
+            cwd: docsSiteDir,
+            stdio: 'inherit',
+            env: process.env,
+          })
+          child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`indexer exited with code ${code}`))))
+          child.on('error', reject)
+        })
+      } catch (e) {
+        console.warn('[fanout] Fast Lunr indexer failed; falling back to Antora:', e && e.message ? e.message : e)
+        process.env.ANTORA_LUNR_MODE = 'antora'
+        return await (async () => { // recurse into legacy path
+          const indexOut = path.join(docsSiteDir, 'build', '.fanout', 'index')
+          let indexPb = JSON.parse(JSON.stringify(playbook))
+          if (indexPb.antora && Array.isArray(indexPb.antora.extensions)) {
+            const hasLunr = indexPb.antora.extensions.some((e) => e && e.require === '@antora/lunr-extension')
+            if (!hasLunr) indexPb.antora.extensions.unshift({ require: '@antora/lunr-extension', index_latest_only: true })
+          }
+          indexPb = rebasePlaybookPaths(indexPb, docsSiteDir)
+          indexPb.output = indexPb.output || {}
+          indexPb.output.dir = path.relative(docsSiteDir, indexOut)
+          const indexPlaybookFile = path.join(fanoutRoot, 'playbook-index.yml')
+          await writeYaml(indexPlaybookFile, indexPb)
+          await runAntora(docsSiteDir, indexPlaybookFile)
+          const entries = await fsp.readdir(indexOut)
+          const indexFiles = entries.filter((name) => /^search-index\..*/.test(name))
+          for (const name of indexFiles) {
+            const src = path.join(indexOut, name)
+            const dst = path.join(finalOut, name)
+            await mkdirp(path.dirname(dst))
+            await fsp.copyFile(src, dst)
+          }
+        })()
+      }
     }
   } else {
     console.log('[fanout] Lunr disabled (--no-lunr). Skipping global index pass.')
