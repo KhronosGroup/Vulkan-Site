@@ -152,6 +152,21 @@ async function main () {
     throw new Error('No content.sources found in playbook')
   }
 
+  // Expand any sources that specify start_paths into separate shards per path
+  const expandedSources = []
+  for (const s of sources) {
+    if (s && Array.isArray(s.start_paths) && s.start_paths.length > 0) {
+      for (const sp of s.start_paths) {
+        const ns = { ...s }
+        delete ns.start_paths
+        ns.start_path = sp
+        expandedSources.push(ns)
+      }
+    } else {
+      expandedSources.push(s)
+    }
+  }
+
   const workers = getWorkersFromEnv()
   const fanoutRoot = path.join(docsSiteDir, 'build', '.fanout')
   const finalOut = path.join(docsSiteDir, 'build', 'site')
@@ -160,7 +175,7 @@ async function main () {
   await mkdirp(fanoutRoot)
 
   // Prepare per-source playbooks
-  const tasks = sources.map((src, idx) => ({ src, idx }))
+  const tasks = expandedSources.map((src, idx) => ({ src, idx }))
 
   // Create temp playbooks with single source and per-run output dir
   const tempPlaybooks = []
