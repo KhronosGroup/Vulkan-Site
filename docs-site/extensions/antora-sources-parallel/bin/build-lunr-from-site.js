@@ -22,12 +22,20 @@ function cpuWorkers (min = 3) {
 }
 
 function getWorkers () {
-  const envKeys = ['ANTORA_SOURCES_PARALLEL_WORKERS', 'ANTORA_CONCURRENCY', 'ANTORA_FETCH_CONCURRENCY']
+  const envKeys = ['ANTORA_LUNR_IO_WORKERS', 'ANTORA_SOURCES_PARALLEL_WORKERS', 'ANTORA_CONCURRENCY', 'ANTORA_FETCH_CONCURRENCY']
   for (const k of envKeys) {
     const v = process.env[k]
     if (v && +v > 0) return +v
   }
-  return cpuWorkers(3)
+  // Default to conservative IO concurrency to minimize memory pressure
+  return Math.min(cpuWorkers(3), 2)
+}
+
+function getMaxCharsPerPage () {
+  const v = process.env.ANTORA_LUNR_MAX_CHARS
+  if (v && +v > 0) return +v
+  // Reasonable upper bound to avoid pathological pages blowing memory
+  return 200000
 }
 
 function stripHtml (html) {
@@ -76,32 +84,6 @@ async function listHtmlFiles (dir) {
   return out
 }
 
-async function withPool (items, limit, worker) {
-  const results = new Array(items.length)
-  let i = 0
-  let inFlight = 0
-  let rejectFn
-  return await new Promise((resolve, reject) => {
-    rejectFn = reject
-    const next = () => {
-      while (inFlight < limit && i < items.length) {
-        const idx = i++
-        inFlight++
-        Promise.resolve(worker(items[idx], idx))
-          .then((r) => {
-            results[idx] = r
-            inFlight--
-            if (i >= items.length && inFlight === 0) resolve(results)
-            else next()
-          })
-          .catch((e) => rejectFn(e))
-      }
-      if (i >= items.length && inFlight === 0) resolve(results)
-    }
-    next()
-  })
-}
-
 function toSiteUrl (siteDir, filePath) {
   // Convert absolute file path back to site-relative URL
   const rel = path.relative(siteDir, filePath)
@@ -113,27 +95,50 @@ function toSiteUrl (siteDir, filePath) {
 
 async function buildIndex (siteDir) {
   const files = await listHtmlFiles(siteDir)
-  const workers = getWorkers()
-  const docs = []
+  const ioWorkers = getWorkers()
+  const maxChars = getMaxCharsPerPage()
 
-  await withPool(files, workers, async (file) => {
-    const html = await readFileSafe(file)
-    if (!html) return
-    const url = toSiteUrl(siteDir, file)
-    const title = extractTitle(html, path.basename(file, '.html'))
-    const text = stripHtml(html)
-    docs.push({ id: url, title, url, text })
+  // Minimal doc metadata to ship with the index
+  const docMeta = []
+
+  // Prepare a Lunr builder so we can add docs incrementally (low memory)
+  const builder = new lunr.Builder()
+  builder.ref('id')
+  builder.field('title', { boost: 10 })
+  builder.field('text')
+
+  // Process files in small concurrent batches for IO, but add to index immediately
+  let idxNext = 0
+  let inFlight = 0
+  await new Promise((resolve, reject) => {
+    const next = () => {
+      while (inFlight < ioWorkers && idxNext < files.length) {
+        const file = files[idxNext++]
+        inFlight++
+        ;(async () => {
+          const html = await readFileSafe(file)
+          const url = toSiteUrl(siteDir, file)
+          const title = extractTitle(html, path.basename(file, '.html'))
+          let text = stripHtml(html)
+          if (maxChars && text.length > maxChars) text = text.slice(0, maxChars)
+          // Add to index and discard text immediately
+          builder.add({ id: url, title, text })
+          docMeta.push({ id: url, title, url })
+        })()
+          .then(() => {
+            inFlight--
+            if (idxNext >= files.length && inFlight === 0) resolve()
+            else next()
+          })
+          .catch((e) => reject(e))
+      }
+      if (idxNext >= files.length && inFlight === 0) resolve()
+    }
+    next()
   })
 
-  // Build Lunr index
-  const idx = lunr(function () {
-    this.ref('id')
-    this.field('title', { boost: 10 })
-    this.field('text')
-    for (const d of docs) this.add(d)
-  })
-
-  return { docs: docs.map(({ id, title, url }) => ({ id, title, url })), index: idx.toJSON() }
+  const index = builder.build()
+  return { docs: docMeta, index: index.toJSON() }
 }
 
 async function writeOutputs (siteDir, payload) {
@@ -148,9 +153,11 @@ async function writeOutputs (siteDir, payload) {
 async function main () {
   const siteDir = path.resolve(process.argv[2] || path.join(process.cwd(), 'build', 'site'))
   console.log(`[lunr-fast] Indexing site at: ${siteDir}`)
+  const t0 = Date.now()
   const payload = await buildIndex(siteDir)
   await writeOutputs(siteDir, payload)
-  console.log('[lunr-fast] Wrote search-index.json and search-index.js')
+  const dt = ((Date.now() - t0) / 1000).toFixed(2)
+  console.log(`[lunr-fast] Wrote search-index.json and search-index.js in ${dt}s`)
 }
 
 main().catch((e) => {

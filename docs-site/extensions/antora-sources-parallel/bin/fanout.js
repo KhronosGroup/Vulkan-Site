@@ -298,10 +298,13 @@ async function main () {
       try {
         // invoke Node child process to avoid leaking state
         await new Promise((resolve, reject) => {
+          const env = { ...process.env }
+          // Use conservative IO concurrency by default to reduce memory pressure
+          if (!env.ANTORA_LUNR_IO_WORKERS) env.ANTORA_LUNR_IO_WORKERS = '2'
           const child = require('child_process').spawn(process.execPath, [indexer, path.join(docsSiteDir, 'build', 'site')], {
             cwd: docsSiteDir,
             stdio: 'inherit',
-            env: process.env,
+            env,
           })
           child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`indexer exited with code ${code}`))))
           child.on('error', reject)
