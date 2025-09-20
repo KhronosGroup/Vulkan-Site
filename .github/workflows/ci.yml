@@ -113,10 +113,21 @@ jobs:
         with:
           node-version: '20.12.2'
           cache: 'npm'
-          cache-dependency-path: docs-site/package-lock.json
+          cache-dependency-path: |
+            docs-site/package-lock.json
+            antora-ui-khronos/package-lock.json
+            Vulkan-Docs/package-lock.json
 
-      - name: "force clear the npm cache"
-        run: npm cache clean --force
+      - name: "Prepare Antora cache dir"
+        run: mkdir -p docs-site/build/.cache
+
+      - name: "Cache Antora workdir"
+        uses: actions/cache@v4
+        with:
+          path: docs-site/build/.cache
+          key: antora-cache-${{ hashFiles('docs-site/antora-playbook.yml', 'docs-site/package-lock.json') }}
+          restore-keys: |
+            antora-cache-
 
       - name: "run npm install for ui bundle"
         working-directory: antora-ui-khronos
@@ -167,10 +178,14 @@ jobs:
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
-      - name: "build (npx) with stacktrace"
+      - name: "build site in parallel (fan-out with Lunr)"
         working-directory: docs-site
+        env:
+          ANTORA_LUNR_NODE_MAX_OLD_SPACE: '6144'
+          ANTORA_LUNR_IO_WORKERS: '1'
+          ANTORA_LUNR_SIMPLE_PIPELINE: '1'
         run: |
-          npx antora antora-playbook.yml --stacktrace
+          npm run antora-fanout
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
