@@ -12,6 +12,11 @@ const pageMap = require('./pageMap.cjs')
 
 normalAttribs = { 'attributes' : { 'subs' : 'normal' } }
 
+// Default rewrite() method used in makeAPIlink just returns the argument
+function norewrite(name) {
+    return name
+}
+
 // MACROS: Normative - can: cannot: may: must: optional: optionally:
 // required: should:
 // These normative terms are all given the same distinguishing style.
@@ -201,7 +206,7 @@ function apiextInlineMacro () {
         //@ Insert link here
         return makeAPIlink(this, parent, target, attrs,
             (name) => { return apiNames.features.hasOwnProperty(name) },
-            apiNames.alias, apiNames.nonexistent)
+            apiNames.alias, apiNames.nonexistent, norewrite)
     })
 }
 
@@ -212,8 +217,37 @@ function enameInlineMacro () {
     this.named('ename')
     this.match(/ename:(\w+)/)
 
+    // Old
+    //this.process((parent, target, attrs) => {
+    //    return this.createInline(parent, 'quoted', `<code>${target}</code>`)
+    //})
+
+    function enumExists(target) {
+        // This accommodates the rewrite? method, which changes the target of
+        // ename: from the enum name to the enumerant name including it.
+        return apiNames.consts.hasOwnProperty(target) || apiNames.enums.hasOwnProperty(target)
+    }
+
+    function enumRewrite(target) {
+        if (enumExists(target)) {
+            // If the enum is in the consts dictionary and has a non-nil
+            // value, that is the enumerated type containing the enum.
+            // Rewrite to that value.
+            // Otherwise, it is an API constant and is not rewritten.
+            rewritten = apiNames.consts[target]
+            if (rewritten) {
+                return rewritten
+            } else {
+                return target
+            }
+        } else {
+            return target
+        }
+    }
+
     this.process((parent, target, attrs) => {
-        return this.createInline(parent, 'quoted', `<code>${target}</code>`)
+        return makeAPIlink(this, parent, target, attrs,
+            enumExists, apiNames.alias, apiNames.nonexistent, enumRewrite)
     })
 }
 
@@ -224,21 +258,30 @@ function enameInlineMacro () {
 //    in particular 'target' is the API name.
 //  - supported - a function taking the 'target' and returning whether it
 //    is supported.
-//  - nonexistent - if 'target' is in this object's properties, the target
-//    does not exist for this build.
-//    Try to use the API in the corresponding property value, instead.
 //  - alias - if not supported, lookup 'target' in this object's
 //    properties.
 //    If found, the property value is an alias which *is* supported.
-function makeAPIlink(context, parent, target, attrs, supported, alias, nonexistent) {
-    // unused
+//  - nonexistent - if 'target' is in this object's properties, the target
+//    does not exist for this build.
+//    Try to use the API in the corresponding property value, instead.
+//  - rewrite - a function taking the 'target' and possibly rewriting it
+//    to another valid target.
+//    Normally does not actually rewrite.
+function makeAPIlink(context, parent, target, attrs, supported, alias, nonexistent, rewrite) {
+    // This should be initialized to the macro 'name' (e.g. slink, etc) but
+    // not sure where to get that
     macroname = '??'
-    // Label text for the link, whether or not it's rewritten
-    label = target
+    // Link text for the link, whether or not it's rewritten
+    linkname = target
+    // Xref target for the link. Normally identical to linkname but some
+    // macros, such as ename, can rewrite their target to a different entity
+    // (enumerant name -> enumerated type name).
+    linkxref = rewrite(linkname)
+
     // Is this a refpage?
     isRefpage = parent.getDocument().getAttribute('cross-file-links')
 
-    breaktarget = 'VK_ENABLE_BETA_EXTENSIONS'
+    breaktarget = 'VkScopeNV'
     breakpoint = (target == breaktarget)
 
     if (breakpoint) {
@@ -248,30 +291,38 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
 
         //debugger
     }
-    if (!supported(target)) {
-        // If the macro target is nonexistent in this build, but something
-        //  aliased to it is not, substitute that as the target.
+    if (!supported(linkxref)) {
+        // If the macro target (possibly rewritten)
+        // is not in this build but has an alias, substitute the alias.
         // Otherwise, turn the (attempted) link into text, and complain.
-        if (nonexistent.hasOwnProperty(target)) {
-            target = nonexistent[target]
-
+        if (nonexistent.hasOwnProperty(linkxref)) {
+            oldxref = linkxref
+            linkxref = nonexistent[oldxref]
             if (breakpoint) {
-                msg = `Rewriting nonexistent link macro target ${label} to ${target}`
+                msg = `Rewriting nonexistent link macro target ${macroname}:${linkname} to ${linkxref}`
                 parent.getLogger().info(msg)
             }
+            // Fall through
+        } else {
+            // Suppress warnings for apiext: macros as this is such a common case
+            if (macroname != 'apiext') {
+                msg = `Textifying unknown link macro target: ${macroname}:${linkxref}`
+                parent.getLogger().warn(msg)
+            }
+            return context.createInline(parent, 'quoted', `<code>${linkxref}</code>`)
         }
     }
 
-    // If the macro target has an alias, use that alias as the link target.
+    // If the rewritten target has an alias, use that alias as the link target.
     // This is only done for refpages, so a target which is aliased will
     // arrive at the alias refpage.
     // Otherwise, a link to 'vkFooEXT' aliasing 'vkFoo' would arrive at a
     //  slightly different place in the specification document.
-    if (alias.hasOwnProperty(target) && isRefpage) {
-        target = alias[target]
+    if (alias.hasOwnProperty(linkxref) && isRefpage) {
+        linkxref = alias[linkxref]
 
         if (breakpoint) {
-            msg = `Rewriting aliased link macro target ${label} to ${target}`
+            msg = `Rewriting aliased link macro linkxref ${linkname} to ${linkxref}`
             parent.getLogger().info(msg)
         }
     }
@@ -279,13 +330,13 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
     // If the (possibly aliased) target is still not supported, this is
     // probably a build error.
     // For now, replace the target with a text span.
-    if (!supported(target)) {
+    if (!supported(linkxref)) {
         // Suppress warnings for apiext: macros as this is such a common case
         if (macroname != 'apiext') {
-            msg = `Textifying link macro target: ${target} (target is unsupported and has no aliases)`
+            msg = `Textifying link macro target: ${linkxref} (target is unsupported and has no aliases)`
             parent.getLogger().warn(msg)
         }
-        return context.createInline(parent, 'quoted', `<code>${label}</code>`)
+        return context.createInline(parent, 'quoted', `<code>${linkname}</code>`)
     }
 
     // Having resolved the target, create a link
@@ -300,33 +351,33 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
     //     return context.createInline(parent, 'anchor', target, { type: 'link', target: target + '.html' })
     // }
 
-    if (xrefMap.xrefMap.hasOwnProperty(target)) {
-        const [xreflabel, title] = xrefMap.xrefMap[target]
+    if (xrefMap.xrefMap.hasOwnProperty(linkxref)) {
+        const [xreflabel, title] = xrefMap.xrefMap[linkxref]
         const page = pageMap.pageMap[xreflabel]
-        //return context.createInline(parent, 'quoted', `${target} -> ${xreflabel} -> ${page}`)
+        //return context.createInline(parent, 'quoted', `${linkxref} -> ${xreflabel} -> ${page}`)
 
         if (breakpoint) {
-            msg = `makeAPIlink: ${target} is in xrefMap -> page ${page}`
+            msg = `makeAPIlink: ${linkxref} is in xrefMap -> page ${page}`
             parent.getLogger().warn(msg)
         }
 
         if (isRefpage) {
             // Generate an Antora xref to another refpage.
             if (breakpoint) {
-                msg = `makeAPIlink: rewriting ${target} -> xref:source/${target}.adoc[${label}]`
+                msg = `makeAPIlink: rewriting ${linkxref} -> xref:source/${linkxref}.adoc[${linkname}]`
                 parent.getLogger().warn(msg)
             }
 
-            return context.createInline(parent, 'quoted', `xref:source/${target}.adoc[${label}]`, normalAttribs)
+            return context.createInline(parent, 'quoted', `xref:source/${linkxref}.adoc[${linkname}]`, normalAttribs)
         } else {
-            return context.createInline(parent, 'quoted', `xref:${page}#${target}[${label}]`, normalAttribs)
+            return context.createInline(parent, 'quoted', `xref:${page}#${linkxref}[${linkname}]`, normalAttribs)
         }
     } else {
         // The target doesn't exist in the xrefMap, so we don't know where to
         // direct it. Just return a text span.
 
-        //msg = `Textifying link macro target ${target} (cannot rewrite xref for target)`
-        //parent.getLogger().warn(msg)
+        msg = `Textifying link macro target ${linkxref} (cannot rewrite xref for target)`
+        parent.getLogger().warn(msg)
 
         return context.createInline(parent, 'quoted', `(ERROR: UNRESOLVED LINK: ${target})`, normalAttribs)
     }
@@ -361,7 +412,7 @@ function dlinkInlineMacro () {
     this.process((parent, target, attrs) => {
         return makeAPIlink(this, parent, target, attrs,
             (name) => { return apiNames.defines.hasOwnProperty(name) },
-            apiNames.alias, apiNames.nonexistent)
+            apiNames.alias, apiNames.nonexistent, norewrite)
     })
 }
 
@@ -374,7 +425,7 @@ function elinkInlineMacro () {
     this.process((parent, target, attrs) => {
         return makeAPIlink(this, parent, target, attrs,
             (name) => { return apiNames.enums.hasOwnProperty(name) },
-            apiNames.alias, apiNames.nonexistent)
+            apiNames.alias, apiNames.nonexistent, norewrite)
     })
 }
 
@@ -387,7 +438,7 @@ function flinkInlineMacro () {
     this.process((parent, target, attrs) => {
         return makeAPIlink(this, parent, target, attrs,
             (name) => { return apiNames.protos.hasOwnProperty(name) },
-            apiNames.alias, apiNames.nonexistent)
+            apiNames.alias, apiNames.nonexistent, norewrite)
     })
 }
 
@@ -403,7 +454,7 @@ function slinkInlineMacro () {
                 return apiNames.structs.hasOwnProperty(name) ||
                        apiNames.handles.hasOwnProperty(name)
             },
-            apiNames.alias, apiNames.nonexistent)
+            apiNames.alias, apiNames.nonexistent, norewrite)
     })
 }
 
@@ -420,7 +471,7 @@ function tlinkInlineMacro () {
                        apiNames.funcpointers.hasOwnProperty(name) ||
                        apiNames.defines.hasOwnProperty(name)
             },
-            apiNames.alias, apiNames.nonexistent)
+            apiNames.alias, apiNames.nonexistent, norewrite)
     })
 }
 
