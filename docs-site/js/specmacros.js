@@ -223,7 +223,7 @@ function enameInlineMacro () {
     //})
 
     function enumExists(target) {
-        // This accommodates the rewrite? method, which changes the target of
+        // This accommodates the enumRewrite method, which changes the target of
         // ename: from the enum name to the enumerant name including it.
         return apiNames.consts.hasOwnProperty(target) || apiNames.enums.hasOwnProperty(target)
     }
