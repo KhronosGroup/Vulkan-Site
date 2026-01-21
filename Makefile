@@ -79,22 +79,22 @@ prep-docs:
 	   docs-site/js/
 
 prep-glsl:
-	make -C GLSL clean setup_antora
+	$(MAKE) -C GLSL clean setup_antora
 
 prep-guide:
-	make -C Vulkan-Guide -f antora/Makefile clean setup
+	$(MAKE) -C Vulkan-Guide -f antora/Makefile clean setup
 
 prep-samples:
 	cd Vulkan-Samples && cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
 prep-tutorial:
-	make -C Vulkan-Tutorial/antora setup_tutorial
+	$(MAKE) -C Vulkan-Tutorial/antora setup_tutorial
 
 # Build Antora site
 # CI is needed as an environment variable which helps cause suppression
 # of the "Edit this Page" link otherwise generated.
 export CI = true
-build-site:
+build-site: build-ui prep-sources
 	cd docs-site && npx antora antora-playbook.yml --stacktrace
 
 # Clean Antora site (but not prepared component sources)
