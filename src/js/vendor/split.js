@@ -1,5 +1,9 @@
-/*! Split.js - v1.6.0 */
+// Copyright (c) 2020 Nathan Cahill
+// Copyright (c) 2025 Sascha Willems
+// SPDX-License-Identifier: MIT
 
+/*! Split.js - v1.6.0 */
+/* Upstream source: https://github.com/nathancahill/split/blob/master/packages/splitjs/src/split.js */
 (function (global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
