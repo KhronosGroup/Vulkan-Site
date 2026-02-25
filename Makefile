@@ -97,6 +97,9 @@ export CI = true
 build-site:
 	cd docs-site && npx antora antora-playbook.yml --stacktrace
 
+build-uitest:
+	cd docs-site && npx antora --to-dir build/uitest uitest.yml --stacktrace
+
 # Clean Antora site (but not prepared component sources)
 clean:
 	rm -rf docs-site/build/site
