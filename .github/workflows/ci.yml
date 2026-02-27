@@ -1,4 +1,4 @@
-# Copyright 2021-2024 The Khronos Group, Inc.
+# Copyright 2021-2026 The Khronos Group, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # Github CI file for Vulkan Antora Guide
@@ -98,17 +98,12 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
+      - name: "REUSE license checker"
+        uses: fsfe/reuse-action@v6
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
-
-      - name: "checkout Antora UI"
-        id: checkout-ui
-        uses: actions/checkout@v4
-        with:
-          repository: KhronosGroup/antora-ui-khronos
-          path: ./antora-ui-khronos
-          ref: ${{ inputs.Antora_UI_Hash > '' && inputs.Antora_UI_Hash || 'main' }}
 
       - name: "Cache UI bundle"
         id: cache-ui
@@ -184,7 +179,6 @@ jobs:
 
       - name: "build the ui bundle"
         if: steps.cache-ui.outputs.cache-hit != 'true'
-        working-directory: antora-ui-khronos
         run: |
           ./node_modules/gulp/bin/gulp.js bundle
 
@@ -192,11 +186,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ui-bundle.zip
-          path: antora-ui-khronos/build/ui-bundle.zip
+          path: build/ui-bundle.zip
           retention-days: 5
 
       - name: "copy ui-bundle.zip to vulkan-site"
-        run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
+        run: cp build/ui-bundle.zip docs-site/
 
       - name: "Prepare Antora Playbook"
         run: |
