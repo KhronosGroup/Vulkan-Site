@@ -1,0 +1,28 @@
+name: PR Cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Delete PR folder
+        run: |
+          PR_FOLDER="PR-${{ github.event.number }}"
+          if [ -d "$PR_FOLDER" ]; then
+            rm -rf "$PR_FOLDER"
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git add .
+            git commit -m "Remove preview for PR #${{ github.event.number }}"
+            git push
+          else
+            echo "Folder $PR_FOLDER does not exist."
+          fi

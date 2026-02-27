@@ -8,6 +8,8 @@ name: CI
 # Controls when the action will run.
 on:
   push:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       Antora_UI_Hash:
@@ -43,6 +45,41 @@ on:
       Publish_Local:
         description: 'Should publish to the local github pages https://${GITHUB_REPOSITORY}.github.io'
         default: true
+        required: false
+        type: boolean
+      Include_Guide:
+        description: 'Should include the Vulkan-Guide module'
+        default: true
+        required: false
+        type: boolean
+      Include_GLSL:
+        description: 'Should include the GLSL module'
+        default: true
+        required: false
+        type: boolean
+      Include_Docs:
+        description: 'Should include the Vulkan-Docs module'
+        default: true
+        required: false
+        type: boolean
+      Include_Samples:
+        description: 'Should include the Vulkan-Samples module'
+        default: true
+        required: false
+        type: boolean
+      Include_Tutorial:
+        description: 'Should include the Vulkan-Tutorial module'
+        default: true
+        required: false
+        type: boolean
+      Include_Attachments:
+        description: 'Should include the attachments folder for the tutorial (cleans it first)'
+        default: true
+        required: false
+        type: boolean
+      Optimize_Images:
+        description: 'Should optimize the images folder'
+        default: false
         required: false
         type: boolean
 
@@ -127,6 +164,7 @@ jobs:
         run: npm install
 
       - name: "run npm install for Vulkan-Docs"
+        if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
         working-directory: Vulkan-Docs
         run: npm install
 
@@ -135,8 +173,8 @@ jobs:
           sudo gem install rouge
           sudo apt-get update
           sudo apt install xorg-dev libglu1-mesa-dev
-          sudo apt-get install -y asciidoctor
-          pip install lxml
+          sudo apt-get install -y asciidoctor optipng jpegoptim
+          pip install lxml PyYAML
 
       - name: "build the ui bundle"
         working-directory: antora-ui-khronos
@@ -155,15 +193,31 @@ jobs:
       - name: "copy ui-bundle.zip to vulkan-site"
         run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
 
+      - name: "Prepare Antora Playbook"
+        run: |
+          python3 docs-site/prepare_playbook.py \
+            --guide "${{ github.event.inputs.Include_Guide || 'true' }}" \
+            --glsl "${{ github.event.inputs.Include_GLSL || 'true' }}" \
+            --docs "${{ github.event.inputs.Include_Docs || 'true' }}" \
+            --samples "${{ github.event.inputs.Include_Samples || 'true' }}" \
+            --tutorial "${{ github.event.inputs.Include_Tutorial || 'true' }}" \
+            --attachments "${{ github.event.inputs.Include_Attachments || 'true' }}" \
+            --optimize "${{ github.event.inputs.Optimize_Images || 'false' }}"
+
       - name: "prepare tutorials"
+        if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         working-directory: Vulkan-Tutorial/antora
         run: |
           make setup_tutorial
 
       - name: "prepare repos with make"
-        run: make prep-sources
+        run: |
+          if [[ "${{ github.event.inputs.Include_GLSL || 'true' }}" != "false" ]]; then make prep-glsl; fi
+          if [[ "${{ github.event.inputs.Include_Guide || 'true' }}" != "false" ]]; then make prep-guide; fi
+          if [[ "${{ github.event.inputs.Include_Docs || 'true' }}" != "false" ]]; then make prep-docs; fi
 
       - name: "prepare samples"
+        if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
@@ -186,3 +240,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site
+          destination_dir: ${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || '' }}
+          keep_files: true
