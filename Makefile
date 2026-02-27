@@ -29,10 +29,10 @@
 # 'clean' - cleans the Antora site
 
 # UI and component repositories which must exist as subdirectories to build
-REPONAMES = antora-ui-khronos GLSL Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
+REPONAMES = GLSL Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
 
 # Directories (mostly repos) with their own npm infrastructure
-DIRSWITHNODE = antora-ui-khronos docs-site Vulkan-Docs
+DIRSWITHNODE = . docs-site Vulkan-Docs
 
 # Initialize subdirectory repositories and modules
 # There are no longer any modules
@@ -44,8 +44,8 @@ init: subrepos
 	# Don't clean the cache (see 'npm cache clean' output for more)
 	# npm cache clean --force
 	for dir in $(DIRSWITHNODE) ; do \
-	    (echo Installing node modules in $$dir: && cd $$dir && npm install) ; \
-	done
+	    (echo Installing node modules in $$dir: && cd $$dir && npm install) & \
+	done ; wait
 
 subrepos:
 	for repo in $(REPONAMES) ; do \
@@ -59,12 +59,11 @@ subrepos:
 
 # Build UI bundle
 build-ui:
-	cd antora-ui-khronos && \
-	    npx update-browserslist-db@latest && \
+	npx update-browserslist-db@latest && \
 	    ./node_modules/gulp/bin/gulp.js --version && \
 	    ./node_modules/gulp/bin/gulp.js bundle
-	# Creates antora-ui-khronos/build/ui-bundle.zip
-	cp antora-ui-khronos/build/ui-bundle.zip docs-site
+	# Creates build/ui-bundle.zip
+	cp build/ui-bundle.zip docs-site
 
 # Prepare component antora sources
 prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
@@ -72,7 +71,7 @@ prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
 prep-docs:
-	cd Vulkan-Docs && ./makeSpec -clean -spec all setup_antora
+	cd Vulkan-Docs && ./makeSpec -clean -spec all setup_antora -j$(shell nproc)
 	cp $(GENPATH)/apimap.cjs \
 	   $(GENPATH)/pageMap.cjs \
 	   $(GENPATH)/xrefMap.cjs \
