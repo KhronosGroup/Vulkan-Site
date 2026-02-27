@@ -103,13 +103,6 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
-      - name: "checkout antora-ui-khronos"
-        uses: actions/checkout@v4
-        with:
-          repository: KhronosGroup/antora-ui-khronos
-          path: ./antora-ui-khronos
-          ref: ${{ github.event.inputs.Antora_UI_Hash || inputs.Antora_UI_Hash || 'main' }}
-
       - name: "REUSE license checker"
         uses: fsfe/reuse-action@v6
 
@@ -121,8 +114,8 @@ jobs:
         id: cache-ui
         uses: actions/cache@v4
         with:
-          path: antora-ui-khronos/build/ui-bundle.zip
-          key: ${{ runner.os }}-ui-${{ hashFiles('antora-ui-khronos/src/**', 'antora-ui-khronos/package-lock.json', 'antora-ui-khronos/gulpfile.js') }}
+          path: build/ui-bundle.zip
+          key: ${{ runner.os }}-ui-${{ hashFiles('src/**', 'package-lock.json', 'gulpfile.js') }}
 
       - name: "checkout GLSL"
         if: ${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}
@@ -171,14 +164,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: |
             docs-site/package-lock.json
-            antora-ui-khronos/package-lock.json
+            package-lock.json
             Vulkan-Docs/package-lock.json
 
       - name: "run npm installs (parallel)"
         run: |
           (cd docs-site && npm ci) &
           if [ -d "Vulkan-Docs" ]; then (cd Vulkan-Docs && npm ci) & fi
-          if [ "${{ steps.cache-ui.outputs.cache-hit }}" != "true" ]; then (cd antora-ui-khronos && npm ci) & fi
+          if [ "${{ steps.cache-ui.outputs.cache-hit }}" != "true" ]; then npm ci & fi
           wait
 
       - name: "ensure we have all dependencies for building/searching/highlighting"
@@ -192,18 +185,17 @@ jobs:
       - name: "build the ui bundle"
         if: steps.cache-ui.outputs.cache-hit != 'true'
         run: |
-          cd antora-ui-khronos
           ./node_modules/gulp/bin/gulp.js bundle
 
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ui-bundle.zip
-          path: antora-ui-khronos/build/ui-bundle.zip
+          path: build/ui-bundle.zip
           retention-days: 5
 
       - name: "copy ui-bundle.zip to vulkan-site"
-        run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
+        run: cp build/ui-bundle.zip docs-site/
 
       - name: "Prepare Antora Playbook"
         run: |
