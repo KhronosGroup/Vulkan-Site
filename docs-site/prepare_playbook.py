@@ -81,22 +81,30 @@ def main():
     # Handle image optimization
     if args.optimize.lower() == 'true':
         print("Optimizing images...")
-        # Search for images in all checked out repos
-        for root, dirs, files in os.walk('.'):
-            if 'node_modules' in dirs:
-                dirs.remove('node_modules')
-            if '.git' in dirs:
-                dirs.remove('.git')
-            if 'build' in dirs:
-                dirs.remove('build')
+        # Only optimize images in included modules to save time
+        included_dirs = ['.']
+        for name, included in modules.items():
+            if included:
+                if os.path.exists(name):
+                    included_dirs.append(name)
+        
+        for target_dir in included_dirs:
+            print(f"Scanning {target_dir} for images...")
+            for root, dirs, files in os.walk(target_dir):
+                if 'node_modules' in dirs:
+                    dirs.remove('node_modules')
+                if '.git' in dirs:
+                    dirs.remove('.git')
+                if 'build' in dirs:
+                    dirs.remove('build')
 
-            for f in files:
-                if f.lower().endswith('.png'):
-                    path = os.path.join(root, f)
-                    subprocess.run(['optipng', '-o2', path])
-                elif f.lower().endswith(('.jpg', '.jpeg')):
-                    path = os.path.join(root, f)
-                    subprocess.run(['jpegoptim', '--strip-all', '-m80', path])
+                for f in files:
+                    if f.lower().endswith('.png'):
+                        path = os.path.join(root, f)
+                        subprocess.run(['optipng', '-o2', path])
+                    elif f.lower().endswith(('.jpg', '.jpeg')):
+                        path = os.path.join(root, f)
+                        subprocess.run(['jpegoptim', '--strip-all', '-m80', path])
 
 if __name__ == '__main__':
     main()
