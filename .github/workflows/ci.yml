@@ -82,6 +82,11 @@ on:
         default: false
         required: false
         type: boolean
+      PR_Number:
+        description: 'PR number to publish to (leave empty for main site)'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   build:
@@ -231,6 +236,8 @@ jobs:
 
       - name: "build (npx) with stacktrace"
         working-directory: docs-site
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
           npx antora antora-playbook.yml --stacktrace --cache-dir .antora-cache
           touch build/site/.nojekyll
@@ -248,19 +255,19 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site
-          destination_dir: ${{ github.event.pull_request && format('PR-{0}', github.event.number) || '' }}
+          destination_dir: ${{ (github.event.inputs.PR_Number != '' && format('PR-{0}', github.event.inputs.PR_Number)) || (github.event.pull_request && format('PR-{0}', github.event.number)) || '' }}
           keep_files: true
 
       - name: Comment on PR
-        if: github.event.pull_request && success()
+        if: (github.event.pull_request || (github.event_name == 'workflow_dispatch' && github.event.inputs.PR_Number != '')) && success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_NUMBER=${{ github.event.number }}
+          PR_NUMBER=${{ github.event.inputs.PR_Number || github.event.number }}
           PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${PR_NUMBER}/"
           COMMENT_MARKER="<!-- preview-link-comment -->"
           EXISTING_COMMENT=$(gh pr view $PR_NUMBER --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id")
-          
+
           if [ -z "$EXISTING_COMMENT" ]; then
             gh pr comment $PR_NUMBER --body "$COMMENT_MARKER
           Preview site published: $PREVIEW_URL"
