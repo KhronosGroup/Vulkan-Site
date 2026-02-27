@@ -1,4 +1,4 @@
-# Copyright 2021-2024 The Khronos Group, Inc.
+# Copyright 2021-2026 The Khronos Group, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # Github CI file for Vulkan Antora Guide
@@ -10,11 +10,6 @@ on:
   push:
   workflow_dispatch:
     inputs:
-      Antora_UI_Hash:
-        description: 'Antora UI hash (branch name or tag) to use passed from the caller workflow'
-        default: 'main'
-        required: false
-        type: string
       GLSL_Commit_Hash:
         description: 'GLSL Commit hash (branch name or tag) to use passed from the caller workflow'
         default: 'main'
@@ -57,16 +52,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: "REUSE license checker"
+        uses: fsfe/reuse-action@v6
+
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
-
-      - name: "checkout Antora UI"
-        uses: actions/checkout@v4
-        with:
-          repository: KhronosGroup/antora-ui-khronos
-          path: ./antora-ui-khronos
-          ref: ${{ inputs.Antora_UI_Hash > '' && inputs.Antora_UI_Hash || 'main' }}
 
       - name: "checkout GLSL"
         uses: actions/checkout@v4
@@ -119,7 +110,6 @@ jobs:
         run: npm cache clean --force
 
       - name: "run npm install for ui bundle"
-        working-directory: antora-ui-khronos
         run: npm install
 
       - name: "run npm install for docs-site"
@@ -139,7 +129,6 @@ jobs:
           pip install lxml
 
       - name: "build the ui bundle"
-        working-directory: antora-ui-khronos
         run: |
           npx update-browserslist-db@latest
           ./node_modules/gulp/bin/gulp.js --version
@@ -149,11 +138,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ui-bundle.zip
-          path: antora-ui-khronos/build/ui-bundle.zip
+          path: build/ui-bundle.zip
           retention-days: 5
 
       - name: "copy ui-bundle.zip to vulkan-site"
-        run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
+        run: cp build/ui-bundle.zip docs-site/
 
       - name: "prepare tutorials"
         working-directory: Vulkan-Tutorial/antora
