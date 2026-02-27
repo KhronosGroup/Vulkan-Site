@@ -164,7 +164,7 @@ jobs:
         run: npm install
 
       - name: "run npm install for Vulkan-Docs"
-        if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
+        if: ${{ github.event.inputs.Include_Docs != 'false' }}
         working-directory: Vulkan-Docs
         run: npm install
 
@@ -196,28 +196,28 @@ jobs:
       - name: "Prepare Antora Playbook"
         run: |
           python3 docs-site/prepare_playbook.py \
-            --guide "${{ github.event.inputs.Include_Guide || 'true' }}" \
-            --glsl "${{ github.event.inputs.Include_GLSL || 'true' }}" \
-            --docs "${{ github.event.inputs.Include_Docs || 'true' }}" \
-            --samples "${{ github.event.inputs.Include_Samples || 'true' }}" \
-            --tutorial "${{ github.event.inputs.Include_Tutorial || 'true' }}" \
-            --attachments "${{ github.event.inputs.Include_Attachments || 'true' }}" \
-            --optimize "${{ github.event.inputs.Optimize_Images || 'false' }}"
+            --guide "${{ github.event.inputs.Include_Guide != 'false' }}" \
+            --glsl "${{ github.event.inputs.Include_GLSL != 'false' }}" \
+            --docs "${{ github.event.inputs.Include_Docs != 'false' }}" \
+            --samples "${{ github.event.inputs.Include_Samples != 'false' }}" \
+            --tutorial "${{ github.event.inputs.Include_Tutorial != 'false' }}" \
+            --attachments "${{ github.event.inputs.Include_Attachments != 'false' }}" \
+            --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
 
       - name: "prepare tutorials"
-        if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
+        if: ${{ github.event.inputs.Include_Tutorial != 'false' }}
         working-directory: Vulkan-Tutorial/antora
         run: |
           make setup_tutorial
 
       - name: "prepare repos with make"
         run: |
-          if [[ "${{ github.event.inputs.Include_GLSL || 'true' }}" != "false" ]]; then make prep-glsl; fi
-          if [[ "${{ github.event.inputs.Include_Guide || 'true' }}" != "false" ]]; then make prep-guide; fi
-          if [[ "${{ github.event.inputs.Include_Docs || 'true' }}" != "false" ]]; then make prep-docs; fi
+          if [[ "${{ github.event.inputs.Include_GLSL != 'false' }}" == "true" ]]; then make prep-glsl; fi
+          if [[ "${{ github.event.inputs.Include_Guide != 'false' }}" == "true" ]]; then make prep-guide; fi
+          if [[ "${{ github.event.inputs.Include_Docs != 'false' }}" == "true" ]]; then make prep-docs; fi
 
       - name: "prepare samples"
-        if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
+        if: ${{ github.event.inputs.Include_Samples != 'false' }}
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
@@ -235,10 +235,10 @@ jobs:
           retention-days: 5
 
       - name: Publish to GitHub Pages
-        if: "${{ github.event.inputs.Publish_Local || github.event_name == 'pull_request'}}"
+        if: "${{ github.event.inputs.Publish_Local != 'false' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site
-          destination_dir: ${{ github.event_name == 'pull_request' && format('PR-{0}', github.event.number) || '' }}
+          destination_dir: ${{ github.event_name == 'pull_request' && github.event.number || '' }}
           keep_files: true
