@@ -1,3 +1,5 @@
+# Copyright 20206 Holochip Inc.
+# SPDX-License-Identifier: Apache-2.0
 
 import yaml
 import os
@@ -86,7 +88,7 @@ def main():
             if included:
                 if os.path.exists(name):
                     included_dirs.append(name)
-        
+
         for target_dir in included_dirs:
             print(f"Scanning {target_dir} for images...")
             for root, dirs, files in os.walk(target_dir):
