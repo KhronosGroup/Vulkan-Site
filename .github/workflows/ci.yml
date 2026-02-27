@@ -8,7 +8,7 @@ name: CI
 # Controls when the action will run.
 on:
   push:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
@@ -86,87 +86,93 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
       # access it
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
 
       - name: "checkout Antora UI"
+        id: checkout-ui
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/antora-ui-khronos
           path: ./antora-ui-khronos
           ref: ${{ inputs.Antora_UI_Hash > '' && inputs.Antora_UI_Hash || 'main' }}
 
+      - name: "Cache UI bundle"
+        id: cache-ui
+        uses: actions/cache@v4
+        with:
+          path: antora-ui-khronos/build/ui-bundle.zip
+          key: ${{ runner.os }}-ui-${{ hashFiles('antora-ui-khronos/src/**', 'antora-ui-khronos/package-lock.json', 'antora-ui-khronos/gulpfile.js') }}
+
       - name: "checkout GLSL"
+        if: ${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/GLSL
           path: ./GLSL
           ref: ${{ inputs.GLSL_Commit_Hash > '' && inputs.GLSL_Commit_Hash || 'main' }}
-          submodules: recursive
 
       - name: "checkout Vulkan Guide"
+        if: ${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Guide
           path: ./Vulkan-Guide
           ref: ${{ inputs.Guide_Commit_Hash > '' && inputs.Guide_Commit_Hash || 'main' }}
-          submodules: recursive
 
       - name: "Checkout Vulkan Docs"
+        if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Docs
           path: ./Vulkan-Docs
           ref: ${{ inputs.DOC_Commit_Hash > '' && inputs.DOC_Commit_Hash || 'main' }}
-          submodules: recursive
 
       - name: "Checkout Vulkan Samples"
+        if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Samples
           path: ./Vulkan-Samples
           ref: ${{ inputs.Samples_Commit_Hash > '' && inputs.Samples_Commit_Hash || 'main' }}
-          submodules: recursive
 
       - name: "Checkout Vulkan Tutorial"
+        if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
           repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
           ref: ${{ inputs.Tutorial_Commit_Hash > '' && inputs.Tutorial_Commit_Hash || 'main' }}
-          submodules: recursive
 
       - name: "setup npm"
         uses: actions/setup-node@v4
         with:
           node-version: '20.12.2'
           cache: 'npm'
-          cache-dependency-path: docs-site/package-lock.json
+          cache-dependency-path: |
+            docs-site/package-lock.json
+            antora-ui-khronos/package-lock.json
+            Vulkan-Docs/package-lock.json
 
-      - name: "force clear the npm cache"
-        run: npm cache clean --force
-
-      - name: "run npm install for ui bundle"
-        working-directory: antora-ui-khronos
-        run: npm install
-
-      - name: "run npm install for docs-site"
-        working-directory: docs-site
-        run: npm install
-
-      - name: "run npm install for Vulkan-Docs"
-        if: ${{ github.event.inputs.Include_Docs != 'false' }}
-        working-directory: Vulkan-Docs
-        run: npm install
+      - name: "run npm installs (parallel)"
+        run: |
+          (cd docs-site && npm ci) &
+          if [ -d "Vulkan-Docs" ]; then (cd Vulkan-Docs && npm ci) & fi
+          if [ "${{ steps.cache-ui.outputs.cache-hit }}" != "true" ]; then (cd antora-ui-khronos && npm ci) & fi
+          wait
 
       - name: "ensure we have all dependencies for building/searching/highlighting"
         run: |
@@ -177,10 +183,9 @@ jobs:
           pip install lxml PyYAML
 
       - name: "build the ui bundle"
+        if: steps.cache-ui.outputs.cache-hit != 'true'
         working-directory: antora-ui-khronos
         run: |
-          npx update-browserslist-db@latest
-          ./node_modules/gulp/bin/gulp.js --version
           ./node_modules/gulp/bin/gulp.js bundle
 
       - name: 'Upload Artifact'
@@ -196,35 +201,44 @@ jobs:
       - name: "Prepare Antora Playbook"
         run: |
           python3 docs-site/prepare_playbook.py \
-            --guide "${{ github.event.inputs.Include_Guide != 'false' }}" \
-            --glsl "${{ github.event.inputs.Include_GLSL != 'false' }}" \
-            --docs "${{ github.event.inputs.Include_Docs != 'false' }}" \
-            --samples "${{ github.event.inputs.Include_Samples != 'false' }}" \
-            --tutorial "${{ github.event.inputs.Include_Tutorial != 'false' }}" \
-            --attachments "${{ github.event.inputs.Include_Attachments != 'false' }}" \
+            --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
+            --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
+            --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
+            --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
+            --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
+            --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
             --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
 
       - name: "prepare tutorials"
-        if: ${{ github.event.inputs.Include_Tutorial != 'false' }}
+        if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         working-directory: Vulkan-Tutorial/antora
         run: |
           make setup_tutorial
 
-      - name: "prepare repos with make"
+      - name: "prepare repos with make (parallel)"
         run: |
-          if [[ "${{ github.event.inputs.Include_GLSL != 'false' }}" == "true" ]]; then make prep-glsl; fi
-          if [[ "${{ github.event.inputs.Include_Guide != 'false' }}" == "true" ]]; then make prep-guide; fi
-          if [[ "${{ github.event.inputs.Include_Docs != 'false' }}" == "true" ]]; then make prep-docs; fi
+          if [[ "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" == "true" ]]; then make prep-glsl & fi
+          if [[ "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" == "true" ]]; then make prep-guide & fi
+          if [[ "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" == "true" ]]; then make prep-docs & fi
+          wait
 
       - name: "prepare samples"
-        if: ${{ github.event.inputs.Include_Samples != 'false' }}
+        if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
+
+      - name: "Cache Antora content"
+        uses: actions/cache@v4
+        with:
+          path: docs-site/.antora-cache
+          key: ${{ runner.os }}-antora-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-antora-
 
       - name: "build (npx) with stacktrace"
         working-directory: docs-site
         run: |
-          npx antora antora-playbook.yml --stacktrace
+          npx antora antora-playbook.yml --stacktrace --cache-dir .antora-cache
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
@@ -235,10 +249,25 @@ jobs:
           retention-days: 5
 
       - name: Publish to GitHub Pages
-        if: "${{ github.event.inputs.Publish_Local != 'false' && (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' && (github.event.pull_request || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs-site/build/site
-          destination_dir: ${{ github.event_name == 'pull_request' && github.event.number || '' }}
+          destination_dir: ${{ github.event.pull_request && format('PR-{0}', github.event.number) || '' }}
           keep_files: true
+
+      - name: Comment on PR
+        if: github.event.pull_request && success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.number }}
+          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${PR_NUMBER}/"
+          COMMENT_MARKER="<!-- preview-link-comment -->"
+          EXISTING_COMMENT=$(gh pr view $PR_NUMBER --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id")
+          
+          if [ -z "$EXISTING_COMMENT" ]; then
+            gh pr comment $PR_NUMBER --body "$COMMENT_MARKER
+          Preview site published: $PREVIEW_URL"
+          fi

@@ -1,12 +1,14 @@
 name: PR Cleanup
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
 
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout gh-pages
         uses: actions/checkout@v4
@@ -15,7 +17,7 @@ jobs:
 
       - name: Delete PR folder
         run: |
-          PR_FOLDER="${{ github.event.number }}"
+          PR_FOLDER="PR-${{ github.event.number }}"
           if [ -d "$PR_FOLDER" ]; then
             rm -rf "$PR_FOLDER"
             git config user.name github-actions

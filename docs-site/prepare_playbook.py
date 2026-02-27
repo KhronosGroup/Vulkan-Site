@@ -70,13 +70,12 @@ def main():
             print(f"Removing attachments: {attachments_dir}")
             subprocess.run(['rm', '-rf', attachments_dir])
     elif args.attachments.lower() == 'true':
-        # "Cleaning" it - what does this mean? Let's assume removing some known large types
+        # "Cleaning" it - remove known large types to save space
         attachments_dir = 'Vulkan-Tutorial/antora/modules/ROOT/attachments'
         if os.path.exists(attachments_dir):
             print(f"Cleaning attachments: {attachments_dir}")
-            # Example: remove any .zip or .tar.gz files to save space
-            subprocess.run(['find', attachments_dir, '-name', '*.zip', '-delete'])
-            subprocess.run(['find', attachments_dir, '-name', '*.tar.gz', '-delete'])
+            # Remove any .zip, .tar.gz, .pdf, .mp4, or .mov files
+            subprocess.run(['find', attachments_dir, '-type', 'f', '(', '-name', '*.zip', '-o', '-name', '*.tar.gz', '-o', '-name', '*.pdf', '-o', '-name', '*.mp4', '-o', '-name', '*.mov', ')', '-delete'])
 
     # Handle image optimization
     if args.optimize.lower() == 'true':
