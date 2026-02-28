@@ -239,7 +239,7 @@ jobs:
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
-          npx antora antora-playbook.yml --stacktrace --cache-dir .antora-cache
+          npx antora antora-playbook.yml --cache-dir .antora-cache
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
@@ -259,11 +259,11 @@ jobs:
           keep_files: true
 
       - name: Comment on PR
-        if: (github.event.pull_request || (github.event_name == 'workflow_dispatch' && github.event.inputs.PR_Number != '')) && success()
+        if: github.event.pull_request && success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_NUMBER=${{ github.event.inputs.PR_Number || github.event.number }}
+          PR_NUMBER=${{ github.event.number }}
           PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${PR_NUMBER}/"
           COMMENT_MARKER="<!-- preview-link-comment -->"
           EXISTING_COMMENT=$(gh pr view $PR_NUMBER --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id")

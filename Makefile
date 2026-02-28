@@ -94,7 +94,7 @@ prep-tutorial:
 # of the "Edit this Page" link otherwise generated.
 export CI = true
 build-site:
-	cd docs-site && npx antora antora-playbook.yml --stacktrace
+	cd docs-site && npx antora antora-playbook.yml --cache-dir .antora-cache
 
 # Clean Antora site (but not prepared component sources)
 clean:
