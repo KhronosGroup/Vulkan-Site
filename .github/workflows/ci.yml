@@ -91,6 +91,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
     permissions:
       contents: write
       pull-requests: write
@@ -251,12 +254,13 @@ jobs:
 
       - name: Publish to GitHub Pages
         if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' && (github.event.pull_request || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
-        uses: peaceiris/actions-gh-pages@v4
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs-site/build/site
-          destination_dir: ${{ (github.event.inputs.PR_Number != '' && format('PR-{0}', github.event.inputs.PR_Number)) || (github.event.pull_request && format('PR-{0}', github.event.number)) || '' }}
-          keep_files: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          folder: docs-site/build/site
+          target-folder: ${{ (github.event.inputs.PR_Number != '' && format('PR-{0}', github.event.inputs.PR_Number)) || (github.event.pull_request && format('PR-{0}', github.event.number)) || '' }}
+          branch: gh-pages
+          clean: false
 
       - name: Comment on PR
         if: github.event.pull_request && success()
