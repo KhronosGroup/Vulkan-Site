@@ -263,12 +263,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_NUMBER=${{ github.event.number }}
-          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${PR_NUMBER}/"
-          COMMENT_MARKER="<!-- preview-link-comment -->"
-          EXISTING_COMMENT=$(gh pr view $PR_NUMBER --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id")
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          echo "Debug: PR_URL=$PR_URL"
+          echo "Debug: GITHUB_REPOSITORY=${{ github.repository }}"
+          echo "Debug: GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
 
-          if [ -z "$EXISTING_COMMENT" ]; then
-            gh pr comment $PR_NUMBER --body "$COMMENT_MARKER
+          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${{ github.event.pull_request.number }}/"
+          COMMENT_MARKER="<!-- preview-link-comment -->"
+          EXISTING_COMMENT=$(gh pr view "$PR_URL" --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id" || echo "")
+
+          if [ -n "$PR_URL" ] && [ -z "$EXISTING_COMMENT" ]; then
+            gh pr comment "$PR_URL" --body "$COMMENT_MARKER
           Preview site published: $PREVIEW_URL"
           fi
