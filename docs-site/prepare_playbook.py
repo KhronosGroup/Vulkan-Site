@@ -76,8 +76,23 @@ def main():
         attachments_dir = 'Vulkan-Tutorial/antora/modules/ROOT/attachments'
         if os.path.exists(attachments_dir):
             print(f"Cleaning attachments: {attachments_dir}")
-            # Remove any .zip, .tar.gz, .pdf, .mp4, or .mov files
-            subprocess.run(['find', attachments_dir, '-type', 'f', '(', '-name', '*.zip', '-o', '-name', '*.tar.gz', '-o', '-name', '*.pdf', '-o', '-name', '*.mp4', '-o', '-name', '*.mov', ')', '-delete'])
+            # Remove known large directories
+            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build']:
+                subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-exec', 'rm', '-rf', '{}', '+'])
+            # Remove any .zip, .tar.gz, .pdf, .mp4, .mov, .whl, .nupkg, .tgz, .so, .exe, .bin files
+            subprocess.run(['find', attachments_dir, '-type', 'f', '(',
+                            '-name', '*.zip', '-o',
+                            '-name', '*.tar.gz', '-o',
+                            '-name', '*.pdf', '-o',
+                            '-name', '*.mp4', '-o',
+                            '-name', '*.mov', '-o',
+                            '-name', '*.whl', '-o',
+                            '-name', '*.nupkg', '-o',
+                            '-name', '*.tgz', '-o',
+                            '-name', '*.so*', '-o',
+                            '-name', '*.exe', '-o',
+                            '-name', '*.bin',
+                            ')', '-delete'])
 
     # Handle image optimization
     if args.optimize.lower() == 'true':
