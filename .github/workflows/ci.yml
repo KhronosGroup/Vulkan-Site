@@ -245,12 +245,19 @@ jobs:
           npx antora antora-playbook.yml --cache-dir .antora-cache
           touch build/site/.nojekyll
 
-      - name: 'Upload site artifact'
-        uses: actions/upload-artifact@v4
+      - name: "Checkout gh-pages for deduplication"
+        if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
+        uses: actions/checkout@v4
         with:
-          name: fullSite
-          path: docs-site/build/site
-          retention-days: 5
+          ref: gh-pages
+          path: gh-pages-base
+          fetch-depth: 1
+
+      - name: "Deduplicate PR preview"
+        if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
+        run: |
+          python3 docs-site/economize_preview.py --site docs-site/build/site --base gh-pages-base
+          rm -rf gh-pages-base
 
       - name: "Checkout gh-pages for deduplication"
         if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
@@ -277,6 +284,7 @@ jobs:
           target-folder: ${{ (github.event.inputs.PR_Number != '' && format('PR-{0}', github.event.inputs.PR_Number)) || (github.event.pull_request && format('PR-{0}', github.event.number)) || '' }}
           branch: gh-pages
           clean: false
+          single-commit: true
 
       - name: Comment on PR
         if: github.event.pull_request && success()
