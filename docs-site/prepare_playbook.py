@@ -77,7 +77,7 @@ def main():
         if os.path.exists(attachments_dir):
             print(f"Cleaning attachments: {attachments_dir}")
             # Remove known large directories
-            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build', 'lib', 'ort_gpu', 'build_integration_test', 'Assets', 'simple_engine']:
+            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build', 'lib', 'ort_gpu', 'build_integration_test', 'Assets', 'simple_engine', '__pycache__']:
                 subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-prune', '-exec', 'rm', '-rf', '{}', '+'])
             # Remove any large files
             subprocess.run(['find', attachments_dir, '-type', 'f', '(',
@@ -96,7 +96,12 @@ def main():
                             '-name', '*.onnx*', '-o',
                             '-name', '*.pth', '-o',
                             '-name', '*.vmfb', '-o',
-                            '-name', '*.mlir'
+                            '-name', '*.mlir', '-o',
+                            '-name', '*.a', '-o',
+                            '-name', '*.lib', '-o',
+                            '-name', '*.dll', '-o',
+                            '-name', '*.node', '-o',
+                            '-name', '*.pyc'
                             ')', '-delete'])
 
     # Handle image optimization
