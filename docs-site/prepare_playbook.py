@@ -77,9 +77,9 @@ def main():
         if os.path.exists(attachments_dir):
             print(f"Cleaning attachments: {attachments_dir}")
             # Remove known large directories
-            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build']:
-                subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-exec', 'rm', '-rf', '{}', '+'])
-            # Remove any .zip, .tar.gz, .pdf, .mp4, .mov, .whl, .nupkg, .tgz, .so, .exe, .bin files
+            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build', 'lib', 'ort_gpu', 'build_integration_test', 'Assets', 'simple_engine']:
+                subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-prune', '-exec', 'rm', '-rf', '{}', '+'])
+            # Remove any large files
             subprocess.run(['find', attachments_dir, '-type', 'f', '(',
                             '-name', '*.zip', '-o',
                             '-name', '*.tar.gz', '-o',
@@ -91,7 +91,12 @@ def main():
                             '-name', '*.tgz', '-o',
                             '-name', '*.so*', '-o',
                             '-name', '*.exe', '-o',
-                            '-name', '*.bin',
+                            '-name', '*.bin', '-o',
+                            '-name', '*.tar.xz', '-o',
+                            '-name', '*.onnx*', '-o',
+                            '-name', '*.pth', '-o',
+                            '-name', '*.vmfb', '-o',
+                            '-name', '*.mlir'
                             ')', '-delete'])
 
     # Handle image optimization
