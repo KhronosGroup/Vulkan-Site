@@ -92,7 +92,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
       cancel-in-progress: true
     permissions:
       contents: write
@@ -244,20 +244,6 @@ jobs:
         run: |
           npx antora antora-playbook.yml --cache-dir .antora-cache
           touch build/site/.nojekyll
-
-      - name: "Checkout gh-pages for deduplication"
-        if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages-base
-          fetch-depth: 1
-
-      - name: "Deduplicate PR preview"
-        if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
-        run: |
-          python3 docs-site/economize_preview.py --site docs-site/build/site --base gh-pages-base
-          rm -rf gh-pages-base
 
       - name: "Checkout gh-pages for deduplication"
         if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
