@@ -97,6 +97,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      pages: write
+      id-token: write
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
@@ -200,17 +202,6 @@ jobs:
       - name: "copy ui-bundle.zip to vulkan-site"
         run: cp build/ui-bundle.zip docs-site/
 
-      - name: "Prepare Antora Playbook"
-        run: |
-          python3 docs-site/prepare_playbook.py \
-            --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
-            --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
-            --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
-            --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
-            --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
-            --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
-            --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
-
       - name: "prepare tutorials"
         if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         working-directory: Vulkan-Tutorial/antora
@@ -229,6 +220,17 @@ jobs:
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
+      - name: "Prepare Antora Playbook"
+        run: |
+          python3 docs-site/prepare_playbook.py \
+            --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
+            --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
+            --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
+            --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
+            --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
+            --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
+            --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
+
       - name: "Cache Antora content"
         uses: actions/cache@v4
         with:
@@ -245,32 +247,117 @@ jobs:
           npx antora antora-playbook.yml --cache-dir .antora-cache
           touch build/site/.nojekyll
 
-      - name: "Checkout gh-pages for deduplication"
-        if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
+      - name: 'Upload site artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fullSite
+          path: docs-site/build
+          retention-days: 5
+
+      - name: "Checkout gh-pages for staging"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
         uses: actions/checkout@v4
         with:
           ref: gh-pages
-          path: gh-pages-base
+          path: public-site
           fetch-depth: 1
 
-      - name: "Deduplicate PR preview"
-        if: ${{ github.event.pull_request || (github.event.inputs.PR_Number != '') }}
+      - name: Stage deployment
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        id: stage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 docs-site/economize_preview.py --site docs-site/build/site --base gh-pages-base
-          rm -rf gh-pages-base
+          set -euo pipefail
 
-      - name: Publish to GitHub Pages
-        # This step pushes the built site to the gh-pages branch.
-        # Ensure that the repository settings for GitHub Pages are set to "Deploy from a branch" with "gh-pages" selected.
-        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' && (github.event.pull_request || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
-        uses: JamesIves/github-pages-deploy-action@v4
+          # Determine if this is a PR build or a main-site build.
+          IS_PR="false"
+          PR_NUM=""
+          if [[ "${{ github.event.pull_request }}" != "" || "${{ github.event.inputs.PR_Number }}" != "" ]]; then
+            IS_PR="true"
+            PR_NUM="${{ github.event.inputs.PR_Number }}"
+            if [ -z "$PR_NUM" ]; then PR_NUM="${{ github.event.number }}"; fi
+          fi
+          echo "is_pr=${IS_PR}" >> "$GITHUB_OUTPUT"
+          echo "pr_num=${PR_NUM}" >> "$GITHUB_OUTPUT"
+
+          # Defense in depth: strip any Assets/assets dirs the builder may have emitted.
+          find docs-site/build/site -type d \( -name "Assets" -o -name "assets" \) -exec rm -rf {} + || true
+          touch docs-site/build/site/.nojekyll
+
+          # 1) Update the gh-pages checkout with the freshly built content.
+          if [[ "$IS_PR" == "true" ]]; then
+            TARGET_DIR="public-site/PR-${PR_NUM}"
+            echo "Staging preview for PR ${PR_NUM} in ${TARGET_DIR}"
+            mkdir -p "$TARGET_DIR"
+            rsync -a --delete docs-site/build/site/ "$TARGET_DIR/"
+          else
+            echo "Staging main site (preserving PR-* previews on gh-pages)"
+            rsync -a --delete --exclude='PR-*' --exclude='.git' docs-site/build/site/ public-site/
+            touch public-site/.nojekyll
+          fi
+
+          # 2) Prune PR-* folders whose PR is no longer open. When a PR is merged
+          #    or closed, pr-cleanup.yml also removes its folder, but this acts
+          #    as a safety net and keeps the artifact from carrying stale PRs.
+          if command -v gh >/dev/null 2>&1; then
+            OPEN_PRS=$(gh pr list --repo "${{ github.repository }}" --state open \
+              --json number --jq '.[].number' 2>/dev/null || echo "")
+            if [ -n "${OPEN_PRS}" ]; then
+              OPEN_SET=" $(echo "$OPEN_PRS" | tr '\n' ' ') "
+              for d in public-site/PR-*; do
+                [ -d "$d" ] || continue
+                n="${d##*/PR-}"
+                if ! echo "$OPEN_SET" | grep -q " ${n} "; then
+                  # Keep the PR currently being built, just in case.
+                  if [[ "$IS_PR" == "true" && "$n" == "${PR_NUM}" ]]; then continue; fi
+                  echo "Pruning closed PR folder: $d"
+                  rm -rf "$d"
+                fi
+              done
+            fi
+          fi
+
+          # 3) Build the Pages artifact payload from the full gh-pages tree
+          #    (main site + all still-open PR previews), then deduplicate in a
+          #    tar-safe way (symlinks/hardlinks are dereferenced by
+          #    upload-pages-artifact, so we use HTML redirect stubs + binary
+          #    reference rewriting instead).
+          rm -rf pages-artifact
+          mkdir -p pages-artifact
+          rsync -a --exclude='.git' public-site/ pages-artifact/
+          touch pages-artifact/.nojekyll
+
+          echo "Artifact size before dedup:"
+          du -sh pages-artifact || true
+
+          for d in pages-artifact/PR-*; do
+            [ -d "$d" ] || continue
+            python3 docs-site/economize_preview.py --site "$d" --base pages-artifact
+          done
+
+          echo "Artifact size after dedup:"
+          du -sh pages-artifact || true
+
+      - name: "Upload Pages Artifact"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/upload-pages-artifact@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          folder: docs-site/build/site
-          target-folder: ${{ (github.event.inputs.PR_Number != '' && format('PR-{0}', github.event.inputs.PR_Number)) || (github.event.pull_request && format('PR-{0}', github.event.number)) || '' }}
-          branch: gh-pages
-          clean: false
-          single-commit: true
+          path: pages-artifact
+
+      - name: "Deploy to GitHub Pages"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/deploy-pages@v5
+
+      - name: "Push changes to gh-pages branch"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        run: |
+          cd public-site
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add -A
+          git commit -m "Update site (Main/PR) [skip ci]" || echo "No changes to commit"
+          git push origin gh-pages
 
       - name: Comment on PR
         if: github.event.pull_request && success()
