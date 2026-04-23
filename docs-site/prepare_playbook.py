@@ -1,4 +1,4 @@
-# Copyright 20206 Holochip Inc.
+# Copyright 2026 Holochip Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 import yaml
@@ -6,6 +6,53 @@ import os
 import sys
 import argparse
 import subprocess
+
+def clean_attachments(attachments_arg):
+    # Handle attachments
+    # We clean both the source and the processed antora directory to be sure
+    for attachments_dir in ['Vulkan-Tutorial/attachments', 'Vulkan-Tutorial/antora/modules/ROOT/attachments']:
+        if not os.path.exists(attachments_dir):
+            continue
+        
+        if attachments_arg.lower() == 'false':
+            # Remove attachments directory if tutorial is included
+            print(f"Removing attachments: {attachments_dir}")
+            subprocess.run(['rm', '-rf', attachments_dir])
+        elif attachments_arg.lower() == 'true':
+            # "Cleaning" it - remove known large types and unnecessary asset directories to save space
+            print(f"Cleaning attachments: {attachments_dir}")
+            # Remove known large directories
+            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build', 'lib', 'ort_gpu', 'build_integration_test', '__pycache__']:
+                subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-prune', '-exec', 'rm', '-rf', '{}', '+'])
+            
+            # Specifically remove Assets and assets directories which are not needed for the published tutorial site
+            # as requested by the user.
+            subprocess.run(['find', attachments_dir, '-type', 'd', '(', '-name', 'Assets', '-o', '-name', 'assets', ')', '-exec', 'rm', '-rf', '{}', '+'])
+            
+            # Remove any large files that shouldn't be published as attachments
+            subprocess.run(['find', attachments_dir, '-type', 'f', '(',
+                            '-name', '*.zip', '-o',
+                            '-name', '*.tar.gz', '-o',
+                            '-name', '*.pdf', '-o',
+                            '-name', '*.mp4', '-o',
+                            '-name', '*.mov', '-o',
+                            '-name', '*.whl', '-o',
+                            '-name', '*.nupkg', '-o',
+                            '-name', '*.tgz', '-o',
+                            '-name', '*.so*', '-o',
+                            '-name', '*.exe', '-o',
+                            '-name', '*.bin', '-o',
+                            '-name', '*.tar.xz', '-o',
+                            '-name', '*.onnx*', '-o',
+                            '-name', '*.pth', '-o',
+                            '-name', '*.vmfb', '-o',
+                            '-name', '*.mlir', '-o',
+                            '-name', '*.a', '-o',
+                            '-name', '*.lib', '-o',
+                            '-name', '*.dll', '-o',
+                            '-name', '*.node', '-o',
+                            '-name', '*.pyc'
+                            ')', '-delete'])
 
 def main():
     parser = argparse.ArgumentParser(description='Prepare Antora playbook and optimize assets.')
@@ -16,8 +63,16 @@ def main():
     parser.add_argument('--tutorial', type=str, default='true')
     parser.add_argument('--attachments', type=str, default='true')
     parser.add_argument('--optimize', type=str, default='false')
+    parser.add_argument('--cleanup-only', action='store_true', help='Only clean attachments')
 
     args = parser.parse_args()
+
+    if args.cleanup_only:
+        clean_attachments(args.attachments)
+        sys.exit(0)
+
+    # Always clean attachments before preparing the playbook if they are included
+    clean_attachments(args.attachments)
 
     playbook_path = 'docs-site/antora-playbook.yml'
     with open(playbook_path, 'r') as f:
@@ -63,46 +118,6 @@ def main():
 
     with open(playbook_path, 'w') as f:
         yaml.dump(playbook, f, default_flow_style=False)
-
-    # Handle attachments
-    if args.attachments.lower() == 'false':
-        # Remove attachments directory if tutorial is included
-        attachments_dir = 'Vulkan-Tutorial/antora/modules/ROOT/attachments'
-        if os.path.exists(attachments_dir):
-            print(f"Removing attachments: {attachments_dir}")
-            subprocess.run(['rm', '-rf', attachments_dir])
-    elif args.attachments.lower() == 'true':
-        # "Cleaning" it - remove known large types to save space
-        attachments_dir = 'Vulkan-Tutorial/antora/modules/ROOT/attachments'
-        if os.path.exists(attachments_dir):
-            print(f"Cleaning attachments: {attachments_dir}")
-            # Remove known large directories
-            for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build', 'lib', 'ort_gpu', 'build_integration_test', 'Assets', 'simple_engine', '__pycache__']:
-                subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-prune', '-exec', 'rm', '-rf', '{}', '+'])
-            # Remove any large files
-            subprocess.run(['find', attachments_dir, '-type', 'f', '(',
-                            '-name', '*.zip', '-o',
-                            '-name', '*.tar.gz', '-o',
-                            '-name', '*.pdf', '-o',
-                            '-name', '*.mp4', '-o',
-                            '-name', '*.mov', '-o',
-                            '-name', '*.whl', '-o',
-                            '-name', '*.nupkg', '-o',
-                            '-name', '*.tgz', '-o',
-                            '-name', '*.so*', '-o',
-                            '-name', '*.exe', '-o',
-                            '-name', '*.bin', '-o',
-                            '-name', '*.tar.xz', '-o',
-                            '-name', '*.onnx*', '-o',
-                            '-name', '*.pth', '-o',
-                            '-name', '*.vmfb', '-o',
-                            '-name', '*.mlir', '-o',
-                            '-name', '*.a', '-o',
-                            '-name', '*.lib', '-o',
-                            '-name', '*.dll', '-o',
-                            '-name', '*.node', '-o',
-                            '-name', '*.pyc'
-                            ')', '-delete'])
 
     # Handle image optimization
     if args.optimize.lower() == 'true':
