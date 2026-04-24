@@ -378,19 +378,28 @@ jobs:
           cd public-site
           git config user.name github-actions
           git config user.email github-actions@github.com
-          # Add only tracked files and the PR-* preview folders.
-          # Never add node_modules, source-repo clones, or build artifacts.
-          git add -u
-          if [ "${{ steps.stage.outputs.is_pr }}" = "true" ]; then
-            git add "PR-${{ steps.stage.outputs.pr_num }}"
-          fi
-          git commit -m "Update site (Main/PR) [skip ci]" || echo "No changes to commit"
-          # Rebase onto any concurrent gh-pages updates before pushing.
+          IS_PR="${{ steps.stage.outputs.is_pr }}"
+          PR_NUM="${{ steps.stage.outputs.pr_num }}"
+          BUILD="$GITHUB_WORKSPACE/docs-site/build/site"
+          # Always create a parentless commit so gh-pages never accumulates history.
+          # Retry up to 3 times: fetch latest remote state, re-apply our changes,
+          # and force-push with --force-with-lease to avoid clobbering concurrent runs.
           for attempt in 1 2 3; do
             git fetch origin gh-pages
-            git rebase origin/gh-pages && git push origin gh-pages && break
+            git reset --hard origin/gh-pages
+            if [ "${IS_PR}" = "true" ]; then
+              rsync -a --delete "${BUILD}/" "PR-${PR_NUM}/"
+            else
+              rsync -a --delete --exclude='PR-*' --exclude='.git' "${BUILD}/" ./
+              touch .nojekyll
+            fi
+            git add -A
+            TREE=$(git write-tree)
+            COMMIT=$(git commit-tree "$TREE" -m "Update site [skip ci]")
+            EXPECTED=$(git rev-parse origin/gh-pages)
+            git push origin "${COMMIT}:refs/heads/gh-pages" \
+              --force-with-lease="refs/heads/gh-pages:${EXPECTED}" && break
             echo "Push attempt $attempt failed, retrying..."
-            git rebase --abort 2>/dev/null || true
           done
 
       - name: Comment on PR

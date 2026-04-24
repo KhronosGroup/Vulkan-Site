@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import time
+from urllib.parse import urlparse
 
 REWRITABLE_EXTS = {'.html', '.htm', '.css', '.js'}
 HTML_EXTS = {'.html', '.htm'}
@@ -107,6 +108,52 @@ def materialize_symlink(full):
         return False
     except OSError:
         return True
+
+
+def fix_root_index(site_dir, pr_name):
+    """Rewrite root index.html so its meta-refresh stays inside the PR folder.
+
+    Antora emits an absolute production URL (e.g. https://github.khronos.org/
+    Vulkan-Site/spec/latest/index.html). When the preview is served from a
+    subdirectory that URL takes reviewers to the live site instead of the PR
+    preview. We walk the URL path segments until we find one that exists as an
+    entry in site_dir and use the remainder as a relative redirect.
+    """
+    idx = os.path.join(site_dir, 'index.html')
+    if not os.path.isfile(idx):
+        return
+    try:
+        with open(idx, 'r', encoding='utf-8') as f:
+            html = f.read()
+    except OSError:
+        return
+
+    url_pat = re.compile(r'(url=)([^\s"\'<>]+)', re.IGNORECASE)
+    m = url_pat.search(html)
+    if not m:
+        return
+
+    url = m.group(2)
+    parsed = urlparse(url)
+    if not parsed.scheme:
+        return  # already relative, nothing to do
+
+    segments = parsed.path.lstrip('/').split('/')
+    rel = None
+    for i, seg in enumerate(segments):
+        if os.path.exists(os.path.join(site_dir, seg)):
+            rel = '/'.join(segments[i:])
+            break
+    if rel is None:
+        return
+
+    new_html = html[:m.start(2)] + rel + html[m.end(2):]
+    try:
+        with open(idx, 'w', encoding='utf-8') as f:
+            f.write(new_html)
+        log(f'[{pr_name}] fixed root index redirect: {url} -> {rel}')
+    except OSError:
+        pass
 
 
 def _should_dir_stub(rel, stub_dirs):
@@ -332,6 +379,8 @@ def main():
              'html_stubs': []}
     if not args.reset:
         state = load_progress(site_dir)
+
+    fix_root_index(site_dir, pr_name)
 
     t_total = time.time()
     base_index = index_base(base_dir, pr_name)
