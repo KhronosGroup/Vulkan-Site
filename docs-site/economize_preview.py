@@ -109,8 +109,22 @@ def materialize_symlink(full):
         return True
 
 
+def _should_dir_stub(rel, stub_dirs):
+    """True if rel is HTML in a stub_dir but NOT an index.html entry point."""
+    if not stub_dirs:
+        return False
+    top = rel.split(os.sep)[0]
+    if top not in stub_dirs:
+        return False
+    return os.path.basename(rel).lower() != 'index.html'
+
+
 def pass1_find_duplicates(site_dir, base_dir, base_index, pr_name,
-                          force_stub_html=False):
+                          stub_dirs=None):
+    # stub_dirs: set of top-level directory names whose HTML is always stubbed
+    # regardless of identity (e.g. {'refpages'}). index.html files within those
+    # dirs are excluded so reviewers have a working entry point.
+    stub_dirs = stub_dirs or set()
     all_files = []
     for root, dirs, files in os.walk(site_dir):
         dirs[:] = [d for d in dirs if not d.startswith('PR-')]
@@ -136,17 +150,14 @@ def pass1_find_duplicates(site_dir, base_dir, base_index, pr_name,
         ext = os.path.splitext(full)[1].lower()
         if base_size is None:
             kept += 1
-        elif ext in HTML_EXTS and force_stub_html:
-            # Stub any HTML that exists in base without checking identity.
-            # Use when a PR changes only infrastructure (asset paths, templates)
-            # not content — reviewers get redirected to the equivalent base page.
+        elif ext in HTML_EXTS and _should_dir_stub(rel, stub_dirs):
             try:
                 depth = rel.count(os.sep)
                 up = '../' * (depth + 1)
                 redirect_url = up + rel.replace(os.sep, '/')
                 stub = _redirect_stub(redirect_url)
                 orig_size = os.path.getsize(full)
-                if orig_size != len(stub.encode()):  # skip if already a stub
+                if orig_size != len(stub.encode()):
                     with open(full, 'w', encoding='utf-8') as f:
                         f.write(stub)
                     html_bytes_saved += max(0, orig_size - len(stub.encode()))
@@ -300,9 +311,10 @@ def main():
     ap.add_argument('--site', required=True)
     ap.add_argument('--base', required=True)
     ap.add_argument('--reset', action='store_true')
-    ap.add_argument('--force-stub-html', action='store_true',
-                    help='Stub any HTML that exists in base without checking '
-                         'identity (use when a PR changes only asset paths).')
+    ap.add_argument('--stub-dirs', default='',
+                    help='Comma-separated top-level directory names whose HTML '
+                         'is always stubbed regardless of identity, except '
+                         'index.html files. E.g. --stub-dirs refpages')
     args = ap.parse_args()
 
     site_dir = os.path.abspath(args.site)
@@ -333,9 +345,10 @@ def main():
         log(f'[{pr_name}] pass1: resumed, {len(dups)} dup assets, '
             f'{html_stubbed} html stubs from marker')
     else:
+        stub_dirs = {d.strip().replace('/', os.sep)
+                     for d in args.stub_dirs.split(',') if d.strip()}
         dups, kept, html_stubbed, html_bytes_saved = pass1_find_duplicates(
-            site_dir, base_dir, base_index, pr_name,
-            force_stub_html=args.force_stub_html)
+            site_dir, base_dir, base_index, pr_name, stub_dirs=stub_dirs)
         stub_paths = set()
         for root, dirs, files in os.walk(site_dir):
             dirs[:] = [d for d in dirs if not d.startswith('PR-')]
