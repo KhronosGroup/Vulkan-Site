@@ -385,7 +385,13 @@ jobs:
             git add "PR-${{ steps.stage.outputs.pr_num }}"
           fi
           git commit -m "Update site (Main/PR) [skip ci]" || echo "No changes to commit"
-          git push origin gh-pages
+          # Rebase onto any concurrent gh-pages updates before pushing.
+          for attempt in 1 2 3; do
+            git fetch origin gh-pages
+            git rebase origin/gh-pages && git push origin gh-pages && break
+            echo "Push attempt $attempt failed, retrying..."
+            git rebase --abort 2>/dev/null || true
+          done
 
       - name: Comment on PR
         if: github.event.pull_request && success()
