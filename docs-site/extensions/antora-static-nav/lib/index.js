@@ -139,9 +139,13 @@ module.exports = { findNavBlock, cleanNav, buildNavJs, buildReplacement, MARKER,
 module.exports.register = function register ({ config = {} }) {
   const threshold = config.threshold ?? 50_000
 
-  const logger = this.getLogger('static-nav')
-
   this.on('pagesComposed', ({ siteCatalog, contentCatalog }) => {
+    // Acquire the logger inside the handler so it resolves after the playbook
+    // has configured Antora's logger (avoids a crash in pino's asChindings
+    // when the root logger is still in its unconfigured default state).
+    const logger = this.getLogger('static-nav')
+
+    try {
     const allPages = contentCatalog.getPages((page) => page.out)
 
     // Group by component@version so each component gets its own shared nav.
@@ -225,6 +229,9 @@ module.exports.register = function register ({ config = {} }) {
     if (totalSaved > 0) {
       const savedMB = (totalSaved / 1024 / 1024).toFixed(1)
       logger.info({ savedMB }, `static-nav: total nav HTML removed from output: ~${savedMB} MB`)
+    }
+    } catch (err) {
+      logger.error({ err }, 'static-nav: unexpected error during nav extraction; pages left unmodified')
     }
   })
 }
