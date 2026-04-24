@@ -71,9 +71,6 @@ def main():
         clean_attachments(args.attachments)
         sys.exit(0)
 
-    # Always clean attachments before preparing the playbook if they are included
-    clean_attachments(args.attachments)
-
     playbook_path = 'docs-site/antora-playbook.yml'
     with open(playbook_path, 'r') as f:
         playbook = yaml.safe_load(f)
