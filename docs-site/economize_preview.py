@@ -219,15 +219,18 @@ def pass1_find_duplicates(site_dir, base_dir, base_index, pr_name,
                     base_path = os.path.join(base_dir, rel)
                     if files_identical(full, base_path):
                         if ext in HTML_EXTS:
-                            depth = rel.count(os.sep)
-                            up = '../' * (depth + 1)
-                            redirect_url = up + rel.replace(os.sep, '/')
-                            stub = _redirect_stub(redirect_url)
-                            orig_size = os.path.getsize(full)
-                            with open(full, 'w', encoding='utf-8') as f:
-                                f.write(stub)
-                            html_stubbed += 1
-                            html_bytes_saved += max(0, orig_size - len(stub.encode()))
+                            if rel == 'index.html':
+                                kept += 1
+                            else:
+                                depth = rel.count(os.sep)
+                                up = '../' * (depth + 1)
+                                redirect_url = up + rel.replace(os.sep, '/')
+                                stub = _redirect_stub(redirect_url)
+                                orig_size = os.path.getsize(full)
+                                with open(full, 'w', encoding='utf-8') as f:
+                                    f.write(stub)
+                                html_stubbed += 1
+                                html_bytes_saved += max(0, orig_size - len(stub.encode()))
                         else:
                             dups[rel] = base_size
                     else:
