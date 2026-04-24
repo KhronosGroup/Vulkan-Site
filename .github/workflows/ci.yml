@@ -331,10 +331,13 @@ jobs:
           echo "Artifact size before dedup:"
           du -sh pages-artifact || true
 
-          for d in pages-artifact/PR-*; do
-            [ -d "$d" ] || continue
-            python3 docs-site/economize_preview.py --site "$d" --base pages-artifact
-          done
+          if [ "${IS_PR}" = "true" ]; then
+            python3 docs-site/economize_preview.py \
+              --site "pages-artifact/PR-${PR_NUM}" \
+              --base pages-artifact \
+              --force-stub-html
+          fi
+          # Main-site builds skip dedup: the base IS the artifact root.
 
           echo "Artifact size after dedup:"
           du -sh pages-artifact || true
@@ -355,7 +358,12 @@ jobs:
           cd public-site
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add -A
+          # Add only tracked files and the PR-* preview folders.
+          # Never add node_modules, source-repo clones, or build artifacts.
+          git add -u
+          if [ "${{ steps.stage.outputs.is_pr }}" = "true" ]; then
+            git add "PR-${{ steps.stage.outputs.pr_num }}"
+          fi
           git commit -m "Update site (Main/PR) [skip ci]" || echo "No changes to commit"
           git push origin gh-pages
 
