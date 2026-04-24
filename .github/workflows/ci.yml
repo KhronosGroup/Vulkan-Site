@@ -1,4 +1,4 @@
-# Copyright 2021-2024 The Khronos Group, Inc.
+# Copyright 2021-2026 The Khronos Group, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 # Github CI file for Vulkan Antora Guide
@@ -8,6 +8,8 @@ name: CI
 # Controls when the action will run.
 on:
   push:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       Antora_UI_Hash:
@@ -45,220 +47,204 @@ on:
         default: true
         required: false
         type: boolean
+      Include_Guide:
+        description: 'Should include the Vulkan-Guide module'
+        default: true
+        required: false
+        type: boolean
+      Include_GLSL:
+        description: 'Should include the GLSL module'
+        default: true
+        required: false
+        type: boolean
+      Include_Docs:
+        description: 'Should include the Vulkan-Docs module'
+        default: true
+        required: false
+        type: boolean
+      Include_Samples:
+        description: 'Should include the Vulkan-Samples module'
+        default: true
+        required: false
+        type: boolean
+      Include_Tutorial:
+        description: 'Should include the Vulkan-Tutorial module'
+        default: true
+        required: false
+        type: boolean
+      Include_Attachments:
+        description: 'Should include the attachments folder for the tutorial (cleans it first)'
+        default: true
+        required: false
+        type: boolean
+      Optimize_Images:
+        description: 'Should optimize the images folder'
+        default: false
+        required: false
+        type: boolean
+      PR_Number:
+        description: 'PR number to publish to (leave empty for main site)'
+        default: ''
+        required: false
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: true
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      id-token: write
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
       # access it
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+
+      - name: "REUSE license checker"
+        uses: fsfe/reuse-action@v6
 
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.0'
 
-      - name: Resolve repository/ref overrides
-        id: resolve
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          parse() {
-            local SRC="$1"; shift
-            local DEF_REPO="$1"; shift
-            local DEF_REF="$1"; shift
-            local PREFIX="$1"; shift
-            local REPO="$DEF_REPO"
-            local REF="$DEF_REF"
-
-            if [[ -n "${SRC}" ]]; then
-              # Normalize common GitHub notations into OWNER/REPO and REF
-              # Supported forms:
-              #  - owner/repo@ref
-              #  - owner/repo#ref
-              #  - owner/repo/branch@ref (branch path ignored, ref used)
-              #  - owner/repo/branch (no @/# → use branch as ref)
-              #  - https://github.com/owner/repo@ref
-              #  - https://github.com/owner/repo/branch@ref
-              #  - git@github.com:owner/repo@ref
-              #  - plain "branchOrSha" (no /) → use default repo with given ref
-
-              local VAL="$SRC"
-              # Strip URL/SSH prefixes if present
-              if [[ "$VAL" =~ ^https?://github.com/ ]]; then
-                VAL="${VAL#*github.com/}"
-              elif [[ "$VAL" =~ ^git@github.com: ]]; then
-                VAL="${VAL#git@github.com:}"
-              fi
-
-              # Split at @ or # if present
-              local BASE="$VAL"
-              if [[ "$VAL" == *"@"* ]]; then
-                BASE="${VAL%%@*}"
-                REF="${VAL#*@}"
-              elif [[ "$VAL" == *"#"* ]]; then
-                BASE="${VAL%%#*}"
-                REF="${VAL#*#}"
-              fi
-
-              # If BASE contains owner/repo[/...]
-              if [[ "$BASE" == */* ]]; then
-                # Extract first two segments as owner/repo
-                local OWNER="${BASE%%/*}"
-                local REST="${BASE#*/}"
-                local REPO_NAME="${REST%%/*}"
-                # remove potential .git suffix from repo name
-                REPO_NAME="${REPO_NAME%.git}"
-                if [[ -n "$OWNER" && -n "$REPO_NAME" ]]; then
-                  REPO="$OWNER/$REPO_NAME"
-                  # If no explicit @/# ref was provided and there is a third segment, use it as ref
-                  if [[ "$VAL" != *"@"* && "$VAL" != *"#"* ]]; then
-                    local REMREST="${REST#*/}"
-                    if [[ "$REMREST" != "$REST" && -n "$REMREST" ]]; then
-                      REF="${REMREST%%/*}"
-                    fi
-                  fi
-                fi
-              else
-                # No slash → treat as branch/SHA on default repo
-                if [[ -n "$BASE" ]]; then
-                  REF="$BASE"
-                fi
-              fi
-            fi
-
-            echo "${PREFIX}_REPO=${REPO}" >> "$GITHUB_OUTPUT"
-            echo "${PREFIX}_REF=${REF}" >> "$GITHUB_OUTPUT"
-            echo "Resolved ${PREFIX}: ${REPO}@${REF}"
-          }
-
-          # Antora UI
-          parse "${{ inputs.Antora_UI_Hash }}" "KhronosGroup/antora-ui-khronos" "main" "UI"
-          # GLSL
-          parse "${{ inputs.GLSL_Commit_Hash }}" "KhronosGroup/GLSL" "main" "GLSL"
-          # Vulkan Guide
-          parse "${{ inputs.Guide_Commit_Hash }}" "KhronosGroup/Vulkan-Guide" "main" "GUIDE"
-          # Vulkan Docs
-          parse "${{ inputs.DOC_Commit_Hash }}" "KhronosGroup/Vulkan-Docs" "main" "DOCS"
-          # Vulkan Samples
-          parse "${{ inputs.Samples_Commit_Hash }}" "KhronosGroup/Vulkan-Samples" "main" "SAMPLES"
-          # Vulkan Tutorial
-          parse "${{ inputs.Tutorial_Commit_Hash }}" "KhronosGroup/Vulkan-Tutorial" "main" "TUTORIAL"
-
-      - name: "checkout Antora UI"
-        uses: actions/checkout@v4
+      - name: "Cache UI bundle"
+        id: cache-ui
+        uses: actions/cache@v4
         with:
-          repository: ${{ steps.resolve.outputs.UI_REPO }}
-          path: ./antora-ui-khronos
-          ref: ${{ steps.resolve.outputs.UI_REF }}
+          path: build/ui-bundle.zip
+          key: ${{ runner.os }}-ui-${{ hashFiles('src/**', 'package-lock.json', 'gulpfile.js') }}
 
       - name: "checkout GLSL"
+        if: ${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.resolve.outputs.GLSL_REPO }}
+          repository: KhronosGroup/GLSL
           path: ./GLSL
-          ref: ${{ steps.resolve.outputs.GLSL_REF }}
-          submodules: recursive
+          ref: ${{ inputs.GLSL_Commit_Hash > '' && inputs.GLSL_Commit_Hash || 'main' }}
 
       - name: "checkout Vulkan Guide"
+        if: ${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.resolve.outputs.GUIDE_REPO }}
+          repository: KhronosGroup/Vulkan-Guide
           path: ./Vulkan-Guide
-          ref: ${{ steps.resolve.outputs.GUIDE_REF }}
-          submodules: recursive
+          ref: ${{ inputs.Guide_Commit_Hash > '' && inputs.Guide_Commit_Hash || 'main' }}
 
       - name: "Checkout Vulkan Docs"
+        if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.resolve.outputs.DOCS_REPO }}
+          repository: KhronosGroup/Vulkan-Docs
           path: ./Vulkan-Docs
-          ref: ${{ steps.resolve.outputs.DOCS_REF }}
-          submodules: recursive
+          ref: ${{ inputs.DOC_Commit_Hash > '' && inputs.DOC_Commit_Hash || 'main' }}
 
       - name: "Checkout Vulkan Samples"
+        if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.resolve.outputs.SAMPLES_REPO }}
+          repository: KhronosGroup/Vulkan-Samples
           path: ./Vulkan-Samples
-          ref: ${{ steps.resolve.outputs.SAMPLES_REF }}
-          submodules: recursive
+          ref: ${{ inputs.Samples_Commit_Hash > '' && inputs.Samples_Commit_Hash || 'main' }}
 
       - name: "Checkout Vulkan Tutorial"
+        if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.resolve.outputs.TUTORIAL_REPO }}
+          repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
-          ref: ${{ steps.resolve.outputs.TUTORIAL_REF }}
-          submodules: recursive
+          ref: ${{ inputs.Tutorial_Commit_Hash > '' && inputs.Tutorial_Commit_Hash || 'main' }}
 
       - name: "setup npm"
         uses: actions/setup-node@v4
         with:
           node-version: '20.12.2'
           cache: 'npm'
-          cache-dependency-path: docs-site/package-lock.json
+          cache-dependency-path: |
+            docs-site/package-lock.json
+            package-lock.json
+            Vulkan-Docs/package-lock.json
 
-      - name: "force clear the npm cache"
-        run: npm cache clean --force
-
-      - name: "run npm install for ui bundle"
-        working-directory: antora-ui-khronos
-        run: npm install
-
-      - name: "run npm install for docs-site"
-        working-directory: docs-site
-        run: npm install
-
-      - name: "run npm install for Vulkan-Docs"
-        working-directory: Vulkan-Docs
-        run: npm install
+      - name: "run npm installs (parallel)"
+        run: |
+          (cd docs-site && npm ci) &
+          if [ -d "Vulkan-Docs" ]; then (cd Vulkan-Docs && npm ci) & fi
+          if [ "${{ steps.cache-ui.outputs.cache-hit }}" != "true" ]; then npm ci & fi
+          wait
 
       - name: "ensure we have all dependencies for building/searching/highlighting"
         run: |
           sudo gem install rouge
           sudo apt-get update
           sudo apt install xorg-dev libglu1-mesa-dev
-          sudo apt-get install -y asciidoctor
-          pip install lxml
+          sudo apt-get install -y asciidoctor optipng jpegoptim
+          pip install lxml PyYAML
 
       - name: "build the ui bundle"
-        working-directory: antora-ui-khronos
+        if: steps.cache-ui.outputs.cache-hit != 'true'
         run: |
-          npx update-browserslist-db@latest
-          ./node_modules/gulp/bin/gulp.js --version
           ./node_modules/gulp/bin/gulp.js bundle
 
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v4
         with:
           name: ui-bundle.zip
-          path: antora-ui-khronos/build/ui-bundle.zip
+          path: build/ui-bundle.zip
           retention-days: 5
 
       - name: "copy ui-bundle.zip to vulkan-site"
-        run: cp antora-ui-khronos/build/ui-bundle.zip docs-site/
+        run: cp build/ui-bundle.zip docs-site/
 
       - name: "prepare tutorials"
+        if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         working-directory: Vulkan-Tutorial/antora
         run: |
           make setup_tutorial
 
-      - name: "prepare repos with make"
-        run: make prep-sources
+      - name: "prepare repos with make (parallel)"
+        run: |
+          if [[ "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" == "true" ]]; then make prep-glsl & fi
+          if [[ "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" == "true" ]]; then make prep-guide & fi
+          if [[ "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" == "true" ]]; then make prep-docs & fi
+          wait
 
       - name: "prepare samples"
+        if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
+      - name: "Prepare Antora Playbook"
+        run: |
+          python3 docs-site/prepare_playbook.py \
+            --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
+            --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
+            --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
+            --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
+            --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
+            --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
+            --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
+
+      - name: "Cache Antora content"
+        uses: actions/cache@v4
+        with:
+          path: docs-site/.antora-cache
+          key: ${{ runner.os }}-antora-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-antora-
+
       - name: "build (npx) with stacktrace"
         working-directory: docs-site
+        env:
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
-          npx antora antora-playbook.yml --stacktrace
+          npx antora antora-playbook.yml --cache-dir .antora-cache
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
@@ -268,9 +254,169 @@ jobs:
           path: docs-site/build
           retention-days: 5
 
-      - name: Publish to GitHub Pages
-        if: "${{ github.event.inputs.Publish_Local || github.event_name == 'pull_request'}}"
-        uses: peaceiris/actions-gh-pages@v4
+      - name: "Checkout gh-pages for staging"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/checkout@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs-site/build/site
+          ref: gh-pages
+          path: public-site
+          fetch-depth: 1
+
+      - name: Stage deployment
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        id: stage
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Determine if this is a PR build or a main-site build.
+          IS_PR="false"
+          PR_NUM=""
+          if [[ "${{ github.event.pull_request }}" != "" || "${{ github.event.inputs.PR_Number }}" != "" ]]; then
+            IS_PR="true"
+            PR_NUM="${{ github.event.inputs.PR_Number }}"
+            if [ -z "$PR_NUM" ]; then PR_NUM="${{ github.event.number }}"; fi
+          fi
+          echo "is_pr=${IS_PR}" >> "$GITHUB_OUTPUT"
+          echo "pr_num=${PR_NUM}" >> "$GITHUB_OUTPUT"
+
+          # Defense in depth: strip any Assets/assets dirs the builder may have emitted.
+          find docs-site/build/site -type d \( -name "Assets" -o -name "assets" \) -exec rm -rf {} + || true
+          touch docs-site/build/site/.nojekyll
+
+          # 1) Update the gh-pages checkout with the freshly built content.
+          if [[ "$IS_PR" == "true" ]]; then
+            TARGET_DIR="public-site/PR-${PR_NUM}"
+            echo "Staging preview for PR ${PR_NUM} in ${TARGET_DIR}"
+            mkdir -p "$TARGET_DIR"
+            rsync -a --delete docs-site/build/site/ "$TARGET_DIR/"
+          else
+            echo "Staging main site (preserving PR-* previews on gh-pages)"
+            rsync -a --delete --exclude='PR-*' --exclude='.git' docs-site/build/site/ public-site/
+            touch public-site/.nojekyll
+          fi
+
+          # 2) Prune PR-* folders whose PR is no longer open. When a PR is merged
+          #    or closed, pr-cleanup.yml also removes its folder, but this acts
+          #    as a safety net and keeps the artifact from carrying stale PRs.
+          if command -v gh >/dev/null 2>&1; then
+            OPEN_PRS=$(gh pr list --repo "${{ github.repository }}" --state open \
+              --json number --jq '.[].number' 2>/dev/null || echo "")
+            if [ -n "${OPEN_PRS}" ]; then
+              OPEN_SET=" $(echo "$OPEN_PRS" | tr '\n' ' ') "
+              for d in public-site/PR-*; do
+                [ -d "$d" ] || continue
+                n="${d##*/PR-}"
+                if ! echo "$OPEN_SET" | grep -q " ${n} "; then
+                  # Keep the PR currently being built, just in case.
+                  if [[ "$IS_PR" == "true" && "$n" == "${PR_NUM}" ]]; then continue; fi
+                  echo "Pruning closed PR folder: $d"
+                  rm -rf "$d"
+                fi
+              done
+            fi
+          fi
+
+          # 3) Build the Pages artifact payload from the full gh-pages tree
+          #    (main site + all still-open PR previews), then deduplicate in a
+          #    tar-safe way (symlinks/hardlinks are dereferenced by
+          #    upload-pages-artifact, so we use HTML redirect stubs + binary
+          #    reference rewriting instead).
+          rm -rf pages-artifact
+          mkdir -p pages-artifact
+          rsync -a --exclude='.git' public-site/ pages-artifact/
+          touch pages-artifact/.nojekyll
+
+          echo "Artifact size before dedup:"
+          du -sh pages-artifact || true
+
+          if [ "${IS_PR}" = "true" ]; then
+            python3 docs-site/economize_preview.py \
+              --site "pages-artifact/PR-${PR_NUM}" \
+              --base pages-artifact \
+              --stub-dirs refpages
+          fi
+          # Main-site builds skip dedup: the base IS the artifact root.
+
+          echo "Artifact size after dedup:"
+          du -sh pages-artifact || true
+
+      - name: "Remove stale pages artifact (re-run safety)"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              name: 'github-pages'
+            });
+            for (const a of artifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: a.id
+              });
+              core.info(`Deleted stale github-pages artifact ${a.id}`);
+            }
+
+      - name: "Upload Pages Artifact"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages-artifact
+
+      - name: "Deploy to GitHub Pages"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/deploy-pages@v5
+
+      - name: "Push changes to gh-pages branch"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        run: |
+          cd public-site
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          IS_PR="${{ steps.stage.outputs.is_pr }}"
+          PR_NUM="${{ steps.stage.outputs.pr_num }}"
+          BUILD="$GITHUB_WORKSPACE/docs-site/build/site"
+          # Always create a parentless commit so gh-pages never accumulates history.
+          # Retry up to 3 times: fetch latest remote state, re-apply our changes,
+          # and force-push with --force-with-lease to avoid clobbering concurrent runs.
+          for attempt in 1 2 3; do
+            git fetch origin gh-pages
+            git reset --hard origin/gh-pages
+            if [ "${IS_PR}" = "true" ]; then
+              rsync -a --delete "${BUILD}/" "PR-${PR_NUM}/"
+            else
+              rsync -a --delete --exclude='PR-*' --exclude='.git' "${BUILD}/" ./
+              touch .nojekyll
+            fi
+            git add -A
+            TREE=$(git write-tree)
+            COMMIT=$(git commit-tree "$TREE" -m "Update site [skip ci]")
+            EXPECTED=$(git rev-parse origin/gh-pages)
+            git push origin "${COMMIT}:refs/heads/gh-pages" \
+              --force-with-lease="refs/heads/gh-pages:${EXPECTED}" && break
+            echo "Push attempt $attempt failed, retrying..."
+          done
+
+      - name: Comment on PR
+        if: github.event.pull_request && success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_URL="${{ github.event.pull_request.html_url }}"
+          echo "Debug: PR_URL=$PR_URL"
+          echo "Debug: GITHUB_REPOSITORY=${{ github.repository }}"
+          echo "Debug: GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
+
+          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${{ github.event.pull_request.number }}/"
+          COMMENT_MARKER="<!-- preview-link-comment -->"
+          EXISTING_COMMENT=$(gh pr view "$PR_URL" --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id" || echo "")
+
+          if [ -n "$PR_URL" ] && [ -z "$EXISTING_COMMENT" ]; then
+            gh pr comment "$PR_URL" --body "$COMMENT_MARKER
+          Preview site published: $PREVIEW_URL"
+          fi
