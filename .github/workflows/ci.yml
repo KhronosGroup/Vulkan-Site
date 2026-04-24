@@ -335,12 +335,32 @@ jobs:
             python3 docs-site/economize_preview.py \
               --site "pages-artifact/PR-${PR_NUM}" \
               --base pages-artifact \
-              --force-stub-html
+              --stub-dirs refpages
           fi
           # Main-site builds skip dedup: the base IS the artifact root.
 
           echo "Artifact size after dedup:"
           du -sh pages-artifact || true
+
+      - name: "Remove stale pages artifact (re-run safety)"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              name: 'github-pages'
+            });
+            for (const a of artifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: a.id
+              });
+              core.info(`Deleted stale github-pages artifact ${a.id}`);
+            }
 
       - name: "Upload Pages Artifact"
         if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
