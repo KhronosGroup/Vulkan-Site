@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Loading Models: Asset Pipeline Concepts :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Loading Models</li>
+    <li><a href="02_project_setup.html">Project setup</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Loading Models: Asset Pipeline Concepts</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_understanding_asset_pipelines">1. Understanding Asset Pipelines</a>
+<ul class="sectlevel2">
+<li><a href="#_asset_organization_concepts">1.1. Asset Organization Concepts</a></li>
+<li><a href="#_asset_pipeline_concepts">1.2. Asset Pipeline Concepts</a></li>
+<li><a href="#_artist_engine_collaboration_concepts">1.3. Artist-Engine Collaboration Concepts</a></li>
+<li><a href="#_development_to_production_concepts">1.4. Development to Production Concepts</a></li>
+<li><a href="#_implementation_considerations">1.5. Implementation Considerations</a></li>
+</ul>
+</li>
+<li><a href="#_our_project_implementation">2. Our Project Implementation</a>
+<ul class="sectlevel2">
+<li><a href="#_file_formats_and_directory_structure">2.1. File Formats and Directory Structure</a></li>
+<li><a href="#_tools_and_libraries">2.2. Tools and Libraries</a></li>
+<li><a href="#_integration_with_engine_architecture">2.3. Integration with Engine Architecture</a></li>
+<li><a href="#_artist_workflow">2.4. Artist Workflow</a></li>
+<li><a href="#_runtime_loading">2.5. Runtime Loading</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_understanding_asset_pipelines"><a class="anchor" href="#_understanding_asset_pipelines"></a>1. Understanding Asset Pipelines</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After exploring engine architecture and camera systems, it&#8217;s important to understand how 3D assets are managed in rendering engines. A well-designed asset pipeline is crucial for efficiently handling models, textures, and other resources in any production environment.</p>
+</div>
+<div class="sect2">
+<h3 id="_asset_organization_concepts"><a class="anchor" href="#_asset_organization_concepts"></a>1.1. Asset Organization Concepts</h3>
+<div class="paragraph">
+<p>When designing an asset organization system, consider these key principles:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Categorization</strong> - Group similar assets together</p>
+</li>
+<li>
+<p><strong>Hierarchy</strong> - Use a nested structure to manage complexity</p>
+</li>
+<li>
+<p><strong>Discoverability</strong> - Make assets easy to find and reference</p>
+</li>
+<li>
+<p><strong>Scalability</strong> - Design for growth as your project expands</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s an example of how assets might be organized in a final product, demonstrating all four principles:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">assets/
+  ├── models/                  // 3D model files (Categorization)
+  │   ├── characters/          // Character models (Hierarchy)
+  │   │   ├── player/          // Player character models (Hierarchy)
+  │   │   └── npc/             // Non-player character models (Hierarchy)
+  │   ├── environments/        // Environment models
+  │   │   ├── indoor/          // Indoor environment models
+  │   │   └── outdoor/         // Outdoor environment models
+  │   └── props/               // Prop models
+  ├── textures/                // Texture files (Categorization)
+  │   ├── common/              // Shared textures (Discoverability)
+  │   └── high_resolution/     // High-res textures for close-up views (Scalability)
+  ├── shaders/                 // Shader files
+  │   ├── core/                // Essential shaders (Discoverability)
+  │   ├── effects/             // Special effect shaders
+  │   └── mobile/              // Mobile-optimized shaders (Scalability)
+  └── config/                  // Configuration files
+      └── quality_presets/     // Different quality settings (Scalability)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This example demonstrates all four principles:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Categorization</strong>: Assets are grouped by type (models, textures, shaders, config)</p>
+</li>
+<li>
+<p><strong>Hierarchy</strong>: Assets are organized in a nested structure (e.g., models &gt; characters &gt; player)</p>
+</li>
+<li>
+<p><strong>Discoverability</strong>: Common assets are placed in dedicated folders (e.g., common textures, core shaders) making them easy to find</p>
+</li>
+<li>
+<p><strong>Scalability</strong>: The structure accommodates different quality levels and platform-specific assets (e.g., high-resolution textures, mobile shaders, quality presets)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The specific organization should be tailored to your project&#8217;s needs, but the underlying principles remain consistent across different engines.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_asset_pipeline_concepts"><a class="anchor" href="#_asset_pipeline_concepts"></a>1.2. Asset Pipeline Concepts</h3>
+<div class="paragraph">
+<p>A professional asset pipeline typically involves several stages, regardless of the specific engine implementation:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Creation</strong> - Artists create models in 3D modeling software</p>
+</li>
+<li>
+<p><strong>Export</strong> - Models are exported to interchange formats suitable for game engines</p>
+</li>
+<li>
+<p><strong>Validation</strong> - Models are checked for issues (e.g., incorrect scale, missing textures)</p>
+</li>
+<li>
+<p><strong>Optimization</strong> - Models are optimized for runtime performance</p>
+</li>
+<li>
+<p><strong>Conversion</strong> - Development assets are converted to production-ready formats</p>
+</li>
+<li>
+<p><strong>Integration</strong> - Assets are imported into the engine</p>
+</li>
+<li>
+<p><strong>Runtime Loading</strong> - The engine loads assets efficiently during execution</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>When designing an asset pipeline, consider these important factors:</p>
+</div>
+<div class="sect3">
+<h4 id="_file_format_selection"><a class="anchor" href="#_file_format_selection"></a>1.2.1. File Format Selection</h4>
+<div class="paragraph">
+<p>Different file formats offer different trade-offs:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Interchange Formats</strong> (e.g., glTF, FBX, Collada)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pros: Widely supported by modeling tools, preserve most data</p>
+</li>
+<li>
+<p>Cons: May contain unnecessary data, not optimized for runtime</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Runtime Formats</strong> (e.g., glb, engine-specific binary formats)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pros: Optimized for loading speed and memory usage</p>
+</li>
+<li>
+<p>Cons: May not be editable outside the engine</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_texture_compression"><a class="anchor" href="#_texture_compression"></a>1.2.2. Texture Compression</h4>
+<div class="paragraph">
+<p>Texture compression is crucial for performance:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Development Formats</strong> (e.g., PNG, JPEG)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pros: Lossless or high quality, widely supported by editing tools</p>
+</li>
+<li>
+<p>Cons: Large file sizes, not optimized for GPU</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Runtime Formats</strong> (e.g., ktx, compressed GPU formats)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pros: Smaller file sizes, directly usable by GPU</p>
+</li>
+<li>
+<p>Cons: May have quality loss, platform-specific considerations</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_asset_bundling"><a class="anchor" href="#_asset_bundling"></a>1.2.3. Asset Bundling</h4>
+<div class="paragraph">
+<p>Consider how assets are packaged:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Separate Files</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pros: Easier to update individual assets, simpler version control</p>
+</li>
+<li>
+<p>Cons: More file operations, potential for missing dependencies</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Bundled Assets</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Pros: Fewer file operations, guaranteed dependencies</p>
+</li>
+<li>
+<p>Cons: Larger atomic updates, more complex version control</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_artist_engine_collaboration_concepts"><a class="anchor" href="#_artist_engine_collaboration_concepts"></a>1.3. Artist-Engine Collaboration Concepts</h3>
+<div class="paragraph">
+<p>Successful integration of art assets into a rendering engine requires clear communication and established workflows between artists and programmers. Here are key concepts to consider:</p>
+</div>
+<div class="sect3">
+<h4 id="_technical_specifications"><a class="anchor" href="#_technical_specifications"></a>1.3.1. Technical Specifications</h4>
+<div class="paragraph">
+<p>Regardless of the specific engine, you&#8217;ll need to define:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Coordinate System</strong> - Different applications use different coordinate systems (e.g., Y-up vs. Z-up)</p>
+</li>
+<li>
+<p><strong>Scale</strong> - Establish a consistent scale (e.g., 1 unit = 1 meter or 1 unit = 1 foot)</p>
+</li>
+<li>
+<p><strong>Origin Placement</strong> - Define where the origin point should be for different asset types</p>
+</li>
+<li>
+<p><strong>Level of Detail</strong> - Specify polygon count ranges for different asset types and usage scenarios</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_workflow_documentation"><a class="anchor" href="#_workflow_documentation"></a>1.3.2. Workflow Documentation</h4>
+<div class="paragraph">
+<p>Create documentation that addresses:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Naming Conventions</strong> - Consistent naming helps with organization and automation</p>
+</li>
+<li>
+<p><strong>Material Standards</strong> - Define how materials should be structured (e.g., PBR parameters)</p>
+</li>
+<li>
+<p><strong>Export Settings</strong> - Document the correct export settings for your chosen interchange formats</p>
+</li>
+<li>
+<p><strong>Quality Checklists</strong> - Provide criteria for validating assets before submission</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_technical_art_bridge"><a class="anchor" href="#_technical_art_bridge"></a>1.3.3. Technical Art Bridge</h4>
+<div class="paragraph">
+<p>Consider establishing a technical art role that:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Creates tools to streamline the art-to-engine pipeline</p>
+</li>
+<li>
+<p>Validates assets before they enter the engine</p>
+</li>
+<li>
+<p>Provides feedback to artists on technical requirements</p>
+</li>
+<li>
+<p>Helps troubleshoot issues when assets don&#8217;t appear correctly in-engine</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_development_to_production_concepts"><a class="anchor" href="#_development_to_production_concepts"></a>1.4. Development to Production Concepts</h3>
+<div class="paragraph">
+<p>The transition from artist-friendly development assets to optimized production assets involves several important concepts:</p>
+</div>
+<div class="sect3">
+<h4 id="_development_vs_production_assets"><a class="anchor" href="#_development_vs_production_assets"></a>1.4.1. Development vs. Production Assets</h4>
+<div class="paragraph">
+<p>Understanding the different needs at each stage:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Development Assets</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Prioritize editability and iteration speed</p>
+</li>
+<li>
+<p>Use formats that are widely supported by content creation tools</p>
+</li>
+<li>
+<p>May be larger and less optimized for runtime performance</p>
+</li>
+<li>
+<p>Focus on preserving maximum quality and information</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Production Assets</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Prioritize runtime performance and memory efficiency</p>
+</li>
+<li>
+<p>Use formats optimized for the target platform(s)</p>
+</li>
+<li>
+<p>Apply appropriate compression and optimization techniques</p>
+</li>
+<li>
+<p>Balance quality against performance requirements</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_asset_validation"><a class="anchor" href="#_asset_validation"></a>1.4.2. Asset Validation</h4>
+<div class="paragraph">
+<p>Implement validation at key points in the pipeline:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Pre-Submission Validation</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Check for adherence to technical specifications</p>
+</li>
+<li>
+<p>Verify that all required textures and materials are present</p>
+</li>
+<li>
+<p>Ensure proper scale, orientation, and origin placement</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Pre-Conversion Validation</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Verify that assets can be successfully processed by conversion tools</p>
+</li>
+<li>
+<p>Check for issues that might cause problems during conversion</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Post-Conversion Validation</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Verify that converted assets maintain visual fidelity</p>
+</li>
+<li>
+<p>Check for performance issues or memory consumption problems</p>
+</li>
+<li>
+<p>Ensure compatibility with target platforms</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_automation_considerations"><a class="anchor" href="#_automation_considerations"></a>1.4.3. Automation Considerations</h4>
+<div class="paragraph">
+<p>As projects grow, automation becomes increasingly important:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Batch Processing</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Develop scripts or tools to process multiple assets at once</p>
+</li>
+<li>
+<p>Implement automated validation checks</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Continuous Integration</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Consider integrating asset processing into your CI/CD pipeline</p>
+</li>
+<li>
+<p>Automatically validate and convert assets when they&#8217;re committed</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Versioning</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Track changes to assets and their processed versions</p>
+</li>
+<li>
+<p>Implement dependency tracking to rebuild only what&#8217;s necessary</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementation_considerations"><a class="anchor" href="#_implementation_considerations"></a>1.5. Implementation Considerations</h3>
+<div class="paragraph">
+<p>When implementing a model loading system in any rendering engine, several key considerations should guide your approach:</p>
+</div>
+<div class="sect3">
+<h4 id="_abstraction_layers"><a class="anchor" href="#_abstraction_layers"></a>1.5.1. Abstraction Layers</h4>
+<div class="paragraph">
+<p>Design your model loading system with appropriate abstraction layers:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>File Format Layer</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Handles parsing specific file formats (e.g., glTF, FBX)</p>
+</li>
+<li>
+<p>Isolates format-specific code to make supporting multiple formats easier</p>
+</li>
+<li>
+<p>Converts from file format structures to your engine&#8217;s internal structures</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Resource Management Layer</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Manages memory and GPU resources</p>
+</li>
+<li>
+<p>Handles caching and reference counting</p>
+</li>
+<li>
+<p>Provides a consistent interface regardless of the underlying file format</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Scene Graph Layer</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Organizes models in a hierarchical structure</p>
+</li>
+<li>
+<p>Manages transformations and parent-child relationships</p>
+</li>
+<li>
+<p>Facilitates operations like culling and scene traversal</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>1.5.2. Performance Considerations</h4>
+<div class="paragraph">
+<p>Balance flexibility with performance:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Asynchronous Loading</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Consider loading models in background threads to avoid blocking the main thread</p>
+</li>
+<li>
+<p>Implement a system for handling partially loaded models</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Memory Management</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Develop strategies for handling large models</p>
+</li>
+<li>
+<p>Consider level-of-detail (LOD) systems for complex scenes</p>
+</li>
+<li>
+<p>Implement streaming for very large environments</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Batching and Instancing</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Group similar models for efficient rendering</p>
+</li>
+<li>
+<p>Use instancing for repeated elements</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_extensibility"><a class="anchor" href="#_extensibility"></a>1.5.3. Extensibility</h4>
+<div class="paragraph">
+<p>Design for future expansion:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Material System</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Create a flexible material system that can represent various shading models</p>
+</li>
+<li>
+<p>Support both simple and complex materials</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Animation System</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Design for different animation types (skeletal, morph targets, etc.)</p>
+</li>
+<li>
+<p>Consider how animations will interact with physics and gameplay systems</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Custom Data</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Allow for engine-specific metadata to be associated with models</p>
+</li>
+<li>
+<p>Support custom properties for gameplay or rendering purposes</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Understanding these concepts provides a solid foundation for designing and implementing model loading systems in any rendering engine. By carefully considering abstraction, performance, and extensibility from the beginning, you can create a robust system that will scale with your project&#8217;s needs and adapt to changing requirements.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_our_project_implementation"><a class="anchor" href="#_our_project_implementation"></a>2. Our Project Implementation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we&#8217;ve explored the general concepts of asset pipelines, let&#8217;s discuss how our specific project will implement these concepts.</p>
+</div>
+<div class="sect2">
+<h3 id="_file_formats_and_directory_structure"><a class="anchor" href="#_file_formats_and_directory_structure"></a>2.1. File Formats and Directory Structure</h3>
+<div class="paragraph">
+<p>For our engine, we&#8217;ll use the following file formats and directory structure:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Model Format</strong>: We&#8217;ll use glTF 2.0 binary format (.glb) with embedded KTX2 textures. This format offers several advantages:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Compact binary representation for efficient storage and loading</p>
+</li>
+<li>
+<p>Ability to embed textures, reducing file operations</p>
+</li>
+<li>
+<p>Support for animations, skinning, and PBR materials</p>
+</li>
+<li>
+<p>Industry standard with wide tool support</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Texture Format</strong>: We&#8217;ll use KTX2 with Basis Universal compression for textures, which provides:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Significant size reduction compared to PNG/JPEG</p>
+</li>
+<li>
+<p>GPU-ready formats that can be directly uploaded</p>
+</li>
+<li>
+<p>Cross-platform compatibility through transcoding</p>
+</li>
+<li>
+<p>Support for mipmaps and various compression formats</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Directory Structure</strong>:</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">assets/
+  ├── models/                  // 3D model files
+  │   ├── characters/          // Character models
+  │   │   └── viking.glb       // Example character model
+  │   ├── environments/        // Environment models
+  │   │   └── room.glb         // Example environment model
+  │   └── props/               // Prop models
+  │       └── furniture.glb    // Example prop model
+  └── shaders/                 // Shader files
+      └── pbr.slang            // PBR shader</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tools_and_libraries"><a class="anchor" href="#_tools_and_libraries"></a>2.2. Tools and Libraries</h3>
+<div class="paragraph">
+<p>We&#8217;ll use the following tools and libraries to implement our asset pipeline:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Model Loading</strong>: We&#8217;ll use the tinygltf library to parse glTF files. This library provides:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Comprehensive support for the glTF 2.0 specification</p>
+</li>
+<li>
+<p>Efficient parsing of binary glTF files</p>
+</li>
+<li>
+<p>Access to all glTF components (meshes, materials, animations, etc.)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Texture Loading</strong>: We&#8217;ll use the KTX-Software library to load KTX2 textures, which offers:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Support for loading and transcoding Basis Universal compressed textures</p>
+</li>
+<li>
+<p>Efficient mipmap handling</p>
+</li>
+<li>
+<p>Integration with Vulkan texture formats</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Asset Conversion</strong>: For converting development assets to production assets, we&#8217;ll use:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>KTX-Tools for texture conversion (PNG/JPEG to KTX2)</p>
+</li>
+<li>
+<p>glTF-Transform for model processing and optimization</p>
+</li>
+<li>
+<p>Custom scripts for automating the conversion process</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_with_engine_architecture"><a class="anchor" href="#_integration_with_engine_architecture"></a>2.3. Integration with Engine Architecture</h3>
+<div class="paragraph">
+<p>Our model loading system will integrate with the engine architecture from previous chapters:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Resource Management</strong>: We&#8217;ll leverage the resource management system from the Engine Architecture chapter to:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Cache loaded models and textures</p>
+</li>
+<li>
+<p>Implement reference counting for efficient memory management</p>
+</li>
+<li>
+<p>Support asynchronous loading of models</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Component System</strong>: We&#8217;ll create the following components:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>ModelComponent: Manages model rendering and animation</p>
+</li>
+<li>
+<p>MaterialComponent: Handles material properties and textures</p>
+</li>
+<li>
+<p>These components will work with the TransformComponent from the Camera Transformations chapter</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Rendering Pipeline</strong>: Our model loading system will integrate with the rendering pipeline by:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Providing mesh data for the geometry pass</p>
+</li>
+<li>
+<p>Supporting PBR materials for the lighting pass</p>
+</li>
+<li>
+<p>Enabling instanced rendering for repeated models</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_artist_workflow"><a class="anchor" href="#_artist_workflow"></a>2.4. Artist Workflow</h3>
+<div class="paragraph">
+<p>Our workflow for artists will be:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Development Phase</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Artists create models in tools like Blender or Maya</p>
+</li>
+<li>
+<p>Export to standard glTF (.gltf) with separate PNG/JPEG textures</p>
+</li>
+<li>
+<p>Test with glTF viewers to ensure correct appearance</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Technical Requirements</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Right-handed coordinate system with Y-up</p>
+</li>
+<li>
+<p>1 unit = 1 meter scale</p>
+</li>
+<li>
+<p>PBR materials using the metallic-roughness workflow</p>
+</li>
+<li>
+<p>Textures with power-of-two dimensions</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Conversion Process</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Validate models against technical requirements</p>
+</li>
+<li>
+<p>Convert textures to KTX2 with Basis Universal compression</p>
+</li>
+<li>
+<p>Embed textures into glb files</p>
+</li>
+<li>
+<p>Optimize models (remove unused vertices, compress meshes, etc.)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Integration</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Place converted assets in the appropriate directories</p>
+</li>
+<li>
+<p>Register assets in the resource management system</p>
+</li>
+<li>
+<p>Create entities with appropriate components</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_runtime_loading"><a class="anchor" href="#_runtime_loading"></a>2.5. Runtime Loading</h3>
+<div class="paragraph">
+<p>At runtime, our engine will:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Load Models</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Parse glb files using tinygltf</p>
+</li>
+<li>
+<p>Extract mesh data, materials, and animations</p>
+</li>
+<li>
+<p>Create Vulkan buffers for vertices and indices</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Process Materials</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Load embedded KTX2 textures</p>
+</li>
+<li>
+<p>Create Vulkan image views and samplers</p>
+</li>
+<li>
+<p>Set up descriptor sets for PBR rendering</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Handle Animations</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Parse animation data from glTF</p>
+</li>
+<li>
+<p>Implement skeletal animation system</p>
+</li>
+<li>
+<p>Support animation blending and transitions</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Render Models</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Use the scene graph to organize models hierarchically</p>
+</li>
+<li>
+<p>Apply transformations from the transform component</p>
+</li>
+<li>
+<p>Render with appropriate materials and shaders</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>By implementing these specific approaches, our engine will have a robust and efficient asset pipeline that aligns with the general concepts discussed earlier in this chapter.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_model_system.html" class="xref page">Next: Implementing the Model Loading System</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

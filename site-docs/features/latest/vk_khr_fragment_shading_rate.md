@@ -1,0 +1,351 @@
+# VK_KHR_fragment_shading_rate
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_KHR_fragment_shading_rate.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Per-Draw state](#_per_draw_state)
+- [3.1._Per-Draw_state](#_per_draw_state)
+- [3.2. Per-Triangle state](#_per_triangle_state)
+- [3.2._Per-Triangle_state](#_per_triangle_state)
+- [3.3. Per-Region state](#_per_region_state)
+- [3.3._Per-Region_state](#_per_region_state)
+- [3.4. Reading the final rate](#_reading_the_final_rate)
+- [3.4._Reading_the_final_rate](#_reading_the_final_rate)
+- [3.5. Properties](#_properties)
+- [3.6. Available shading rates](#_available_shading_rates)
+- [3.6._Available_shading_rates](#_available_shading_rates)
+- [3.7. Features](#_features)
+- [4. Examples](#_examples)
+- [5. Issues](#_issues)
+- [5.1. Should the result of combiners be required to be a valid rate?](#_should_the_result_of_combiners_be_required_to_be_a_valid_rate)
+- [5.1._Should_the_result_of_combiners_be_required_to_be_a_valid_rate?](#_should_the_result_of_combiners_be_required_to_be_a_valid_rate)
+- [5.2. Should the various limits on state setting be validated?](#_should_the_various_limits_on_state_setting_be_validated)
+- [5.2._Should_the_various_limits_on_state_setting_be_validated?](#_should_the_various_limits_on_state_setting_be_validated)
+- [5.3. Should we describe the final combiner operation as a multiplication or addition? Related, should the per-draw fragment shading rate be set as flags or raw values?](#_should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition_related_should_the_per_draw_fragment_shading_rate_be_set_as_flags_or_raw_values)
+- [5.3._Should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition?_Related,_should_the_per-draw_fragment_shading_rate_be_set_as_flags_or_raw_values?](#_should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition_related_should_the_per_draw_fragment_shading_rate_be_set_as_flags_or_raw_values)
+- [5.4. When no fragment shading rate is provided, should the default rate {1, 1} take part in combination operation?](#_when_no_fragment_shading_rate_is_provided_should_the_default_rate_1_1_take_part_in_combination_operation)
+- [5.4._When_no_fragment_shading_rate_is_provided,_should_the_default_rate_{1,_1}_take_part_in_combination_operation?](#_when_no_fragment_shading_rate_is_provided_should_the_default_rate_1_1_take_part_in_combination_operation)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Per-Draw state](#_per_draw_state)
+[3.2. Per-Triangle state](#_per_triangle_state)
+[3.3. Per-Region state](#_per_region_state)
+[3.4. Reading the final rate](#_reading_the_final_rate)
+[3.5. Properties](#_properties)
+[3.6. Available shading rates](#_available_shading_rates)
+[3.7. Features](#_features)
+
+[4. Examples](#_examples)
+[5. Issues](#_issues)
+
+[5.1. Should the result of combiners be required to be a valid rate?](#_should_the_result_of_combiners_be_required_to_be_a_valid_rate)
+[5.2. Should the various limits on state setting be validated?](#_should_the_various_limits_on_state_setting_be_validated)
+[5.3. Should we describe the final combiner operation as a multiplication or addition? Related, should the per-draw fragment shading rate be set as flags or raw values?](#_should_we_describe_the_final_combiner_operation_as_a_multiplication_or_addition_related_should_the_per_draw_fragment_shading_rate_be_set_as_flags_or_raw_values)
+[5.4. When no fragment shading rate is provided, should the default rate {1, 1} take part in combination operation?](#_when_no_fragment_shading_rate_is_provided_should_the_default_rate_1_1_take_part_in_combination_operation)
+
+This extension adds the ability to change the rate at which fragments are shaded. Rather than the usual single fragment invocation for each pixel covered by a primitive, multiple pixels can be shaded by a single fragment shader invocation.
+
+Rendering resolutions are continually getting higher and higher, but as resolutions increase, the requirements on device performance increase at the same rate.
+However with a move from e.g. a 4K resolution to an 8K resolution, effectively doubling visual fidelity, this quadruples the requirements on device performance in order to keep up.
+In many cases, this extra pixel fidelity is not necessarily perceptible - and uniformly increasing the rate at which pixels are generated results in unnecessary work being performed, and it would be useful to reclaim some of that performance to improve the overall experience for an end user. This could be due to low-detail objects, triangles with a low delta between pixels, or something like VR where a user will not perceive detail in their peripheral vision.
+
+There are three potential bottlenecks as resolution requirements increase: the rasterizer’s ability to generate pixels, fragment shading, and bandwidth. This proposal focuses on reducing the shading rate, as this is the primary bottleneck on many implementations; though implementations may be able to take advantage of this to reduce workloads in other areas.
+
+Current solutions to address this require a uniform rate to be applied across the screen - things like MSAA, sample rate shading, and custom sample locations can be used to modify the rate at which shading occurs, but this is always applied uniformly across the screen; though steps can be taken to apply different rates to different sets of geometry by modifying state between draw calls.
+However, this requires careful state management, and requires awkward sorting of geometry/draws in order to achieve anything other than a natural per-draw rate.
+
+Different applications may want to change the rate per-draw, per-triangle, or per-screen-region.
+While it would be possible to modify the behavior of sample shading to be modifiable at different rates to solve this, multisample state is relatively complex, and could result in tricky edge cases for some applications.
+The alternative is to provide a new shading rate state that is independent of multisampling, and enable it to be set at each separate rate.
+In either case, per draw rate can be set by pipeline or dynamic state, but for per-triangle and per-screen-region use cases, new mechanisms will be needed. For per-triangle state, the usual way of setting this in the API is by providing data along with the provoking vertex. For the screen regions, two main options are viable - either an associated image which has sub regions identifying the state, or providing some sort of equation to be applied across the screen.
+
+Due to the complexity and potential fragility of multisample state, this proposal introduces new shading rate state to the API. As not all known use cases for screen-region state can be expressed as a straightforward equation, per-image state allowing arbitrary expression of regions is preferred.
+
+This extension introduces the concept of a fragment size to the API, where a given fragment can cover more than one pixel in the output attachments.
+Each fragment is still rasterized at a per-pixel rate, as it effectively has one sample per pixel - but when shaded, only one shader is invoked for the entire fragment.
+This is very similar to multisampling, where multiple samples are generated for each pixel, but on a wider scale.
+This state also interacts with multisampling, such that one fragment can cover multiple pixels, with multiple samples per pixel.
+Note though that enabling sample shading will effectively disable the fragment shading rate.
+
+This state can be set per-draw as part of the pipeline by chaining the following structure to [VkGraphicsPipelineCreateInfo](https://docs.vulkan.org/spec/latest/chapters/pipelines.html#VkGraphicsPipelineCreateInfo):
+
+typedef struct VkPipelineFragmentShadingRateStateCreateInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkExtent2D                            fragmentSize;
+    VkFragmentShadingRateCombinerOpKHR    combinerOps[2];
+} VkPipelineFragmentShadingRateStateCreateInfoKHR;
+
+It can also be set dynamically by setting `VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR` on the pipeline and using:
+
+void vkCmdSetFragmentShadingRateKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkExtent2D*                           pFragmentSize,
+    const VkFragmentShadingRateCombinerOpKHR    combinerOps[2]);
+
+In each case, the [VkExtent2D](https://docs.vulkan.org/spec/latest/chapters/fundamentals.html#VkExtent2D) sets the base fragment size in the x and y dimensions for all fragments generated by draw calls using this state.
+
+As there are three rates at which the state can be set, rather than having these only set one at a time, applications can have all three rates set and define combiner operations to dictate how the final result is calculated.
+This allows applications to e.g. have a per-screen-region rate while also marking some triangles or objects as lower detail than the base rate.
+
+The per-draw and per-triangle rates are first combined according to the first combiner operation, and then the result of that is combined according to the second combiner operation.
+Available combiner operations are as follows:
+
+typedef enum VkFragmentShadingRateCombinerOpKHR {
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_KEEP_KHR = 0,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_REPLACE_KHR = 1,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MIN_KHR = 2,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR = 3,
+    VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR = 4,
+} VkFragmentShadingRateCombinerOpKHR;
+
+`KEEP` will select the first rate in the combination, while `REPLACE` will select the second rate.
+`MIN` and `MAX` will select the minimum/maximum rate respectively, and do so separately for each dimension.
+So e.g. taking the max of `(1,2)` and `(2,1)` would result in `(2,2)`.
+
+The `MUL` operation multiples each dimension of the first input rate by the corresponding rate in the second input rate. So e.g. `(2,2)` and `(1,4)` would result in `(2,8)`.
+
+|  | The Vulkan specification chose to define this as a MUL operation using linear values to make this clear; whereas the DirectX Variable Rate Shading specification defines it as an addition in log2 space using bit flags. This unfortunately resulted in a misunderstanding between vendors, giving rise to the `fragmentShadingRateStrictMultiplyCombiner` limit, which when `VK_FALSE` indicates this operation acts as an addition. Fortunately, this only practically changes the result of a single combination - where the sum of 1 and 1 is 2 instead of a product of 1. All other combinations are clamped to 2 or 4, giving the same result as a true multiplication would provide. |
+| --- | --- |
+
+The result of the combiner operations will always be clamped to maximum supported rate of the implementation given the current draw state.
+
+When none of the above state is set, the fragment size is treated as 1 by 1, and the combiner ops are set to KEEP.
+
+The per-triangle shading rate can be set by a new output in pre-rasterization shaders that is set on the provoking vertex:
+
+| BuiltIn | Enabling Capabilities | Enabled by Extension |
+| --- | --- | --- |
+| 4432 | **PrimitiveShadingRateKHR**
+
+Output primitive fragment shading rate.
+Only valid in the **Vertex**, **Geometry**, and **MeshNV** Execution Models.
+See the API specification for more detail. | **FragmentShadingRateKHR** | **SPV_KHR_fragment_shading_rate** |
+
+This value is set to a single integer value according to four flag values:
+
+| Fragment Shading Rate Flags | Enabling Capabilities |
+| --- | --- |
+| 1 | **Vertical2Pixels** 
+
+Fragment invocation covers 2 pixels vertically. | **FragmentShadingRateKHR** |
+| 2 | **Vertical4Pixels** 
+
+Fragment invocation covers 4 pixels vertically. | **FragmentShadingRateKHR** |
+| 4 | **Horizontal2Pixels** 
+
+Fragment invocation covers 2 pixels horizontally. | **FragmentShadingRateKHR** |
+| 8 | **Horizontal4Pixels** 
+
+Fragment invocation covers 4 pixels horizontally. | **FragmentShadingRateKHR** |
+
+Valid rate combinations must not include more than 1 horizontal and 1
+vertical rate.
+If no horizontal rate flags are set, it indicates a fragment shader covers one
+pixel horizontally.
+If no vertical rate flags are set, it indicates a fragment shader covers one
+pixel vertically.
+
+This functionality is gated behind a new capability:
+
+| Capability | Implicitly Declares |
+| --- | --- |
+| 4422 | **FragmentShadingRateKHR**
+
+Uses the **PrimitiveShadingRateKHR** or **ShadingRateKHR** Builtins. | **Shader** |
+
+The per-region state can be set through an image where a pixel in that image corresponds to a given region in the render.
+Using the same flag values as the per-triangle rate, the value of that pixel determines the per-region rate for the corresponding region.
+This image can be set per-subpass by chaining the following structure to [VkSubpassDescription2](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#VkSubpassDescription2):
+
+typedef struct VkFragmentShadingRateAttachmentInfoKHR {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    const VkAttachmentReference2*    pFragmentShadingRateAttachment;
+    VkExtent2D                       shadingRateAttachmentTexelSize;
+} VkFragmentShadingRateAttachmentInfoKHR;
+
+`pFragmentShadingRateAttachment` selects the attachment description corresponding to the image, which must have dimensions at least equal to the framebuffer size divided by the texel size selected by `shadingRateAttachmentTexelSize`.
+`shadingRateAttachmentTexelSize` can be set to values supported by the implementation, which are advertised via `maxFragmentShadingRateAttachmentTexelSize`, `minFragmentShadingRateAttachmentTexelSize`, `maxFragmentShadingRateAttachmentTexelSizeAspectRatio`, and must be power-of-two values.
+
+In a fragment shader, the final calculated rate can be read through a new built-in:
+
+| BuiltIn | Enabling Capabilities | Enabled by Extension |
+| --- | --- | --- |
+| 4444 | **ShadingRateKHR**
+
+Input fragment shading rate for the current shader
+invocation.
+Only valid in the **Fragment** Execution Model.
+See the API specification for more detail. | **FragmentShadingRateKHR** | **SPV_KHR_fragment_shading_rate** |
+
+Properties of the implementation can be queried via a new properties structure:
+
+typedef struct VkPhysicalDeviceFragmentShadingRatePropertiesKHR {
+    VkStructureType          sType;
+    void*                    pNext;
+    VkExtent2D               minFragmentShadingRateAttachmentTexelSize;
+    VkExtent2D               maxFragmentShadingRateAttachmentTexelSize;
+    uint32_t                 maxFragmentShadingRateAttachmentTexelSizeAspectRatio;
+    VkBool32                 primitiveFragmentShadingRateWithMultipleViewports;
+    VkBool32                 layeredShadingRateAttachments;
+    VkBool32                 fragmentShadingRateNonTrivialCombinerOps;
+    VkExtent2D               maxFragmentSize;
+    uint32_t                 maxFragmentSizeAspectRatio;
+    uint32_t                 maxFragmentShadingRateCoverageSamples;
+    VkSampleCountFlagBits    maxFragmentShadingRateRasterizationSamples;
+    VkBool32                 fragmentShadingRateWithShaderDepthStencilWrites;
+    VkBool32                 fragmentShadingRateWithSampleMask;
+    VkBool32                 fragmentShadingRateWithShaderSampleMask;
+    VkBool32                 fragmentShadingRateWithConservativeRasterization;
+    VkBool32                 fragmentShadingRateWithFragmentShaderInterlock;
+    VkBool32                 fragmentShadingRateWithCustomSampleLocations;
+    VkBool32                 fragmentShadingRateStrictMultiplyCombiner;
+} VkPhysicalDeviceFragmentShadingRatePropertiesKHR;
+
+The limits are somewhat complex, as this functionality interacts heavily with other state, however many of these states are informative only; the implementation will automatically reduce the fragment shading rate to `(1,1)` when they are violated.
+`minFragmentShadingRateAttachmentTexelSize`, `maxFragmentShadingRateAttachmentTexelSize`, `maxFragmentShadingRateAttachmentTexelSizeAspectRatio`, `primitiveFragmentShadingRateWithMultipleViewports`, `fragmentShadingRateNonTrivialCombinerOps`, and `layeredShadingRateAttachments` are the only hard limits.
+`fragmentShadingRateStrictMultiplyCombiner` affects the operation of certain combiner operations, and cannot be violated.
+
+These limits must be adhered to by an application for correct behavior:
+
+* 
+`minFragmentShadingRateAttachmentTexelSize` advertises the minimum size of the texel region for the per-region rate supported by the implementation.
+
+* 
+`maxFragmentShadingRateAttachmentTexelSize` advertises the maximum size of the texel region for the per-region rate supported by the implementation.
+
+* 
+`maxFragmentShadingRateAttachmentTexelSizeAspectRatio` advertises the maximum aspect ratio of the texel region for the per-region rate supported by the implementation.
+
+* 
+`primitiveFragmentShadingRateWithMultipleViewports` advertises whether applications can write the primitive fragment shading rate when multiple viewports are used. Does not affect multiview.
+
+* 
+`layeredShadingRateAttachments` advertises whether applications can use separate shading rate attachments for independent layers when performing layered rendering. Does not affect multiview.
+
+* 
+`fragmentShadingRateNonTrivialCombinerOps` advertises whether applications can set the combiner ops to anything other than `KEEP` or `REPLACE`.
+
+Violating these limits is not invalid - instead the implementation will automatically reduce the fragment shading rate to `(1,1)` if any of them are violated.
+This allows applications to ship one algorithm while still ensuring valid behavior.
+
+* 
+`maxFragmentSize` determines the maximum supported fragment size.
+
+* 
+`maxFragmentSizeAspectRatio` determines the maximum supported aspect ratio between dimensions for the fragment size.
+
+* 
+`maxFragmentShadingRateCoverageSamples` determines the maximum total coverage samples for a fragment as a product of the fragment shading rate in each dimension and the multisample rate.
+
+* 
+`maxFragmentShadingRateRasterizationSamples` determines the maximum multisample rate (`rasterizationSamples`) when using a fragment shading rate.
+
+* 
+`fragmentShadingRateWithShaderDepthStencilWrites` determines if depth/stencil export from a shader can be used with fragment shading rate.
+
+* 
+`fragmentShadingRateWithSampleMask` determines if the `pSampleMask` member of [VkPipelineMultisampleStateCreateInfo](https://docs.vulkan.org/spec/latest/chapters/primsrast.html#VkPipelineMultisampleStateCreateInfo) can have any valid bits equal to 0 when using with fragment shading rate.
+
+* 
+`fragmentShadingRateWithShaderSampleMask` determines if the sample mask (input or output) can be used in a shader with fragment shading rate.
+
+* 
+`fragmentShadingRateWithConservativeRasterization` determines if conservative rasterization can be used with fragment shading rate.
+
+* 
+`fragmentShadingRateWithFragmentShaderInterlock` determines if fragment shader interlock can be used with fragment shading rate.
+
+* 
+`fragmentShadingRateWithCustomSampleLocations` determines if custom sample locations can be used with fragment shading rate.
+
+This final limit cannot be violated:
+
+* 
+`fragmentShadingRateStrictMultiplyCombiner` determines whether the operation of the MUL combiner operation is correct - if it is `VK_FALSE`, MUL acts as a sum operation.
+
+|  | See the definition of `VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MUL_KHR` for more information. |
+| --- | --- |
+
+To advertise precisely which shading rates are supported by an implementation, the following function is added to the specification:
+
+VkResult vkGetPhysicalDeviceFragmentShadingRatesKHR(
+    VkPhysicalDevice                            physicalDevice,
+    uint32_t*                                   pFragmentShadingRateCount,
+    VkPhysicalDeviceFragmentShadingRateKHR*     pFragmentShadingRates);
+
+typedef struct VkPhysicalDeviceFragmentShadingRateKHR {
+    VkStructureType       sType;
+    void*                 pNext;
+    VkSampleCountFlags    sampleCounts;
+    VkExtent2D            fragmentSize;
+} VkPhysicalDeviceFragmentShadingRateKHR;
+
+This function returns the full list of supported fragment shading rates ordered from largest fragment size to smallest, with all valid sample rates.
+Implementations must support the following rates:
+
+| `sampleCounts` | `fragmentSize` |
+| --- | --- |
+| `VK_SAMPLE_COUNT_1_BIT \| VK_SAMPLE_COUNT_4_BIT` | {2,2} |
+| `VK_SAMPLE_COUNT_1_BIT \| VK_SAMPLE_COUNT_4_BIT` | {2,1} |
+| ~0 | {1,1} |
+
+(1,1) is included for completeness only.
+Even if a shading rate advertises a given sample rate, valid sample rates are still subject to usual constraints on multisampling.
+
+Each of the three rates is enabled by an independent feature:
+
+typedef struct VkPhysicalDeviceFragmentShadingRateFeaturesKHR {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           pipelineFragmentShadingRate;
+    VkBool32           primitiveFragmentShadingRate;
+    VkBool32           attachmentFragmentShadingRate;
+} VkPhysicalDeviceFragmentShadingRateFeaturesKHR;
+
+* 
+`pipelineFragmentShadingRate` indicates support for the per-draw fragment shading rate, both dynamic and pipeline state. This feature must be supported to support the extension.
+
+* 
+`primitiveFragmentShadingRate` indicates support for the per-triangle fragment shading rate.
+
+* 
+`attachmentFragmentShadingRate` indicates support for the per-screen-region fragment shading rate.
+
+Two concrete samples are available in the [KhronosGroup/Vulkan-Samples](https://github.com/KhronosGroup/Vulkan-Samples) repository:
+
+* 
+[https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate)
+
+* 
+[https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate_dynamic](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/fragment_shading_rate_dynamic)
+
+This section describes issues with the existing proposal – including both open issues that you have not addressed, and closed issues that are not self-evident from the proposal description.
+
+This makes a number of combinations nigh impossible to use, so instead combined values are clamped, with strict rules on how they are clamped.
+
+Convention suggests they should be, but this makes the extension much harder to use - by asking implementations to clamp the rate to (1,1) instead, applications can ship the same functionality everywhere without having to modify their algorithm or assets.
+
+The primitive and image rates have to be bit flags to maintain compatibility with other APIs. There was significant confusion about the meaning of the final combiner operation as an addition of log2 values, so the choice was made to describe this as a multiplication of raw values, and the API values were set as real values to make this clearer.
+
+Yes.
+When no fragment shading rate is given in a certain stage, the default rate {1, 1} is used and participates in combination operations.
+For example, if per-draw/per-triangle/per-region shading rates are all enabled and `combinerOps` are `REPLACE`/`KEEP`, with a per-draw rate of {4, 2}, a per-region rate of {2, 2}, and no declaration of `FragmentShadingRateKHR` in the fragment shader (so it takes a default of {1, 1}), the final fragment size is {1, 1}.

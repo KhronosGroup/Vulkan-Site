@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Loading Models: Understanding glTF :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Loading Models</li>
+    <li><a href="04_loading_gltf.html">Loading glTF</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Loading Models: Understanding glTF</h1>
+<div class="sect1">
+<h2 id="_understanding_gltf"><a class="anchor" href="#_understanding_gltf"></a>Understanding glTF</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_what_is_gltf"><a class="anchor" href="#_what_is_gltf"></a>What is glTF?</h3>
+<div class="paragraph">
+<p>glTF (GL Transmission Format) is a standard 3D file format developed by the Khronos Group (the same organization behind OpenGL and Vulkan). It&#8217;s often called the "JPEG of 3D" because it aims to be a universal, efficient format for 3D content.</p>
+</div>
+<div class="paragraph">
+<p>The main purpose of glTF is to bridge the gap between 3D content creation tools (like Blender, Maya, 3ds Max) and real-time rendering applications like games and visualization tools. Before glTF, developers often had to create custom exporters or use intermediate formats that weren&#8217;t optimized for real-time rendering.</p>
+</div>
+<div class="paragraph">
+<p>Key advantages of glTF include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Efficiency</strong>: Optimized for loading speed and rendering performance with minimal processing</p>
+</li>
+<li>
+<p><strong>Completeness</strong>: Contains geometry, materials, textures, animations, and scene hierarchy in a single format</p>
+</li>
+<li>
+<p><strong>PBR Support</strong>: Built-in support for modern physically-based rendering materials</p>
+</li>
+<li>
+<p><strong>Standardization</strong>: Widely adopted across the industry, reducing the need for custom exporters</p>
+</li>
+<li>
+<p><strong>Extensibility</strong>: Supports extensions for vendor-specific features while maintaining compatibility</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gltf_file_structure_and_data_organization"><a class="anchor" href="#_gltf_file_structure_and_data_organization"></a>glTF File Structure and Data Organization</h3>
+<div class="paragraph">
+<p>A glTF file contains several key components organized in a structured way:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Scenes and Nodes</strong>: The hierarchical structure that organizes objects in a scene graph</p>
+</li>
+<li>
+<p><strong>Meshes</strong>: The 3D geometry data (vertices, indices, attributes like normals and UVs)</p>
+</li>
+<li>
+<p><strong>Materials</strong>: Surface properties using a physically-based rendering (PBR) model</p>
+</li>
+<li>
+<p><strong>Textures and Images</strong>: Visual data for materials, with support for various texture types</p>
+</li>
+<li>
+<p><strong>Animations</strong>: Keyframe data for animating nodes (position, rotation, scale)</p>
+</li>
+<li>
+<p><strong>Skins</strong>: Data for skeletal animations (joint hierarchies and vertex weights)</p>
+</li>
+<li>
+<p><strong>Cameras</strong>: Perspective or orthographic camera definitions</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_the_buffer_system_efficient_binary_data_storage"><a class="anchor" href="#_the_buffer_system_efficient_binary_data_storage"></a>The Buffer System: Efficient Binary Data Storage</h4>
+<div class="paragraph">
+<p>One of glTF&#8217;s most powerful features is its three-level buffer system:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Buffers</strong>: Raw binary data blocks (like files on disk)</p>
+</li>
+<li>
+<p><strong>BufferViews</strong>: Views into buffers with specific offset and length</p>
+</li>
+<li>
+<p><strong>Accessors</strong>: Descriptions of how to interpret data in a bufferView (type, component type, count, etc.)</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This system allows different attributes (positions, normals, UVs) to share the same underlying buffer, reducing memory usage and file size. For example:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A single buffer might contain all vertex data</p>
+</li>
+<li>
+<p>One bufferView points to the position data within that buffer</p>
+</li>
+<li>
+<p>Another bufferView points to the normal data</p>
+</li>
+<li>
+<p>Accessors describe how to interpret each bufferView (e.g., as vec3 floats)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_the_tinygltf_library_for_efficient_parsing"><a class="anchor" href="#_using_the_tinygltf_library_for_efficient_parsing"></a>Using the tinygltf Library for Efficient Parsing</h3>
+<div class="paragraph">
+<p>Rather than writing a glTF parser from scratch (which would be a significant undertaking), we&#8217;ll use the tinygltf library:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>It&#8217;s a lightweight, header-only C++ library that&#8217;s easy to integrate</p>
+</li>
+<li>
+<p>It handles both .gltf and .glb formats transparently</p>
+</li>
+<li>
+<p>It manages the complex task of parsing JSON and binary data</p>
+</li>
+<li>
+<p>It provides a clean API for accessing all glTF components</p>
+</li>
+<li>
+<p>It handles the details of the buffer system, including base64-encoded data</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Using tinygltf allows us to focus on the higher-level task of converting the parsed data into our engine&#8217;s structures rather than dealing with the low-level details of parsing JSON and binary data.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_a_robust_gltf_loader"><a class="anchor" href="#_implementing_a_robust_gltf_loader"></a>Implementing a Robust glTF Loader</h3>
+<div class="paragraph">
+<p>When implementing a production-ready glTF loader, several considerations come into play:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Error Handling</strong>: Robust handling of malformed files and graceful failure</p>
+</li>
+<li>
+<p><strong>Format Detection</strong>: Supporting both .gltf and .glb formats</p>
+</li>
+<li>
+<p><strong>Memory Management</strong>: Efficient allocation and handling of large data</p>
+</li>
+<li>
+<p><strong>Extension Support</strong>: Handling optional glTF extensions</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s look at how we implement the initial file loading:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void loadModel(const std::string&amp; modelPath) {
+    // Create a tinygltf loader
+    tinygltf::Model gltfModel;
+    tinygltf::TinyGLTF loader;
+    std::string err, warn;
+
+    // Detect file extension to determine which loader to use
+    bool ret = false;
+    std::string extension = modelPath.substr(modelPath.find_last_of(".") + 1);
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+    if (extension == "glb") {
+        ret = loader.LoadBinaryFromFile(&amp;gltfModel, &amp;err, &amp;warn, modelPath);
+    } else if (extension == "gltf") {
+        ret = loader.LoadASCIIFromFile(&amp;gltfModel, &amp;err, &amp;warn, modelPath);
+    } else {
+        err = "Unsupported file extension: " + extension + ". Expected .gltf or .glb";
+    }
+
+    // Handle errors and warnings
+    if (!warn.empty()) {
+        std::cout &lt;&lt; "glTF warning: " &lt;&lt; warn &lt;&lt; std::endl;
+    }
+    if (!err.empty()) {
+        std::cout &lt;&lt; "glTF error: " &lt;&lt; err &lt;&lt; std::endl;
+    }
+    if (!ret) {
+        throw std::runtime_error("Failed to load glTF model");
+    }
+
+    // Clear existing model data
+    model = Model();
+
+    // Process the loaded data (covered in the following sections)
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Supporting both .gltf and .glb formats gives artists flexibility in their workflow.</p>
+</div>
+<div class="paragraph">
+<p>glTF comes in two formats, each with its own advantages:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>.gltf</strong>: A JSON-based format with external binary and image files</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Human-readable and easier to debug</p>
+</li>
+<li>
+<p>Allows for easier asset management (textures as separate files)</p>
+</li>
+<li>
+<p>Better for development workflows</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>.glb</strong>: A binary format that combines everything in a single file</p>
+<div class="ulist">
+<ul>
+<li>
+<p>More compact and efficient for distribution</p>
+</li>
+<li>
+<p>Reduces the number of file operations during loading</p>
+</li>
+<li>
+<p>Better for deployment and distribution</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_understanding_physically_based_rendering_pbr_materials"><a class="anchor" href="#_understanding_physically_based_rendering_pbr_materials"></a>Understanding Physically Based Rendering (PBR) Materials</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This section provides a brief overview of PBR materials as they relate to glTF loading. For a more comprehensive explanation of PBR concepts and lighting models, please refer to the <a href="../Lighting_Materials/02_lighting_models.html#physically-based-rendering-pbr" class="xref page">Physically Based Rendering section</a> in the Lighting Materials chapter.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Materials define how surfaces look when rendered. Modern games and engines use Physically Based Rendering (PBR), which simulates how light interacts with real-world materials based on physical principles.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_evolution_of_material_systems"><a class="anchor" href="#_the_evolution_of_material_systems"></a>The Evolution of Material Systems</h4>
+<div class="paragraph">
+<p>Material systems in 3D graphics have evolved significantly:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Basic Materials (1990s)</strong>: Simple diffuse colors with optional specular highlights</p>
+</li>
+<li>
+<p><strong>Multi-Texture Materials (2000s)</strong>: Multiple texture maps combined for different effects</p>
+</li>
+<li>
+<p><strong>Shader-Based Materials (Late 2000s)</strong>: Custom shader programs for advanced effects</p>
+</li>
+<li>
+<p><strong>Physically Based Rendering (2010s)</strong>: Materials based on physical properties of real-world surfaces</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>PBR represents the current state of the art in real-time graphics. It provides more realistic results across different lighting conditions and ensures consistent appearance regardless of the environment.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_key_pbr_material_properties"><a class="anchor" href="#_key_pbr_material_properties"></a>Key PBR Material Properties</h4>
+<div class="paragraph">
+<p>The PBR model in glTF is based on the "metallic-roughness" workflow, which uses these key properties:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Base Color</strong>: The albedo or diffuse color of the surface (RGB or texture)</p>
+</li>
+<li>
+<p><strong>Metalness</strong>: How metal-like the surface is (0.0 = non-metal, 1.0 = metal)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Metals have no diffuse reflection but high specular reflection</p>
+</li>
+<li>
+<p>Non-metals (dielectrics) have diffuse reflection and minimal specular reflection</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Roughness</strong>: How smooth or rough the surface is (0.0 = mirror-like, 1.0 = rough)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Controls the microsurface detail that causes light scattering</p>
+</li>
+<li>
+<p>Affects the sharpness of reflections and specular highlights</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Normal Map</strong>: Adds surface detail without extra geometry</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Perturbs surface normals to create the illusion of additional detail</p>
+</li>
+<li>
+<p>More efficient than adding actual geometry</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Occlusion Map</strong>: Approximates self-shadowing within surface crevices</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Darkens areas that would receive less ambient light</p>
+</li>
+<li>
+<p>Enhances the perception of depth and detail</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Emissive</strong>: Makes the surface emit light (RGB or texture)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Used for glowing objects like screens, lights, or neon signs</p>
+</li>
+<li>
+<p>Not affected by scene lighting</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These properties can be specified as constant values or as texture maps for
+spatial variation across the surface. We&#8217;ll go into details about PBR in the
+next few chapters.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/bookstand.png" alt="Bookstand with complex PBR materials - demonstrating wood" width="glass" height="metal">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_texture_formats_and_compression"><a class="anchor" href="#_texture_formats_and_compression"></a>Texture Formats and Compression</h4>
+<div class="paragraph">
+<p>In our engine, we use KTX2 with Basis Universal compression for textures. This approach offers several advantages:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Reduced File Size</strong>: Basis Universal compression significantly reduces texture sizes while maintaining visual quality</p>
+</li>
+<li>
+<p><strong>GPU-Ready Formats</strong>: KTX2 textures can be directly transcoded to platform-specific GPU formats</p>
+</li>
+<li>
+<p><strong>Cross-Platform Compatibility</strong>: Basis Universal textures work across different platforms and graphics APIs</p>
+</li>
+<li>
+<p><strong>Mipmap Support</strong>: KTX2 includes support for mipmaps, improving rendering quality and performance</p>
+</li>
+</ul>
+</div>
+<div class="sect4">
+<h5 id="_embedded_textures_in_gltfglb"><a class="anchor" href="#_embedded_textures_in_gltfglb"></a>Embedded Textures in glTF/glb</h5>
+<div class="paragraph">
+<p>The glTF format supports two ways to include textures:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>External References</strong>: The .gltf file references external image files</p>
+</li>
+<li>
+<p><strong>Embedded Data</strong>: Images are embedded directly in the .glb file as binary data</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>For our engine, we use the .glb format with embedded KTX2 textures. This approach:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Reduces the number of file operations during loading</p>
+</li>
+<li>
+<p>Ensures all textures are always available with the model</p>
+</li>
+<li>
+<p>Simplifies asset management and distribution</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The glTF specification supports embedded textures through the <code>bufferView</code> property of image objects. When using KTX2 textures, the <code>mimeType</code> is set to <code>"image/ktx2"</code> to indicate the format.</p>
+</div>
+<div class="paragraph">
+<p>The texture loading process involves several complex steps that bridge the gap between glTF&#8217;s abstract texture references and Vulkan&#8217;s low-level GPU resources.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_loading_gltf_texture_iteration_and_metadata_extraction"><a class="anchor" href="#_texture_loading_gltf_texture_iteration_and_metadata_extraction"></a>Texture Loading: glTF Texture Iteration and Metadata Extraction</h3>
+<div class="paragraph">
+<p>First, we iterate through the glTF model&#8217;s texture definitions and extracting the fundamental information needed to locate and identify each texture resource.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// First, load all textures from the model
+std::vector&lt;Texture&gt; textures;
+for (size_t i = 0; i &lt; gltfModel.textures.size(); i++) {
+    const auto&amp; texture = gltfModel.textures[i];
+    const auto&amp; image = gltfModel.images[texture.source];
+
+    Texture tex;
+    tex.name = image.name.empty() ? "texture_" + std::to_string(i) : image.name;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The glTF texture system uses an indirection approach where textures reference images, and images contain the actual pixel data or references to it. This separation allows multiple textures to share the same image data but with different sampling parameters (like different filtering or wrapping modes). Our iteration process builds a comprehensive inventory of all texture resources that materials will eventually reference.</p>
+</div>
+<div class="paragraph">
+<p>The naming strategy provides essential debugging and asset management capabilities. When artists create textures in their 3D applications, meaningful names help developers identify which textures serve which purposes during development. The fallback naming scheme ensures every texture has a unique identifier even when artists haven&#8217;t provided descriptive names.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_loading_format_detection_and_buffer_access"><a class="anchor" href="#_texture_loading_format_detection_and_buffer_access"></a>Texture Loading: Format Detection and Buffer Access</h3>
+<div class="paragraph">
+<p>Next, we need to figure out whether textures are embedded in the glTF file and identify their format, setting up the foundation for appropriate loading strategies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Check if the image is embedded as KTX2
+    if (image.mimeType == "image/ktx2" &amp;&amp; image.bufferView &gt;= 0) {
+        // Get the buffer view that contains the KTX2 data
+        const auto&amp; bufferView = gltfModel.bufferViews[image.bufferView];
+        const auto&amp; buffer = gltfModel.buffers[bufferView.buffer];
+
+        // Extract the KTX2 data from the buffer
+        const uint8_t* ktx2Data = buffer.data.data() + bufferView.byteOffset;
+        size_t ktx2Size = bufferView.byteLength;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The MIME type detection ensures we&#8217;re working with KTX2 format specifically, which provides several advantages over traditional image formats like PNG or JPEG. KTX2 is designed specifically for GPU textures and supports advanced features like basis universal compression, multiple mipmap levels, and direct GPU format compatibility. The bufferView check confirms that the image data is embedded within the glTF file rather than referenced externally.</p>
+</div>
+<div class="paragraph">
+<p>The buffer access pattern demonstrates glTF&#8217;s sophisticated data organization system. Rather than copying data unnecessarily, we obtain direct pointers to the KTX2 data within the loaded glTF buffer. This approach minimizes memory usage and avoids expensive copy operations, which is particularly important when dealing with large texture datasets that can easily consume hundreds of megabytes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_loading_ktx2_parsing_and_validation"><a class="anchor" href="#_texture_loading_ktx2_parsing_and_validation"></a>Texture Loading: KTX2 Parsing and Validation</h3>
+<div class="paragraph">
+<p>Now we need to load the KTX2 texture data using the specialized KTX-Software library and perform initial validation to ensure the texture data is usable.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">        // Load the KTX2 texture using KTX-Software library
+        ktxTexture2* ktxTexture = nullptr;
+        KTX_error_code result = ktxTexture2_CreateFromMemory(
+            ktx2Data, ktx2Size,
+            KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+            &amp;ktxTexture
+        );
+
+        if (result != KTX_SUCCESS) {
+            std::cerr &lt;&lt; "Failed to load KTX2 texture: " &lt;&lt; ktxErrorString(result) &lt;&lt; std::endl;
+            continue;
+        }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The KTX-Software library provides robust parsing of the complex KTX2 format, handling details like multiple mipmap levels, various pixel formats, and metadata that would be extremely complex to implement correctly from scratch. The <code>KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT</code> flag instructs the library to immediately load the actual pixel data into memory, preparing it for subsequent processing steps.</p>
+</div>
+<div class="paragraph">
+<p>Error handling at this stage is crucial because texture files can become corrupted during asset pipeline processing or file transfer. By continuing with the next texture when one fails to load, we ensure that a single problematic texture doesn&#8217;t prevent the entire model from loading. This graceful degradation approach is essential for robust production systems where content issues shouldn&#8217;t crash the application.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_loading_basis_universal_transcoding"><a class="anchor" href="#_texture_loading_basis_universal_transcoding"></a>Texture Loading: Basis Universal Transcoding</h3>
+<div class="paragraph">
+<p>Next, we handle the transcoding process that converts Basis Universal compressed textures into GPU-native formats for optimal runtime performance.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">        // If the texture uses Basis Universal compression, transcode it to a GPU-friendly format
+        if (ktxTexture-&gt;isCompressed &amp;&amp; ktxTexture2_NeedsTranscoding(ktxTexture)) {
+            // Choose the appropriate format based on GPU capabilities
+            ktx_transcode_fmt_e transcodeFmt = KTX_TTF_BC7_RGBA;
+
+            // For devices that don't support BC7, use alternatives
+            // if (!deviceSupportsBC7) {
+            //     transcodeFmt = KTX_TTF_ASTC_4x4_RGBA;
+            // }
+            // if (!deviceSupportsASTC) {
+            //     transcodeFmt = KTX_TTF_ETC2_RGBA;
+            // }
+
+            // Transcode the texture
+            result = ktxTexture2_TranscodeBasis(ktxTexture, transcodeFmt, 0);
+            if (result != KTX_SUCCESS) {
+                std::cerr &lt;&lt; "Failed to transcode KTX2 texture: " &lt;&lt; ktxErrorString(result) &lt;&lt; std::endl;
+                ktxTexture2_Destroy(ktxTexture);
+                continue;
+            }
+        }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Basis Universal represents a revolutionary approach to texture compression that solves a fundamental problem in cross-platform development: different GPUs support different texture compression formats. Traditional approaches required storing multiple texture versions for different platforms, dramatically increasing storage requirements. Basis Universal stores textures in an intermediate format that can be quickly transcoded to any GPU-native format at load time.</p>
+</div>
+<div class="paragraph">
+<p>The format selection logic (shown in commented form) demonstrates how production systems handle GPU capability differences. Desktop GPUs typically support BC7 compression which provides excellent quality, while mobile GPUs often use ASTC or ETC2 formats. The transcoding process happens at runtime based on the actual capabilities of the target GPU, ensuring optimal performance and quality on every platform.</p>
+</div>
+<div class="paragraph">
+<p>The transcoding operation itself is computationally intensive but happens only once during asset loading. The resulting GPU-native format provides significantly better performance during rendering compared to uncompressed textures, making the upfront transcoding cost worthwhile. Failed transcoding attempts trigger cleanup of partially processed resources, preventing memory leaks in error conditions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_texture_loading_vulkan_resource_creation_and_gpu_upload"><a class="anchor" href="#_texture_loading_vulkan_resource_creation_and_gpu_upload"></a>Texture Loading: Vulkan Resource Creation and GPU Upload</h3>
+<div class="paragraph">
+<p>Finally, create the Vulkan resources needed for GPU rendering and uploads the processed texture data to video memory.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">        // Create Vulkan image, memory, and view
+        vk::Format format = static_cast&lt;vk::Format&gt;(ktxTexture2_GetVkFormat(ktxTexture));
+        vk::Extent3D extent{
+            static_cast&lt;uint32_t&gt;(ktxTexture-&gt;baseWidth),
+            static_cast&lt;uint32_t&gt;(ktxTexture-&gt;baseHeight),
+            static_cast&lt;uint32_t&gt;(ktxTexture-&gt;baseDepth)
+        };
+        uint32_t mipLevels = ktxTexture-&gt;numLevels;
+
+        // Create the Vulkan image
+        vk::ImageCreateInfo imageCreateInfo{
+            .imageType = vk::ImageType::e2D,
+            .format = format,
+            .extent = extent,
+            .mipLevels = mipLevels,
+            .arrayLayers = 1,
+            .samples = vk::SampleCountFlagBits::e1,
+            .tiling = vk::ImageTiling::eOptimal,
+            .usage = vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+            .sharingMode = vk::SharingMode::eExclusive,
+            .initialLayout = vk::ImageLayout::eUndefined
+        };
+
+        // Create the image, allocate memory, and bind them
+        // ... (code omitted for brevity)
+
+        // Upload the texture data to the image
+        ktxTexture2_VkUploadEx(ktxTexture, &amp;ktxVulkanTexture, &amp;vkDevice, &amp;vkQueue,
+                              &amp;ktxVulkanDeviceMemory, &amp;ktxVulkanImage,
+                              &amp;ktxVulkanImageView, &amp;ktxVulkanImageLayout,
+                              &amp;ktxVulkanImageMemory);
+
+        // Store the Vulkan resources in our texture object
+        tex.image = ktxVulkanImage;
+        tex.imageView = ktxVulkanImageView;
+        tex.memory = ktxVulkanImageMemory;
+
+        // Clean up KTX resources
+        ktxTexture2_Destroy(ktxTexture);
+    } else {
+        // Handle other image formats or external references
+        // ... (code omitted for brevity)
+    }
+
+    // Create a sampler for the texture
+    VkSamplerCreateInfo samplerInfo = {};
+    // ... (code omitted for brevity)
+
+    textures.push_back(tex);
+}
+
+// Now load materials and associate them with textures
+for (const auto&amp; material : gltfModel.materials) {
+    Material mat;
+
+    // Base color
+    if (material.pbrMetallicRoughness.baseColorFactor.size() == 4) {
+        mat.baseColorFactor.r = material.pbrMetallicRoughness.baseColorFactor[0];
+        mat.baseColorFactor.g = material.pbrMetallicRoughness.baseColorFactor[1];
+        mat.baseColorFactor.b = material.pbrMetallicRoughness.baseColorFactor[2];
+        mat.baseColorFactor.a = material.pbrMetallicRoughness.baseColorFactor[3];
+    }
+
+    // Metallic and roughness factors
+    mat.metallicFactor = material.pbrMetallicRoughness.metallicFactor;
+    mat.roughnessFactor = material.pbrMetallicRoughness.roughnessFactor;
+
+    // Associate textures with the material
+    if (material.pbrMetallicRoughness.baseColorTexture.index &gt;= 0) {
+        const auto&amp; texture = gltfModel.textures[material.pbrMetallicRoughness.baseColorTexture.index];
+        mat.baseColorTexture = &amp;textures[texture.source];
+    }
+
+    if (material.pbrMetallicRoughness.metallicRoughnessTexture.index &gt;= 0) {
+        const auto&amp; texture = gltfModel.textures[material.pbrMetallicRoughness.metallicRoughnessTexture.index];
+        mat.metallicRoughnessTexture = &amp;textures[texture.source];
+    }
+
+    if (material.normalTexture.index &gt;= 0) {
+        const auto&amp; texture = gltfModel.textures[material.normalTexture.index];
+        mat.normalTexture = &amp;textures[texture.source];
+    }
+
+    if (material.occlusionTexture.index &gt;= 0) {
+        const auto&amp; texture = gltfModel.textures[material.occlusionTexture.index];
+        mat.occlusionTexture = &amp;textures[texture.source];
+    }
+
+    if (material.emissiveTexture.index &gt;= 0) {
+        const auto&amp; texture = gltfModel.textures[material.emissiveTexture.index];
+        mat.emissiveTexture = &amp;textures[texture.source];
+    }
+
+    model.materials.push_back(mat);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, let&#8217;s talk about how this all fits together.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_understanding_scene_graphs_and_hierarchical_transformations"><a class="anchor" href="#_understanding_scene_graphs_and_hierarchical_transformations"></a>Understanding Scene Graphs and Hierarchical Transformations</h3>
+<div class="paragraph">
+<p>A scene graph is a hierarchical tree-like data structure that organizes the spatial representation of a 3D scene. It&#8217;s a fundamental concept in computer graphics and game engines, serving as the backbone for organizing complex scenes.</p>
+</div>
+<div class="sect3">
+<h4 id="_why_scene_graphs_matter"><a class="anchor" href="#_why_scene_graphs_matter"></a>Why Scene Graphs Matter</h4>
+<div class="paragraph">
+<p>Scene graphs offer several critical advantages over flat collections of objects:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Hierarchical Transformations</strong>: Children inherit transformations from their parents, making it natural to model complex relationships</p>
+</li>
+<li>
+<p><strong>Spatial Organization</strong>: Objects are organized based on their logical relationships, making scene management easier</p>
+</li>
+<li>
+<p><strong>Animation Support</strong>: Hierarchical structures are crucial for skeletal animations and complex movement patterns</p>
+</li>
+<li>
+<p><strong>Efficient Traversal</strong>: Enables optimized rendering, culling, and picking operations</p>
+</li>
+<li>
+<p><strong>Instancing Support</strong>: The same object can appear multiple times with different transformations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Consider these practical examples:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Character with Equipment</strong>: When a character moves, all attached equipment (weapons, armor) should move with it. With a scene graph, you move the character node, and all child nodes automatically inherit the transformation.</p>
+</li>
+<li>
+<p><strong>Vehicle with Moving Parts</strong>: A vehicle might have wheels that rotate independently while the whole vehicle moves. A scene graph makes this hierarchy of movements natural to express.</p>
+</li>
+<li>
+<p><strong>Articulated Animations</strong>: Characters with skeletons need joints that move relative to their parent joints. A scene graph directly models this parent-child relationship.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_transformations_in_scene_graphs"><a class="anchor" href="#_transformations_in_scene_graphs"></a>Transformations in Scene Graphs</h4>
+<div class="paragraph">
+<p>One of the most powerful aspects of scene graphs is how they handle transformations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Each node has a <strong>local transformation</strong> relative to its parent</p>
+</li>
+<li>
+<p>The <strong>global transformation</strong> is calculated by combining the node&#8217;s local transformation with its parent&#8217;s global transformation</p>
+</li>
+<li>
+<p>This allows for intuitive modeling of complex hierarchical movements</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The transformation pipeline typically works like this:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Each node stores its local transformation (translation, rotation, scale)</p>
+</li>
+<li>
+<p>When rendering, we calculate the global transformation by multiplying with parent transformations</p>
+</li>
+<li>
+<p>This global transformation is used to position the object in world space</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how we build a scene graph from glTF data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// First pass: create all nodes
+for (size_t i = 0; i &lt; gltfModel.nodes.size(); i++) {
+    const auto&amp; node = gltfModel.nodes[i];
+    model.linearNodes[i] = new Node();
+    model.linearNodes[i]-&gt;index = static_cast&lt;uint32_t&gt;(i);
+    model.linearNodes[i]-&gt;name = node.name;
+
+    // Get transformation data
+    if (node.translation.size() == 3) {
+        model.linearNodes[i]-&gt;translation = glm::vec3(
+            node.translation[0], node.translation[1], node.translation[2]
+        );
+    }
+    // ... handle rotation and scale
+}
+
+// Second pass: establish parent-child relationships
+for (size_t i = 0; i &lt; gltfModel.nodes.size(); i++) {
+    const auto&amp; node = gltfModel.nodes[i];
+    for (int childIdx : node.children) {
+        model.linearNodes[childIdx]-&gt;parent = model.linearNodes[i];
+        model.linearNodes[i]-&gt;children.push_back(model.linearNodes[childIdx]);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We use a two-pass approach to ensure all nodes exist before we try to link them together.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_understanding_3d_geometry_and_mesh_data"><a class="anchor" href="#_understanding_3d_geometry_and_mesh_data"></a>Understanding 3D Geometry and Mesh Data</h3>
+<div class="paragraph">
+<p>3D models are represented as meshes - collections of vertices, edges, and faces that define the shape of an object. Understanding how this data is structured is crucial for efficient rendering.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_building_blocks_of_3d_models"><a class="anchor" href="#_the_building_blocks_of_3d_models"></a>The Building Blocks of 3D Models</h4>
+<div class="paragraph">
+<p>The fundamental components of 3D geometry are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Vertices</strong>: Points in 3D space that define the shape</p>
+</li>
+<li>
+<p><strong>Indices</strong>: References to vertices that define how they connect to form triangles</p>
+</li>
+<li>
+<p><strong>Attributes</strong>: Additional data associated with vertices:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Positions</strong>: 3D coordinates (x, y, z)</p>
+</li>
+<li>
+<p><strong>Normals</strong>: Direction vectors perpendicular to the surface (for lighting calculations)</p>
+</li>
+<li>
+<p><strong>Texture Coordinates (UVs)</strong>: 2D coordinates for mapping textures onto the surface</p>
+</li>
+<li>
+<p><strong>Tangents and Bitangents</strong>: Vectors used for normal mapping</p>
+</li>
+<li>
+<p><strong>Colors</strong>: Per-vertex color data</p>
+</li>
+<li>
+<p><strong>Skinning Weights and Indices</strong>: For skeletal animations</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Modern 3D graphics use triangle meshes because:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Triangles are always planar (three points define a plane)</p>
+</li>
+<li>
+<p>Triangles are the simplest polygon that can represent any surface</p>
+</li>
+<li>
+<p>Graphics hardware is optimized for triangle processing</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mesh_organization_in_gltf"><a class="anchor" href="#_mesh_organization_in_gltf"></a>Mesh Organization in glTF</h4>
+<div class="paragraph">
+<p>glTF organizes mesh data in a way that&#8217;s efficient for both storage and rendering:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Meshes</strong>: Collections of primitives that form a logical object</p>
+</li>
+<li>
+<p><strong>Primitives</strong>: Individual parts of a mesh, each with its own material</p>
+</li>
+<li>
+<p><strong>Attributes</strong>: Vertex data like positions, normals, and texture coordinates</p>
+</li>
+<li>
+<p><strong>Indices</strong>: References to vertices that define triangles</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This organization allows for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Efficient memory use through data sharing</p>
+</li>
+<li>
+<p>Material variation within a single mesh</p>
+</li>
+<li>
+<p>Optimized rendering through batching</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how we extract mesh data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Load meshes
+for (size_t i = 0; i &lt; gltfModel.nodes.size(); i++) {
+    const auto&amp; node = gltfModel.nodes[i];
+    if (node.mesh &gt;= 0) {
+        const auto&amp; mesh = gltfModel.meshes[node.mesh];
+
+        // Process each primitive
+        for (const auto&amp; primitive : mesh.primitives) {
+            Mesh newMesh;
+
+            // Set material
+            if (primitive.material &gt;= 0) {
+                newMesh.materialIndex = primitive.material;
+            }
+
+            // Extract vertex positions, normals, and texture coordinates
+            // ... (code omitted for brevity)
+
+            // Extract indices that define triangles
+            // ... (code omitted for brevity)
+
+            // Assign the mesh to the node
+            model.linearNodes[i]-&gt;mesh = newMesh;
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_understanding_animation_systems"><a class="anchor" href="#_understanding_animation_systems"></a>Understanding Animation Systems</h3>
+<div class="paragraph">
+<p>Animation is what transforms static 3D models into living, breathing entities in our virtual worlds. A robust animation system is essential for creating engaging and dynamic 3D applications.</p>
+</div>
+<div class="sect3">
+<h4 id="_animation_techniques_in_3d_graphics"><a class="anchor" href="#_animation_techniques_in_3d_graphics"></a>Animation Techniques in 3D Graphics</h4>
+<div class="paragraph">
+<p>Several animation techniques are commonly used in 3D graphics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Keyframe Animation</strong>: Defining specific poses at specific times, with interpolation between them</p>
+</li>
+<li>
+<p><strong>Skeletal Animation</strong>: Using a hierarchy of bones to deform a mesh</p>
+</li>
+<li>
+<p><strong>Morph Target Animation</strong>: Interpolating between predefined mesh shapes</p>
+</li>
+<li>
+<p><strong>Procedural Animation</strong>: Generating animation through algorithms and physics</p>
+</li>
+<li>
+<p><strong>Particle Systems</strong>: Animating many small elements with simple rules</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Modern games typically use a combination of these techniques, with skeletal animation forming the backbone of character movement.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_core_animation_concepts"><a class="anchor" href="#_core_animation_concepts"></a>Core Animation Concepts</h4>
+<div class="paragraph">
+<p>Several key concepts are fundamental to understanding animation systems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Keyframes</strong>: Specific points in time where animation values are explicitly defined</p>
+</li>
+<li>
+<p><strong>Interpolation</strong>: Calculating values between keyframes to create smooth motion</p>
+</li>
+<li>
+<p><strong>Channels</strong>: Targeting specific properties (like position or rotation) for animation</p>
+</li>
+<li>
+<p><strong>Blending</strong>: Combining multiple animations with different weights</p>
+</li>
+<li>
+<p><strong>Retargeting</strong>: Applying animations created for one model to another</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_gltf_animation_system"><a class="anchor" href="#_the_gltf_animation_system"></a>The glTF Animation System</h4>
+<div class="paragraph">
+<p>glTF uses a flexible animation system that can represent various animation techniques:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Animations</strong>: Collections of channels and samplers</p>
+</li>
+<li>
+<p><strong>Channels</strong>: Links between samplers and node properties (translation, rotation, scale)</p>
+</li>
+<li>
+<p><strong>Samplers</strong>: Keyframe data with timestamps, values, and interpolation methods</p>
+</li>
+<li>
+<p><strong>Targets</strong>: The properties being animated (translation, rotation, scale, or weights for morph targets)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>glTF supports three interpolation methods:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>LINEAR</strong>: Smooth transitions with constant velocity</p>
+</li>
+<li>
+<p><strong>STEP</strong>: Sudden changes with no interpolation</p>
+</li>
+<li>
+<p><strong>CUBICSPLINE</strong>: Smooth curves with control points for acceleration and deceleration</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This system allows for complex animations that can target specific parts of a model independently, enabling actions like walking, facial expressions, and complex interactions.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how we load animation data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Load animations
+for (const auto&amp; anim : gltfModel.animations) {
+    Animation animation;
+    animation.name = anim.name;
+
+    // Load keyframe data
+    for (const auto&amp; sampler : anim.samplers) {
+        AnimationSampler animSampler{};
+
+        // Set interpolation type (LINEAR, STEP, or CUBICSPLINE)
+        // ... (code omitted for brevity)
+
+        // Extract keyframe times and values
+        // ... (code omitted for brevity)
+
+        animation.samplers.push_back(animSampler);
+    }
+
+    // Connect samplers to node properties
+    for (const auto&amp; channel : anim.channels) {
+        AnimationChannel animChannel{};
+
+        // Set target node and property (translation, rotation, or scale)
+        // ... (code omitted for brevity)
+
+        animation.channels.push_back(animChannel);
+    }
+
+    model.animations.push_back(animation);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_with_the_rendering_pipeline"><a class="anchor" href="#_integration_with_the_rendering_pipeline"></a>Integration with the Rendering Pipeline</h3>
+<div class="paragraph">
+<p>Now that we&#8217;ve loaded our model data, let&#8217;s discuss how it integrates with the rest of our rendering pipeline.</p>
+</div>
+<div class="sect3">
+<h4 id="_from_asset_loading_to_rendering"><a class="anchor" href="#_from_asset_loading_to_rendering"></a>From Asset Loading to Rendering</h4>
+<div class="paragraph">
+<p>The journey from a glTF file to pixels on the screen involves several stages:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Asset Loading</strong>: The glTF loader populates our Model, Node, Mesh, and Material structures</p>
+</li>
+<li>
+<p><strong>Scene Management</strong>: The engine maintains a collection of loaded models in the scene</p>
+</li>
+<li>
+<p><strong>Update Loop</strong>: Each frame, animations are updated based on elapsed time</p>
+</li>
+<li>
+<p><strong>Culling</strong>: The engine determines which objects are potentially visible</p>
+</li>
+<li>
+<p><strong>Rendering</strong>: The scene graph is traversed, and each visible mesh is rendered with its material</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This pipeline allows for efficient rendering of complex scenes with animated models.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_rendering_optimizations"><a class="anchor" href="#_rendering_optimizations"></a>Rendering Optimizations</h4>
+<div class="paragraph">
+<p>Several optimizations can improve the performance of model rendering:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Batching</strong>: Group similar objects to reduce draw calls</p>
+</li>
+<li>
+<p><strong>Instancing</strong>: Render multiple instances of the same mesh with different transforms</p>
+</li>
+<li>
+<p><strong>Level of Detail (LOD)</strong>: Use simpler versions of models at greater distances</p>
+</li>
+<li>
+<p><strong>Frustum Culling</strong>: Skip rendering objects outside the camera&#8217;s view</p>
+</li>
+<li>
+<p><strong>Occlusion Culling</strong>: Skip rendering objects hidden behind other objects</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_memory_management_considerations"><a class="anchor" href="#_memory_management_considerations"></a>Memory Management Considerations</h4>
+<div class="paragraph">
+<p>When loading models, especially large ones, memory management becomes crucial:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Vertex Data</strong>: Store in GPU buffers for efficient rendering</p>
+</li>
+<li>
+<p><strong>Indices</strong>: Use 16-bit indices when possible to save memory</p>
+</li>
+<li>
+<p><strong>Textures</strong>: Use KTX2 with Basis Universal compression to significantly reduce memory usage</p>
+</li>
+<li>
+<p><strong>Instancing</strong>: Reuse the same model data for multiple instances with different transforms</p>
+</li>
+</ul>
+</div>
+<div class="sect4">
+<h5 id="_efficient_texture_memory_management_with_ktx2_and_basis_universal"><a class="anchor" href="#_efficient_texture_memory_management_with_ktx2_and_basis_universal"></a>Efficient Texture Memory Management with KTX2 and Basis Universal</h5>
+<div class="paragraph">
+<p>Textures often consume the majority of GPU memory in 3D applications. KTX2 with Basis Universal compression provides several memory optimization benefits:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Supercompression</strong>: Basis Universal can reduce texture size by 4-10x compared to uncompressed formats</p>
+</li>
+<li>
+<p><strong>GPU-Native Formats</strong>: Textures are transcoded to formats that GPUs can directly sample from, avoiding runtime decompression</p>
+</li>
+<li>
+<p><strong>Mipmaps</strong>: KTX2 supports mipmaps, which not only improve visual quality but also reduce memory usage for distant objects</p>
+</li>
+<li>
+<p><strong>Format Selection</strong>: The transcoder can choose the optimal format based on the target GPU&#8217;s capabilities:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>BC7 for desktop GPUs (NVIDIA, AMD, Intel)</p>
+</li>
+<li>
+<p>ASTC for mobile GPUs (ARM, Qualcomm)</p>
+</li>
+<li>
+<p>ETC2 for older mobile GPUs</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_integration_with_vulkan_rendering_pipeline"><a class="anchor" href="#_integration_with_vulkan_rendering_pipeline"></a>Integration with Vulkan Rendering Pipeline</h5>
+<div class="paragraph">
+<p>To efficiently integrate KTX2 textures with Vulkan:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Descriptor Sets</strong>: Create descriptor sets that bind texture image views and samplers to shader binding points</p>
+</li>
+<li>
+<p><strong>Pipeline Layout</strong>: Define a pipeline layout that includes these descriptor sets</p>
+</li>
+<li>
+<p><strong>Shader Access</strong>: In shaders, access textures using the appropriate binding points</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s a simplified example of setting up descriptor sets for PBR textures:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create descriptor set layout for PBR textures
+std::array&lt;vk::DescriptorSetLayoutBinding, 5&gt; bindings{
+    // Base color texture
+    vk::DescriptorSetLayoutBinding{
+        .binding = 0,
+        .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eFragment
+    },
+    // Metallic-roughness texture
+    vk::DescriptorSetLayoutBinding{
+        .binding = 1,
+        .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eFragment
+    },
+    // Normal map
+    vk::DescriptorSetLayoutBinding{
+        .binding = 2,
+        .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eFragment
+    },
+    // Occlusion map
+    vk::DescriptorSetLayoutBinding{
+        .binding = 3,
+        .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eFragment
+    },
+    // Emissive map
+    vk::DescriptorSetLayoutBinding{
+        .binding = 4,
+        .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eFragment
+    }
+};
+
+vk::DescriptorSetLayoutCreateInfo layoutInfo{
+    .bindingCount = static_cast&lt;uint32_t&gt;(bindings.size()),
+    .pBindings = bindings.data()
+};
+
+vk::raii::DescriptorSetLayout descriptorSetLayout(device, layoutInfo);
+
+// For each material, create a descriptor set and update it with the material's textures
+for (const auto&amp; material : model.materials) {
+    // Allocate descriptor set from the descriptor pool
+    vk::DescriptorSetAllocateInfo allocInfo{
+        .descriptorPool = descriptorPool,
+        .descriptorSetCount = 1,
+        .pSetLayouts = &amp;*descriptorSetLayout
+    };
+
+    vk::raii::DescriptorSet descriptorSet = std::move(vk::raii::DescriptorSets(device, allocInfo).front());
+
+    // Update descriptor set with texture image views and samplers
+    std::vector&lt;vk::WriteDescriptorSet&gt; descriptorWrites;
+
+    if (material.baseColorTexture) {
+        vk::DescriptorImageInfo imageInfo{
+            .sampler = material.baseColorTexture-&gt;sampler,
+            .imageView = material.baseColorTexture-&gt;imageView,
+            .imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
+        };
+
+        vk::WriteDescriptorSet write{
+            .dstSet = *descriptorSet,
+            .dstBinding = 0,
+            .dstArrayElement = 0,
+            .descriptorCount = 1,
+            .descriptorType = vk::DescriptorType::eCombinedImageSampler,
+            .pImageInfo = &amp;imageInfo
+        };
+
+        descriptorWrites.push_back(write);
+    }
+
+    // Similar writes for other textures
+    // ...
+
+    device.updateDescriptorSets(descriptorWrites, {});
+
+    // Store the descriptor set with the material for later use during rendering
+    material.descriptorSet = *descriptorSet;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_best_practices_for_texture_memory_management"><a class="anchor" href="#_best_practices_for_texture_memory_management"></a>Best Practices for Texture Memory Management</h5>
+<div class="paragraph">
+<p>To optimize texture memory usage:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Texture Atlasing</strong>: Combine multiple small textures into a single larger texture to reduce state changes</p>
+</li>
+<li>
+<p><strong>Mipmap Management</strong>: Generate and use mipmaps for all textures to improve performance and quality</p>
+</li>
+<li>
+<p><strong>Texture Streaming</strong>: For very large scenes, implement texture streaming to load higher resolution textures only when needed</p>
+</li>
+<li>
+<p><strong>Memory Budgeting</strong>: Implement a texture budget system that can reduce texture quality when memory is constrained</p>
+</li>
+<li>
+<p><strong>Format Selection</strong>: Choose the appropriate format based on the texture content:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>BC7/ASTC for color textures with alpha</p>
+</li>
+<li>
+<p>BC1/ETC1 for color textures without alpha</p>
+</li>
+<li>
+<p>BC5/ETC2 for normal maps</p>
+</li>
+<li>
+<p>BC4/EAC for single-channel textures (roughness, metallic, etc.)</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_summary_and_next_steps"><a class="anchor" href="#_summary_and_next_steps"></a>Summary and Next Steps</h3>
+<div class="paragraph">
+<p>In this chapter, we&#8217;ve explored the process of loading 3D models from glTF files and organizing them into a scene graph. We&#8217;ve covered:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The structure and advantages of the glTF format</p>
+</li>
+<li>
+<p>How to use the tinygltf library for efficient parsing</p>
+</li>
+<li>
+<p>The physically-based material system used in modern rendering</p>
+</li>
+<li>
+<p>How scene graphs organize objects in a hierarchical structure</p>
+</li>
+<li>
+<p>The representation of 3D geometry in meshes</p>
+</li>
+<li>
+<p>Animation systems for bringing models to life</p>
+</li>
+<li>
+<p>Integration with the rendering pipeline</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Our glTF loader creates a complete scene graph with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Nodes organized in a hierarchy</p>
+</li>
+<li>
+<p>Meshes attached to nodes</p>
+</li>
+<li>
+<p>Materials defining surface properties</p>
+</li>
+<li>
+<p>Animations that can change node properties over time</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This structure allows us to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Render complex 3D scenes</p>
+</li>
+<li>
+<p>Animate characters and objects</p>
+</li>
+<li>
+<p>Apply transformations that propagate through the hierarchy</p>
+</li>
+<li>
+<p>Optimize rendering for performance</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In the next chapter, we&#8217;ll explore how to render these models using
+physically-based rendering techniques, bringing our loaded assets to life
+with realistic lighting and materials.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_model_system.html" class="xref page">Previous: Implementing the Model Loading System</a> | <a href="05_pbr_rendering.html" class="xref page">Next: Implementing PBR Rendering</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

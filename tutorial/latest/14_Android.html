@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Android: Taking Your Vulkan App Mobile :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="1">
+    <a class="nav-link" href="14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="Building_a_Simple_Engine/introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="Building_a_Simple_Engine/Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="14_Android.html">Android</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Android: Taking Your Vulkan App Mobile</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the previous chapter, we explored how Vulkan profiles can simplify feature detection and make your code more maintainable. Now, let&#8217;s take our Vulkan knowledge a step further by bringing our application to the mobile world with Android.</p>
+</div>
+<div class="paragraph">
+<p>While Vulkan was designed to be cross-platform from the ground up, deploying to Android introduces some new challenges and opportunities. The core Vulkan API remains the same, but the surrounding ecosystem - from window management to build systems - requires a different approach.</p>
+</div>
+<div class="paragraph">
+<p>This chapter will guide you through adapting your Vulkan application for Android, reusing as much code as possible while addressing platform-specific requirements. You&#8217;ll see that with the right setup, you can maintain a single codebase that works across desktop and mobile platforms.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_android_specific_considerations"><a class="anchor" href="#_android_specific_considerations"></a>Android-specific Considerations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into implementation details, let&#8217;s understand the key differences when developing Vulkan applications for Android compared to desktop:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Window System Integration</strong>: Instead of GLFW, we use Android&#8217;s native window system and activity lifecycle.</p>
+</li>
+<li>
+<p><strong>Application Lifecycle</strong>: Android apps can be paused, resumed, or terminated by the system at any time, requiring careful resource management.</p>
+</li>
+<li>
+<p><strong>Asset Loading</strong>: Resources are packaged in APK files and accessed through Android&#8217;s asset manager.</p>
+</li>
+<li>
+<p><strong>Build System</strong>: We use Gradle and CMake together to build Android applications.</p>
+</li>
+<li>
+<p><strong>Input Handling</strong>: Touch input replaces mouse and keyboard, requiring different event handling.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>These differences might seem daunting at first, but with the right approach, we can address them while maintaining a clean, maintainable codebase.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_project_setup"><a class="anchor" href="#_project_setup"></a>Project Setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we understand the key differences, let&#8217;s set up our Android project. Our goal is to reuse as much code as possible from our desktop implementation while addressing Android-specific requirements.</p>
+</div>
+<div class="sect2">
+<h3 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h3>
+<div class="paragraph">
+<p>Before we begin, make sure you have the following tools installed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><a href="https://developer.android.com/studio[Android Studio]">Android Studio</a></strong>: The official IDE for Android development</p>
+</li>
+<li>
+<p><strong>Android NDK (Native Development Kit)</strong>: Enables native C++ development on Android</p>
+</li>
+<li>
+<p><strong>Android SDK</strong>: With a recent API level (24+, which corresponds to Android 7.0 or higher) for Vulkan support</p>
+</li>
+<li>
+<p><strong>CMake and Ninja build tools</strong>: For building native code (these can be installed through Android Studio)</p>
+</li>
+<li>
+<p><strong>Vulkan SDK</strong>: For shader compilation tools and validation layers</p>
+</li>
+</ul>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Unlike the desktop environment, Vulkan HPP (the C++ bindings for Vulkan) is NOT included by default in the Android NDK. You&#8217;ll need to download it separately from the <a href="https://github.com/KhronosGroup/Vulkan-Hpp">Vulkan-Hpp GitHub repository</a> or use the version included in the Vulkan SDK.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_project_structure"><a class="anchor" href="#_project_structure"></a>Project Structure</h3>
+<div class="paragraph">
+<p>Let&#8217;s start by understanding the structure of our Android project. We&#8217;ll follow the standard Android application structure, but with some modifications to efficiently reuse code from our main project:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">android/
+├── app/
+│   ├── build.gradle            // App-level build configuration
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── AndroidManifest.xml  // App manifest
+│   │   │   ├── cpp/                 // Native code
+│   │   │   │   ├── CMakeLists.txt   // CMake build script
+│   │   │   │   └── game_activity_bridge.cpp // Bridge between GameActivity and our Vulkan code
+│   │   │   ├── java/                // Java code
+│   │   │   │   └── com/example/vulkantutorial/
+│   │   │   │       └── VulkanActivity.java // Main activity (extends GameActivity)
+│   │   │   └── res/                 // Resources
+│   │   │       └── values/
+│   │   │           ├── strings.xml  // String resources
+│   │   │           └── styles.xml   // Style resources
+├── build.gradle                // Project-level build configuration
+├── gradle/                     // Gradle wrapper
+├── settings.gradle             // Project settings</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setting_up_the_android_project"><a class="anchor" href="#_setting_up_the_android_project"></a>Setting Up the Android Project</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With our project structure in place, let&#8217;s dive into the key components of our Android Vulkan application. We&#8217;ll start with the essential configuration files and then move on to the native code implementation.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_manifest_file"><a class="anchor" href="#_the_manifest_file"></a>The Manifest File</h3>
+<div class="paragraph">
+<p>Every Android application requires a manifest file that declares important information about the app. For our Vulkan application, the AndroidManifest.xml file is particularly important as it specifies the Vulkan version requirements:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-xml hljs" data-lang="xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.vulkan.tutorial"&gt;
+
+    &lt;!-- Vulkan requires API level 24 (Android 7.0) or higher --&gt;
+    &lt;uses-sdk android:minSdkVersion="24" /&gt;
+
+    &lt;!-- Declare that this app uses Vulkan --&gt;
+    &lt;uses-feature android:name="android.hardware.vulkan.version" android:version="0x400003" android:required="true" /&gt;
+    &lt;uses-feature android:name="android.hardware.vulkan.level" android:version="0" android:required="true" /&gt;
+
+    &lt;application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"&gt;
+        &lt;activity
+            android:name=".VulkanActivity"
+            android:label="@string/app_name"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="true"&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name="android.intent.action.MAIN" /&gt;
+                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+    &lt;/application&gt;
+
+&lt;/manifest&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Key points:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>We specify a minimum SDK version of 24 (Android 7.0), which is required for Vulkan support.</p>
+</li>
+<li>
+<p>We declare that our app uses Vulkan with specific version requirements.</p>
+</li>
+<li>
+<p>We set up our main activity (VulkanActivity) as the entry point for our application.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_java_activity"><a class="anchor" href="#_java_activity"></a>Java Activity</h3>
+<div class="paragraph">
+<p>After configuring the manifest, we need to create the Java side of our application. While most of our Vulkan code will run in native C++, we still need a Java activity to serve as the entry point for our application.</p>
+</div>
+<div class="paragraph">
+<p>For our Vulkan application, we&#8217;ll use the GameActivity from the Android Game SDK instead of the traditional NativeActivity. This modern approach offers better performance and features specifically designed for games and graphics-intensive applications:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">package com.vulkan.tutorial;
+
+import android.os.Bundle;
+import android.view.WindowManager;
+import com.google.androidgamesdk.GameActivity;
+
+public class VulkanActivity extends GameActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Keep the screen on while the app is running
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    // Load the native library
+    static {
+        System.loadLibrary("vulkan_tutorial_android");
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Key points:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>We extend GameActivity from the Android Game SDK, which provides a more optimized bridge between Java and native code.</p>
+</li>
+<li>
+<p>GameActivity offers better performance for games and graphics-intensive applications compared to NativeActivity.</p>
+</li>
+<li>
+<p>We load our native library ("vulkan_tutorial_android") which contains our Vulkan implementation.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_configuration"><a class="anchor" href="#_build_configuration"></a>Build Configuration</h3>
+<div class="paragraph">
+<p>With our Java activity in place, we need to configure the build process. Android uses Gradle as its build system, which we&#8217;ll configure to work with our native Vulkan code and assets.</p>
+</div>
+<div class="paragraph">
+<p>The build configuration is split across multiple files, with different responsibilities:</p>
+</div>
+<div class="paragraph">
+<p>Project-level build.gradle:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.2.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>App-level build.gradle:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">plugins {
+    id 'com.android.application'
+}
+
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        applicationId "com.vulkan.tutorial"
+        minSdkVersion 24
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+            version "3.22.1"
+        }
+    }
+
+    ndkVersion "25.2.9519653"
+
+    // Use assets from the main project and locally compiled shaders
+    sourceSets {
+        main {
+            assets {
+                srcDirs = [
+                    // Point to the main project's assets
+                    '../../../../',  // For models and textures in the attachments directory
+                    // Use locally compiled shaders from the build directory for all ABIs
+                    // These paths are relative to the app directory
+                    '.externalNativeBuild/cmake/debug/arm64-v8a/shaders',
+                    '.externalNativeBuild/cmake/debug/armeabi-v7a/shaders',
+                    '.externalNativeBuild/cmake/debug/x86/shaders',
+                    '.externalNativeBuild/cmake/debug/x86_64/shaders',
+                    // Also include release build paths
+                    '.externalNativeBuild/cmake/release/arm64-v8a/shaders',
+                    '.externalNativeBuild/cmake/release/armeabi-v7a/shaders',
+                    '.externalNativeBuild/cmake/release/x86/shaders',
+                    '.externalNativeBuild/cmake/release/x86_64/shaders'
+                ]
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.androidgamesdk:game-activity:1.2.0'
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Key points:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>We specify the minimum SDK version as 24 (Android 7.0) for Vulkan support.</p>
+</li>
+<li>
+<p>We configure CMake to build our native code.</p>
+</li>
+<li>
+<p>We include the game-activity dependency for better performance.</p>
+</li>
+<li>
+<p>We set up asset directories to reference the main project&#8217;s assets and locally compiled shaders.</p>
+</li>
+<li>
+<p>This approach avoids duplicating assets and ensures we&#8217;re using the latest versions.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cmake_configuration"><a class="anchor" href="#_cmake_configuration"></a>CMake Configuration</h3>
+<div class="paragraph">
+<p>While Gradle handles the overall Android build process, we use CMake to build our native C++ code. This is where we&#8217;ll set up our Vulkan environment, compile shaders, and link against the necessary libraries.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s examine our CMakeLists.txt file, which is the heart of our native code configuration:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">cmake_minimum_required(VERSION 3.22.1)
+
+project(vulkan_tutorial_android)
+
+# Set the path to the main CMakeLists.txt relative to this file
+set(MAIN_CMAKE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../CMakeLists.txt")
+
+# Find the Vulkan package
+find_package(Vulkan REQUIRED)
+
+# Set up shader compilation tools
+add_executable(glslang::validator IMPORTED)
+find_program(GLSLANG_VALIDATOR "glslangValidator" HINTS $ENV{VULKAN_SDK}/bin REQUIRED)
+set_property(TARGET glslang::validator PROPERTY IMPORTED_LOCATION "${GLSLANG_VALIDATOR}")
+
+# Define shader building function
+function(add_shaders_target TARGET)
+  cmake_parse_arguments("SHADER" "" "CHAPTER_NAME" "SOURCES" ${ARGN})
+  set(SHADERS_DIR ${SHADER_CHAPTER_NAME}/shaders)
+  add_custom_command(
+    OUTPUT ${SHADERS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADERS_DIR}
+  )
+  add_custom_command(
+    OUTPUT ${SHADERS_DIR}/frag.spv ${SHADERS_DIR}/vert.spv
+    COMMAND glslang::validator
+    ARGS --target-env vulkan1.0 ${SHADER_SOURCES} --quiet
+    WORKING_DIRECTORY ${SHADERS_DIR}
+    DEPENDS ${SHADERS_DIR} ${SHADER_SOURCES}
+    COMMENT "Compiling Shaders"
+    VERBATIM
+  )
+  add_custom_target(${TARGET} DEPENDS ${SHADERS_DIR}/frag.spv ${SHADERS_DIR}/vert.spv)
+endfunction()
+
+# Include the game-activity library
+find_package(game-activity REQUIRED CONFIG)
+include_directories(${ANDROID_NDK}/sources/android/game-activity/include)
+
+# Set C++ standard to match the main project
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# (Optional) Add the Vulkan C++ module when ENABLE_CPP20_MODULE=ON
+add_library(VulkanCppModule SHARED)
+target_compile_definitions(VulkanCppModule
+    PUBLIC VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1 VULKAN_HPP_NO_STRUCT_CONSTRUCTORS=1
+)
+target_include_directories(VulkanCppModule
+    PRIVATE
+    "${Vulkan_INCLUDE_DIR}"
+)
+target_link_libraries(VulkanCppModule
+    PUBLIC
+    ${Vulkan_LIBRARIES}
+)
+set_target_properties(VulkanCppModule PROPERTIES CXX_STANDARD 20)
+
+# Set up the C++ module file set
+target_sources(VulkanCppModule
+    PUBLIC
+    FILE_SET cxx_modules TYPE CXX_MODULES
+    BASE_DIRS
+    "${Vulkan_INCLUDE_DIR}"
+    FILES
+    "${Vulkan_INCLUDE_DIR}/vulkan/vulkan.cppm"
+)
+
+# Set up shader compilation for 34_android
+set(SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../attachments")
+set(SHADER_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+file(MAKE_DIRECTORY ${SHADER_OUTPUT_DIR})
+
+# Copy shader source files to the build directory
+configure_file(
+    "${SHADER_SOURCE_DIR}/27_shader_depth.frag"
+    "${SHADER_OUTPUT_DIR}/27_shader_depth.frag"
+    COPYONLY
+)
+configure_file(
+    "${SHADER_SOURCE_DIR}/27_shader_depth.vert"
+    "${SHADER_OUTPUT_DIR}/27_shader_depth.vert"
+    COPYONLY
+)
+
+# Compile shaders
+set(SHADER_SOURCES "${SHADER_OUTPUT_DIR}/27_shader_depth.frag" "${SHADER_OUTPUT_DIR}/27_shader_depth.vert")
+add_shaders_target(android_shaders CHAPTER_NAME "${SHADER_OUTPUT_DIR}" SOURCES ${SHADER_SOURCES})
+
+# Add the main native library
+add_library(vulkan_tutorial_android SHARED
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../attachments/34_android.cpp
+    game_activity_bridge.cpp
+)
+
+# Add dependency on shader compilation
+add_dependencies(vulkan_tutorial_android android_shaders)
+
+# Set include directories
+target_include_directories(vulkan_tutorial_android PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${Vulkan_INCLUDE_DIR}
+    ${ANDROID_NDK}/sources/android/game-activity/include
+)
+
+# Link against libraries
+target_link_libraries(vulkan_tutorial_android
+    VulkanCppModule
+    game-activity::game-activity
+    android
+    log
+    ${Vulkan_LIBRARIES}
+)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Key points:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>We find the Vulkan package and include the game-activity library instead of native_app_glue.</p>
+</li>
+<li>
+<p>We set up shader compilation tools and define a function to compile shaders.</p>
+</li>
+<li>
+<p>We set the C&#43;&#43; standard to C&#43;&#43;20 and optionally create a Vulkan C&#43;&#43; module (recommended) when modules are enabled.</p>
+</li>
+<li>
+<p>We set up shader compilation for the 34_android chapter, copying shader source files from the main project.</p>
+</li>
+<li>
+<p>We add the main native library, which uses the 34_android.cpp file from the main project and a bridge file to connect with GameActivity.</p>
+</li>
+<li>
+<p>We link against the necessary libraries, including game-activity.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_native_implementation"><a class="anchor" href="#_native_implementation"></a>Native Implementation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we&#8217;ve set up our build configuration, let&#8217;s dive into the native C++ code that powers our Vulkan application on Android. This is where the real magic happens - we&#8217;ll see how to adapt our existing Vulkan code to work on Android while minimizing platform-specific changes.</p>
+</div>
+<div class="paragraph">
+<p>One of the key advantages of our approach is code reuse. Instead of maintaining separate codebases for desktop and Android, we&#8217;ve structured our project to share as much code as possible:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>34_android.cpp</strong>: This is the same file used in our main project, containing the core Vulkan implementation. By reusing this file, we ensure that our rendering code is identical across platforms.</p>
+</li>
+<li>
+<p><strong>game_activity_bridge.cpp</strong>: This small bridge file connects the Android GameActivity to our core Vulkan code. It handles the platform-specific initialization and event processing.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This separation of concerns allows us to focus on the Vulkan implementation without getting bogged down in platform-specific details. When we make improvements to our rendering code, both desktop and Android versions benefit automatically.</p>
+</div>
+<div class="sect2">
+<h3 id="_gameactivity_bridge"><a class="anchor" href="#_gameactivity_bridge"></a>GameActivity Bridge</h3>
+<div class="paragraph">
+<p>Let&#8217;s take a closer look at our bridge code, which is the key to connecting our Java GameActivity with our native Vulkan implementation. This small but crucial file handles the translation between Android&#8217;s Java-based activity lifecycle and our C++ code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">#include &lt;game-activity/GameActivity.h&gt;
+#include &lt;game-activity/native_app_glue/android_native_app_glue.h&gt;
+#include &lt;android/log.h&gt;
+
+// Define logging macros
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "VulkanTutorial", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "VulkanTutorial", __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "VulkanTutorial", __VA_ARGS__))
+
+// Forward declaration of the main entry point
+extern "C" void android_main(android_app* app);
+
+// GameActivity entry point
+extern "C" {
+    void GameActivity_onCreate(GameActivity* activity) {
+        LOGI("GameActivity_onCreate");
+
+        // Create an android_app structure
+        android_app* app = new android_app();
+        memset(app, 0, sizeof(android_app));
+
+        // Set up the android_app structure
+        app-&gt;activity = activity;
+        app-&gt;window = activity-&gt;window;
+
+        // Call the original android_main function
+        android_main(app);
+
+        // Clean up
+        delete app;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This bridge code:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Creates an android_app structure compatible with our Vulkan code</p>
+</li>
+<li>
+<p>Sets up the necessary connections between GameActivity and our code</p>
+</li>
+<li>
+<p>Calls the android_main function in our 34_android.cpp file</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_android_entry_point"><a class="anchor" href="#_android_entry_point"></a>Android Entry Point</h3>
+<div class="paragraph">
+<p>Once our bridge code has created the android_app structure, it calls the android_main function, which serves as the entry point for our native code. This function is defined in our 34_android.cpp file and is analogous to the main() function in desktop applications:</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s look at how we initialize our Vulkan application from this entry point:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void android_main(android_app* app) {
+    try {
+        // Create and run the Vulkan application
+        HelloTriangleApplication application(app);
+        application.run();
+    } catch (const std::exception&amp; e) {
+        LOGE("Exception caught: %s", e.what());
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_creating_the_vulkan_surface"><a class="anchor" href="#_creating_the_vulkan_surface"></a>Creating the Vulkan Surface</h3>
+<div class="paragraph">
+<p>One of the key platform-specific differences in our Vulkan implementation is how we create the surface. On desktop, we used GLFW to create a window and surface. On Android, we need to use the VK_KHR_android_surface extension to create a surface from the native Android window.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how we create a Vulkan surface on Android:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void createSurface() {
+    VkSurfaceKHR _surface;
+    VkResult result = VK_SUCCESS;
+
+    // Create Android surface
+    result = vkCreateAndroidSurfaceKHR(
+        *instance,
+        &amp;(VkAndroidSurfaceCreateInfoKHR{
+            .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+            .pNext = nullptr,
+            .flags = 0,
+            .window = androidApp-&gt;window
+        }),
+        nullptr,
+        &amp;_surface
+    );
+
+    if (result != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create Android surface");
+    }
+
+    surface = vk::raii::SurfaceKHR(instance, _surface);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_handling_android_events"><a class="anchor" href="#_handling_android_events"></a>Handling Android Events</h3>
+<div class="paragraph">
+<p>Another important platform-specific aspect is event handling. Android applications have a different lifecycle compared to desktop applications - they can be paused, resumed, or terminated by the system at any time. We need to handle these events properly to ensure our Vulkan resources are managed correctly.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s how we handle Android-specific events in our application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">static void handleAppCommand(android_app* app, int32_t cmd) {
+    auto* vulkanApp = static_cast&lt;VulkanApplication*&gt;(app-&gt;userData);
+    switch (cmd) {
+        case APP_CMD_INIT_WINDOW:
+            // Window created, initialize Vulkan
+            if (app-&gt;window != nullptr) {
+                vulkanApp-&gt;initVulkan();
+            }
+            break;
+        case APP_CMD_TERM_WINDOW:
+            // Window destroyed, clean up Vulkan
+            vulkanApp-&gt;cleanup();
+            break;
+        default:
+            break;
+    }
+}
+
+static int32_t handleInputEvent(android_app* app, AInputEvent* event) {
+    auto* vulkanApp = static_cast&lt;VulkanApplication*&gt;(app-&gt;userData);
+    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+        // Handle touch events
+        float x = AMotionEvent_getX(event, 0);
+        float y = AMotionEvent_getY(event, 0);
+
+        // Process touch coordinates
+        // ...
+
+        return 1;
+    }
+    return 0;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cross_platform_implementation"><a class="anchor" href="#_cross_platform_implementation"></a>Cross-Platform Implementation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While we&#8217;ve focused on Android-specific code so far, our approach allows us to maintain a single codebase that works on both desktop and Android platforms. This is achieved through careful use of preprocessor directives and platform-specific abstractions.</p>
+</div>
+<div class="sect2">
+<h3 id="_platform_detection"><a class="anchor" href="#_platform_detection"></a>Platform Detection</h3>
+<div class="paragraph">
+<p>The first step in our cross-platform approach is to detect which platform we&#8217;re building for. We use preprocessor directives to check for platform-specific predefined macros:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Platform detection
+#if defined(__ANDROID__)
+    #define PLATFORM_ANDROID 1
+#else
+    #define PLATFORM_DESKTOP 1
+#endif</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This approach leverages the standard predefined macro <code><em>ANDROID</em></code> which is automatically defined by the compiler when building for Android platforms. These platform macros are then used throughout the code to conditionally compile platform-specific code.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_consistent_class_structure"><a class="anchor" href="#_consistent_class_structure"></a>Consistent Class Structure</h3>
+<div class="paragraph">
+<p>To maintain a clean and consistent codebase, we use the same class name (<code>HelloTriangleApplication</code>) for both platforms. This makes it easier to understand the code and reduces the need for platform-specific branches:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Cross-platform application class
+class HelloTriangleApplication {
+public:
+#if PLATFORM_DESKTOP
+    // Desktop constructor
+    HelloTriangleApplication() {
+        // No Android-specific initialization needed
+    }
+#else
+    // Android constructor
+    HelloTriangleApplication(android_app* app) : androidApp(app) {
+        // Android-specific initialization
+    }
+#endif
+    // ... rest of the class ...
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_platform_specific_includes"><a class="anchor" href="#_platform_specific_includes"></a>Platform-Specific Includes</h3>
+<div class="paragraph">
+<p>Different platforms require different header files. We use preprocessor directives to include the appropriate headers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Platform-specific includes
+#if PLATFORM_ANDROID
+    // Android-specific includes
+    #include &lt;android/log.h&gt;
+    #include &lt;android_native_app_glue.h&gt;
+    #include &lt;android/asset_manager.h&gt;
+    #include &lt;android/asset_manager_jni.h&gt;
+#else
+    // Desktop-specific includes
+    #define GLFW_INCLUDE_VULKAN
+    #include &lt;GLFW/glfw3.h&gt;
+    #include &lt;stb_image.h&gt;
+    #include &lt;tiny_obj_loader.h&gt;
+#endif</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cross_platform_file_loading"><a class="anchor" href="#_cross_platform_file_loading"></a>Cross-Platform File Loading</h3>
+<div class="paragraph">
+<p>File loading is one of the key differences between desktop and Android platforms. On desktop, we load files from the filesystem, while on Android, we load them from the APK&#8217;s assets. We&#8217;ve created a cross-platform file loading function that works on both platforms:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Cross-platform file reading function
+std::vector&lt;char&gt; readFile(const std::string&amp; filename, std::optional&lt;AAssetManager*&gt; assetManager = std::nullopt) {
+#if PLATFORM_ANDROID
+    // On Android, use asset manager if provided
+    if (assetManager.has_value() &amp;&amp; *assetManager != nullptr) {
+        // Open the asset
+        AAsset* asset = AAssetManager_open(*assetManager, filename.c_str(), AASSET_MODE_BUFFER);
+        // ... read file from asset ...
+        return buffer;
+    }
+#endif
+
+    // Desktop version or Android fallback to filesystem
+    std::ifstream file(filename, std::ios::ate | std::ios::binary);
+    // ... read file from filesystem ...
+    return buffer;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_platform_specific_entry_points"><a class="anchor" href="#_platform_specific_entry_points"></a>Platform-Specific Entry Points</h3>
+<div class="paragraph">
+<p>Each platform has its own entry point. On desktop, we use the standard <code>main()</code> function, while on Android, we use the <code>android_main()</code> function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Platform-specific entry point
+#if PLATFORM_ANDROID
+// Android main entry point
+void android_main(android_app* app) {
+    // Android-specific initialization
+    try {
+        HelloTriangleApplication vulkanApp(app);
+        vulkanApp.run();
+    } catch (const std::exception&amp; e) {
+        LOGE("Exception caught: %s", e.what());
+    }
+}
+#else
+// Desktop main entry point
+int main() {
+    try {
+        HelloTriangleApplication app;
+        app.run();
+    } catch (const std::exception&amp; e) {
+        std::cerr &lt;&lt; e.what() &lt;&lt; std::endl;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
+#endif</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_build_system_integration"><a class="anchor" href="#_build_system_integration"></a>Build System Integration</h3>
+<div class="paragraph">
+<p>Our cross-platform approach leverages the compiler&#8217;s built-in platform detection capabilities. Since the <code><em>ANDROID</em></code> macro is automatically defined by the compiler when building for Android, we don&#8217;t need to explicitly define platform macros in our build system.</p>
+</div>
+<div class="paragraph">
+<p>This approach has several advantages:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Simplicity</strong>: We don&#8217;t need to maintain platform-specific compile definitions in our CMake files.</p>
+</li>
+<li>
+<p><strong>Reliability</strong>: We rely on standard compiler behavior rather than custom definitions.</p>
+</li>
+<li>
+<p><strong>Maintainability</strong>: Less build system configuration means fewer potential points of failure.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>By using the compiler&#8217;s predefined macros, we can maintain a single codebase that works on both desktop and Android platforms, with minimal platform-specific code. When we make improvements to our rendering code, both desktop and Android versions benefit automatically.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_shader_handling_on_android"><a class="anchor" href="#_shader_handling_on_android"></a>Shader Handling on Android</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we&#8217;ve covered the core native implementation, let&#8217;s address another important aspect of Vulkan development on Android: shader handling. Shaders are a critical part of any Vulkan application, and we need to ensure they&#8217;re properly compiled and loaded on Android.</p>
+</div>
+<div class="paragraph">
+<p>In our approach, we compile shaders locally during the build process, similar to how it&#8217;s done in the main project. This strategy offers several significant advantages:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Consistency</strong>: We use the same shader source files for both desktop and Android builds, ensuring identical visual results across platforms.</p>
+</li>
+<li>
+<p><strong>Maintainability</strong>: When we need to update a shader, we only need to change it in one place, and both desktop and Android versions benefit.</p>
+</li>
+<li>
+<p><strong>Build-time validation</strong>: Shader compilation errors are caught during the build process, not at runtime, making debugging much easier.</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_local_shader_compilation"><a class="anchor" href="#_local_shader_compilation"></a>Local Shader Compilation</h3>
+<div class="paragraph">
+<p>We&#8217;ve set up our CMake configuration to compile shaders locally during the build process:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Define a shader building function</strong>:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">function(add_shaders_target TARGET)
+  cmake_parse_arguments("SHADER" "" "CHAPTER_NAME" "SOURCES" ${ARGN})
+  set(SHADERS_DIR ${SHADER_CHAPTER_NAME}/shaders)
+  add_custom_command(
+    OUTPUT ${SHADERS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${SHADERS_DIR}
+  )
+  add_custom_command(
+    OUTPUT ${SHADERS_DIR}/frag.spv ${SHADERS_DIR}/vert.spv
+    COMMAND glslang::validator
+    ARGS --target-env vulkan1.0 ${SHADER_SOURCES} --quiet
+    WORKING_DIRECTORY ${SHADERS_DIR}
+    DEPENDS ${SHADERS_DIR} ${SHADER_SOURCES}
+    COMMENT "Compiling Shaders"
+    VERBATIM
+  )
+  add_custom_target(${TARGET} DEPENDS ${SHADERS_DIR}/frag.spv ${SHADERS_DIR}/vert.spv)
+endfunction()</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Copy shader source files from the main project</strong>:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake"># Set up shader compilation for 34_android
+set(SHADER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../attachments")
+set(SHADER_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+file(MAKE_DIRECTORY ${SHADER_OUTPUT_DIR})
+
+# Copy shader source files to the build directory
+configure_file(
+    "${SHADER_SOURCE_DIR}/27_shader_depth.frag"
+    "${SHADER_OUTPUT_DIR}/27_shader_depth.frag"
+    COPYONLY
+)
+configure_file(
+    "${SHADER_SOURCE_DIR}/27_shader_depth.vert"
+    "${SHADER_OUTPUT_DIR}/27_shader_depth.vert"
+    COPYONLY
+)</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Compile the shaders</strong>:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake"># Compile shaders
+set(SHADER_SOURCES "${SHADER_OUTPUT_DIR}/27_shader_depth.frag" "${SHADER_OUTPUT_DIR}/27_shader_depth.vert")
+add_shaders_target(android_shaders CHAPTER_NAME "${SHADER_OUTPUT_DIR}" SOURCES ${SHADER_SOURCES})
+
+# Add dependency on shader compilation
+add_dependencies(vulkan_tutorial_android android_shaders)</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Reference the compiled shaders in the Gradle build</strong>:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-groovy hljs" data-lang="groovy">sourceSets {
+    main {
+        assets {
+            srcDirs = [
+                // Point to the main project's assets
+                '../../../../',  // For models and textures in the attachments directory
+                // Use locally compiled shaders from the build directory for all ABIs
+                '.externalNativeBuild/cmake/debug/arm64-v8a/shaders',
+                '.externalNativeBuild/cmake/debug/armeabi-v7a/shaders',
+                // ... other ABIs ...
+            ]
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_loading_assets_in_a_cross_platform_way"><a class="anchor" href="#_loading_assets_in_a_cross_platform_way"></a>Loading Assets in a Cross-Platform Way</h3>
+<div class="paragraph">
+<p>Our unified readFile function makes it easy to load assets in a cross-platform way. Here&#8217;s how we use it to load shader files:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Load shader files using cross-platform function
+#if PLATFORM_ANDROID
+std::optional&lt;AAssetManager*&gt; optionalAssetManager = assetManager;
+#else
+std::optional&lt;AAssetManager*&gt; optionalAssetManager = std::nullopt;
+#endif
+std::vector&lt;char&gt; vertShaderCode = readFile("shaders/vert.spv", optionalAssetManager);
+std::vector&lt;char&gt; fragShaderCode = readFile("shaders/frag.spv", optionalAssetManager);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We use the same approach to load texture images and model files:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Load texture image
+#if PLATFORM_ANDROID
+std::optional&lt;AAssetManager*&gt; optionalAssetManager = assetManager;
+std::vector&lt;char&gt; imageData = readFile(TEXTURE_PATH, optionalAssetManager);
+// Process the image data...
+#else
+// Load directly from filesystem
+// ...
+#endif</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This unified approach gives us the best of both worlds: we use the same code structure for both platforms, with the platform-specific differences handled by the readFile function itself. This makes our code more maintainable and easier to understand.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building_and_running"><a class="anchor" href="#_building_and_running"></a>Building and Running</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we&#8217;ve set up our Android project with all the necessary components, let&#8217;s put everything together and run our Vulkan application on an Android device.</p>
+</div>
+<div class="paragraph">
+<p>The process is straightforward:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Open the project in Android Studio.</p>
+</li>
+<li>
+<p>Connect an Android device or start an emulator (make sure it supports Vulkan).</p>
+</li>
+<li>
+<p>Click the "Run" button in Android Studio.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Android Studio will handle the rest - it will build the application, compile the shaders, package everything into an APK, install it on the device/emulator, and launch it. If everything is set up correctly, you should see your Vulkan application running on Android, rendering the same scene as on desktop.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we&#8217;ve explored how to take our Vulkan application from desktop to mobile by adapting it for Android. We&#8217;ve seen that while the core Vulkan API remains the same across platforms, the surrounding ecosystem requires platform-specific adaptations.</p>
+</div>
+<div class="paragraph">
+<p>Our approach demonstrates several key principles that you can apply to your own Vulkan projects:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Code Reuse</strong>: By structuring our project properly, we can use the same core rendering code (34_android.cpp) for both desktop and Android platforms, minimizing duplication and maintenance overhead.</p>
+</li>
+<li>
+<p><strong>Modern Android Integration</strong>: We leverage the GameActivity from the Android Game SDK for better performance and more streamlined integration compared to the older NativeActivity approach.</p>
+</li>
+<li>
+<p><strong>Efficient Asset Management</strong>: Instead of duplicating assets, we reference them from the main project, ensuring consistency and reducing APK size.</p>
+</li>
+<li>
+<p><strong>Local Shader Compilation</strong>: By compiling shaders during the build process, we catch errors early and ensure compatibility across platforms.</p>
+</li>
+<li>
+<p><strong>Minimal Platform-Specific Code</strong>: We isolate platform-specific code in a small bridge file, keeping our core Vulkan implementation clean and portable.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This approach not only makes it easier to maintain and update our application but also provides a solid foundation for expanding to other platforms in the future. When you make improvements to your core rendering code, both desktop and Android versions benefit automatically.</p>
+</div>
+<div class="paragraph">
+<p>The complete Android example can be found in the attachments/android directory. Feel free to use it as a template for your own Vulkan projects on Android.</p>
+</div>
+<div class="paragraph">
+<p>Remember that Vulkan HPP is not included by default in the Android NDK, so you&#8217;ll need to download it separately from the <a href="https://github.com/KhronosGroup/Vulkan-Hpp">Vulkan-Hpp GitHub repository</a> or use the version included in the Vulkan SDK.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/34_android.cpp">C&#43;&#43; code</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Descriptor Heap :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="versions.html">Vulkan Versions &amp; Porting Guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="ide.html">Development Environments &amp; IDEs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="embedded_programming.html">Embedded Programming</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="deprecated.html">Deprecated</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="tile_based_rendering_best_practices.html">Tile Based Rendering (TBR) Best Practices</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="windowing_audio_input.html">Windowing, Audio, and Input</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address.html">Buffer Device Address</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address_alignment.html">Buffer Device Address Alignment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_buffer.html">Descriptor Buffer</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="descriptor_heap.html">Descriptor Heap</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_array_length.html">Buffer Array Length (OpArrayLength)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="compute_shaders.html">Compute Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_debug_utils.html">VK_EXT_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Vulkan Guide</a></li>
+    <li>Using Vulkan</li>
+    <li><a href="mapping_data_to_shaders.html">Mapping Data to Shaders</a></li>
+    <li><a href="descriptor_heap.html">Descriptor Heap</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Descriptor Heap</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter aims to illustrate better how <a href="https://github.com/KhronosGroup/Vulkan-Docs/blob/main/proposals/VK_EXT_descriptor_heap.adoc">VK_EXT_descriptor_heap</a> mapping of memory works.</p>
+</div>
+<div class="paragraph">
+<p>The goal here is <strong>not</strong> to show a real example or recommended usage, but instead help understand how the API is mapping data to the shader, so that afterwards you can use this API in any way you want.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_is_a_descriptor"><a class="anchor" href="#_what_is_a_descriptor"></a>What is a descriptor</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A "descriptor" is just small, opaque, data structure that describes how to access the data for your <a href="https://docs.vulkan.org/spec/latest/chapters/interfaces.html#interfaces-resources">resource variables</a> in your shader.</p>
+</div>
+<div class="paragraph">
+<p>This data structure is defined internally by a driver. Prior to <code>VK_EXT_descriptor_buffer</code>/<code>VK_EXT_descriptor_heap</code> this was abstracted away, but now the application has full control to manage these "descriptor" data structures.</p>
+</div>
+<div class="paragraph">
+<p>As an example, for some drivers a <code>VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</code> descriptor is just 16 bytes of data. These 16 bytes for the "descriptor" might encode the virtual address, stride and other meta data in order to read the uniform buffer in the shader.</p>
+</div>
+<div class="paragraph">
+<p>Here is a example of what a "descriptor" could look like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">0x12345678 0xFFFF0001 0x10101010 0x11223344</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It is <strong>not important</strong> at all to the developer what the binary data of a descriptor means.</p>
+</div>
+<div class="paragraph">
+<p>What <strong>is important</strong> is understanding that unlike Vulkan 1.0, the driver is now just handing you back an opaque, variable sized, internal data structure.</p>
+</div>
+<div class="paragraph">
+<p>Instead of having a <code>VkDescriptorSet</code> object the driver controls, the application is now responsible to manage that this data is at the correct spot in memory for the GPU to read from.</p>
+</div>
+<div class="sect2">
+<h3 id="_multiple_descriptors_for_a_single_resource"><a class="anchor" href="#_multiple_descriptors_for_a_single_resource"></a>Multiple descriptors for a single resource</h3>
+<div class="paragraph">
+<p>A descriptor is not always a 1-to-1 relationship with resources such as <code>VkBuffer</code>. For example, if there is a 1024 byte <code>VkBuffer</code>, it could be divided up into 3 descriptors by setting different offsets and ranges for it.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_descriptor_example.svg" alt="descriptor_heap_descriptor_example.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>In this image each <code>Descriptor Blob</code> is just an indirection pointing to where in the <code>VkBuffer</code> the shader will access memory.</p>
+</div>
+<div class="paragraph">
+<p>In Vulkan 1.0, the application was not even aware of these "descriptor blobs", but with <code>VK_EXT_descriptor_heap</code>, the application are now given, and incharge of managing, these "descriptor blobs" to make sure they are in the right spot of memory for the shader to access.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_do_we_get_the_descriptor_binary_blob"><a class="anchor" href="#_how_do_we_get_the_descriptor_binary_blob"></a>How do we get the descriptor binary blob</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For uniform and storage buffers, you first need to create a <code>VkBuffer</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>With Vulkan 1.0 you would call <code>vkUpdateDescriptorSets</code> where the driver would handle it for you.</p>
+</li>
+<li>
+<p>With <code>VK_EXT_descriptor_buffer</code> you call <code>vkGetBufferDeviceAddress()</code> to get the <code>VkBuffer</code> address, then provide it along with a range to <code>vkGetDescriptorEXT()</code>.</p>
+</li>
+<li>
+<p>With <code>VK_EXT_descriptor_heap</code> it is the same, but the address and range are provided to <code>vkWriteResourceDescriptorsEXT()</code></p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_blob_example_buffer.svg" alt="descriptor_heap_blob_example_buffer.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>For sampled image, the same idea applies, except there is no <code>VkImageView</code> object for <code>VK_EXT_descriptor_heap</code> anymore.
+Instead the <code>VkImageViewCreateInfo</code> is directly handed to <code>vkWriteResourceDescriptorsEXT()</code> where it generates the descriptor there.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_blob_example_image.svg" alt="descriptor_heap_blob_example_image.svg">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_heap"><a class="anchor" href="#_the_heap"></a>The heap</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With <code>VK_EXT_descriptor_heap</code> there are explicitly two heaps:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>one for samplers</p>
+</li>
+<li>
+<p>one for other resources (buffers, images, acceleration structures, etc)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The heap is not a 1:1 relationship with <code>VkDescriptorSets</code> and instead should contain all descriptors used in a command buffer.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_allocating_the_heap"><a class="anchor" href="#_allocating_the_heap"></a>Allocating the heap</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After we have our various descriptors, we need a heap to transfer them to. This is simply done by allocating a <code>VkBuffer</code> with the <code>VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT</code> (and <code>VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT</code>) usage flags.</p>
+</div>
+<div class="paragraph">
+<p>This <code>VkBuffer</code> is now your descriptor heap, the only thing left is to move your descriptor binary blobs into it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_getting_descriptors_in_the_heap"><a class="anchor" href="#_getting_descriptors_in_the_heap"></a>Getting descriptors in the heap</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After calling <code>vkWriteResourceDescriptorsEXT()</code> to get the descriptor data, we still need to get that data into the heap memory.</p>
+</div>
+<div class="paragraph">
+<p>There are 3 ways to copy the descriptors into the heap memory:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>If your heap memory is host visible, then using <code>vkMapMemory()</code> on the heap, the descriptors can be copied with a simple <code>memcpy()</code>.</p>
+</li>
+<li>
+<p>If your heap memory is host visible, set the <code>vkWriteResourceDescriptorsEXT() pDescriptors&#8594;address</code> to point directly to the descriptor heap.</p>
+</li>
+<li>
+<p>The descriptors can also be transfered on the GPU. This could be done with something like <code>vkCmdCopyBuffer()</code> or even writting it from inside a shader directly.</p>
+</li>
+</ol>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Make sure if writing to the heap on the GPU, prior to reading descriptors from the heap on the GPU, to properly synchronized with <code>VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT</code> or <code>VK_ACCESS_2_SAMPLER_HEAP_READ_BIT_EXT</code>.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="descriptor-heap-size"><a class="anchor" href="#descriptor-heap-size"></a>Descriptor Size</h3>
+<div class="paragraph">
+<p>Each <code>VkDescriptorType</code> is going to have a different size for its descriptor blob</p>
+</div>
+<div class="paragraph">
+<p>For simplicity, there are few <code>VkPhysicalDeviceDescriptorHeapPropertiesEXT</code> values that can be used:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><code>samplerDescriptorSize</code></p>
+</li>
+<li>
+<p><code>bufferDescriptorSize</code></p>
+</li>
+<li>
+<p><code>imageDescriptorSize</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For some specific use cases it is useful to be able to pack specific descriptors into memory more tightly than this when the implementation allows for this with <code>vkGetPhysicalDeviceDescriptorSizeEXT</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_binding_to_the_command_buffer"><a class="anchor" href="#_binding_to_the_command_buffer"></a>Binding to the Command Buffer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When recording the <code>vkCommandBuffer</code> we need an equivalent to <code>vkCmdBindDescriptorSets()</code> (or <code>vkCmdBindDescriptorBuffersEXT()</code>).</p>
+</div>
+<div class="paragraph">
+<p>There are 2 basically identical calls, one for each heap - <code>vkCmdBindSamplerHeapEXT()</code> and <code>vkCmdBindResourceHeapEXT()</code></p>
+</div>
+<div class="paragraph">
+<p>The provided <code>heapRange</code> field provides the memory range of the heap to bind.</p>
+</div>
+<div class="paragraph">
+<p>There is also a "reserved range" provided. This is memory that the driver will use for internal descriptors it needs. (It is very invalid to access it.)</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The <code>minResourceHeapReservedRange</code> and <code>minSamplerHeapReservedRange</code> properties are used to determine how much reserved memory is required.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The following shows an example (with simple values) of binding both heaps:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vkCmdBindResourceHeapEXT(
+    heapRange.address = 0x1000
+    heapRange.size = 0x80
+    reservedRangeOffset = 0x40
+    reservedRangeSize = 0x20
+);
+
+vkCmdBindSamplerHeapEXT(
+    heapRange.address = 0x4020
+    heapRange.size = 0x60
+    reservedRangeOffset = 0
+    reservedRangeSize = 0x20
+);</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_binding.svg" alt="descriptor_heap_binding.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>This also shows how the application has control of where the driver&#8217;s reserved range ends up.</p>
+</div>
+<div class="sect2">
+<h3 id="_rebinding_a_new_heap"><a class="anchor" href="#_rebinding_a_new_heap"></a>Rebinding a new heap</h3>
+<div class="paragraph">
+<p>When you call <code>vkCmdBindResourceHeapEXT()</code> multiple times in a command buffer, the driver has to swap heaps, which is costly and should be avoided.</p>
+</div>
+<div class="paragraph">
+<p>The goal of <code>VK_EXT_descriptor_heap</code> is that now the application knows where the heap is bound, it can copy the memory to the correct offset in the heap.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mapping_the_heap_to_exisiting_shaders"><a class="anchor" href="#_mapping_the_heap_to_exisiting_shaders"></a>Mapping the Heap to exisiting shaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To allow applications to easily transition to using <code>VK_EXT_descriptor_heap</code>, no shaders have to be modified to use it.</p>
+</div>
+<div class="paragraph">
+<p><code>VkDescriptorSetLayout</code> and <code>VkPipelineLayout</code> are no longer required with <code>VK_EXT_descriptor_heap</code>, instead <code>VkShaderDescriptorSetAndBindingMappingInfoEXT</code> is used to map the location in the bound heap to the <code>DescriptorSet</code>/<code>Binding</code> decoration in the SPIR-V.</p>
+</div>
+<div class="paragraph">
+<p>This mapping is provided at <code>vkCreate*Pipelines()</code> or <code>vkCreateShadersEXT()</code> time.</p>
+</div>
+<div class="sect2">
+<h3 id="_vkdescriptormappingsourceext"><a class="anchor" href="#_vkdescriptormappingsourceext"></a>VkDescriptorMappingSourceEXT</h3>
+<div class="paragraph">
+<p>The first time you look at <code>VkDescriptorMappingSourceEXT</code> and all the options, it can be bit overwhelming. It is best to mentally categorize them into 3 types:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Heap Access</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_<strong>HEAP</strong>_WITH_CONSTANT_OFFSET_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_<strong>HEAP</strong>_WITH_PUSH_INDEX_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_<strong>HEAP</strong>_WITH_INDIRECT_INDEX_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_<strong>HEAP</strong>_WITH_INDIRECT_INDEX_ARRAY_EXT</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Inline Access</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Shader Record</strong> (Ray Tracing)</p>
+<div class="ulist">
+<ul>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_<strong>SHADER_RECORD</strong>_INDEX_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_<strong>SHADER_RECORD</strong>_DATA_EXT</p>
+</li>
+<li>
+<p>VK_DESCRIPTOR_MAPPING_SOURCE_<strong>SHADER_RECORD</strong>_ADDRESS_EXT</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkdescriptormappingsourceext_heap_access"><a class="anchor" href="#_vkdescriptormappingsourceext_heap_access"></a>VkDescriptorMappingSourceEXT Heap Access</h3>
+<div class="paragraph">
+<p>To try and give a visual example how these mappings work, first let&#8217;s setup our heap with 8 descriptors pointing to 8 possible payloads of data.</p>
+</div>
+<div class="paragraph">
+<p>In this example, we have a single uniform buffer storing 8 <code>uvec4</code></p>
+</div>
+<div class="paragraph">
+<p>We are also using a descriptor to reference each of them separately in order to help make it obvious in the below example which data is actually read.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_sample_heap.svg" alt="descriptor_heap_sample_heap.svg">
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The fact that both the descriptor and the uvec4 are both are 16 bytes is just a coincidence. Real applications would not only bind 16 bytes of memory per descriptor as that would be wasteful.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>From here, our shader will attempt to read from 2 descriptors from an array:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// VkDescriptorSetAndBindingMappingEXT::descriptorSet = 0;
+// VkDescriptorSetAndBindingMappingEXT::firstBinding = 0;
+// VkDescriptorSetAndBindingMappingEXT::bindingCount = 2;
+layout(set = 0, binding = 0) uniform UBO {
+    uvec4 payload;
+} u_buffers[2];
+
+void main() {
+    // This example is to figure out what value x and y would be
+    uvec4 x = u_buffers[0].payload;
+    uvec4 y = u_buffers[1].payload;
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_heap_with_constant_offset_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_heap_with_constant_offset_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_OFFSET_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_constant_offset.svg" alt="descriptor_heap_constant_offset.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(2)</code> and <code>y == vec4(6)</code></p>
+</div>
+<div class="paragraph">
+<p>The formula is <code>offset = heapOffset + (shaderIndex * heapArrayStride)</code></p>
+</div>
+<div class="paragraph">
+<p><code>shaderIndex</code>, in this and all below cases, is just each index into our descriptor array (<code>u_buffers[]</code>) since we are at set/binding 0</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>u_buffers[0] offset = 0x20 + (0 * 0x40)
+u_buffers[1] offset = 0x20 + (1 * 0x40)</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_heap_with_push_index_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_heap_with_push_index_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_push_index.svg" alt="descriptor_heap_push_index.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(4)</code> and <code>y == vec4(5)</code></p>
+</div>
+<div class="paragraph">
+<p>The formula is <code>offset = heapOffset + (pushIndex * heapIndexStride) + (shaderIndex * heapArrayStride)</code></p>
+</div>
+<div class="paragraph">
+<p>The <code>pushOffset = 8</code> sets <code>pushIndex</code> to <code>0x10</code></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>u_buffers[0] offset = 0x20 + (0x10 * 2) + (0 * 0x10)
+u_buffers[1] offset = 0x20 + (0x10 * 2) + (1 * 0x10)</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_heap_with_indirect_index_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_heap_with_indirect_index_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_indirect_index.svg" alt="descriptor_heap_indirect_index.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(3)</code> and <code>y == vec4(5)</code></p>
+</div>
+<div class="paragraph">
+<p>The formula is <code>offset = heapOffset + (indirectIndex * heapIndexStride) + (shaderIndex * heapArrayStride)</code></p>
+</div>
+<div class="paragraph">
+<p>The <code>pushOffset = 16</code> sets <code>indirectAddress</code> to <code>0x4000</code> which must be a valid <code>VkDeviceAddress</code> of memory backing some <code>VkBuffer</code>. The <code>addressOffset</code> of <code>0x40</code> is applied to that <code>indirectAddress</code> to get <code>0x4040</code>. We see at <code>0x4040</code> the uint32_t value of <code>0x20</code>, which becomes the <code>indirectIndex</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>u_buffers[0] offset = 0x10 + (0x20 * 1) + (0 * 0x20)
+u_buffers[1] offset = 0x10 + (0x20 * 1) + (1 * 0x20)</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_heap_with_indirect_index_array_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_heap_with_indirect_index_array_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_ARRAY_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_indirect_index_array.svg" alt="descriptor_heap_indirect_index_array.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(6)</code> and <code>y == vec4(2)</code></p>
+</div>
+<div class="paragraph">
+<p>The formula is <code>offset = heapOffset + (indirectIndex × heapIndexStride)</code></p>
+</div>
+<div class="paragraph">
+<p>Like the previous example, the <code>pushOffset = 16</code> sets <code>indirectAddress</code> to <code>0x4000</code> plus <code>addressOffset</code> of <code>0x40</code> is applied to that <code>indirectAddress</code> to get <code>0x4040</code>.</p>
+</div>
+<div class="paragraph">
+<p>From <code>0x4040</code>, each <code>shaderIndex</code> jumps to the next uint32_t and gets the offset from the indirect uniform buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>u_buffers[0] offset = 0x00 + (0x20 * 1)
+u_buffers[1] offset = 0x00 + (0x60 * 1)</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkdescriptormappingsourceext_inline_access"><a class="anchor" href="#_vkdescriptormappingsourceext_inline_access"></a>VkDescriptorMappingSourceEXT Inline Access</h3>
+<div class="paragraph">
+<p>For these mappings, it is similar to <a href="extensions/VK_EXT_inline_uniform_block.html#VK_EXT_inline_uniform_block" class="xref page">VK_EXT_inline_uniform_block</a> where the data is read without a descriptor.</p>
+</div>
+<div class="paragraph">
+<p>There 2 main restrictions are these have to be Uniform Buffers (read only) and there is no arrays of descriptors in the shader.</p>
+</div>
+<div class="paragraph">
+<p>The new shader code looks like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// VkDescriptorSetAndBindingMappingEXT::bindingCount = 1;
+layout(set = 0, binding = 0) uniform UBO {
+    uvec4 payload[2];
+} u_buffer;
+
+void main() {
+    // This example is to figure out what value x and y would be
+    uvec4 x = u_buffer.payload[0];
+    uvec4 y = u_buffer.payload[1];
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_resource_heap_data_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_resource_heap_data_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_resource_heap_data.svg" alt="descriptor_heap_resource_heap_data.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(2)</code> and <code>y == vec4(3)</code></p>
+</div>
+<div class="paragraph">
+<p>The the <code>pushOffset = 12</code> gets the offset <code>0x10</code> which is applied to the <code>heapOffset</code> of <code>0x80</code> to make a final offset of <code>0x90</code></p>
+</div>
+<div class="paragraph">
+<p>From an offset of <code>0x90</code> the remaining offsets depends on where the shader accesses into <code>u_buffer</code>.</p>
+</div>
+<div class="paragraph">
+<p>Since <code>payload[1]</code> is has a 16 (0x10) byte offset into the <code>u_buffer</code> struct, it effectively is grabbing <code>0x90 + 0x10</code> here.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_push_data_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_push_data_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT</h4>
+<div class="paragraph">
+<p>Using the same shader as the previous example, this just removes the heap and loads directly from the push data.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_push_data.svg" alt="descriptor_heap_push_data.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(2)</code> and <code>y == vec4(3)</code></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_push_address_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_push_address_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_push_address.svg" alt="descriptor_heap_push_address.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(2)</code> and <code>y == vec4(3)</code></p>
+</div>
+<div class="paragraph">
+<p>This is similar to the previous example, just with an extra level of indirection</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vk_descriptor_mapping_source_indirect_address_ext"><a class="anchor" href="#_vk_descriptor_mapping_source_indirect_address_ext"></a>VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT</h4>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_indirect_address.svg" alt="descriptor_heap_indirect_address.svg">
+</div>
+</div>
+<div class="paragraph">
+<p>The results are: <code>x == vec4(2)</code> and <code>y == vec4(3)</code></p>
+</div>
+<div class="paragraph">
+<p>This is similar to the previous example, just with yet-another level of indirection</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vkdescriptormappingsourceext_shader_record"><a class="anchor" href="#_vkdescriptormappingsourceext_shader_record"></a>VkDescriptorMappingSourceEXT Shader Record</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>todo - Add Ray Tracing section</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_untyped_shader_model"><a class="anchor" href="#_untyped_shader_model"></a>Untyped shader model</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The above usage of <code>VkShaderDescriptorSetAndBindingMappingInfoEXT</code> was designed to allow backwards compatibility.</p>
+</div>
+<div class="paragraph">
+<p>There is also a new "untyped" way to use <code>VK_EXT_descriptor_heap</code>. The word "untyped" refers to using the <a href="https://github.com/KhronosGroup/SPIRV-Guide/blob/main/chapters/untyped_pointers.md">VK_KHR_shader_untyped_pointers</a> extension to have "untyped pointers" to the descriptors.</p>
+</div>
+<div class="paragraph">
+<p>Using this GLSL as an example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Typed
+//
+// Standard way to provide the set/binding location
+layout(set = 0, binding = 0) buffer SSBO {
+    vec4 payload;
+} s_buffers[];
+
+layout(set = 0, binding = 1) buffer UBO {
+    vec4 payload;
+} u_buffers[];
+
+// -----
+
+// Untyped
+//
+// Both are bound to the heap
+layout(descriptor_heap) buffer SSBO {
+    vec4 payload;
+} s_buffers[];
+
+layout(descriptor_heap) uniform UBO {
+    vec4 payload;
+} u_buffers[];</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mapping_the_heap_to_untyped_pointers_shaders"><a class="anchor" href="#_mapping_the_heap_to_untyped_pointers_shaders"></a>Mapping the Heap to Untyped Pointers shaders</h3>
+<div class="paragraph">
+<p>With "untyped" the descriptor array is just bound where the heap is.</p>
+</div>
+<div class="paragraph">
+<p>If the shader code looks like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// VkPhysicalDeviceDescriptorHeapPropertiesEXT::bufferDescriptorSize == 16 (0x10)
+layout(descriptor_heap) buffer SSBO {
+    vec4 payload;
+} s_buffers[];
+
+void main() {
+    s_buffers[6].payload = vec4(1.0);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>the mapping now looks like:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_untyped_access.svg" alt="descriptor_heap_untyped_access.svg">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mastering_strides_for_each_descriptor_type"><a class="anchor" href="#_mastering_strides_for_each_descriptor_type"></a>Mastering strides for each descriptor type</h3>
+<div class="paragraph">
+<p>As <a href="#descriptor-heap-size">mentioned above</a>, descriptors will have different sizes, this means the array stride is going to be different for each descriptor array in the shader.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If coming from DX12/HLSL, all the descriptor array are the same size, while this may be a bit more convenient, it is much more wasteful of memory.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// VK_DESCRIPTOR_TYPE_SAMPLER
+layout(descriptor_heap) uniform sampler Samplers[];
+
+// VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE
+layout(descriptor_heap) uniform texture2D Textures[];
+
+// VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+layout(descriptor_heap) buffer ssbo {
+    uint data;
+} Buffers[];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Here if we would access <code>Samplers[3]</code>, <code>Textures[3]</code>, or <code>Buffer[3]</code> the offset from the heap starting address can be different.</p>
+</div>
+<div class="paragraph">
+<p>In this example if the descriptor sizes are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>bufferDescriptorSize  = 16</p>
+</li>
+<li>
+<p>samplerDescriptorSize = 32</p>
+</li>
+<li>
+<p>imageDescriptorSize   = 64</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>we would use that size as an array stride inside the heap.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="_images/descriptor_heap_untyped_stride.svg" alt="descriptor_heap_untyped_stride.svg">
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

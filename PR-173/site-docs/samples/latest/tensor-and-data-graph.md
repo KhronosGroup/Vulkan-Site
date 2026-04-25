@@ -1,0 +1,67 @@
+# Tensor and Data Graph
+
+## Metadata
+
+- **Component**: samples
+- **Version**: latest
+- **URL**: /samples/latest/samples/extensions/tensor_and_data_graph/README.html
+
+## Table of Contents
+
+- [Overview](#_overview)
+- [Setup](#_setup)
+- [Update Vulkan SDK](#_update_vulkan_sdk)
+- [Update_Vulkan_SDK](#_update_vulkan_sdk)
+- [Enable the emulation layers (Graph & Tensor)](#_enable_the_emulation_layers_graph_tensor)
+- [Enable_the_emulation_layers_(Graph_&_Tensor)](#_enable_the_emulation_layers_graph_tensor)
+
+## Content
+
+The samples in this folder demonstrate the use of the **VK_ARM_tensors** and **VK_ARM_data_graph** extensions. The **VK_ARM_data_graph** extension introduces data graph pipelines, which are used in all samples. A data graph pipeline is a new Vulkan pipeline type designed to execute dataflow graphs that can be described using SPIR-V modules. Similar to compute pipelines, they use descriptor sets to access external resources, are compiled at creation time, and support pipeline caching and offline binaries.
+
+Data graph pipelines integrate naturally into the existing Vulkan ecosystem, leveraging familiar SPIR-V tooling and workflows, and are especially well-suited for machine learning workloads as a drop-in replacement for sequences of compute pipelines.
+
+To demonstrate their use, we’ve added data graph pipeline-based samples that walk through setting up a data graph pipeline and executing simple neural networks. These examples cover key features such as using graph constants, writing SPIR-V code, creating tensors, interacting with compute shaders and aliasing memory to avoid unnecessary copying.
+
+The samples in this folder are:
+
+* 
+[Simple tensor and data graph](simple_tensor_and_data_graph/README.html)
+
+* 
+[Graph constants](graph_constants/README.html)
+
+* 
+[Compute shaders with tensors](compute_shaders_with_tensors/README.html)
+
+Some setup steps are needed before you can build and run these samples.
+
+|  | The samples and their dependencies can be built and run on Windows and Linux, other operating systems are not currently supported. |
+| --- | --- |
+
+In order to compile the shader code used in these samples, a recent version of the Vulkan SDK is required. The samples have been tested and confirmed to work with SDK version 1.4.321.
+
+Note: The ML Emulation Layer for Vulkan is only required on devices where the **VK_ARM_tensors** and **VK_ARM_data_graph** extensions are not available.
+
+Install and enable [ML Emulation Layer for Vulkan](https://github.com/arm/ai-ml-emulation-layer-for-vulkan) from GitHub.
+Please follow the usage steps located in the README.md for your platform to enable the emulation layers.
+Pre-builts are available for both Windows and Linux in the Releases section, but it can also be built from source using the build guide.
+
+Alternatively, the Vulkan Configurator tool — which is part of the Vulkan SDK — can also be used, as described below. If it is not already installed, it can be obtained from the [Vulkan SDK](https://vulkan.lunarg.com/) website.
+
+Once installed, open Vulkan Configurator and navigate to the Vulkan Layers Location tab. Click the plus (+) symbol to append a user-defined layers path,
+and navigate to the folder containing the built layers. Please note that there are two separate layers that need to be enabled, so if these are in separate folders then you will need to add both.
+
+Note: It is recommended to disable the validation layer when running these samples as the new extensions are not supported yet.
+
+![Loading Layers Completed](../../../_images/samples/extensions/tensor_and_data_graph/loading_layers.png)
+
+This should add the layers to the Vulkan Loader Management tab. The Graph layer needs to sit on top of the Tensor layer.
+
+![VK Layers](../../../_images/samples/extensions/tensor_and_data_graph/verify_layers.png)
+
+When running any of these samples, if you receive an error message similar to:
+
+ Requested required feature  is not supported
+
+then it is likely that the emulation layers are not enabled correctly. Please check the steps above to ensure that the layers are loaded and enabled and make sure the Vulkan Configurator is running before launching the sample executable. Depending on your system, you may encounter issues with using the emulation layers when running with administrative privileges - please try running without administrative privileges if you encounter issues.

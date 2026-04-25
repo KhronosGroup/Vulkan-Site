@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tile Based Rendering (TBR) Best Practices :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:guide" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="guide" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="index.html">Vulkan Guide</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="index.html">Vulkan Guide</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Logistics Overview</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_vulkan.html">What is Vulkan?</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_vulkan_can_do.html">What Vulkan Can Do</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_spec.html">Vulkan Specification</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="platforms.html">Platforms</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="checking_for_support.html">Checking For Vulkan Support</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="versions.html">Vulkan Versions &amp; Porting Guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_release_summary.html">Vulkan Release Summary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="what_is_spirv.html">What is SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="portability_initiative.html">Portability Initiative</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="vulkan_cts.html">Vulkan CTS</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="development_tools.html">Development Tools</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="ide.html">Development Environments &amp; IDEs</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="validation_overview.html">Vulkan Validation Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="decoder_ring.html">Vulkan Decoder Ring</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Using Vulkan</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="embedded_programming.html">Embedded Programming</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="deprecated.html">Deprecated</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="tile_based_rendering_best_practices.html">Tile Based Rendering (TBR) Best Practices</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="loader.html">Loader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="layers.html">Layers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="querying_extensions_features.html">Querying Properties, Extensions, Features, Limits, and Formats</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_extensions.html">Enabling Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="enabling_features.html">Enabling Features</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="spirv_extensions.html">Using SPIR-V Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="formats.html">Formats</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="queues.html">Queues</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="wsi.html">Window System Integration (WSI)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="windowing_audio_input.html">Windowing, Audio, and Input</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pnext_and_stype.html">pNext and sType</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="synchronization.html">Synchronization</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="extensions/VK_KHR_synchronization2.html">VK_KHR_synchronization2</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="swapchain_semaphore_reuse.html">Swapchain Semaphore Reuse</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="synchronization_examples.html">Synchronization Examples</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="memory_allocation.html">Memory Allocation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="sparse_resources.html">Sparse Resources</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="protected.html">Protected Memory</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address.html">Buffer Device Address</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_device_address_alignment.html">Buffer Device Address Alignment</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="pipeline_cache.html">Pipeline Cache</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="threading.html">Threading</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="depth.html">Depth</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="primitive_topology.html">Primitive Topology</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="mapping_data_to_shaders.html">Mapping Data to Shaders</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="storage_image_and_texel_buffers.html">Storage Image and Texel Buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="vertex_input_data_processing.html">Vertex Input Data Processing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_arrays.html">Descriptor Arrays</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_dynamic_offset.html">Descriptor Dynamic Offset</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_buffer.html">Descriptor Buffer</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="descriptor_heap.html">Descriptor Heap</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="location_component_interface.html">Location and Component Interface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="push_constants.html">Push Constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="ways_to_provide_spirv.html">Ways to Provide SPIR-V</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="buffer_array_length.html">Buffer Array Length (OpArrayLength)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="robustness.html">Robustness</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="dynamic_state.html">Pipeline Dynamic State</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="dynamic_state_map.html">Dynamic State Map</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="compute_shaders.html">Compute Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="subgroups.html">Subgroups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="shader_memory_layout.html">Shader Memory Layout</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="atomics.html">Atomics</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="image_copies.html">Image Copies</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="common_pitfalls.html">Common Pitfalls for New Vulkan Developers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="hlsl.html">HLSL in Vulkan</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="high_level_shader_language_comparison.html">Vulkan High Level Shader Language Comparison</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">When and Why to use Extensions</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/cleanup.html">Cleanup Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/device_groups.html">Device Groups</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/external.html">External Memory and Synchronization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/ray_tracing.html">Ray Tracing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/shader_features.html">Shader Features</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/translation_layer_extensions.html">Translation Layer Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_descriptor_indexing.html">VK_EXT_descriptor_indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_inline_uniform_block.html">VK_EXT_inline_uniform_block</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_memory_priority.html">VK_EXT_memory_priority</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_descriptor_update_template.html">VK_KHR_descriptor_update_template</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_draw_indirect_count.html">VK_KHR_draw_indirect_count</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_image_format_list.html">VK_KHR_image_format_list</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_imageless_framebuffer.html">VK_KHR_imageless_framebuffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_sampler_ycbcr_conversion.html">VK_KHR_sampler_ycbcr_conversion</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_KHR_shader_subgroup_uniform_control_flow.html">VK_KHR_shader_subgroup_uniform_control_flow</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="extensions/VK_EXT_debug_utils.html">VK_EXT_debug_utils</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Guide</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="index.html">Vulkan Guide</a></li>
+    <li>Using Vulkan</li>
+    <li><a href="tile_based_rendering_best_practices.html">Tile Based Rendering (TBR) Best Practices</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Tile Based Rendering (TBR) Best Practices</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Tile Based Rendering (TBR) is a rendering architecture widely used in mobile GPUs and increasingly in some desktop designs.
+Unlike traditional "immediate mode" GPUs that process the entire screen as one large task, a tiler breaks the framebuffer down into small, manageable screen regions called tiles.
+The goal is to keep as much work as possible on-chip, inside fast local memory, before finally writing the finished results out to the main system memory.</p>
+</div>
+<div class="paragraph">
+<p>For a Vulkan developer, this architecture means that memory bandwidth is often the most significant performance factor.
+If you can keep your data within the tile memory, your application will be faster and consume less power.
+If you force the GPU to constantly "round-trip" data back and forth between the chip and external VRAM, performance will suffer.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="mobile-gpu-architectures"><a class="anchor" href="#mobile-gpu-architectures"></a>Understanding Tiler Architectures</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Mobile GPUs operate in power-constrained environments, which makes bandwidth efficiency critical.
+Since Vulkan hides many of the internal hardware details — like the exact size of a tile or how the GPU schedules work — the best way to optimize is to provide the driver with clear intent.
+By using the right render pass configurations and memory flags, you give the implementation the information it needs to keep rendering on-chip.</p>
+</div>
+<div class="sect2">
+<h3 id="tbr-hardware-implementations"><a class="anchor" href="#tbr-hardware-implementations"></a>How Hardware Tilers Work</h3>
+<div class="paragraph">
+<p>While every vendor has a slightly different design, they generally share common characteristics.
+First, it is important to realize that the <strong>tile size</strong> is determined by the hardware and is not something you can query or control in core Vulkan.
+Depending on the device and the complexity of your attachments, tiles might be anything in size of pixels.
+The GPU chooses a size that fits its internal memory budget.
+Some vendor extensions (like <code>VK_QCOM_tile_shading</code>) might expose these details, but for a cross-platform app, you should assume the tile size is opaque.</p>
+</div>
+<div class="paragraph">
+<p>Second, the <strong>on-chip memory</strong> used for tiles is managed entirely by the driver.
+You don&#8217;t allocate "tile memory" directly.
+Instead, the number of attachments you use, their formats, and whether you enable MSAA all determine how much data needs to be stored per pixel.
+Because the total on-chip memory is fixed, using pixel formats with smaller bit depths can often allow the hardware to use larger tiles or avoid spilling data to external memory.
+If your attachments require more bits than the GPU has on-chip for a given tile size, the driver might have to use smaller tiles, which reduces efficiency.</p>
+</div>
+<div class="paragraph">
+<p>One often overlooked optimization for tilers involves the <strong>binning pass</strong>.
+Tilers usually process geometry twice: once to determine which triangles fall into which tiles (binning), and a second time to actually render the pixels.
+To speed up the binning pass, consider storing your vertex positions in a separate buffer from other attributes like UVs or normals.
+This allows the GPU to read only the data it needs to calculate tile coverage, significantly reducing unnecessary bandwidth.
+While the shader calculations for the binning pass should be performed at high precision (fp32), the vertex position data in memory only needs enough precision to maintain accuracy in the model&#8217;s coordinate space.
+Using formats like <code>unorm16</code> for a typical 10-meter real-world equivalent model provides 0.15 mm quantization accuracy, which is sufficient for most use cases.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tbr-optimization-considerations"><a class="anchor" href="#tbr-optimization-considerations"></a>Optimization Strategies for TBR</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Most performance gains on a tiler come from answering one question: "Do I really need to move this data to external memory?"</p>
+</div>
+<div class="sect2">
+<h3 id="attachment-management"><a class="anchor" href="#attachment-management"></a>Attachment Load and Store Ops</h3>
+<div class="paragraph">
+<p>Your primary tool for controlling bandwidth is the render pass attachment configuration.
+Whether you are using traditional <code>VkRenderPass</code> objects or the modern <code>VK_KHR_dynamic_rendering</code> extension, the principles are the same.
+The <code>loadOp</code> and <code>storeOp</code> settings are not just cleanup steps; they are direct instructions to the hardware.</p>
+</div>
+<div class="paragraph">
+<p>If you are starting a new frame or a fresh pass, use <code>VK_ATTACHMENT_LOAD_OP_CLEAR</code>.
+This is significantly faster than using explicit clear commands like <code>vkCmdClearAttachments</code>, as it allows the hardware to initialize tile memory directly without any external memory traffic.
+If you know you are going to completely overwrite the tile&#8217;s contents — for example, by rendering opaque geometry that covers the entire screen — you can use <code>VK_ATTACHMENT_LOAD_OP_DONT_CARE</code>.
+This tells the GPU it doesn&#8217;t need to waste time loading the previous frame&#8217;s data from memory OR performing a clear.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, use <code>VK_ATTACHMENT_STORE_OP_DONT_CARE</code> for any attachment you don&#8217;t need after the pass is finished.
+If you want to explicitly avoid writing back to memory but also don&#8217;t want to logically discard the current contents (for example, if you plan to use the attachment in a subsequent render pass that is not a subpass), you can use <code>VK_ATTACHMENT_STORE_OP_NONE</code> (if available via <code>VK_KHR_separate_depth_stencil_layouts</code> or Vulkan 1.3).
+Depth attachments, stencil attachments, and multisampled color attachments are the most common candidates for <code>DONT_CARE</code>.
+By telling the GPU you don&#8217;t care about the final state of these images, you prevent it from wasting bandwidth writing them back to main memory.</p>
+</div>
+<div class="paragraph">
+<p>When using <strong>Dynamic Rendering</strong> (<code>VK_KHR_dynamic_rendering</code>), you specify these same operations in the <code>VkRenderingInfo</code> structure.
+This extension simplifies your code by removing the need for render pass and framebuffer objects, but the hardware logic remains identical.
+You must remain disciplined about your load and store operations to avoid performance regressions.</p>
+</div>
+<div class="paragraph">
+<p>When using traditional render passes, try to structure them so that the driver can "merge" subpasses.
+Subpasses can be key to achieving good performance with traditional rendering pipelines, but merging is not guaranteed — it is implementation-dependent.
+When subpasses are merged, the driver combines multiple logical subpasses into a single hardware pass, ensuring that intermediate data (like G-buffer attributes in a deferred renderer) stays entirely within the tile memory and is never written to external VRAM.
+Applications can use <code>VK_EXT_subpass_merge_feedback</code> to check whether their subpasses are actually being merged.
+Modern pipelines using dynamic rendering can obtain similar benefits to subpasses by using <code>VK_KHR_dynamic_rendering_local_read</code>.
+To encourage merging, keep your subpass dependencies simple and avoid introducing any "global" dependencies (like pipeline barriers or descriptor set updates) that might force the driver to split the pass.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="transient-attachments"><a class="anchor" href="#transient-attachments"></a>Transient Attachments and Lazy Allocation</h3>
+<div class="paragraph">
+<p>For intermediate data that only lives during a single render pass, you should mark your images with <code>VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT</code>.
+When combined with memory that is <code>VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT</code>, some GPUs can avoid allocating any physical system memory for these attachments at all.
+The data exists only in the on-chip tile memory and is discarded when the pass ends.
+This is particularly useful for depth buffers or G-buffer attachments in a deferred renderer that are consumed in a later subpass.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="msaa-resolve-patterns"><a class="anchor" href="#msaa-resolve-patterns"></a>Efficiency with MSAA</h3>
+<div class="paragraph">
+<p>Multisampling is particularly efficient on tilers because the "resolve" from a multisampled attachment down to a single-sampled one can often happen entirely on-chip.
+Instead of writing the massive multisampled buffer to VRAM and then reading it back to resolve it, the GPU resolves the tile just before it writes the final 1x color to memory.
+To trigger this, set the multisampled attachment&#8217;s <code>storeOp</code> to <code>DONT_CARE</code> and provide a resolve attachment within the same subpass.
+Note that there is no universal "best" sample count; you should choose based on your quality needs and target hardware.
+Avoid using <code>vkCmdResolveImage</code> if possible, as it forces an expensive round-trip to main memory.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="tbr-vs-imr-detailed-analysis"><a class="anchor" href="#tbr-vs-imr-detailed-analysis"></a>TBR vs IMR: A Practical Comparison</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>It is helpful to contrast tilers with Immediate Mode Renderers (IMR), which are common in high-end desktop GPUs.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>IMR GPUs</strong> typically process triangles and write the resulting fragments to memory almost immediately. They rely on high-bandwidth memory and large caches to handle the traffic. Overdraw on an IMR is expensive because every pixel written potentially triggers a memory write.</p>
+</li>
+<li>
+<p><strong>TBR GPUs</strong> defer those writes. By "binning" the geometry and processing by tile, they can perform many operations — like blending and depth testing — entirely within the tile memory. The memory write only happens once the tile is finished.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It is not necessary to write a custom path for TBR and IMR GPUs.
+In general, understanding how a tiler works will help you write code that is efficient for both architectures.
+While avoiding fragment overdraw is orthogonal to being a tiler (and tilers are often less susceptible to overdraw performance costs due to hardware Hidden Surface Removal), good attachment management and minimizing unnecessary work benefit every architecture.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="vulkan-extensions-comprehensive-guide"><a class="anchor" href="#vulkan-extensions-comprehensive-guide"></a>Modern Extensions for Tile Efficiency</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Standard Vulkan render passes are powerful, but several modern extensions provide even more control over how data is handled on-chip.</p>
+</div>
+<div class="sect2">
+<h3 id="vk-khr-dynamic-rendering-local-read"><a class="anchor" href="#vk-khr-dynamic-rendering-local-read"></a>Dynamic Rendering and Local Reads</h3>
+<div class="paragraph">
+<p>If you have moved to <strong>Dynamic Rendering</strong> to simplify your application, you might worry about losing the "input attachment" functionality that keeps subpasses efficient.
+The <code>VK_KHR_dynamic_rendering_local_read</code> extension is the solution.
+It allows your fragment shaders to read from the current pixel&#8217;s color, depth, or stencil attachments without requiring an explicit render pass object.</p>
+</div>
+<div class="paragraph">
+<p>To use it effectively, you enable the feature at device creation and use <code>vkCmdSetRenderingAttachmentLocationsKHR</code> during command recording to map your images to input indices.
+In your shader, you can then use <code>subpassInput</code> (accessed via <code>subpassLoad</code>) just as you would in a traditional subpass.
+This keeps your data on-chip, avoiding the bandwidth penalty of writing intermediate G-buffer data to main memory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="vk-ext-shader-tile-image"><a class="anchor" href="#vk-ext-shader-tile-image"></a>Shader Tile Image</h3>
+<div class="paragraph">
+<p>While local reads are great for simple feedback, <code>VK_EXT_shader_tile_image</code> provides a more direct way for fragment shaders to interact with the tile.
+This extension allows you to access tile data as if it were a regular image, which is particularly useful for <strong>programmable blending</strong>, custom depth-stencil logic, or advanced transparency effects.</p>
+</div>
+<div class="paragraph">
+<p>It&#8217;s a powerful tool, but it is strictly restricted to the <strong>current pixel</strong>.
+You cannot use this extension to read neighboring pixels.
+Common post-processing effects like bloom, FXAA, or blurs still require a separate sampling pass because they depend on a wider neighborhood of data that might cross tile boundaries.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="performance-considerations"><a class="anchor" href="#performance-considerations"></a>Advanced Performance Tuning</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Beyond the basics of attachment management, several other factors influence how well your application runs on a tiler.</p>
+</div>
+<div class="sect2">
+<h3 id="pipelining-and-barriers"><a class="anchor" href="#pipelining-and-barriers"></a>Pipelining and Barriers</h3>
+<div class="paragraph">
+<p>On a tiler, the GPU usually processes the "binning" pass for the entire render pass before it starts the "fragment" pass for the first tile.
+To keep the hardware busy, you want these two stages to overlap as much as possible — the GPU should be binning the next frame while it is still shading the current one.</p>
+</div>
+<div class="paragraph">
+<p>Incorrect use of pipeline barriers can break this overlap.
+Avoid using broad barriers like <code>VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT</code> to <code>VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT</code>, as these often create unnecessary stalls.
+It is better to separate <code>VK_PIPELINE_STAGE_VERTEX_SHADER_BIT</code> and <code>VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT</code>, and mark resources according to the stages that actually use them.
+If you use a barrier that is too broad — like <code>VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</code> — you might force the GPU to finish all pending fragment work before it can even start the binning pass for the next set of draws.
+Instead, use the most specific stages and access masks possible.
+For example, if a compute shader produces data for a vertex buffer, the barrier should only synchronize the compute stage with the vertex input stage.
+This allows the tiler&#8217;s geometry engine to start working as soon as the data is ready, even if the fragment units are still busy with a previous task.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="depth-and-hsr"><a class="anchor" href="#depth-and-hsr"></a>Depth Testing and Hidden Surface Removal</h3>
+<div class="paragraph">
+<p>Many tilers can help reduce the impact of overdraw through hardware-based Hidden Surface Removal (HSR) or forward pixel killing, though the level of support varies across implementations and overdraw still has a cost.
+To help these hardware optimizations work effectively (where supported):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Use a consistent <code>VkCompareOp</code> (usually <code>LESS</code> or <code>LESS_OR_EQUAL</code>) throughout your render pass. Frequent changes to the depth comparison function can disable hardware depth culling.</p>
+</li>
+<li>
+<p>Enable depth writing (<code>depthWriteEnable</code>) whenever possible. If it&#8217;s disabled, the GPU cannot update its internal depth culling blocks, leading to more overdraw for subsequent draws.</p>
+</li>
+<li>
+<p>Avoid enabling "Alpha to Coverage" simultaneously with depth testing unless necessary, as it can consume extra hardware resources and reduce execution efficiency on some tilers.</p>
+</li>
+<li>
+<p>Avoid using <code>discard</code> or writing to <code>gl_FragDepth</code> in your shaders unless absolutely necessary, as these operations can force the GPU to disable "early" depth testing and wait for the fragment shader to finish before it can determine visibility.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Modern designs, such as the Arm Immortalis-G925, further evolve these concepts with features like a hardware <strong>fragment pre-pass</strong> that can handle overdraw reduction automatically.
+While manual front-to-back sorting has long been a key recommendation to help the hardware, these newer architectures can often handle the optimization without application-side intervention.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="precision-and-prefetch"><a class="anchor" href="#precision-and-prefetch"></a>Precision and Texture Optimization</h3>
+<div class="paragraph">
+<p>Using <code>mediump</code> (16-bit) instead of <code>highp</code> (32-bit) in your shaders is a classic mobile optimization.
+While this is technically orthogonal to the tiling process, it is highly recommended for mobile GPUs because it significantly reduces memory bandwidth and register pressure.
+Many developers prefer using explicit types, such as <code>float16</code>, where supported by hardware and extensions.
+Note that some modern desktop GPUs also benefit from <code>float16</code> throughput and storage.</p>
+</div>
+<div class="paragraph">
+<p>Treat <code>mediump</code> as a hardware hint, not a guarantee.
+Some GPUs might still run at full 32-bit precision internally, while others will show visible artifacts.
+Testing on as many devices as possible is the only way to be sure your precision choices are safe, as a shader that looks perfect on one device might be broken on another that actually employs 16-bit math.
+Always verify performance of your <code>float16</code> optimizations: adding <code>float16</code> to everything without careful consideration is usually not a good idea.
+In some cases, it just introduces unnecessary conversions (f32 → f16 → f32), and while most mobile GPU compilers can detect and optimize this, the heuristics are not always reliable.</p>
+</div>
+<div class="paragraph">
+<p>Another subtle trick is <strong>texture prefetch</strong>.
+Tilers are very efficient at fetching texture data if the texture coordinates are "predictable" — usually meaning they are passed directly from the vertex shader.
+Ideally, any coordinate manipulation (like scaling or offsets) should be done in the vertex shader.
+If you perform complex math on your coordinates inside the fragment shader before sampling, you might stall the hardware&#8217;s prefetch units.</p>
+</div>
+<div class="paragraph">
+<p>You can also leverage <strong>texture reuse patterns</strong>.
+Many mobile GPUs can optimize scenarios where you sample multiple textures using the same coordinates, or sample the same texture with different offsets.
+Grouping these operations together — for example, by using a base coordinate and a set of constant offsets — allows the hardware to reduce memory requests and lower power consumption.
+Advanced samplers on some hardware can even perform operations like convolution, maximum, or minimum filters directly within the sampling unit if the shader is structured correctly.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="best-practices-summary"><a class="anchor" href="#best-practices-summary"></a>Summary of Best Practices</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you want your Vulkan application to perform well on tile-based hardware, focus on these core principles:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Communicate your intent clearly.</strong> Use <code>loadOp</code> and <code>storeOp</code> to tell the GPU when it can discard data instead of wasting bandwidth.</p>
+</li>
+<li>
+<p><strong>Keep data on-chip.</strong> Leverage transient attachments, lazy memory allocation, and extensions like <code>VK_KHR_dynamic_rendering_local_read</code> to avoid external memory round-trips.</p>
+</li>
+<li>
+<p><strong>Optimize the binning pass.</strong> Separate vertex positions from other attributes to reduce the amount of data the geometry engine has to read.</p>
+</li>
+<li>
+<p><strong>Allow for stage overlap.</strong> Use specific pipeline barriers (e.g., separating <code>VERTEX_SHADER_BIT</code> and <code>FRAGMENT_SHADER_BIT</code>) to ensure the binning and fragment passes can overlap as much as possible.</p>
+</li>
+<li>
+<p><strong>Leverage hardware depth culling.</strong> Use consistent depth comparison operations and enable depth writes whenever possible to keep the hardware&#8217;s Hidden Surface Removal (HSR) and early-Z logic active.</p>
+</li>
+<li>
+<p><strong>Be smart with textures.</strong> Perform coordinate math in the vertex shader to enable hardware prefetch and group similar sampling operations to leverage texture reuse units.</p>
+</li>
+<li>
+<p><strong>Manage precision carefully.</strong> Use <code>mediump</code> or explicit 16-bit types to improve bandwidth and occupancy on mobile GPUs, and keep in mind that some desktop GPUs can also benefit from 16-bit math. Always verify the visual results across a range of target hardware.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="additional-resources"><a class="anchor" href="#additional-resources"></a>Additional Resources</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For more in-depth information, consult the performance guides from major GPU vendors:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ARM Mali GPU Best Practices</strong>: <a href="https://developer.arm.com/documentation/101897/latest/">Official ARM guidance for tilers</a></p>
+</li>
+<li>
+<p><strong>Imagination PowerVR Architecture</strong>: <a href="https://docs.imgtec.com/starter-guides/powervr-architecture/html/index.html">Tiler architecture deep-dive</a></p>
+</li>
+<li>
+<p><strong>HUAWEI Maleoon GPU Best Practices</strong>: <a href="https://developer.huawei.com/consumer/en/doc/best-practices/bpta-maleoon-gpu-best-practices">Broadly applicable mobile tiler optimizations</a></p>
+</li>
+<li>
+<p><strong>Samsung GPU framebuffer</strong>: <a href="https://developer.samsung.com/galaxy-gamedev/resources/articles/gpu-framebuffer.html">Explains how to optimize framebuffer usage for better performance</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

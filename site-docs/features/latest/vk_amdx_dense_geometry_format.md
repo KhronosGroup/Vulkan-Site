@@ -1,0 +1,226 @@
+# VK_AMDX_dense_geometry_format
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_AMDX_dense_geometry_format.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Acceleration Structure Construction](#_acceleration_structure_construction)
+- [3.1._Acceleration_Structure_Construction](#_acceleration_structure_construction)
+- [3.2. Bottom-level Acceleration Structure Update Constraints](#_bottom_level_acceleration_structure_update_constraints)
+- [3.2._Bottom-level_Acceleration_Structure_Update_Constraints](#_bottom_level_acceleration_structure_update_constraints)
+- [3.3. Flags and Indices](#_flags_and_indices)
+- [3.3._Flags_and_Indices](#_flags_and_indices)
+- [3.4. Vertex Attribute Access](#_vertex_attribute_access)
+- [3.4._Vertex_Attribute_Access](#_vertex_attribute_access)
+- [3.4.1. Per-Primitive Access](#_per_primitive_access)
+- [3.4.1._Per-Primitive_Access](#_per_primitive_access)
+- [3.4.2. Block-Based Access (Direct)](#_block_based_access_direct)
+- [3.4.2._Block-Based_Access_(Direct)](#_block_based_access_direct)
+- [3.4.3. Block-Based Access (Indirect)](#_block_based_access_indirect)
+- [3.4.3._Block-Based_Access_(Indirect)](#_block_based_access_indirect)
+- [3.4.4. Comparison](#_comparison)
+- [3.5. API Changes](#_api_changes)
+- [3.5._API_Changes](#_api_changes)
+- [3.5.1. Features](#_features)
+- [4. Issues](#_issues)
+- [4.1. Can DGF data be decoded for use in e.g. rasterization?](#_can_dgf_data_be_decoded_for_use_in_e_g_rasterization)
+- [4.1._Can_DGF_data_be_decoded_for_use_in_e.g._rasterization?](#_can_dgf_data_be_decoded_for_use_in_e_g_rasterization)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Acceleration Structure Construction](#_acceleration_structure_construction)
+[3.2. Bottom-level Acceleration Structure Update Constraints](#_bottom_level_acceleration_structure_update_constraints)
+[3.3. Flags and Indices](#_flags_and_indices)
+[3.4. Vertex Attribute Access](#_vertex_attribute_access)
+[3.5. API Changes](#_api_changes)
+
+[4. Issues](#_issues)
+
+[4.1. Can DGF data be decoded for use in e.g. rasterization?](#_can_dgf_data_be_decoded_for_use_in_e_g_rasterization)
+
+This document details the VK_AMDX_dense_geometry_format extension which adds a compressed format for triangle data, and the ability to build acceleration structures from pre-compressed data in that format.
+
+Vulkan ray tracing currently requires uncompressed input geometry data to put in GPU memory, from which opaque vendor-specific acceleration structures are built.  These acceleration structures typically have a large memory footprint, primarily consisting of geometry data that is generally stored in single precision floating-point format.
+
+Rasterization-based systems such as Nanite have significantly raised the bar for model complexity and compact triangle representation, but to use that data to build acceleration structures would require decompressing the data as it cannot be directly consumed by the API.  This decompression adds both latency amd memory pressure, to the point where acceleration structures are too large to support future content authored for these systems.
+
+The solution should describe a standardizable compressed geometry format and an API to use it.
+
+The format should have at least the following characteristics:
+
+* 
+compact storage on disk
+
+* 
+improved acceleration build times
+
+* 
+improved memory footprint of acceleration structures
+
+* 
+minimal need for driver manipulation when building acceleration structures on future hardware supporting the format
+
+The extension proposes API changes to enable the use of [Dense Geometry Format](https://gpuopen.com/dgf/) (DGF) data, an efficient block-based format for storing dense geometry data, optimized for ray tracing use cases, in Vulkan. Data in DGF format can be consumed during the acceleration structure build process.
+
+A new geometry type is introduced for supplying pre-compressed geometry data to an acceleration structure (AS) build.  The application computes the compressed geometry representation and uploads it to GPU memory.
+
+The [VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX](#VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX-struct) structure provides a compressed bit-stream to the acceleration structure build.  The number of encoded triangles is also available for use by the implementation.  This enables the existence of a "fallback layer" which decodes the geometry and maps it to a conventional acceleration structure.  It is expected that native support will ultimately evolve, but acknowledged that on-the-fly translation may be a necessary intermediate step.
+
+For [vkGetAccelerationStructureBuildSizesKHR](https://docs.vulkan.org/spec/latest/chapters/resources.html#vkGetAccelerationStructureBuildSizesKHR) the application must supply both the total number of triangles and the expected size of the compressed data.  The latter is required so that implementations can use a 1:1 mapping between compressed blocks and acceleration structure nodes.
+
+Update operations on pre-compressed acceleration structures have the same constraints as conventional acceleration structure updates.  Only the vertex positions may change.
+
+Additional constraints apply depending on the compression format:
+
+* 
+For `DGF1` compression, the number of DGF blocks may not change.
+
+When pre-compressed geometry is in use, the geometry indices for the triangles are directly encoded in the input data on a per-triangle basis.  The number of [VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX](#VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX-struct) structures supplied at BLAS build has no effect on shader table indexing or the results of the `GeometryIndex()` intrinsic.
+
+The `OPAQUE` flag is also supplied on a per-triangle basis.  The `VK_GEOMETRY_OPAQUE_BIT_KHR` flag on the [VkAccelerationStructureGeometryKHR](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureGeometryKHR) structure has no effect for compressed geometry.
+
+Multiple [VkAccelerationStructureGeometryKHR](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureGeometryKHR) structures can be used to glue disconnected blobs of compressed data together into a larger acceleration structure, or for specifying different values for `VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR` for different sets of DGF blocks.
+
+The values returned by the `PrimitiveIndex()` intrinsic are also directly encoded in the input, and may be sparsely specified or even duplicated, if the application finds some use for this.  There is no relationship between the value of [VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX::NumTriangles](#VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX-struct)
+and the maximum primitive index.
+
+DGF concisely represents position and connectivity information for a model, but attribute data such as texture coordinates and normals must be stored in sideband buffers.  Applications must have some mechanism for accessing this attribute data at shading time.  Some of the options are detailed here.  There may be other, engine-specific alternatives not contemplated here.
+
+A simple approach is to use the reconstructed primitive ID to fetch from a sideband which gives attribute indices of each triangle’s 3 vertices in the vertex data array.  This approach is already fairly common, but retaining the index buffer adds considerable overhead.
+
+A 4B per-vertex index adds 12B/tri.  This could be reduced to 3B/triangle by using 8b indices, but this is still considerable.
+
+float2 GetUV_PerPrimitive( float2 bary )
+{
+    uint3 indices = Indices.Load3( INDEX_SIZE * 3 * PrimitiveIndex() );
+
+    ByteAddressBuffer uvBuffer = GetUVBuffer(GeometryIndex());
+    float2 uv0 = asfloat(uvBuffer.Load2(8*indices.x));
+    float2 uv1 = asfloat(uvBuffer.Load2(8*indices.y));
+    float2 uv2 = asfloat(uvBuffer.Load2(8*indices.z));
+    return BarycentricLerp(uv0,uv1,uv2,bary);
+}
+
+An alternative is to index the attribute data based on the local vertex order in the DGF block.  With this scheme, a `UserData DWORD` is stored for each block, which points to the start of a block-aligned vertex array.  Each triangle uses its block-local vertex indices to calculate an offset from this base.
+
+Efficient implementation of this scheme requires corresponding built-in functions to retrieve the user-data and local vertex indices for a DGF hit.
+
+float2 GetUV_PerBlockDirect( float2 bary )
+{
+    uint userData      = GeometryBlockUserData();
+    uint3 localIndices = GeometryBlockLocalIndices();
+    uint3 indices = userData.xxx + localIndices.xyz;
+
+    ByteAddressBuffer uvBuffer = GetUVBuffer(GeometryIndex());
+    float2 uv0 = asfloat(uvBuffer.Load2(8*indices.x));
+    float2 uv1 = asfloat(uvBuffer.Load2(8*indices.y));
+    float2 uv2 = asfloat(uvBuffer.Load2(8*indices.z));
+    return BarycentricLerp(uv0,uv1,uv2,bary);
+}
+
+Block-based access may impose a considerable memory overhead due to duplication of vertices across DGF blocks.  This can be controlled by adding an extra layer of indirection and duplicating only a small index.  There is a time/space tradeoff here which will ultimately be made by the application.
+
+float2 GetUV_PerBlockIndirect( float2 bary )
+{
+    uint userData      = GeometryBlockUserData();
+    uint3 localIndices = GeometryBlockLocalIndices();
+    uint3 indices = userData.xxx + localIndices.xyz;
+
+    // retrieve de-duplicated vertex indices from an "indirection buffer"
+    // The indirection buffer is a resource built by the application,
+    //  with some assistance from the DGF encoder
+    ByteAddresBuffer indirectionBuffer = GetIndirectionBuffer(GeometryIndex());
+    indices.x = indirectionBuffer.Load(4*indices.x);
+    indices.y = indirectionBuffer.Load(4*indices.y);
+    indices.z = indirectionBuffer.Load(4*indices.z);
+
+    // fetch the de-duplicated vertex data
+    ByteAddressBuffer uvBuffer = GetUVBuffer(GeometryIndex());
+    float2 uv0 = asfloat(uvBuffer.Load2(8*indices.x));
+    float2 uv1 = asfloat(uvBuffer.Load2(8*indices.y));
+    float2 uv2 = asfloat(uvBuffer.Load2(8*indices.z));
+    return BarycentricLerp(uv0,uv1,uv2,bary);
+}
+
+The table below shows the vertex duplication overhead for the block-based methods described above, as a function of DGF compression level, measured in bytes per triangle, averaged over a number of test models.  This may be compared against the fixed cost of an index buffer (3*INDEX_SIZE).
+
+The indirect method achieve the lowest memory overhead unless vertex data are very small, but comes at the cost of an extra indirection when accessing the data.
+
+| DGF Target Bitrate | Indirect (2B/Vertex) | Indirect (4B/Vertex) | Direct (8B/Vertex) | Direct (16B/Vertex) | Direct (32B/Vertex) |
+| --- | --- | --- | --- | --- | --- |
+| 11 | 1.57 | 3.14 | 2.24 | 4.48 | 8.95 |
+| 12 | 1.58 | 3.16 | 2.27 | 4.55 | 9.10 |
+| 13 | 1.60 | 3.19 | 2.34 | 4.69 | 9.37 |
+| 14 | 1.62 | 3.24 | 2.45 | 4.89 | 9.78 |
+| 15 | 1.66 | 3.31 | 2.58 | 5.17 | 10.33 |
+| 16 | 1.69 | 3.38 | 2.72 | 5.43 | 10.86 |
+| 24 | 1.84 | 3.69 | 3.34 | 6.68 | 13.36 |
+
+To build acceleration structures using pre-compressed triangle data, the [VkAccelerationStructureGeometryKHR](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureGeometryKHR) structure is extended using a new enum value in [VkGeometryTypeKHR](https://docs.vulkan.org/spec/latest/chapters/resources.html#VkGeometryTypeKHR):
+
+typedef enum VkGeometryTypeKHR {
+    ...
+    VK_GEOMETRY_TYPE_DENSE_GEOMETRY_FORMAT_TRIANGLES_AMDX = 1000478000,
+} VkGeometryTypeKHR;
+
+When the `geometryType` member of [VkAccelerationStructureGeometryKHR](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureGeometryKHR) is set to `VK_GEOMETRY_TYPE_DENSE_GEOMETRY_FORMAT_TRIANGLES_AMDX`, a `VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX` structure in its `pNext` chain describes pre-compressed triangle geometry:
+
+typedef struct VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX {
+    VkStructureType                   sType;
+    const void*                       pNext;
+    VkDeviceOrHostAddressConstKHR     compressedData;
+    VkDeviceSize                      dataSize;
+    uint32_t                          numTriangles;
+    uint32_t                          maxPrimitiveIndex;
+    uint32_t                          maxGeometryIndex;
+    VkCompressedTriangleFormatAMDX    format;
+} VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX;
+
+The buffer from which `compressedData` is queried must have been created using a new buffer usage flag:
+
+VkBufferUsageFlagBits2 VK_BUFFER_USAGE_2_COMPRESSED_DATA_DGF1_BIT_AMDX = 0x200000000ULL;
+
+The format of the compressed data is selected from a new enum:
+
+typedef enum VkCompressedTriangleFormatAMDX {
+    VK_COMPRESSED_TRIANGLE_FORMAT_DGF1_AMDX = 0,
+} VkCompressedTriangleFormatAMDX;
+
+`VK_COMPRESSED_TRIANGLE_FORMAT_DGF1_AMDX` specifies that the compressed triangle data is in Dense Geometry Format version 1.
+
+Two defines are added that specify the alignment and stride requirements of the pre-compressed data:
+
+#define VK_COMPRESSED_TRIANGLE_FORMAT_DGF1_BYTE_ALIGNMENT_AMDX 128U
+#define VK_COMPRESSED_TRIANGLE_FORMAT_DGF1_BYTE_STRIDE_AMDX 128U
+
+Note that a host builds are not supported, and a [VkAccelerationStructureBuildRangeInfoKHR](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureBuildRangeInfoKHR) structure is not used when building an acceleration structure with a geometry type of `VK_GEOMETRY_TYPE_DENSE_GEOMETRY_FORMAT_TRIANGLES_AMDX`.
+
+To use an [Opacity Micromap](https://docs.vulkan.org/spec/latest/chapters/VK_EXT_opacity_micromap/micromaps.html) with the compressed triangle data, a [VkAccelerationStructureTrianglesOpacityMicromapEXT](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureTrianglesOpacityMicromapEXT) structure can be added to the `pNext` chain of `VkAccelerationStructureDenseGeometryFormatTrianglesDataAMDX`.
+
+The following new feature is exposed by the extension:
+
+typedef struct VkPhysicalDeviceDenseGeometryFormatFeaturesAMDX {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           denseGeometryFormat;
+} VkPhysicalDeviceDenseGeometryFormatFeaturesAMDX;
+
+* 
+`denseGeometryFormat` is the main feature enabling this extension’s functionality.
+
+A future extension will add support for functions that decode DGF data directly from memory.

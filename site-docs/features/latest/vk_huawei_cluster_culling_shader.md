@@ -1,0 +1,272 @@
+# VK_HUAWEI_cluster_culling_shader
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_HUAWEI_cluster_culling_shader.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution space](#_solution_space)
+- [2._Solution_space](#_solution_space)
+- [3. Proposal.](#_proposal)
+- [3.1. Cluster culling shader](#_cluster_culling_shader)
+- [3.1._Cluster_culling_shader](#_cluster_culling_shader)
+- [3.2. API changes](#_api_changes)
+- [3.2._API_changes](#_api_changes)
+- [3.2.1. shader stage and synchronization](#_shader_stage_and_synchronization)
+- [3.2.1._shader_stage_and_synchronization](#_shader_stage_and_synchronization)
+- [3.2.2. New structure](#_new_structure)
+- [3.2.2._New_structure](#_new_structure)
+- [3.2.3. drawcall](#_drawcall)
+- [3.2.4. feature](#_feature)
+- [3.2.5. property](#_property)
+- [3.3. SPIR-V changes](#_spir_v_changes)
+- [3.3._SPIR-V_changes](#_spir_v_changes)
+- [3.3.1. new capability](#_new_capability)
+- [3.3.1._new_capability](#_new_capability)
+- [3.3.2. execution model](#_execution_model)
+- [3.3.2._execution_model](#_execution_model)
+- [3.3.3. built-in](#_built_in)
+- [3.3.4. new function.](#_new_function)
+- [3.3.4._new_function.](#_new_function)
+- [3.4. GLSL changes](#_glsl_changes)
+- [3.4._GLSL_changes](#_glsl_changes)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution space](#_solution_space)
+[3. Proposal.](#_proposal)
+
+[3.1. Cluster culling shader](#_cluster_culling_shader)
+[3.2. API changes](#_api_changes)
+[3.3. SPIR-V changes](#_spir_v_changes)
+[3.4. GLSL changes](#_glsl_changes)
+
+When drawing a scene with a massive amount of geometry, it is necessary to remove the invisible geometry to decrease redundant drawing, a common approach used to remove invisible geometry is called cluster culling, a cluster is a subset of a mesh that has as many shared vertices as possible, alternatively, a cluster can also be an entire mesh, cluster will be pre-computed and stored with the geometry to avoid computation at runtime.
+
+The GPU has numerous of thread and parallel computing capabilities, so it is more suitable for culling many clusters than the CPU. Many developers use compute shader for GPU culling tasks. Because compute shader can not generate output which directly connected to the existing rendering pipeline. It is necessary to separate culling and rendering into two passes. First, the culling pass processes the whole scene and updates the MDI command, and then uses the MDI method to draw during the rendering pass.
+
+Provide a new extension to connect the output of the compute shader to the existing rendering pipeline, in addition, when drawing a visible cluster, an appropriately shading rate can also be configured. developers who originally used compute shader for culling can easily migrate to this new extension and have better performance.
+
+This extension allowing application to use a new programmable shader type — Cluster Culling Shader — to execute geometry culling on GPU. This mechanism does not require pipeline barrier between compute shader and other rendering pipeline.
+
+This new shader type have execution environments similar to that of compute shaders, where a collection of shader invocations form a workgroup and cooperate to perform cluster based culling and LOD selection, a shader invocation can emit a group of built-in output variables treated as a drawing command which can drives subsequent rendering pipeline to draw geometries of cluster with a specific shading rate, e.g. the distance between a cluster and the view point can be used to determine the shading rate of the cluster. These capabilities enables the cluster culling shader to reduce the rendering loading more effectively.
+
+It should be noted that the usage of per-cluster shading rate has the following restrictions:
+1. CCS and Vertex Shader cannot output shading rate at the same time.
+2. The per-cluster shading rate output by CCS will be regarded as per-primitive shading rate in combiner operation.
+3. If CCS does not output per-cluster shading rate, the rules of combiner operation remain unchanged.
+
+Extending `VkShaderStageFlagBits:`
+
+`VK_SHADER_STAGE_CLUSTER_CULLING_BIT_HUAWEI`
+specifies the cluster shader stage.
+
+Extending `VkPipelineStageFlagBits2:`
+
+`VK_PIPELINE_STAGE2_CLUSTER_CULLING_SHADER_BIT_HUAWEI`
+ specifies the cluster pipeline stage for synchronization.
+
+Extending `VkPhysicalDeviceFeatures2`, `VkDeviceCreateInfo:`
+
+VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI
+
+Extending `VkPhysicalDeviceProperties2:`
+
+`VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI`
+
+dispatching command are recording into a command buffer and when executed by a queue, it will produce work which executes according to the bound Cluster Culling Shader pipeline.
+
+To Record a Cluster Culling Shader command:
+
+void vkCmdDrawClusterHUAWEI(
+    VkCommandBuffer     commandBuffer,
+    uint32_t            groupCountX,
+    uint32_t            groupCountY,
+    uint32_t            groupCountZ );
+
+* 
+`commandBuffer` is the command buffer into which the command will be recorded.
+
+* 
+`groupCountX` is the number of local workgroups to dispatch in the X dimension.
+
+* 
+`groupCountY` is the number of local workgroups to dispatch in the Y dimension
+
+* 
+`groupCountZ` is the number of local workgroups to dispatch in the Z dimension
+When the command is executed, a global workgroup consisting of  `groupCountX`  * `groupCountY` * `groupCountZ` local workgroup is assembled.
+
+To record an indirect Cluster Culling Shader command:
+
+void vkCmdDrawClusterIndirectHUAWEI(
+    VkCommandBuffer     commandBuffer,
+    vkBuffer            buffer,
+    vkDeviceSize        offset );
+
+* 
+`commandBuffer` is the command buffer into which the command will be recorded.
+
+* 
+`buffer` is the buffer containing dispatch parameters.
+
+* 
+`offset` is the byte offset into buffer where parameters begin.
+
+`vkCmdDrawClusterIndirectHUAWEI` behaves similarly to `vkCmdDrawClusterHUAWEI` except that the parameters are read by the device from a buffer during execution.
+
+`VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI` - Structure describing cluster culling shading features that can be supported by an implementation.
+
+`VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI` structure is defined as:
+
+Typedef struct VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI {
+    VkStructureType             sType;
+    void*                       pNext;
+    VkBool32                    clustercullingShader;
+    VkBool32                    multiviewClusterCullingShader;
+    VkBool32                    clusterShadingRate;
+}VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI;
+
+* 
+`sType` is the type of this structure.
+
+* 
+`pNext` is NULL or a pointer to a structure extending this structure.
+
+* 
+`clustercullingShader` indicates whether the cluster culling stage is supported.
+
+* 
+`multiviewClusterCullingShader` indicates whether multiview can be used with cluster culling shader.
+
+* 
+`clusterShadingRate` specifies whether the per-cluster shading rate is supported.
+
+If the `VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI` structure is included in the `pNext` chain of the `VkPhysicalDeviceFeature2` structure passed to `vkPhysicalDeviceFeature2`, it is filled in to indicate whether each corresponding feature is supported.
+`VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI` can also be used in the `pNext` chain of `VkDeviceCreateInfo` to selectively enable these features.
+
+`VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI` - Structure describing whether cluster culling shading supported per-cluster shading rate.
+
+`VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI` structure is defined as:
+
+Typedef struct VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI {
+    VkStructureType             sType;
+    void*                               pNext;
+    VkBool32            clusterShadingRate;
+}VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI;
+
+* 
+`sType` is the type of this structure.
+
+* 
+`pNext` is NULL or a pointer to a structure extending this structure.
+
+* 
+`clusterShadingRate` specifies whether the per-cluster shading rate is supported.
+
+To query whether Cluster Culling Shader support per-cluster shading rate, include a `VkPhysicalDeviceClusterCullingShaderVrsFeaturesHUAWEI` structure in the pNext chain of the
+`VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI` structure passed to `vkPhysicalDeviceFeature2`.
+
+`VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI` - Structure describing cluster culling shading properties.
+
+Typedef struct VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI {
+    VkStructureType             sType;
+    void*                       pNext;
+    uint32_t                    maxWorkGroupCount[3];
+    uint32_t                    maxWorkGroupSize[3];
+    uint32_t                    maxOutputClusterCount;
+}VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI;
+
+* 
+`sType` is the type of this structure.
+
+* 
+`pNext` is NULL or a pointer to a structure extending this structure.
+
+* 
+`maxWorkgroupCount` is the maximum number of local workgroups that can be launched by a single command. These three value represent the maximum local workgroup count in the X, Y and Z dimensions, respectively. In the current implementation, the values of Y and Z are both implicitly set as one. `groupCountX` of `DrawCluster*` command must be less than or equal to `maxWorkGroupCount[0]`.
+
+* 
+`maxWorkGroupSize` is the maximum size of a local workgroup. These three value represent the maximum local workgroup size in the X, Y and Z dimensions, respectively. The x, y and z sizes, as specified by the LocalSize or LocalSizeId execution mode or by the object decorated by the WorkgroupSize decoration in shader modules, must be less than or equal to the corresponding limit.
+
+* 
+`maxOutputClusterCount` is the maximum number of output clusters that a single workgroup may emit.
+
+If the `VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI` structure is included in the `pNext` chain of the `VkPhysicalDeviceProperties2` structure passed to `vkGetPhysicalDeviceProperties2`, it is filled in with each corresponding implementation-dependent property.
+
+`ClusterCullingShadingHUAWEI`
+
+`ClusterCullingHUAWEI`
+
+Cluster Culling Shaders have the following built-in output variables, these variables form an aforementioned drawing command.
+
+* 
+`IndexCountHUAWEI` is the number of vertices to draw.
+
+* 
+`VertexCountHUAWEI` is the number of vertices to draw.
+
+* 
+`InstanceCountHUAWEI` is the number of instances to draw.
+
+* 
+`FirstIndexHUAWEI` is the base index within the index buffer.
+
+* 
+`FirstVertexHUAWEI` is the index of the first vertex to draw.
+
+* 
+`VertexOffsetHUAWEI` is the value added to the vertex index before indexing into the vertex buffer.
+
+* 
+`FirstInstanceHUAWEI` is the instance ID of the first instance to draw.
+
+* 
+`ClusterIdHUAWEI` is the index of cluster being rendered by this drawing command. Cluster Culling Shader passes this id to vertex shader for cluster related information fetching. When cluster culling shader enable, gl_DrawID will be replaced by gl_ClusterIDHUAWEI in Vertex Shader.
+
+* 
+`ClusterShadingRateHUAWEI` is the shading rate of cluster being rendering by this drawing command. if `VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI::clusterShadingRate` is enabled, ClusterShadingRateHUAWEI is settable from Cluster Culling Shader which support coarse shading.
+
+* 
+`OpDispatchClusterHUAWEI`
+
+Any invocation in Cluster Culling Shader can execute this instruction more than once, after execution, it will emite the Cluster Culling Shader built-in output variables which describe in 3.3.3 to the subsequent rendering pipeline. While a workgroup is done, GPU creates warps for VS according to these output variables, all invocations in VertexShader are responsible for shading the vertices.
+
+New write-only output blocks are defined for built-in output variables:
+
+Type 1 (non-indexed mode):
+
+out gl_PerClusterHUAWEI
+{
+    uint gl_VertexCountHUAWEI;
+    uint gl_InstanceCountHUAWEI;
+    uint gl_FirstVertexHUAWEI;
+    uint gl_FirstInstanceHUAWEI;
+    uint gl_ClusterIdHUAWEI;
+    uint gl_ClusterShadingRateHUAWEI;
+}
+
+Type 2 (indexed mode):
+
+out gl_PerClusterHUAWEI
+{
+    uint gl_IndexCountHUAWEI;
+    uint gl_InstanceCountHUAWEI;
+    uint gl_FirstIndexHUAWEI ;
+    int  gl_VertexOffsetHUAWEI;
+    uint gl_FirstInstanceHUAWEI;
+    uint gl_ClusterIdHUAWEI;
+    uint gl_ClusterShadingRateHUAWEI;
+}
+
+A new function is added:
+
+void dispatchClusterHUAWEI(void);

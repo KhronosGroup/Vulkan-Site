@@ -1,0 +1,100 @@
+# VK_EXT_dynamic_rendering_unused_attachments
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_EXT_dynamic_rendering_unused_attachments.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+This document describes a limitation with [VK_KHR_dynamic_rendering](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering) that limits what
+pipelines can be used with render pass instances, and may subsequently require
+many more pipeline objects to be created to work around the limitation.
+
+The [VK_KHR_dynamic_rendering](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering) has several restrictions on what pipelines can be
+bound within a render pass instance which may cause the application to have to create
+multiple variants of the pipeline object in order to be compatible with the render
+pass instance.
+These restrictions were put in place to accommodate hardware that uses the pipeline
+state to program the framebuffer layout for the render pass instance and cannot easily
+change the framebuffer layout during the render pass instance, requiring all pipeline
+state bound in the render pass instance to match, even if the mismatch is only between
+a consistent valid format and unused attachments.
+
+The consequence of this limitation is that the following sequence is invalid:
+
+vkCmdBeginRendering(); // Only uses color attachment 0, with VK_FORMAT_R8G8B8A8_UNORM
+vkCmdBindPipeline(A); // A was created with color attachments 0, 1, 2 with VK_FORMAT_R8G8B8A8_UNORM
+vkCmdDraw();
+vkCmdBindPipeline(B); // B was created with only color attachment 0 with VK_FORMAT_R8G8B8A8_UNORM
+vkCmdDraw();
+vkCmdEndRendering();
+
+This can cause a combinatorial explosion of pipeline objects, depending on the
+application, or require pipeline objects to be generated just-in-time to
+be compatible with the active render pass instance.
+Alternatively it forces applications to split the render pass instance any time the
+framebuffer layout in the pipeline state changes.
+
+The current restrictions require there to be an exact match between the bound pipeline
+and the render pass instance attachment formats, including matching unused attachments
+with undefined formats.
+
+The VUIDs that contribute to this limitation are:
+
+[VUID-vkCmdDraw-colorAttachmentCount-07616](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-colorAttachmentCount-07616) 
+
+If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::colorAttachmentCount greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with an imageView equal to VK_NULL_HANDLE must have the corresponding element of VkPipelineRenderingCreateInfo::pColorAttachmentFormats used to create the bound pipeline equal to VK_FORMAT_UNDEFINED
+
+[VUID-vkCmdDraw-pDepthAttachment-07617](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pDepthAttachment-07617) 
+
+If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pDepthAttachment→imageView was VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::depthAttachmentFormat used to create the bound graphics pipeline must be equal to VK_FORMAT_UNDEFINED
+
+[VUID-vkCmdDraw-pStencilAttachment-07618](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pStencilAttachment-07618) 
+
+If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pStencilAttachment→imageView was VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::stencilAttachmentFormat used to create the bound graphics pipeline must be equal to VK_FORMAT_UNDEFINED
+
+[VUID-vkCmdExecuteCommands-imageView-07606](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdExecuteCommands-imageView-07606) 
+
+If vkCmdExecuteCommands is being called within a render pass instance begun with vkCmdBeginRendering, if the imageView member of an element of the VkRenderingInfo::pColorAttachments parameter to vkCmdBeginRendering is VK_NULL_HANDLE, the corresponding element of the pColorAttachmentFormats member of the VkCommandBufferInheritanceRenderingInfo structure included in the pNext chain of VkCommandBufferBeginInfo::pInheritanceInfo used to begin recording each element of pCommandBuffers must be VK_FORMAT_UNDEFINED
+
+[VUID-vkCmdDraw-colorAttachmentCount-06180](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-colorAttachmentCount-06180) 
+
+If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::colorAttachmentCount greater than 0, then each element of the VkRenderingInfo::pColorAttachments array with an imageView not equal to VK_NULL_HANDLE must have been created with a VkFormat equal to the corresponding element of VkPipelineRenderingCreateInfo::pColorAttachmentFormats used to create the bound graphics pipeline
+
+[VUID-vkCmdDraw-pDepthAttachment-06181](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pDepthAttachment-06181) 
+
+If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pDepthAttachment→imageView was not VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::depthAttachmentFormat used to create the bound graphics pipeline must be equal to the VkFormat used to create VkRenderingInfo::pDepthAttachment→imageView
+
+[VUID-vkCmdDraw-pStencilAttachment-06182](https://registry.khronos.org/vulkan/specs/latest/html/vkspec.html#VUID-vkCmdDraw-pStencilAttachment-06182) 
+
+If the current render pass instance was begun with vkCmdBeginRendering and VkRenderingInfo::pStencilAttachment→imageView was not VK_NULL_HANDLE, the value of VkPipelineRenderingCreateInfo::stencilAttachmentFormat used to create the bound graphics pipeline must be equal to the VkFormat used to create VkRenderingInfo::pStencilAttachment→imageView
+
+DX12 does not have these limitations, which makes implementing DX12 translation on top of Vulkan
+with these limitations difficult.
+
+Since these limitations do not apply to all implementations, we need a simple
+extension that lifts these restrictions and allows pipelines to be bound to render
+pass instances where the attachment formats may match with the same format or
+unused, and where it matches with unused the writes are discarded.
+
+Implementations may expose the [VK_EXT_dynamic_rendering_unused_attachments](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_dynamic_rendering_unused_attachments) extension
+and the
+[VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT](https://docs.vulkan.org/spec/latest/chapters/features.html#VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT)::`dynamicRenderingUnusedAttachments`
+feature which allows apps to bind pipelines to render pass instances where attachment
+formats can match with unused attachments.

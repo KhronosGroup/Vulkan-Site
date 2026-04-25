@@ -1,0 +1,102 @@
+# VK_EXT_opacity_micromap
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_EXT_opacity_micromap.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [4. Examples](#_examples)
+- [5. Issues](#_issues)
+- [5.1. Are there any issues that belong here?](#_are_there_any_issues_that_belong_here)
+- [5.1._Are_there_any_issues_that_belong_here?](#_are_there_any_issues_that_belong_here)
+- [6. Further Functionality](#_further_functionality)
+- [6._Further_Functionality](#_further_functionality)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+[4. Examples](#_examples)
+[5. Issues](#_issues)
+
+[5.1. Are there any issues that belong here?](#_are_there_any_issues_that_belong_here)
+
+[6. Further Functionality](#_further_functionality)
+
+VK_EXT_opacity_micromap adds a micromap object to associate micro-geometry information with geometry in an acceleration
+structure as well as a specific application of an opacity micromap to acceleration sub-triangle opacity without
+having to call a user any-hit shader.
+
+Geometry in an acceleration structure in the basic ray tracing extensions contains either geometric information or
+bounds for custom geometry. There are some applications where having a more compact representation of sub-triangle
+level information can be useful. One specific application is handling opacity information more efficiently at traversal
+time than having to return to an application-provided any-hit shader.
+
+The mapping of the data onto the mesh is one design choice. Traditionally, texturing onto geometry is accomplished by
+application-provided texture coordinates, but in this case that would add significant extra metadata and require
+potentially more complicated sampling. A quad domain is natural for some interpretations of map data, but that may
+require more information from the application on at least adjacency information, even if not full UV coordinates. A
+triangular mapping is very amenable to performant implementations both in hardware and in software while not requiring
+extra information from the application outside of a given triangle.
+
+Relatedly, the mapping from triangle to index is another design choice. With raster images, pitch ordering is the de facto
+standard for interoperating images. There is no direct analogy to a triangular domain, though, and the most similar mapping
+is significantly less trivial than raster images. Moving to a mapping with more locality gives gains in terms of locality
+of processing, ease of downsampling, and similar operations.
+
+The extension defines a VkMicromapEXT object and functions to manipulate it which parallel the functions that operate on
+acceleration structures. The micromap information is defined on the domain of subdivided triangles on a given acceleration
+structure geometry triangle. The build information contains usage information to compute the size including the number of triangles
+with a given subdivision level and format. For an opacity micromap, the micromap contains either 1-bit or 2-bit information
+which controls how the traversal is performed when combined with a set of flags.
+
+Once the micromap is built an extension structure can attach it to
+[VkAccelerationStructureGeometryKHR](https://docs.vulkan.org/spec/latest/chapters/accelstructures.html#VkAccelerationStructureGeometryKHR) along with
+mapping information from each triangle in the geometry to a specified triangle index in the micromap.
+
+VkMicromapBuildInfoEXT mmBuildInfo = { VK_STRUCTURE_TYPE_MICROMAP_BUILD_INFO_EXT };
+
+mmBuildInfo... = ;
+
+vkGetMicromapBuildSizesEXT(..., &mmBuildInfo, &sizeInfo)
+
+CreateBuffer(sizeInfo)
+
+VkMicromapCreateInfoEXT mmCreateInfo = { VK_STRUCTURE_TYPE_MICROMAP_CREATE_INFO_EXT };
+
+mmCreateInfo... = ;
+
+vkCreateMicromapEXT(device, mmCreateInfo, null, &micromap)
+
+mmBuildInfo = ...;
+
+vkCmdBuildMicromapsEXT(cmd, 1, &mmBuildInfo);
+
+VkAccelerationStructureTrianglesOpacityMicromapEXT opacityGeometryMicromap = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_TRIANGLES_OPACITY_MICROMAP_EXT };
+
+opacityGeometryMicromap... = ;
+
+VkAccelerationStructureGeometryKHR bottomASGeometry = { VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR };
+
+bottomASGeometry... = ;
+bottomASGEometry.pNext = &opacityGeometryMicromap;
+
+vkGetAccelerationStructureBuildSizesKHR()
+vkCreateAccelerationStructureKHR()
+vkCmdBuildAccelerationStructureKHR()
+
+All of the issues are in the spec documents.
+
+A flag to give an implementation more flexibility in conservatively calling any-hit shaders may be interesting. During EXT discussion,
+it was decided that it was not ready and postponed for a possible extension to the extension.

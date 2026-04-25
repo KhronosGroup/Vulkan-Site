@@ -1,0 +1,370 @@
+# Overview
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/01_Overview.html
+
+## Table of Contents
+
+- [Origin of Vulkan](#_origin_of_vulkan)
+- [Origin_of_Vulkan](#_origin_of_vulkan)
+- [Coding conventions](#_coding_conventions)
+- [What it takes to draw a triangle](#_what_it_takes_to_draw_a_triangle)
+- [What_it_takes_to_draw_a_triangle](#_what_it_takes_to_draw_a_triangle)
+- [Step 1 - Instance and physical device selection](#_step_1_instance_and_physical_device_selection)
+- [Step_1_-_Instance_and_physical_device_selection](#_step_1_instance_and_physical_device_selection)
+- [Step 2 - Logical device and queue families](#_step_2_logical_device_and_queue_families)
+- [Step_2_-_Logical_device_and_queue_families](#_step_2_logical_device_and_queue_families)
+- [Step 3 - Window surface and swap chain](#_step_3_window_surface_and_swap_chain)
+- [Step_3_-_Window_surface_and_swap_chain](#_step_3_window_surface_and_swap_chain)
+- [Step 4 - Image views and Dynamic Rendering](#_step_4_image_views_and_dynamic_rendering)
+- [Step_4_-_Image_views_and_Dynamic_Rendering](#_step_4_image_views_and_dynamic_rendering)
+- [Step 5 - Dynamic Rendering Overview](#_step_5_dynamic_rendering_overview)
+- [Step_5_-_Dynamic_Rendering_Overview](#_step_5_dynamic_rendering_overview)
+- [Step 6 - Graphics pipeline](#_step_6_graphics_pipeline)
+- [Step_6_-_Graphics_pipeline](#_step_6_graphics_pipeline)
+- [Step 7 - Command pools and command buffers](#_step_7_command_pools_and_command_buffers)
+- [Step_7_-_Command_pools_and_command_buffers](#_step_7_command_pools_and_command_buffers)
+- [Step 8 - Main loop](#_step_8_main_loop)
+- [Step_8_-_Main_loop](#_step_8_main_loop)
+- [Summary](#_summary)
+- [API concepts](#_api_concepts)
+- [Validation layers](#_validation_layers)
+
+## Content
+
+This chapter will start off with an introduction of Vulkan and the problems
+it addresses. After that, we’re going to look at the ingredients that are
+required for the first triangle. This will give you a big picture to place
+each of the subsequent chapters in. We will conclude by covering the
+structure of the Vulkan API and the general usage patterns.
+
+Just like the previous graphics APIs, Vulkan is designed as a cross-platform
+ abstraction over [GPUs](https://en.wikipedia.org/wiki/Graphics_processing_unit).
+The problem with most of these APIs is that the era in which they were
+designed featured graphics hardware mostly limited to configurable
+fixed functionality. Programmers had to provide the vertex data in a standard
+ format and were at the mercy of the GPU manufacturers in regard to
+ lighting and shading options.
+
+As graphics card architectures matured, they started offering more and more
+programmable functionality. All this new functionality had to be integrated
+with the existing APIs somehow. This resulted in less than ideal abstractions
+ and a lot of guesswork on the graphics driver side to map the programmer’s
+ intent to the modern graphics architectures. That’s why there are so many
+ driver updates for improving the performance in games, sometimes by
+ significant margins. Because of the complexity of these drivers, application
+  developers also need to deal with inconsistencies between vendors, like
+  the syntax that is accepted for [shaders](https://en.wikipedia.org/wiki/Shader).
+Aside from these new features, the past decade also saw an influx of mobile
+and embedded devices with powerful graphics hardware. These mobile GPUs have
+ different architectures based on their energy and space requirements.
+One such example is [tiled rendering](https://en.wikipedia.org/wiki/Tiled_rendering),
+which would benefit from improved performance by offering the
+programmer more control over this functionality.
+Another limitation originating from the age of these APIs is limited
+multi-threading support, which can result in a bottleneck on the CPU side.
+
+Vulkan solves these problems by being designed from scratch for modern
+graphics architectures. It reduces the driver overhead by allowing programmers to
+ clearly specify their intent using a more feature-full yet verbose API, and
+ allows multiple threads to create and submit commands in parallel. It reduces
+ inconsistencies in shader compilation by switching to a standardized byte
+ code format with a single compiler. Lastly, it acknowledges the general
+ purpose processing capabilities of modern graphics cards by unifying the
+ graphics and compute functionality into a single API.
+
+All the Vulkan functions, enumerations and structs are defined in the
+`vulkan.h` header, which is included in the [Vulkan SDK](https://lunarg.com/vulkan-sdk/)
+developed by LunarG. We’ll look into installing this SDK in the next chapter.
+In this tutorial, we’ll be using the C++ Vulkan API provided by the vulkan.hpp header,
+which comes with the official Vulkan SDK. This header offers a type-safe, RAII-friendly,
+and slightly more ergonomic interface over the raw C Vulkan API,
+while still maintaining a very close, low-level mapping
+to the underlying Vulkan functions and structures.
+
+We’ll now look at an overview of all the steps it takes to render a triangle
+ in a well-behaved Vulkan program.
+All the concepts introduced here will be elaborated on in the next chapters.
+This is just to give you a big picture to relate all the individual components to.
+
+A Vulkan application starts by setting up the Vulkan API through a `vk::Instance`.
+An instance is created by describing your application and any API extensions
+ you will be using. After creating the instance, you can query for Vulkan
+ supported hardware and select one or more `vk::PhysicalDevice`s to use for
+ operations. You can query for properties like VRAM size and device
+ capabilities to select desired devices, for example, to prefer using
+ dedicated graphics cards.
+
+After selecting the right hardware device to use, you need to create a
+vk::Device (logical device), where you describe more specifically which
+physical device features you will be using, like multi viewport rendering
+and 64-bit floats.
+You also need to specify which queue families you would like to use.
+Most operations performed with Vulkan, like draw commands and memory
+operations, are asynchronously executed by submitting them to a vk::Queue.
+Queues are allocated from queue families, where each queue family supports a
+ specific set of operations in its queues.
+For example, there could be separate queue families for graphics, compute
+and memory transfer operations.
+The availability of queue families could also be used as a distinguishing
+factor in physical device selection.
+It is possible for a device with Vulkan support to not offer any graphics
+functionality; however, all graphics cards with Vulkan support today will
+generally support all queue operations that we’re interested in.
+
+Unless you’re only interested in offscreen rendering, you will need to
+create a window to present rendered images.
+Windows can be created with the native platform APIs or libraries like
+[GLFW](https://www.glfw.org/) and [SDL](https://www.libsdl.org/).
+We will be using GLFW in this tutorial, but more about that in the next
+chapter.
+
+We need two more parts to actually render to a window: a window surface
+ (vk::SurfaceKHR) and a swap chain (vk::SwapchainKHR).
+Note the `KHR` postfix, which means that these objects are part of a Vulkan
+extension. The Vulkan API itself is completely platform-agnostic, which is
+why we need to use the standardized WSI (Window System Interface) extension
+to interact with the window manager.
+The surface is a cross-platform abstraction over windows to render to and is
+ generally instantiated by providing a reference to the native window
+ handle, for example `HWND` on Windows.
+Luckily, the GLFW library has a built-in function to deal with the
+platform-specific details of this.
+
+The swap chain is a collection of render targets.
+Its basic purpose is to ensure that the image that we’re currently rendering
+ is different from the one that is currently on the screen.
+This is important to make sure that only complete images are shown.
+Every time we want to draw a frame, we have to ask the swap chain to provide
+us with an image to render to.
+When we’ve finished drawing a frame, the image is returned to the swap chain
+ for it to be presented to the screen at some point.
+The number of render targets and conditions for presenting finished images
+to the screen depends on the present mode.
+Common present modes are  double buffering (vsync) and triple buffering.
+We’ll look into these in the swap chain creation chapter.
+
+Some platforms allow you to render directly to a display without interacting
+ with any window manager through the `VK_KHR_display` and
+ `VK_KHR_display_swapchain` extensions.
+These allow you to create a surface that represents the entire screen and
+could be used to implement your own window manager, for example.
+
+To draw to an image acquired from the swap chain, we would typically wrap
+it into a vk::ImageView and vk::Framebuffer. An image view references a specific
+part of an image to be used, and a framebuffer references image views that are
+to be used for color, depth, and stencil targets.
+Because there could be many different images in the swap chain,
+we would preemptively create an image view and framebuffer for each
+of them and select the right one at draw time.
+
+In earlier versions of Vulkan, a render pass defined how rendering operations
+should occur with framebuffers, specifying the types of images used (e.g., color, depth)
+and how their contents should be treated (e.g., cleared, loaded, or stored).
+A `vk::RenderPass` would define subpasses and attachment usage, and a `vk::Framebuffer`
+would bind specific image views to these attachments.
+
+However, with dynamic rendering (introduced in Vulkan 1.3),
+you no longer need to create a `vk::Framebuffer` at all.
+Dynamic rendering eliminates the need for predefined render passes and framebuffers,
+allowing you to specify rendering attachments directly during command recording.
+This makes the API much simpler, as we can define the rendering targets on the
+fly without worrying about the overhead of managing framebuffers.
+
+With dynamic rendering, you no longer need to predefine `vk::RenderPass` or `vk::Framebuffer`.
+Instead, you specify the rendering attachments at the start of command recording, using `vk::beginRendering`
+and structs like `vk::RenderingInfo` to provide all necessary attachment information dynamically.
+
+In our initial triangle rendering application,
+we’ll use dynamic rendering to specify
+a single image as a color target and instruct Vulkan to clear it to a solid color right before drawing.
+
+The graphics pipeline in Vulkan is set up by creating a VkPipeline object.
+It describes the configurable state of the graphics card, like the viewport
+size and depth buffer operation and the programmable state using vk::ShaderModule objects.
+The vk::ShaderModule objects are created from shader byte code.
+The driver also needs to know which render targets will be used in the
+pipeline, which we specify by referencing the render pass.
+
+One of the most distinctive features of Vulkan compared to existing APIs, is
+ that almost all configuration of the graphics pipeline needs to be set in
+ advance.
+That means that if you want to switch to a different shader or slightly
+change your vertex layout, then you need to entirely recreate the graphics
+pipeline.
+That means that you will have to create many vk::Pipeline objects in advance
+for all the different combinations you need for your rendering operations.
+Only some basic configuration, like viewport size and clear color, can be
+changed dynamically.
+All the states also need to be described explicitly; there is no default
+color blend state, for example.
+
+The good news is that because you’re doing the equivalent of ahead-of-time
+compilation versus just-in-time compilation, there are more optimization
+opportunities for the driver. Runtime performance is more predictable
+because large state changes like switching to a different graphics pipeline
+are made very explicit.
+
+As mentioned earlier, many of the operations in Vulkan that we want to
+execute, like drawing operations, need to be submitted to a queue.
+These operations first need to be recorded into a vk::CommandBuffer before
+they can be submitted.
+These command buffers are allocated from a `vk::CommandPool` that is
+associated with a specific queue family.
+Traditionally, to draw a simple triangle, we need to record a command buffer with the
+following operations:
+
+* 
+Begin the render pass
+
+* 
+Bind the graphics pipeline
+
+* 
+Draw three vertices
+
+* 
+End the render pass
+
+However, with dynamic rendering, things change.
+Instead of "beginning" and "ending" a render pass,
+you directly define the rendering attachments when you start
+rendering with vk::BeginRendering.
+
+This simplifies the process by allowing you to specify the necessary attachments on the fly,
+making it more adaptable to scenarios where the swap chain images are dynamically selected.
+Therefore, you don’t need to record a command buffer for each image in the swap
+chain or repeatedly record the same command buffer every frame.
+The operations become more streamlined and efficient,
+allowing Vulkan to be more flexible in handling rendering scenarios.
+
+Now that the drawing commands have been wrapped into a command buffer, the
+main loop is quite straightforward.
+We first acquire an image from the swap chain with device.acquireNextImageKHR.
+We can then select the appropriate command buffer for that image and execute
+ it with graphicsQueue.submit().
+Finally, we return the image to the swap chain for presentation to the
+screen with presentQueue.presentKHR(presentInfo).
+
+Operations that are submitted to queues are executed asynchronously.
+Therefore, we have to use synchronization objects like semaphores to ensure a
+ correct order of execution.
+Execution of the draw command buffer must be set up to wait on image
+acquisition to finish; otherwise it may occur that we start rendering to an
+image that is still being read for presentation on the screen.
+The presentQueue.presentKHR(presentInfoKHR) call in turn needs to wait for rendering to be
+finished, for which we’ll use a second semaphore that is signaled after
+rendering completes.
+
+This whirlwind tour should give you a basic understanding of the work ahead
+ of drawing the first triangle.
+A real-world program contains more steps, like allocating vertex buffers,
+creating uniform buffers and uploading texture images that will be covered
+in later chapters. However, we’ll start simple because Vulkan has enough of
+a steep learning curve as it is.
+Note that we’ll cheat a bit by initially embedding the vertex coordinates in
+ the vertex shader instead of using a vertex buffer.
+That’s because managing vertex buffers requires some familiarity with
+command buffers first.
+
+So in short, to draw the first triangle, we need to:
+
+* 
+Create an Instance
+
+* 
+Select a supported graphics card (PhysicalDevice)
+
+* 
+Create a Device and Queue for drawing and presentation
+
+* 
+Create a window, window surface and swap chain
+
+* 
+Wrap the swap chain images into VkImageView
+
+* 
+Set up dynamic rendering
+
+* 
+Set up the graphics pipeline
+
+* 
+Allocate and record a command buffer with the draw commands for every
+possible swap chain image
+
+* 
+Draw frames by acquiring images, submitting the right draw command buffer
+and returning the images to the swap chain
+
+It’s a lot of steps, but the purpose of each step will be made
+basic and clear in the upcoming chapters.
+If you’re confused about the relation of a single step compared to the whole
+ program, you should refer back to this chapter.
+
+This chapter will conclude with a short overview of how the Vulkan API is
+structured at a lower level.
+
+For example, object creation generally follows this pattern:
+
+vk::XXXCreateInfo createInfo{};
+createInfo.sType = vk::StructureType::eXXXCreateInfo;
+createInfo.pNext = nullptr;
+createInfo.foo = ...;
+createInfo.bar = ...;
+
+vk::XXX object;
+
+try {
+    object = device.createXXX(createInfo);
+} catch (vk::SystemError& err) {
+    std::cerr 
+
+Many structures in Vulkan require you to explicitly specify the type of
+structure in the `sType` member.
+The `pNext` member can point to an extension structure and will always be
+`nullptr` in this tutorial.
+Functions that create or destroy an object will have a VkAllocationCallbacks
+ parameter that allows you to use a custom allocator for driver memory,
+ which will also be left `nullptr` in this tutorial.
+
+Almost all functions return a vk::Result that is either `vk::result::eSuccess`
+or an error code.
+The specification describes which error codes each function can return and
+what they mean.
+
+Failure of such calls is reported by C++ exceptions. The exception will
+respond with more information about the error including the aforementioned
+vk::Result, this enables us to check multiple commands from one call and keep
+the command syntax clean.
+
+As mentioned earlier, Vulkan is designed for high performance and low driver
+ overhead.
+Therefore, it will include very limited error checking and debugging
+capabilities by default.
+The driver will often crash instead of returning an error code if you do
+something wrong, or worse, it will appear to work on your graphics card and
+completely fail on others.
+
+Vulkan allows you to enable extensive checks through a feature known as
+*validation layers*.
+Validation layers are pieces of code that can be inserted between the API
+and the graphics driver to do things like running extra checks on function
+parameters and tracking memory management problems.
+An important benefit is that you can enable them during development and then
+completely disable them when releasing your application for zero overhead.
+Anyone can write their own validation layers, but the Vulkan SDK by LunarG
+provides a standard set of validation layers that we’ll be using in this tutorial.
+You also need to register a callback function to receive debug messages from
+ the layers.
+
+Because Vulkan is so explicit about every operation and the validation
+layers are so extensive, it can actually be a lot easier to find out why
+your screen is black compared to OpenGL and Direct3D!
+
+There’s only one more step before we’ll start writing code, and that’s
+[setting up the development environment](02_Development_environment.html).

@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Tooling: Crash Handling and GPU Crash Dumps :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Tooling</li>
+    <li><a href="04_crash_minidump.html">Crash minidumps</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Tooling: Crash Handling and GPU Crash Dumps</h1>
+<div class="sect1">
+<h2 id="_crash_handling_in_vulkan_applications"><a class="anchor" href="#_crash_handling_in_vulkan_applications"></a>Crash Handling in Vulkan Applications</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Even with thorough testing and debugging, crashes can still occur in production environments. When they do, having robust crash handling mechanisms can help you diagnose and fix issues quickly. This chapter focuses on practical GPU crash diagnostics (e.g., NVIDIA Nsight Aftermath, AMD Radeon GPU Detective) and clarifies the role and limitations of OS process minidumps, which usually lack GPU state and are rarely sufficient to root-cause graphics/device-lost issues on their own.</p>
+</div>
+<div class="sect2">
+<h3 id="_understanding_crashes_in_vulkan_applications"><a class="anchor" href="#_understanding_crashes_in_vulkan_applications"></a>Understanding Crashes in Vulkan Applications</h3>
+<div class="paragraph">
+<p>Vulkan applications can crash for various reasons:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>API Usage Errors</strong>: Incorrect use of the Vulkan API that validation layers would catch in debug builds</p>
+</li>
+<li>
+<p><strong>Driver Bugs</strong>: Issues in the GPU driver that may only manifest with specific hardware or workloads</p>
+</li>
+<li>
+<p><strong>Resource Management Issues</strong>: Memory leaks, double frees, or accessing destroyed resources</p>
+</li>
+<li>
+<p><strong>Shader Errors</strong>: Runtime errors in shaders that cause the GPU to hang</p>
+</li>
+<li>
+<p><strong>System-Level Issues</strong>: Out of memory conditions, system instability, etc.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s explore how to handle these crashes and gather diagnostic information.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_basic_crash_handling"><a class="anchor" href="#_implementing_basic_crash_handling"></a>Implementing Basic Crash Handling</h3>
+<div class="paragraph">
+<p>First, let&#8217;s implement a basic crash handler that can catch unhandled exceptions and segmentation faults:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">import std;
+import vulkan_raii;
+
+// Global state for crash handling
+namespace crash_handler {
+    std::string app_name;
+    std::string crash_log_path;
+    bool initialized = false;
+
+    // Log basic system information
+    void log_system_info(std::ofstream&amp; log) {
+        log &lt;&lt; "Application: " &lt;&lt; app_name &lt;&lt; std::endl;
+        log &lt;&lt; "Timestamp: " &lt;&lt; std::chrono::system_clock::now() &lt;&lt; std::endl;
+
+        // Log OS information
+        #if defined(_WIN32)
+        log &lt;&lt; "OS: Windows" &lt;&lt; std::endl;
+        #elif defined(__linux__)
+        log &lt;&lt; "OS: Linux" &lt;&lt; std::endl;
+        #elif defined(__APPLE__)
+        log &lt;&lt; "OS: macOS" &lt;&lt; std::endl;
+        #else
+        log &lt;&lt; "OS: Unknown" &lt;&lt; std::endl;
+        #endif
+
+        // Log CPU information
+        log &lt;&lt; "CPU Cores: " &lt;&lt; std::thread::hardware_concurrency() &lt;&lt; std::endl;
+
+        // Log memory information
+        #if defined(_WIN32)
+        MEMORYSTATUSEX mem_info;
+        mem_info.dwLength = sizeof(MEMORYSTATUSEX);
+        GlobalMemoryStatusEx(&amp;mem_info);
+        log &lt;&lt; "Total Physical Memory: " &lt;&lt; mem_info.ullTotalPhys / (1024 * 1024) &lt;&lt; " MB" &lt;&lt; std::endl;
+        log &lt;&lt; "Available Memory: " &lt;&lt; mem_info.ullAvailPhys / (1024 * 1024) &lt;&lt; " MB" &lt;&lt; std::endl;
+        #elif defined(__linux__)
+        // Linux-specific memory info code
+        #elif defined(__APPLE__)
+        // macOS-specific memory info code
+        #endif
+    }
+
+    // Log Vulkan-specific information
+    void log_vulkan_info(std::ofstream&amp; log, vk::raii::PhysicalDevice* physical_device = nullptr) {
+        if (physical_device) {
+            auto properties = physical_device-&gt;getProperties();
+            log &lt;&lt; "GPU: " &lt;&lt; properties.deviceName &lt;&lt; std::endl;
+            log &lt;&lt; "Driver Version: " &lt;&lt; properties.driverVersion &lt;&lt; std::endl;
+            log &lt;&lt; "Vulkan API Version: "
+                &lt;&lt; VK_VERSION_MAJOR(properties.apiVersion) &lt;&lt; "."
+                &lt;&lt; VK_VERSION_MINOR(properties.apiVersion) &lt;&lt; "."
+                &lt;&lt; VK_VERSION_PATCH(properties.apiVersion) &lt;&lt; std::endl;
+        } else {
+            log &lt;&lt; "No Vulkan physical device information available" &lt;&lt; std::endl;
+        }
+    }
+
+    // Handler for unhandled exceptions
+    void handle_exception(const std::exception&amp; e, vk::raii::PhysicalDevice* physical_device = nullptr) {
+        try {
+            std::ofstream log(crash_log_path, std::ios::app);
+            log &lt;&lt; "==== Crash Report ====" &lt;&lt; std::endl;
+            log_system_info(log);
+            log_vulkan_info(log, physical_device);
+
+            log &lt;&lt; "Exception: " &lt;&lt; e.what() &lt;&lt; std::endl;
+            log &lt;&lt; "==== End of Crash Report ====" &lt;&lt; std::endl &lt;&lt; std::endl;
+
+            log.close();
+        } catch (...) {
+            // Last resort if we can't even write to the log
+            std::cerr &lt;&lt; "Failed to write crash log" &lt;&lt; std::endl;
+        }
+    }
+
+    // Signal handler for segfaults, etc.
+    void signal_handler(int signal) {
+        try {
+            std::ofstream log(crash_log_path, std::ios::app);
+            log &lt;&lt; "==== Crash Report ====" &lt;&lt; std::endl;
+            log_system_info(log);
+
+            log &lt;&lt; "Signal: " &lt;&lt; signal &lt;&lt; " (";
+            switch (signal) {
+                case SIGSEGV: log &lt;&lt; "SIGSEGV - Segmentation fault"; break;
+                case SIGILL: log &lt;&lt; "SIGILL - Illegal instruction"; break;
+                case SIGFPE: log &lt;&lt; "SIGFPE - Floating point exception"; break;
+                case SIGABRT: log &lt;&lt; "SIGABRT - Abort"; break;
+                default: log &lt;&lt; "Unknown signal"; break;
+            }
+            log &lt;&lt; ")" &lt;&lt; std::endl;
+
+            log &lt;&lt; "==== End of Crash Report ====" &lt;&lt; std::endl &lt;&lt; std::endl;
+
+            log.close();
+        } catch (...) {
+            // Last resort if we can't even write to the log
+            std::cerr &lt;&lt; "Failed to write crash log" &lt;&lt; std::endl;
+        }
+
+        // Re-raise the signal for the default handler
+        signal(signal, SIG_DFL);
+        raise(signal);
+    }
+
+    // Initialize the crash handler
+    void initialize(const std::string&amp; application_name, const std::string&amp; log_path) {
+        if (initialized) return;
+
+        app_name = application_name;
+        crash_log_path = log_path;
+
+        // Set up signal handlers
+        signal(SIGSEGV, signal_handler);
+        signal(SIGILL, signal_handler);
+        signal(SIGFPE, signal_handler);
+        signal(SIGABRT, signal_handler);
+
+        initialized = true;
+    }
+}
+
+// Example usage in main application
+int main() {
+    try {
+        // Initialize crash handler
+        crash_handler::initialize("MyVulkanApp", "crash_log.txt");
+
+        // Initialize Vulkan
+        vk::raii::Context context;
+        auto instance = create_instance(context);
+        auto physical_device = select_physical_device(instance);
+        auto device = create_device(physical_device);
+
+        // Main application loop
+        while (true) {
+            try {
+                // Render frame
+                render_frame(device);
+            } catch (const vk::SystemError&amp; e) {
+                // Handle Vulkan errors that we can recover from
+                std::cerr &lt;&lt; "Vulkan error: " &lt;&lt; e.what() &lt;&lt; std::endl;
+            }
+        }
+    } catch (const std::exception&amp; e) {
+        // Handle unrecoverable exceptions
+        crash_handler::handle_exception(e);
+        return 1;
+    }
+
+    return 0;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gpu_crash_diagnostics_vulkan"><a class="anchor" href="#_gpu_crash_diagnostics_vulkan"></a>GPU Crash Diagnostics (Vulkan)</h3>
+<div class="paragraph">
+<p>While OS process minidumps capture CPU-side state, GPU crashes (device lost, TDRs, hangs) require GPU-specific crash dumps to be actionable. In practice, you’ll want to integrate vendor tooling that can record GPU execution state around the fault.</p>
+</div>
+<div class="sect3">
+<h4 id="_nvidia_nsight_aftermath_vulkan"><a class="anchor" href="#_nvidia_nsight_aftermath_vulkan"></a>NVIDIA: Nsight Aftermath (Vulkan)</h4>
+<div class="paragraph">
+<p>Overview:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Collects GPU crash dumps with information about the last executed draw/dispatch, bound pipeline/shaders, markers, and resource identifiers.</p>
+</li>
+<li>
+<p>Works alongside your Vulkan app; you analyze dumps with NVIDIA tools to pinpoint the failing work and shader.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Practical steps:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Enable object names and labels</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Use VK_EXT_debug_utils to name pipelines, shaders, images, buffers, and to insert command buffer labels for major passes and draw/dispatch groups. These names surface in crash reports and greatly aid triage.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Add frame/work markers</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Insert meaningful labels before/after critical rendering phases. If available on your target, also use vendor checkpoint/marker extensions (e.g., VK_NV_device_diagnostic_checkpoints) to provide fine-grained breadcrumbs.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Build shaders with unique IDs and optional debug info</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Ensure each pipeline/shader can be correlated (e.g., include a stable hash/UUID in your pipeline cache and application logs). Keep the mapping from IDs to source for analysis.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Initialize and enable GPU crash dumps</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Integrate the Nsight Aftermath Vulkan SDK per NVIDIA’s documentation. Register a callback to receive crash dump data, write it to disk, and include your marker string table for symbolication.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Handle device loss</p>
+<div class="ulist">
+<ul>
+<li>
+<p>On VK_ERROR_DEVICE_LOST (or Windows TDR), flush any in-memory marker logs, persist the crash dump, and then terminate cleanly. Attempting to continue rendering is undefined.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>References: NVIDIA Nsight Aftermath SDK and documentation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_amd_radeon_gpu_detective_rgd"><a class="anchor" href="#_amd_radeon_gpu_detective_rgd"></a>AMD: Radeon GPU Detective (RGD)</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>AMD provides tools to capture and analyze GPU crash information on RDNA hardware. Similar principles apply: enable object names, label command buffers, and preserve pipeline/shader identifiers so RGD can point back to your content.</p>
+</li>
+<li>
+<p>See AMD Radeon GPU Detective and related documentation for Vulkan integration and analysis workflows.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vendor_agnostic_groundwork_that_helps_all_tools"><a class="anchor" href="#_vendor_agnostic_groundwork_that_helps_all_tools"></a>Vendor-agnostic groundwork that helps all tools</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Name everything via VK_EXT_debug_utils.</p>
+</li>
+<li>
+<p>Insert command buffer labels at meaningful boundaries (frame, pass, material batch, etc.).</p>
+</li>
+<li>
+<p>Persist build/version, driver, Vulkan API/UUID, and pipeline cache UUID in your logs and crash artifacts.</p>
+</li>
+<li>
+<p>Implement robust device lost handling: stop submitting, free/teardown safely, write artifacts, exit.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_generating_minidumps"><a class="anchor" href="#_generating_minidumps"></a>Generating Minidumps</h3>
+<div class="paragraph">
+<p>Use OS process minidumps to capture CPU-side call stacks, threads, and memory snapshots at the time of a crash. For graphics issues and device loss, they rarely contain the GPU execution state you need—treat minidumps as a complement to GPU crash dumps, not a replacement.</p>
+</div>
+<div class="paragraph">
+<p>Below is a brief outline for generating minidumps with platform APIs (useful for correlating CPU context with a GPU crash):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">import std;
+import vulkan_raii;
+
+namespace crash_handler {
+    std::string app_name;
+    std::string dump_path;
+    bool initialized = false;
+
+    #if defined(_WIN32)
+    // Windows implementation using Windows Error Reporting (WER)
+    LONG WINAPI windows_exception_handler(EXCEPTION_POINTERS* exception_pointers) {
+        // Create a unique filename for the minidump
+        std::string filename = dump_path + "\\" + app_name + "_" +
+            std::to_string(std::chrono::system_clock::now().time_since_epoch().count()) + ".dmp";
+
+        // Create the minidump file
+        HANDLE file = CreateFileA(
+            filename.c_str(),
+            GENERIC_WRITE,
+            0,
+            nullptr,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            nullptr
+        );
+
+        if (file != INVALID_HANDLE_VALUE) {
+            // Initialize minidump info
+            MINIDUMP_EXCEPTION_INFORMATION exception_info;
+            exception_info.ThreadId = GetCurrentThreadId();
+            exception_info.ExceptionPointers = exception_pointers;
+            exception_info.ClientPointers = FALSE;
+
+            // Write the minidump
+            MiniDumpWriteDump(
+                GetCurrentProcess(),
+                GetCurrentProcessId(),
+                file,
+                MiniDumpWithFullMemory,  // Dump type
+                &amp;exception_info,
+                nullptr,
+                nullptr
+            );
+
+            CloseHandle(file);
+
+            std::cerr &lt;&lt; "Minidump written to: " &lt;&lt; filename &lt;&lt; std::endl;
+        } else {
+            std::cerr &lt;&lt; "Failed to create minidump file" &lt;&lt; std::endl;
+        }
+
+        // Continue with normal exception handling
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    void initialize(const std::string&amp; application_name, const std::string&amp; minidump_path) {
+        if (initialized) return;
+
+        app_name = application_name;
+        dump_path = minidump_path;
+
+        // Create the dump directory if it doesn't exist
+        CreateDirectoryA(dump_path.c_str(), nullptr);
+
+        // Set up the exception handler
+        SetUnhandledExceptionFilter(windows_exception_handler);
+
+        initialized = true;
+    }
+
+    #elif defined(__linux__)
+    // Linux implementation using Google Breakpad
+    // Note: This requires linking against the Google Breakpad library
+
+    #include "client/linux/handler/exception_handler.h"
+
+    // Callback for when a minidump is generated
+    static bool minidump_callback(const google_breakpad::MinidumpDescriptor&amp; descriptor,
+                                 void* context, bool succeeded) {
+        std::cerr &lt;&lt; "Minidump generated: " &lt;&lt; descriptor.path() &lt;&lt; std::endl;
+        return succeeded;
+    }
+
+    google_breakpad::ExceptionHandler* exception_handler = nullptr;
+
+    void initialize(const std::string&amp; application_name, const std::string&amp; minidump_path) {
+        if (initialized) return;
+
+        app_name = application_name;
+        dump_path = minidump_path;
+
+        // Create the dump directory if it doesn't exist
+        std::filesystem::create_directories(dump_path);
+
+        // Set up the exception handler
+        google_breakpad::MinidumpDescriptor descriptor(dump_path);
+        exception_handler = new google_breakpad::ExceptionHandler(
+            descriptor,
+            nullptr,
+            minidump_callback,
+            nullptr,
+            true,
+            -1
+        );
+
+        initialized = true;
+    }
+
+    #elif defined(__APPLE__)
+    // macOS implementation using Google Breakpad
+    // Similar to Linux implementation
+    #endif
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_analyzing_minidumps"><a class="anchor" href="#_analyzing_minidumps"></a>Analyzing Minidumps</h3>
+<div class="paragraph">
+<p>Minidumps are best used to understand CPU-side state around a crash (e.g., which thread faulted, call stacks leading to vkQueueSubmit/vkQueuePresent, allocator misuse) and to correlate with a GPU crash dump from vendor tools. Here’s a brief workflow on different platforms:</p>
+</div>
+<div class="sect3">
+<h4 id="_windows"><a class="anchor" href="#_windows"></a>Windows</h4>
+<div class="paragraph">
+<p>On Windows, you can use Visual Studio or WinDbg to analyze minidumps:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Visual Studio</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Open Visual Studio</p>
+</li>
+<li>
+<p>Go to File &gt; Open &gt; File and select the .dmp file</p>
+</li>
+<li>
+<p>Visual Studio will load the minidump and show the call stack at the time of the crash</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>WinDbg</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Open WinDbg</p>
+</li>
+<li>
+<p>Open the minidump file</p>
+</li>
+<li>
+<p>Use commands like <code>.ecxr</code> to examine the exception context record</p>
+</li>
+<li>
+<p>Use <code>k</code> to view the call stack</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_linux_and_macos"><a class="anchor" href="#_linux_and_macos"></a>Linux and macOS</h4>
+<div class="paragraph">
+<p>On Linux and macOS, you can use tools like GDB or LLDB to analyze minidumps generated by Google Breakpad:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Using minidump_stackwalk</strong> (part of Google Breakpad):
+<code>`
+minidump_stackwalk minidump_file.dmp /path/to/symbols &gt; stacktrace.txt
+</code>`</p>
+</li>
+<li>
+<p><strong>Using GDB</strong>:
+<code>`
+gdb /path/to/executable
+(gdb) core-file /path/to/minidump
+(gdb) bt
+</code>`</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_specific_crash_information"><a class="anchor" href="#_vulkan_specific_crash_information"></a>Vulkan-Specific Crash Information</h3>
+<div class="paragraph">
+<p>For Vulkan applications, it&#8217;s helpful to include additional information in your crash reports:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void log_vulkan_detailed_info(std::ofstream&amp; log, vk::raii::PhysicalDevice&amp; physical_device,
+                             vk::raii::Device&amp; device) {
+    // Log physical device properties
+    auto properties = physical_device.getProperties();
+    log &lt;&lt; "GPU: " &lt;&lt; properties.deviceName &lt;&lt; std::endl;
+    log &lt;&lt; "Driver Version: " &lt;&lt; properties.driverVersion &lt;&lt; std::endl;
+    log &lt;&lt; "Vulkan API Version: "
+        &lt;&lt; VK_VERSION_MAJOR(properties.apiVersion) &lt;&lt; "."
+        &lt;&lt; VK_VERSION_MINOR(properties.apiVersion) &lt;&lt; "."
+        &lt;&lt; VK_VERSION_PATCH(properties.apiVersion) &lt;&lt; std::endl;
+
+    // Log memory usage
+    auto memory_properties = physical_device.getMemoryProperties();
+    log &lt;&lt; "Memory Heaps:" &lt;&lt; std::endl;
+    for (uint32_t i = 0; i &lt; memory_properties.memoryHeapCount; i++) {
+        log &lt;&lt; "  Heap " &lt;&lt; i &lt;&lt; ": "
+            &lt;&lt; (memory_properties.memoryHeaps[i].size / (1024 * 1024)) &lt;&lt; " MB";
+        if (memory_properties.memoryHeaps[i].flags &amp; vk::MemoryHeapFlagBits::eDeviceLocal) {
+            log &lt;&lt; " (Device Local)";
+        }
+        log &lt;&lt; std::endl;
+    }
+
+    // Log enabled extensions
+    auto extensions = device.enumerateDeviceExtensionProperties();
+    log &lt;&lt; "Enabled Extensions:" &lt;&lt; std::endl;
+    for (const auto&amp; ext : extensions) {
+        log &lt;&lt; "  " &lt;&lt; ext.extensionName &lt;&lt; " (version " &lt;&lt; ext.specVersion &lt;&lt; ")" &lt;&lt; std::endl;
+    }
+
+    // Log current pipeline cache state
+    // This can be useful for diagnosing shader-related crashes
+    try {
+        auto pipeline_cache_data = device.getPipelineCacheData();
+        log &lt;&lt; "Pipeline Cache Size: " &lt;&lt; pipeline_cache_data.size() &lt;&lt; " bytes" &lt;&lt; std::endl;
+    } catch (const vk::SystemError&amp; e) {
+        log &lt;&lt; "Failed to get pipeline cache data: " &lt;&lt; e.what() &lt;&lt; std::endl;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_with_telemetry_systems"><a class="anchor" href="#_integrating_with_telemetry_systems"></a>Integrating with Telemetry Systems</h3>
+<div class="paragraph">
+<p>For production applications, you might want to automatically upload crash reports to a telemetry system for analysis:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">import std;
+import vulkan_raii;
+#include &lt;curl/curl.h&gt;
+
+namespace crash_handler {
+    // ... existing code ...
+
+    std::string telemetry_url;
+    bool telemetry_enabled = false;
+
+    // Upload a minidump to the telemetry server
+    bool upload_minidump(const std::string&amp; minidump_path) {
+        if (!telemetry_enabled || telemetry_url.empty()) {
+            return false;
+        }
+
+        CURL* curl = curl_easy_init();
+        if (!curl) {
+            std::cerr &lt;&lt; "Failed to initialize curl" &lt;&lt; std::endl;
+            return false;
+        }
+
+        // Set up the form data
+        curl_mime* form = curl_mime_init(curl);
+
+        // Add the minidump file
+        curl_mimepart* field = curl_mime_addpart(form);
+        curl_mime_name(field, "minidump");
+        curl_mime_filedata(field, minidump_path.c_str());
+
+        // Add application information
+        field = curl_mime_addpart(form);
+        curl_mime_name(field, "product");
+        curl_mime_data(field, app_name.c_str(), CURL_ZERO_TERMINATED);
+
+        // Add version information
+        field = curl_mime_addpart(form);
+        curl_mime_name(field, "version");
+        curl_mime_data(field, "1.0.0", CURL_ZERO_TERMINATED);  // Replace with your version
+
+        // Set up the request
+        curl_easy_setopt(curl, CURLOPT_URL, telemetry_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_MIMEPOST, form);
+
+        // Perform the request
+        CURLcode res = curl_easy_perform(curl);
+
+        // Clean up
+        curl_mime_free(form);
+        curl_easy_cleanup(curl);
+
+        if (res != CURLE_OK) {
+            std::cerr &lt;&lt; "Failed to upload minidump: " &lt;&lt; curl_easy_strerror(res) &lt;&lt; std::endl;
+            return false;
+        }
+
+        return true;
+    }
+
+    // Enable telemetry
+    void enable_telemetry(const std::string&amp; url) {
+        telemetry_url = url;
+        telemetry_enabled = true;
+
+        // Initialize curl
+        curl_global_init(CURL_GLOBAL_ALL);
+    }
+
+    // Disable telemetry
+    void disable_telemetry() {
+        telemetry_enabled = false;
+
+        // Clean up curl
+        curl_global_cleanup();
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_best_practices_for_crash_handling_vulkangpu_focused"><a class="anchor" href="#_best_practices_for_crash_handling_vulkangpu_focused"></a>Best Practices for Crash Handling (Vulkan/GPU-focused)</h3>
+<div class="paragraph">
+<p>To make crash data actionable for graphics issues, prefer these concrete steps:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Name and label aggressively</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Use VK_EXT_debug_utils to name all objects and insert command buffer labels at pass/material boundaries and before large draw/dispatch batches. Persist a small in-memory ring buffer of recent labels for inclusion in crash artifacts.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Prepare for device loss</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Implement a central handler for VK_ERROR_DEVICE_LOST. Stop submitting work, flush logs/markers, request vendor GPU crash dump data, and exit. Avoid attempting recovery in the same process unless you have a robust reinitialization path.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Capture GPU crash dumps on supported hardware</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Integrate NVIDIA Nsight Aftermath and/or AMD RGD depending on your target audience. Ship with crash dumps enabled in development/beta builds; provide a toggle for users.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Make builds symbol-friendly</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Keep a mapping from pipeline/shader hashes to source/IR/SPIR-V and build IDs. Enable shader debug info where feasible for diagnosis builds.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Record environment info</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Log driver version, Vulkan version, GPU name/PCI ID, pipeline cache UUID, app build/version, and relevant feature toggles. Include this alongside minidumps and GPU crash dumps.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Reproduce deterministically</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Provide a way to disable background variability (e.g., async streaming) and to replay a captured sequence of commands/scenes to reproduce the crash locally.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Respect privacy and distribution concerns</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Clearly document what crash data is collected (minidumps, GPU crash dumps, logs) and require opt‑in for uploads. Strip user-identifiable data.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h3>
+<div class="paragraph">
+<p>Robust crash handling is essential for maintaining a high-quality Vulkan application. Combine vendor GPU crash dumps (Aftermath, RGD, etc.) with CPU-side minidumps and thorough logging to quickly diagnose and fix issues in production. Treat minidumps as complementary context; the actionable details for graphics faults typically come from GPU crash dump tooling.</p>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll explore Vulkan extensions for robustness, which can reduce undefined behavior and help prevent crashes in the first place.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_debugging_and_renderdoc.html" class="xref page">Previous: Debugging with VK_KHR_debug_utils and RenderDoc</a> | <a href="05_extensions.html" class="xref page">Next: Vulkan Extensions for Robustness</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,254 @@
+# Subsystems: Audio Basics
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/Building_a_Simple_Engine/Subsystems/02_audio_basics.html
+
+## Table of Contents
+
+- [1. Audio System Fundamentals](#_audio_system_fundamentals)
+- [1._Audio_System_Fundamentals](#_audio_system_fundamentals)
+- [1.1. Audio System Architecture](#_audio_system_architecture)
+- [1.1._Audio_System_Architecture](#_audio_system_architecture)
+- [1.2. Basic Audio System Implementation](#_basic_audio_system_implementation)
+- [1.2._Basic_Audio_System_Implementation](#_basic_audio_system_implementation)
+- [1.3. Integrating with the Engine](#_integrating_with_the_engine)
+- [1.3._Integrating_with_the_Engine](#_integrating_with_the_engine)
+- [1.4. Basic Usage Example](#_basic_usage_example)
+- [1.4._Basic_Usage_Example](#_basic_usage_example)
+- [1.5. Limitations of Basic Audio Systems](#_limitations_of_basic_audio_systems)
+- [1.5._Limitations_of_Basic_Audio_Systems](#_limitations_of_basic_audio_systems)
+
+## Content
+
+Table of Contents
+
+[1. Audio System Fundamentals](#_audio_system_fundamentals)
+
+[1.1. Audio System Architecture](#_audio_system_architecture)
+[1.2. Basic Audio System Implementation](#_basic_audio_system_implementation)
+[1.3. Integrating with the Engine](#_integrating_with_the_engine)
+[1.4. Basic Usage Example](#_basic_usage_example)
+[1.5. Limitations of Basic Audio Systems](#_limitations_of_basic_audio_systems)
+
+Before we dive into how Vulkan can enhance audio processing, let’s establish a foundation by implementing a basic audio system for our engine. This will give us a framework that we can later extend with Vulkan compute capabilities.
+
+A typical game audio system consists of several key components:
+
+* 
+**Audio Engine**: The core component that manages audio playback, mixing, and effects processing.
+
+* 
+**Sound Resources**: Audio files loaded into memory and prepared for playback.
+
+* 
+**Audio Channels**: Logical paths for audio to flow through, often grouped by type (e.g., music, sound effects, dialogue).
+
+* 
+**Spatial Audio**: System for positioning sounds in 3D space relative to the listener.
+
+* 
+**Effects Processing**: Application of effects like reverb, echo, or equalization to audio streams.
+
+Let’s implement a simple audio system that covers these basics, using a modern C++ approach consistent with our engine’s design.
+
+We’ll start by defining the core classes for our audio system:
+
+// Audio.h
+#pragma once
+
+#include 
+#include 
+#include 
+#include 
+#include 
+
+namespace Engine {
+namespace Audio {
+
+class AudioClip {
+public:
+    AudioClip(const std::string& filename);
+    ~AudioClip();
+
+    // Get raw audio data
+    const float* GetData() const { return m_Data.data(); }
+    size_t GetSampleCount() const { return m_Data.size(); }
+    int GetChannelCount() const { return m_ChannelCount; }
+    int GetSampleRate() const { return m_SampleRate; }
+
+private:
+    std::vector m_Data;
+    int m_ChannelCount;
+    int m_SampleRate;
+};
+
+class AudioSource {
+public:
+    AudioSource();
+    ~AudioSource();
+
+    void SetClip(std::shared_ptr clip) { m_Clip = clip; }
+    void SetPosition(const glm::vec3& position) { m_Position = position; }
+    void SetVolume(float volume) { m_Volume = volume; }
+    void SetLooping(bool looping) { m_Looping = looping; }
+
+    void Play();
+    void Stop();
+    void Pause();
+
+    bool IsPlaying() const { return m_IsPlaying; }
+
+    const glm::vec3& GetPosition() const { return m_Position; }
+    float GetVolume() const { return m_Volume; }
+
+private:
+    std::shared_ptr m_Clip;
+    glm::vec3 m_Position = glm::vec3(0.0f);
+    float m_Volume = 1.0f;
+    bool m_Looping = false;
+    bool m_IsPlaying = false;
+
+    // Implementation-specific playback state
+    size_t m_CurrentSample = 0;
+};
+
+class AudioListener {
+public:
+    void SetPosition(const glm::vec3& position) { m_Position = position; }
+    void SetOrientation(const glm::vec3& forward, const glm::vec3& up) {
+        m_Forward = forward;
+        m_Up = up;
+    }
+
+    const glm::vec3& GetPosition() const { return m_Position; }
+    const glm::vec3& GetForward() const { return m_Forward; }
+    const glm::vec3& GetUp() const { return m_Up; }
+
+private:
+    glm::vec3 m_Position = glm::vec3(0.0f);
+    glm::vec3 m_Forward = glm::vec3(0.0f, 0.0f, -1.0f);
+    glm::vec3 m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
+};
+
+class AudioSystem {
+public:
+    AudioSystem();
+    ~AudioSystem();
+
+    void Initialize();
+    void Shutdown();
+
+    // Update audio system (call once per frame)
+    void Update(float deltaTime);
+
+    // Resource management
+    std::shared_ptr LoadClip(const std::string& name, const std::string& filename);
+    std::shared_ptr GetClip(const std::string& name);
+
+    // Source management
+    std::shared_ptr CreateSource();
+    void DestroySource(std::shared_ptr source);
+
+    // Listener (typically attached to camera)
+    AudioListener& GetListener() { return m_Listener; }
+
+private:
+    std::unordered_map> m_Clips;
+    std::vector> m_Sources;
+    AudioListener m_Listener;
+
+    // Implementation-specific audio backend state
+    void* m_AudioBackend = nullptr;
+};
+
+} // namespace Audio
+} // namespace Engine
+
+This basic structure provides a foundation for loading and playing audio files with spatial positioning. In a real implementation, you would integrate with an audio library like OpenAL, FMOD, or Wwise to handle the low-level audio playback.
+
+To integrate our audio system with the rest of our engine, we’ll add it to our engine’s main class:
+
+// Engine.h
+#include "Audio.h"
+
+namespace Engine {
+
+class Engine {
+public:
+    // ... existing engine code ...
+
+    Audio::AudioSystem& GetAudioSystem() { return m_AudioSystem; }
+
+private:
+    // ... existing engine members ...
+
+    Audio::AudioSystem m_AudioSystem;
+};
+
+} // namespace Engine
+
+And we’ll initialize it during engine startup:
+
+// Engine.cpp
+void Engine::Initialize() {
+    // ... existing initialization code ...
+
+    m_AudioSystem.Initialize();
+}
+
+void Engine::Shutdown() {
+    m_AudioSystem.Shutdown();
+
+    // ... existing shutdown code ...
+}
+
+Here’s how you might use this audio system in a game:
+
+// Game code
+void Game::LoadResources() {
+    // Load audio clips
+    auto explosionSound = m_Engine.GetAudioSystem().LoadClip("explosion", "sounds/explosion.wav");
+    auto backgroundMusic = m_Engine.GetAudioSystem().LoadClip("music", "sounds/background.ogg");
+
+    // Create and configure audio sources
+    m_MusicSource = m_Engine.GetAudioSystem().CreateSource();
+    m_MusicSource->SetClip(backgroundMusic);
+    m_MusicSource->SetLooping(true);
+    m_MusicSource->SetVolume(0.5f);
+    m_MusicSource->Play();
+}
+
+void Game::OnExplosion(const glm::vec3& position) {
+    // Create a temporary source for the explosion sound
+    auto source = m_Engine.GetAudioSystem().CreateSource();
+    source->SetClip(m_Engine.GetAudioSystem().GetClip("explosion"));
+    source->SetPosition(position);
+    source->Play();
+
+    // In a real implementation, you'd need to manage the lifetime of this source
+}
+
+void Game::Update(float deltaTime) {
+    // Update listener position and orientation based on camera
+    auto& listener = m_Engine.GetAudioSystem().GetListener();
+    listener.SetPosition(m_Camera.GetPosition());
+    listener.SetOrientation(m_Camera.GetForward(), m_Camera.GetUp());
+
+    // Update audio system
+    m_Engine.GetAudioSystem().Update(deltaTime);
+}
+
+While this basic audio system provides the essential functionality for playing sounds in a game, it has several limitations:
+
+**Limited Spatial Audio**: Basic distance-based attenuation doesn’t accurately model how sound propagates in 3D space.
+
+**CPU-Intensive Processing**: Effects and 3D audio calculations can consume significant CPU resources.
+
+**Limited Scalability**: Processing hundreds or thousands of sound sources can become a performance bottleneck.
+
+In the next section, we’ll explore how Vulkan compute shaders can address these limitations by offloading audio processing to the GPU, particularly for implementing more realistic spatial audio through Head-Related Transfer Functions (HRTF).
+
+[Previous: Introduction](01_introduction.html) | [Next: Vulkan for Audio Processing](03_vulkan_audio.html)

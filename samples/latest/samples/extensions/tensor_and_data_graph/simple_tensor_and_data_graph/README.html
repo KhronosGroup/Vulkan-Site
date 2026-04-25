@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Simple tensor and data graph :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../fragment_density_map/README.html">Fragment density map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../rasterization_order_attachment_access/README.html">Rasterization order attachment access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../ray_tracing_invocation_reorder/README.html">Ray tracing invocation reorder (SER)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Tensor and Data Graph</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="README.html">Simple Tensor and Data Graph</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../graph_constants/README.html">Graph constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../compute_shaders_with_tensors/README.html">Compute shaders with tensors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../tensor_image_aliasing/README.html">Tensor image aliasing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../postprocessing_with_vgf/README.html">Postprocessing with VGF</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Samples" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../../README.html">Extension usage samples</a></li>
+    <li><a href="../README.html">Tensor and Data Graph</a></li>
+    <li><a href="README.html">Simple Tensor and Data Graph</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Simple tensor and data graph</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/extensions/tensor_and_data_graph/simple_tensor_and_data_graph">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This sample demonstrates the usage of the <code>VK_ARM_tensors</code> and <code>VK_ARM_data_graph</code> extensions for machine learning inference. These extensions provide a way to define tensor data and construct computation graphs for neural network execution using hardware acceleration.</p>
+</div>
+<div class="paragraph">
+<p>This is the first in a series of samples which introduce the tensor and data graph extensions. Please see the parent <a href="../README.html" class="xref page">Tensor and Data Graph</a> page for the full list of samples.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+While the model used in this example is expressed using <a href="https://www.mlplatform.org/tosa/">TOSA operations</a>, there is currently no defined way to query for TOSA operation support from the Vulkan API. Execution of this sample may fail on implementations of these extensions that do not include specific support for TOSA operations.
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_setup"><a class="anchor" href="#_setup"></a>Setup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you would like to build and run this sample, please make sure to first follow the setup steps on the <a href="../README.html" class="xref page">Tensor and Data Graph</a> page.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This sample demonstrates how to run a minimal neural network that consumes a single input tensor, with a batch size of 1, a width and height of 10 and 3 channels. The input tensor has a fixed pattern of colors uploaded to it from the CPU. In this case we are using a neural network with a single 2D average pooling layer. In order to display the contents of the input and output tensors onto the window, a compute shader is run after the neural network which 'draws' the two tensors into an image which is then blitted to the window. The diagram below shows how this works:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../../_images/samples/extensions/tensor_and_data_graph/simple_tensor_and_data_graph/images/flow.svg" alt="Sample">
+</div>
+</div>
+<div class="paragraph">
+<p>The image below shows how this sample will look when running:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../../_images/samples/extensions/tensor_and_data_graph/simple_tensor_and_data_graph/images/sample.png" alt="Sample">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_graph_pipelines"><a class="anchor" href="#_graph_pipelines"></a>Graph Pipelines</h2>
+<div class="sectionbody">
+<div class="imageblock text-center">
+<div class="content">
+<img src="../../../../_images/samples/extensions/tensor_and_data_graph/simple_tensor_and_data_graph/images/network.svg" alt="Sample">
+</div>
+</div>
+<div class="paragraph">
+<p>The neural network is executed using a new type of pipeline called a <em>data graph pipeline</em>. The overall flow when using data graph pipelines is very similar to using compute or graphics pipelines. Our neural network will be encapsulated into a data graph pipeline that can be dispatched using a command buffer. Similarly to compute or graphics pipelines, data graph pipelines can access resources defined outside of the pipeline via descriptor sets and their external interface has to be described using a pipeline layout. Therefore we&#8217;ll need to create a descriptor set layout and a pipeline layout to that effect. Then we will create the pipeline itself. Data graph pipelines need state and memory to run. Both are encapsulated in a resource called a <em>data graph pipeline session</em>. We will create one for our pipeline. We will then create tensor objects for the input and output to our network, descriptor sets to communicate these objects and, finally, record a dispatch command in a command buffer to execute our network.</p>
+</div>
+<div class="paragraph">
+<p>In summary, we need to create these objects:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>A descriptor set layout and pipeline layout to describe the interface with our data graph pipeline</p>
+</li>
+<li>
+<p>A data graph pipeline to encapsulate the behavior of our neural network</p>
+</li>
+<li>
+<p>A data graph pipeline session within which the data graph pipeline can run</p>
+</li>
+<li>
+<p>Tensor objects for our network&#8217;s input and output</p>
+</li>
+<li>
+<p>Descriptor sets to communicate these tensor resources to our data graph pipeline</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_pipeline_interface"><a class="anchor" href="#_pipeline_interface"></a>Pipeline interface</h3>
+<div class="paragraph">
+<p>The external interface to our pipeline is described using descriptor set layouts and pipeline layouts, just like for compute or graphics pipelines. Here’s the interface we will use:</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="../../../../_images/samples/extensions/tensor_and_data_graph/simple_tensor_and_data_graph/images/pipeline_interface.svg" alt="Sample">
+</div>
+</div>
+<div class="paragraph">
+<p>The code to create these objects is in the <code>prepare_data_graph_pipeline</code> method, but calls out to a helper class <code>DataGraphPipelineLayout</code> to do most of the work. The <code>DataGraphPipelineLayout</code> constructor creates a single <code>VkDescriptorSetLayout</code> containing the two tensor bindings (the binding numbers of the tensors are passed as parameters) and then creates a <code>VkPipelineLayout</code> from the descriptor set layout:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">std::set&lt;uint32_t&gt; tensor_bindings = {0, 1};
+std::vector&lt;VkDescriptorSetLayoutBinding&gt; layout_bindings;
+for (uint32_t binding : tensor_bindings)
+{
+    VkDescriptorSetLayoutBinding layout_binding{};
+    layout_binding.binding         = binding;
+    layout_binding.descriptorCount = 1;
+    layout_binding.descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_TENSOR_ARM;
+
+    // Data graph pipelines don't have shader stages per-se, so VK_SHADER_STAGE_ALL is used.
+    layout_binding.stageFlags      = VK_SHADER_STAGE_ALL;
+    layout_bindings.push_back(layout_binding);
+}
+
+// Create set layout
+VkDescriptorSetLayoutCreateInfo set_layout_create_info
+    {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO};
+set_layout_create_info.bindingCount = layout_bindings.size();
+set_layout_create_info.pBindings    = layout_bindings.data();
+
+VK_CHECK(vkCreateDescriptorSetLayout(get_device().get_handle(),
+                                     &amp;set_layout_create_info,
+                                     nullptr,
+                                     &amp;descriptor_set_layout));
+
+// Create pipeline layout
+VkPipelineLayoutCreateInfo pipeline_layout_create_info
+    {VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO};
+pipeline_layout_create_info.setLayoutCount = 1;
+pipeline_layout_create_info.pSetLayouts    = &amp;descriptor_set_layout;
+
+VK_CHECK(vkCreatePipelineLayout(get_device().get_handle(),
+                                &amp;pipeline_layout_create_info,
+                                nullptr,
+                                &amp;get_handle()));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The pipeline layout object is now ready to use for creating a data graph pipeline.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pipeline"><a class="anchor" href="#_pipeline"></a>Pipeline</h3>
+<div class="paragraph">
+<p>Neural networks can be described using SPIR-V modules and use descriptor sets to access external resources. The contents of the SPIR-V module for this sample is explained further in <a href="#_appendix_a_spir_v_programs_for_neural_networks">Appendix A: SPIR-V programs for neural networks</a>, but for now we will treat it as a closed box, and just need to know that it takes one input tensor, produces one output tensor and performs a pooling operation which reduces the width and height of its input by half.</p>
+</div>
+<div class="paragraph">
+<p>The code to create the pipeline is in the <code>prepare_data_graph_pipeline</code> method, just after creating the pipeline layout. As with the layout, a helper class <code>DataGraphPipeline</code> does most of the work.</p>
+</div>
+<div class="paragraph">
+<p>Before we can create a data graph pipeline from a SPIR-V module, we need to create a <code>VkShaderModule</code> object to encapsulate that module, as would be done for compute or graphics pipelines:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">// This could be created using the SPIR-V assembler or from other tooling (see Appendix A)
+std::vector&lt;uint32_t&gt; spvcode;
+
+// Create shader module from binary
+VkShaderModuleCreateInfo module_create_info{};
+module_create_info.sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+module_create_info.codeSize = spvcode.size() * 4;
+module_create_info.pCode    = spvcode.data();
+
+VkShaderModule shader_module;
+VK_CHECK(vkCreateShaderModule(get_device().get_handle(), &amp;module_create_info, NULL, &amp;shader_module));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now that we have a <code>VkShaderModule</code> for our neural network, we can create a data graph pipeline for it. Data graph pipelines are created using <code>vkCreateDataGraphPipelinesARM</code> in a manner similar to how other types of pipelines are created. We also need to provide additional information about the resources accessed by the pipeline via descriptor sets. This information is not present in the SPIR-V module, but needs to be known when creating the pipeline, so is provided here. For each resource binding that is part of the pipeline layout, a <code>VkDataGraphPipelineResourceInfoARM</code> must be provided which describes the dimensions, memory layout and element type for each tensor. The <code>DataGraphPipeline</code> constructor takes this information as a parameter:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">// Create array of data graph pipeline resource infos (one for each input/output tensor)
+// Use std::list for VkDataGraphPipelineResourceInfoTensorARMs so that the addresses don't
+// change as we add (because resource_infos will point to these)
+std::list&lt;VkTensorDescriptionARM&gt;				tensor_description_list;
+std::vector&lt;VkDataGraphPipelineResourceInfoARM&gt; resource_infos;
+for (const auto &amp;tensor_descriptions_set : tensor_descriptions)
+{
+	uint32_t set_idx = tensor_descriptions_set.first;
+	const std::map&lt;uint32_t, VkTensorDescriptionARM&gt; &amp;tensor_descriptions_this_set =
+        tensor_descriptions_set.second;
+
+	for (const auto &amp;tensor_description_binding : tensor_descriptions_this_set)
+	{
+		VkTensorDescriptionARM tensor_description = tensor_description_binding.second;
+		tensor_description_list.push_back(tensor_description);
+
+		VkDataGraphPipelineResourceInfoARM resource_info =
+            {VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_RESOURCE_INFO_ARM};
+        // Note we use the copy that we saved in the list, not the local stack copy!
+		resource_info.pNext                              = &amp;tensor_description_list.back();
+		resource_info.descriptorSet                      = set_idx;
+		resource_info.binding                            = tensor_description_binding.first;
+		resource_infos.push_back(resource_info);
+	}
+}
+
+// Create data graph pipeline
+VkDataGraphPipelineShaderModuleCreateInfoARM pipeline_shader_module_create_info
+    {VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SHADER_MODULE_CREATE_INFO_ARM};
+pipeline_shader_module_create_info.module = shader_module;
+pipeline_shader_module_create_info.pName  = entry_point;
+
+VkDataGraphPipelineCreateInfoARM pipeline_create_info
+    {VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_CREATE_INFO_ARM};
+pipeline_create_info.pNext             = &amp;pipeline_shader_module_create_info;
+pipeline_create_info.layout            = layout;
+pipeline_create_info.resourceInfoCount = resource_infos.size();
+pipeline_create_info.pResourceInfos    = resource_infos.data();
+
+VK_CHECK(vkCreateDataGraphPipelinesARM(get_device().get_handle(),
+                                       VK_NULL_HANDLE,
+                                       VK_NULL_HANDLE,
+                                       1,
+                                       &amp;pipeline_create_info,
+                                       nullptr,
+                                       &amp;get_handle()));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The data graph pipeline object is now created, but needs a session before it can be used.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pipeline_session"><a class="anchor" href="#_pipeline_session"></a>Pipeline session</h3>
+<div class="paragraph">
+<p>A data graph pipeline needs state to execute, for example to store the results of any intermediate operations in the neural network. The implementation handles all this internally but it does need some memory to be provided. This state is encapsulated into <em>data graph pipeline session</em> objects.</p>
+</div>
+<div class="paragraph">
+<p>This session object is created in the <code>prepare_data_graph_pipeline</code> method, just after creating the pipeline itself. As with the pipeline, a helper class <code>DataGraphPipelineSession</code> does most of the work. Because sessions need to be bound to memory (just like images and buffers), the sample code makes use of the <em>Vulkan Memory Allocator</em> (VMA) framework to abstract away the details of the memory allocation. This is wrapped up in the function <code>vmaCreateDataGraphPipelineSession</code> which is written to be very similar to the existing <code>vmaCreateImage/vmaCreateBuffer</code> functions. As with buffers and images, the session is created without any backing memory and then its memory requirements are queried. We can then allocate some appropriate memory and bind it to the session:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">// 1. Create DataGraphPipelineSession.
+VkResult res = vkCreateDataGraphPipelineSessionARM(
+    device,
+    pDataGraphPipelineSessionCreateInfo,
+    nullptr,
+    pDataGraphPipelineSession);
+if (res &gt;= 0)
+{
+    // 2. Query valid bind points for the session
+    VkDataGraphPipelineSessionBindPointRequirementsInfoARM bind_point_req_info =
+        {VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENTS_INFO_ARM};
+    bind_point_req_info.session = *pDataGraphPipelineSession;
+    uint32_t requirement_count  = 0;
+
+    res = vkGetDataGraphPipelineSessionBindPointRequirementsARM(
+        device, &amp;bind_point_req_info, &amp;requirement_count, nullptr);
+    if (res != VK_SUCCESS)
+    {
+        return res;
+    }
+
+    if (requirement_count &gt; 1)
+    {
+        // A session could require more than one bind point,
+        // but for simplicity we only support one bind point type in this function.
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    VkDataGraphPipelineSessionBindPointRequirementARM bind_point_requirement{
+        VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_REQUIREMENT_ARM};
+    res = vkGetDataGraphPipelineSessionBindPointRequirementsARM(
+        device, &amp;bind_point_req_info, &amp;requirement_count, &amp;bind_point_requirement);
+    if (res != VK_SUCCESS)
+    {
+        return res;
+    }
+
+    if (bind_point_requirement.numObjects &gt; 1)
+    {
+        // A single bind point requirement could require more than one object,
+        // but for simplicity we only support one object type in this function.
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+    if (bind_point_requirement.bindPointType != VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TYPE_MEMORY_ARM)
+    {
+        // Currently we only support the memory bind point type
+        return VK_ERROR_INITIALIZATION_FAILED;
+    }
+
+    // 3. vkGetDataGraphPipelineSessionMemoryRequirements.
+    VkDataGraphPipelineSessionBindPointARM memory_bind_point =
+        VK_DATA_GRAPH_PIPELINE_SESSION_BIND_POINT_TRANSIENT_ARM;
+    VkMemoryRequirements2 vkMemReq = {VK_STRUCTURE_TYPE_MEMORY_REQUIREMENTS_2};
+    VkDataGraphPipelineSessionMemoryRequirementsInfoARM memory_requirements_info =
+        {VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_MEMORY_REQUIREMENTS_INFO_ARM};
+    memory_requirements_info.session      = *pDataGraphPipelineSession;
+    memory_requirements_info.bindPoint    = memory_bind_point;
+    memory_requirements_info.objectIndex  = 0;
+    vkGetDataGraphPipelineSessionMemoryRequirementsARM(device, &amp;memory_requirements_info, &amp;vkMemReq);
+
+    if (vkMemReq.memoryRequirements.size &gt; 0)
+    {
+        // 4. Allocate memory using allocator.
+        VmaAllocationInfo allocation_info;
+        res = vmaAllocateMemory(allocator,
+                                &amp;vkMemReq.memoryRequirements,
+                                pAllocationCreateInfo,
+                                pAllocation,
+                                &amp;allocation_info);
+
+        if (res &gt;= 0)
+        {
+            if (pAllocationInfo != nullptr)
+            {
+                // Return allocation info to caller, if requested
+                *pAllocationInfo = allocation_info;
+            }
+
+            // 5. Bind session with memory.
+            if ((pAllocationCreateInfo-&gt;flags &amp; VMA_ALLOCATION_CREATE_DONT_BIND_BIT) == 0)
+            {
+                VkBindDataGraphPipelineSessionMemoryInfoARM bind_info =
+                    {VK_STRUCTURE_TYPE_BIND_DATA_GRAPH_PIPELINE_SESSION_MEMORY_INFO_ARM};
+                bind_info.session      = *pDataGraphPipelineSession;
+                bind_info.memory       = allocation_info.deviceMemory;
+                bind_info.memoryOffset = allocation_info.offset;
+                bind_info.bindPoint    = memory_bind_point;
+                bind_info.objectIndex  = 0;
+                res                    = vkBindDataGraphPipelineSessionMemoryARM(device, 1, &amp;bind_info);
+            }
+            if (res &gt;= 0)
+            {
+                // All steps succeeded.
+                return VK_SUCCESS;
+            }
+
+            // Cleanup in case of errors
+            vmaFreeMemory(allocator, *pAllocation);
+            *pAllocation = VK_NULL_HANDLE;
+            vkDestroyDataGraphPipelineSessionARM(device, *pDataGraphPipelineSession, nullptr);
+            *pDataGraphPipelineSession = VK_NULL_HANDLE;
+            return res;
+        }
+
+        // Cleanup in case of errors
+        vkDestroyDataGraphPipelineSessionARM(device, *pDataGraphPipelineSession, nullptr);
+        *pDataGraphPipelineSession = VK_NULL_HANDLE;
+        return res;
+    }
+}
+return res;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The session object is now ready to use, but we&#8217;ll need some tensors to provide as input and output.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tensors"><a class="anchor" href="#_tensors"></a>Tensors</h3>
+<div class="paragraph">
+<p>Tensor resources are created and used in a similar fashion to Vulkan images and buffers:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>They are created from a description (size, tiling, usage, etc)</p>
+</li>
+<li>
+<p>Their memory requirements are queried</p>
+</li>
+<li>
+<p>We allocate memory compatible with those requirements</p>
+</li>
+<li>
+<p>We bind the tensor resource to the memory we allocated</p>
+</li>
+<li>
+<p>We create a view of the tensor resource for use with pipelines</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In the sample code, this is handled by the helper classes <code>Tensor</code> and <code>TensorView</code> which are analogous to the <code>Image</code>/<code>Buffer</code> and <code>ImageView</code>/<code>BufferView</code> classes in the common sample framework. Similar to data graph pipeline sessions discussed above, the sample code makes use of the <em>Vulkan Memory Allocator</em> (VMA) framework to abstract away the details of the memory allocation for tensors. This is wrapped up in the function <code>vmaCreateTensor</code> which is written to be very similar to the existing <code>vmaCreateImage/vmaCreateBuffer</code> functions. As with buffers and images, the tensor is created without any backing memory and then its memory requirements are queried. We can then allocate some appropriate memory and bind it to the session:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">// 1. Create VkTensor, using create_info from TensorBuilder
+// In this case we are going to represent a small RGB image, so have a batch size of 1, a width and height of 10 and 3 channels.
+std::vector&lt;uint64_t&gt; dimensions = {1, 10, 10, 3};
+TensorBuilder tensorBuilder = TensorBuilder(dimensions)
+    .with_tiling(VK_TENSOR_TILING_LINEAR_ARM)
+    .with_usage(VK_TENSOR_USAGE_DATA_GRAPH_BIT_ARM)
+    .with_format(VK_FORMAT_R32_SFLOAT)
+    .with_vma_required_flags(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT));
+
+VkTensorARM tensor = VK_NULL_HANDLE;
+VkTensorCreateInfoARM create_info = builder.get_create_info();
+VkResult res = vkCreateTensorARM(device, create_info, nullptr, tensor);
+
+if (res != VK_SUCCESS)
+{
+    throw std::runtime_error("Vulkan error: vkCreateTensorARM failed.");
+}
+
+// 2. vkGetTensorMemoryRequirements.
+VkMemoryRequirements2             vkMemReq = {};
+VkTensorMemoryRequirementsInfoARM memory_requirements_info =
+    {VK_STRUCTURE_TYPE_TENSOR_MEMORY_REQUIREMENTS_INFO_ARM};
+memory_requirements_info.tensor = tensor;
+
+vkGetTensorMemoryRequirementsARM(device, &amp;memory_requirements_info, &amp;vkMemReq);
+
+// 3. Allocate memory using allocator.
+VmaAllocater&amp;           allocator         = vkb::allocated::get_memory_allocator();
+VmaAllocationCreateInfo alloc_create_info = {};
+VmaAllocation           allocation        = VK_NULL_HANDLE;
+VmaAllocationInfo       allocation_info;
+
+res = vmaAllocateMemory(allocator,
+                        &amp;vkMemReq.memoryRequirements,
+                        alloc_create_info,
+                        allocation,
+                        &amp;allocation_info);
+
+if (res != VK_SUCCESS)
+{
+    throw std::runtime_error("Vulkan error: vmaAllocateMemory failed.");
+}
+
+// 4. Bind tensor with memory.
+VkBindTensorMemoryInfoARM bind_info = {VK_STRUCTURE_TYPE_BIND_TENSOR_MEMORY_INFO_ARM};
+bind_info.tensor       = tensor;
+bind_info.memory       = allocation_info.deviceMemory;
+bind_info.memoryOffset = allocation_info.offset;
+res                    = vkBindTensorMemoryARM(device, 1, &amp;bind_info);
+
+if (res != VK_SUCCESS)
+{
+    throw std::runtime_error("Vulkan error: vkBindTensorMemoryARM failed.");
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>VkTensorCreateInfoARM</code> struct is provided to the <code>Tensor</code> constructor through a <code>TensorBuilder</code> object which provides a convenient way of making the create info with sensible default values, similar to the <code>ImageBuilder</code> and <code>BufferBuilder</code> classes which the common sample framework provides.</p>
+</div>
+<div class="paragraph">
+<p>The <code>TensorView</code> constructor takes a <code>Tensor</code> and constructs a view for it, which specifies how the data in a tensor is presented to the pipeline that is using it. Most often, we just want direct access to the tensor data so the format of the view matches that of the tensor.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">if (format == VK_FORMAT_UNDEFINED)
+{
+    // VK_FORMAT_UNDEFINED means to use the same format as the provided tensor.
+    format = tensor.get_format();
+}
+
+VkTensorViewCreateInfoARM view_info{VK_STRUCTURE_TYPE_TENSOR_VIEW_CREATE_INFO_ARM};
+view_info.tensor = tensor.get_handle();
+view_info.format = format;
+VK_CHECK(vkCreateTensorViewARM(get_device().get_handle(), &amp;view_info, nullptr, &amp;get_handle()));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We create a <code>Tensor</code> and a corresponding <code>TensorView</code> in each the <code>prepare_input_tensor</code> and <code>prepare_output_tensor</code> methods, for use as the input and output of our neural network. In both cases we describe the tensor as four-dimensional and with an element format of <code>VK_FORMAT_R32_SFLOAT</code> (i.e. 32-bit floating point). We also declare that we will use these tensors from a graph pipeline via the <code>VK_TENSOR_USAGE_DATA_GRAPH_BIT_ARM</code> usage flag.</p>
+</div>
+<div class="paragraph">
+<p>Tensors are often four-dimensional, representing batch size, height, width and channels. In this sample our input tensor will represent a small RGB image, so has a batch size of 1, a width and height of 10 and 3 channels. The output will be half the width and height (reduced by the pooling operation of the neural network), but still 3 channels.</p>
+</div>
+<div class="paragraph">
+<p>The input tensor will have some initial, fixed data uploaded to it from the CPU and so needs to be linearly-tiled. This may not be the most efficient memory layout, but it makes the tensor a host-accessible subresource so that we know how the data is laid out. We generate a simple pattern of colors, as can be seen on the <em>input tensor</em> in the screenshot at the top of this page. The data is uploaded by mapping the backing memory of the tensor to get a CPU-accesssible pointer, writing through that pointer, and unmapping the memory. This is handled for us by the VMA framework, and is identical to how you could upload data for an image or buffer.</p>
+</div>
+<div class="paragraph">
+<p>The tensor objects are now ready to use, and we can place them in a descriptor set to provide them to the data graph pipeline.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_sets"><a class="anchor" href="#_descriptor_sets"></a>Descriptor sets</h3>
+<div class="paragraph">
+<p><em>Descriptor sets</em> are used to provide tensor resources to data graph pipelines, just as they are used to provide images and buffers to compute and graphics pipelines. This is done in the <code>prepare_data_graph_pipeline_descriptor_set</code> method, which allocates a single descriptor set from a pool (using the descriptor set layout created as part of the <code>DataGraphPipelineLayout</code>) and then fills in the descriptor bindings for the input and output tensor views:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">// Allocate descriptor set using the layout of the Data Graph Pipeline
+VkDescriptorSetAllocateInfo alloc_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO};
+alloc_info.descriptorPool              = descriptor_pool;
+alloc_info.descriptorSetCount          = 1;
+alloc_info.pSetLayouts                 = &amp;data_graph_pipeline_layout-&gt;get_descriptor_set_layout();
+
+VK_CHECK(vkAllocateDescriptorSets(get_device().get_handle(),
+                                  &amp;alloc_info,
+                                  &amp;data_graph_pipeline_descriptor_set));
+
+// Write bindings to it, telling it which tensors to use as input and output
+std::map&lt;uint32_t, VkWriteDescriptorSetTensorInfoARM&gt; tensor_bindings =
+{
+    // Binding 0 is the input tensor
+    {0, VkWriteDescriptorSetTensorInfoARM{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_INFO_ARM,
+        nullptr, 1, &amp;input_tensor_view-&gt;get_handle()}},
+    // Binding 1 is the output tensor
+    {1, VkWriteDescriptorSetTensorInfoARM{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_TENSOR_INFO_ARM,
+        nullptr, 1, &amp;output_tensor_view-&gt;get_handle()}}
+};
+
+std::vector&lt;VkWriteDescriptorSet&gt; writes;
+for (const auto &amp;tensor_binding : tensor_bindings)
+{
+    VkWriteDescriptorSet write{VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET};
+    write.dstSet          = data_graph_pipeline_descriptor_set;
+    write.dstBinding      = tensor_binding.first;
+    write.descriptorType  = VK_DESCRIPTOR_TYPE_TENSOR_ARM;
+    // Tensor info is provided via pNext, rather than a pTensorInfo like for images/buffers
+    write.pNext           = &amp;tensor_binding.second;
+    write.descriptorCount = 1;
+    writes.push_back(write);
+}
+
+vkUpdateDescriptorSets(get_device().get_handle(), writes.size(), writes.data(), 0, nullptr);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The descriptor set is now ready to use, and we have everything we need to run an inference!</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_command_buffer"><a class="anchor" href="#_command_buffer"></a>Command buffer</h3>
+<div class="paragraph">
+<p>Similar to how compute and graphics pipelines are executed, data graph pipelines need to be bound to a dedicated bind point on a command buffer, descriptor sets need to be bound to provide resources to the pipeline, and then they can be dispatched. This is done in the <code>draw_renderpass</code> method which is called to record a new command buffer every frame:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">// Bind and run data graph pipeline.
+vkCmdBindPipeline(command_buffer.get_handle(),
+                  VK_PIPELINE_BIND_POINT_DATA_GRAPH_ARM,
+                  data_graph_pipeline-&gt;get_handle());
+vkCmdBindDescriptorSets(command_buffer.get_handle(),
+                        VK_PIPELINE_BIND_POINT_DATA_GRAPH_ARM, data_graph_pipeline_layout-&gt;get_handle(),
+                        0,
+                        1,
+                        &amp;data_graph_pipeline_descriptor_set,
+                        0,
+                        nullptr);
+vkCmdDispatchDataGraphARM(command_buffer.get_handle(), data_graph_pipeline_session-&gt;get_handle());</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That&#8217;s all that&#8217;s necessary to run a simple neural network using a data graph pipeline, but there are more details to cover for using the extensions in more practical use cases.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_practical_use"><a class="anchor" href="#_practical_use"></a>Practical Use</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The tensor object which is written to by the data graph pipeline can be used in numerous ways. In this sample we are reading from it using a compute shader which produces the simple visualization of the tensor contents which is drawn on the window. There are also several other options for how to use the output tensor:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Read directly from other shaders by binding it as a Tensor resource, as we do in this sample.</p>
+</li>
+<li>
+<p>Aliased as a regular <code>VkImage</code> and used as a texture to be sampled from in another shader. See the "Tensor image aliasing" sample <a href="../tensor_image_aliasing/README.html" class="xref page">README</a>.</p>
+</li>
+<li>
+<p>Aliased as a regular <code>VkBuffer</code> and read from in another shader</p>
+</li>
+<li>
+<p>Mapped to host-accessible memory and read back for further processing on the CPU</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>There is also the question of how to produce inputs for the neural network - in this example we simply uploaded some fixed data from the CPU but there are also many options here (equivalent to the above):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Write directly from other shaders by binding it as a Tensor resource.</p>
+</li>
+<li>
+<p>Aliased as a regular <code>VkImage</code> and written to via a render target (or writable texture).  See the "Tensor image aliasing" sample <a href="../tensor_image_aliasing/README.html" class="xref page">README</a>.</p>
+</li>
+<li>
+<p>Aliased as a regular <code>VkBuffer</code> and written to from another shader.</p>
+</li>
+<li>
+<p>Mapped to host-accessible memory and written to with data produced on the CPU, as we do in this sample.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Accesses to tensor resources must be synchronised correctly, just as for images and buffers. This normally involves adding barriers to the command buffer to ensure that accesses happen in the expected order and that data is visible to the required pipeline stages. There is a new kind of barrier, a Tensor Memory Barrier (analogous to the existing Image Memory Barriers and Buffer Memory Barriers) which can be used for this purpose. The later samples in this series make more use of these.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this sample we&#8217;ve introduced the VK_ARM_tensors and VK_ARM_data_graph extensions and shown how to use them to run a simple neural network. We&#8217;ve shown the steps needed to run a neural network - creating a pipeline layout, data graph pipeline, data graph pipeline session, tensor objects, descriptor sets and finally recording binding and dispatch commands in a command buffer. The following samples in <a href="../README.html" class="xref page">this series</a> build upon these concepts.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_appendix_a_spir_v_programs_for_neural_networks"><a class="anchor" href="#_appendix_a_spir_v_programs_for_neural_networks"></a>Appendix A: SPIR-V programs for neural networks</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Neural networks can be described using SPIR-V modules, but unlike SPIR-V modules for graphics and compute shaders, there is no GLSL or HLSL syntax for expressing SPIR-V modules for data graph pipelines. There are tools available for generating the SPIR-V code from higher level representations of neural networks such as PyTorch or TensorFlow models (see: <a href="https://github.com/arm/ai-ml-sdk-model-converter">ML SDK Model Converter</a>), which are covered in the "Postprocessing with VGF" sample <a href="../postprocessing_with_vgf/README.html" class="xref page">README</a>.
+However, for this sample we have written the SPIR-V code directly in low-level SPIR-V assembly language to avoid bringing in more dependencies and to give some idea of how the SPIR-V code looks. It is unlikely in practice that you would manually write SPIR-V assembly, however below is a quick overview of SPIR-V for context.</p>
+</div>
+<div class="paragraph">
+<p>The assembly code is in the <a href="../../../../shaders/tensor_and_data_graph/simple_tensor_and_data_graph/spirv/pooling.spvasm">pooling.spvasm</a> file and is assembled into SPIR-V binary code using <code>spirv-as</code> as part of the <a href="../../../../bldsys/cmake/sample_helper.cmake">build system</a>. Note this is exactly the same process that would be used to compile compute or graphics shaders from SPIR-V assembly, although typically these would be compiled from GLSL or HLSL instead.</p>
+</div>
+<div class="sect2">
+<h3 id="_boilerplate"><a class="anchor" href="#_boilerplate"></a>Boilerplate</h3>
+<div class="paragraph">
+<p>The SPIR-V assembly starts with the usual list of capabilities and extensions. Here, we declare that we will make use of the <a href="https://github.khronos.org/SPIRV-Registry/extensions/ARM/SPV_ARM_graph.html">Graph</a> and <a href="https://github.khronos.org/SPIRV-Registry/extensions/ARM/SPV_ARM_tensors.html">Tensors</a> SPIR-V extensions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">                     OpCapability Shader
+                     OpCapability TensorsARM
+                     OpCapability GraphARM
+                     OpExtension "SPV_ARM_tensors"
+                     OpExtension "SPV_ARM_graph"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next is an important line which imports <a href="https://registry.khronos.org/SPIR-V/specs/unified1/SPIRV.html#_extended_instruction_sets">external instructions</a> for all of the neural network operations. This defines operations like convolution, pooling, matmul which come from the <a href="https://www.mlplatform.org/tosa/">TOSA specification</a>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">             %tosa = OpExtInstImport "TOSA.001000.1"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_descriptor_set_interface"><a class="anchor" href="#_descriptor_set_interface"></a>Descriptor set interface</h3>
+<div class="paragraph">
+<p>The next section declares the descriptor set and bindings that form the interface between the Vulkan API data graph pipeline and the SPIR-V module, and is what we used when defining our pipeline layout in the <a href="#_pipeline_interface">Pipeline interface</a> section.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="../../../../_images/samples/extensions/tensor_and_data_graph/simple_tensor_and_data_graph/images/pipeline_interface.svg" alt="Sample">
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">                     OpDecorate %input_tensor_ptr DescriptorSet 0
+                     OpDecorate %input_tensor_ptr Binding 0
+                     OpDecorate %output_tensor_ptr DescriptorSet 0
+                     OpDecorate %output_tensor_ptr Binding 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note this is the same as you would find for compute or graphics shaders.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_types_and_constants"><a class="anchor" href="#_types_and_constants"></a>Types and constants</h3>
+<div class="paragraph">
+<p>All the types and constants used in the code are declared next, with the notable inclusion of <em>tensor types</em> and a <em>graph type</em>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">%float_tensor_r4_s_1_ih_iw_3 = OpTypeTensorARM %float %uint_4 %uint_array_l4_1_ih_iw_3
+%float_tensor_r4_s_1_oh_ow_3 = OpTypeTensorARM %float %uint_4 %uint_array_l4_1_oh_ow_3
+                            ...
+                 %graph_type = OpTypeGraphARM 1 %float_tensor_r4_s_1_ih_iw_3 %float_tensor_r4_s_1_oh_ow_3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This defines two types for tensors - both four-dimensional tensors with 32-bit floating point elements but with different shapes, which matches the tensor description we used in our C++ code for our input and output tensors. It then defines a graph type which takes one input and one output of their respective types.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interface_variables"><a class="anchor" href="#_interface_variables"></a>Interface variables</h3>
+<div class="paragraph">
+<p>We then declare variables for the input and output tensors which are the external interface for the program. Again, this is the same as you would find for compute or graphics shaders:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp"> %input_tensor_ptr = OpVariable %ptr_float_tensor_r4_s_1_ih_iw_3 UniformConstant
+%output_tensor_ptr = OpVariable %ptr_float_tensor_r4_s_1_oh_ow_3 UniformConstant</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_graph_definition"><a class="anchor" href="#_graph_definition"></a>Graph definition</h3>
+<div class="paragraph">
+<p>Finally, we declare our graph and list the operations that make up our neural network:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-cpp hljs" data-lang="cpp">                     OpGraphEntryPointARM %graph "main" %input_tensor_ptr %output_tensor_ptr
+            %graph = OpGraphARM %graph_type
+               %in = OpGraphInputARM %float_tensor_r4_s_1_ih_iw_3 %uint_0
+              %out = OpExtInst %float_tensor_r4_s_1_oh_ow_3 %tosa AVG_POOL2D %avg_pool_kernel %avg_pool_stride %avg_pool_pad %uint_2 %in %avg_pool_input_zero_point %avg_pool_output_zero_point
+                     OpGraphSetOutputARM %out %uint_0
+                     OpGraphEndARM</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>OpGraphEntryPointARM</code> instruction exports the graph (which will be defined in the lines below) to be visible to our C++ code under the entry point name <code>"main"</code>, which we used when creating our data graph <a href="#_pipeline">Pipeline</a>. It connects the interface variables declared above to the inputs and outputs of the data graph.</p>
+</div>
+<div class="paragraph">
+<p>The lines between <code>OpGraphARM</code> and <code>OpGraphEndARM</code> define the body of our graph and is where the neural network operations are listed. Here we are using a single instruction imported from the TOSA SPIR-V <a href="#_boilerplate">extended instruction set</a>: AVG_POOL2D. That instruction requires a number of arguments describing the properties of the pooling operation (the pooling kernel size, striding, etc.).</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../../_/js/site.js" data-ui-root-path="../../../../../../_"></script>
+<script async src="../../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../../.." data-snippet-length="100" data-stylesheet="../../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

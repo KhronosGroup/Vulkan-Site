@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Rasterization Order Attachment Access Sample :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_density_map/README.html">Fragment density map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item is-current-page" data-depth="2">
+    <a class="nav-link" href="README.html">Rasterization order attachment access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_invocation_reorder/README.html">Ray tracing invocation reorder (SER)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../tensor_and_data_graph/README.html">Tensor and Data Graph</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../tensor_and_data_graph/simple_tensor_and_data_graph/README.html">Simple Tensor and Data Graph</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../tensor_and_data_graph/graph_constants/README.html">Graph constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../tensor_and_data_graph/compute_shaders_with_tensors/README.html">Compute shaders with tensors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../tensor_and_data_graph/tensor_image_aliasing/README.html">Tensor image aliasing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../tensor_and_data_graph/postprocessing_with_vgf/README.html">Postprocessing with VGF</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Samples" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../README.html">Extension usage samples</a></li>
+    <li><a href="README.html">Rasterization order attachment access</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Rasterization Order Attachment Access Sample</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+The source for this sample can be found in the <a href="https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/rasterization_order_attachment_access">Khronos Vulkan samples github repository</a>.
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/samples/extensions/rasterization_order_attachment_access/images/ROAA_On.png" alt="Sample">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This sample demonstrates how to use the <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_rasterization_order_attachment_access"><code>VK_EXT_rasterization_order_attachment_access</code></a> extension in conjunction with <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering"><code>VK_KHR_dynamic_rendering</code></a> and <a href="https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering_local_read"><code>VK_KHR_dynamic_rendering_local_read</code></a> to implement framebuffer fetch with guaranteed fragment ordering for rendering transparent geometry.</p>
+</div>
+<div class="paragraph">
+<p>The key use case shown is multiple overlapping fragments within a single draw call, where fragment B can read what fragment A previously wrote at the same pixel. This enables deterministic transparency where later primitives always see what earlier primitives wrote at the same pixel.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_extensions_used"><a class="anchor" href="#_extensions_used"></a>Extensions Used</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Extension</th>
+<th class="tableblock halign-left valign-top">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_KHR_dynamic_rendering</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Eliminates render pass objects, simplifying rendering setup</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_KHR_dynamic_rendering_local_read</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enables framebuffer fetch (reading color attachments) within dynamic rendering</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VK_EXT_rasterization_order_attachment_access</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Guarantees correct per-pixel ordering of memory accesses in overlapping fragments</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_extension_concepts"><a class="anchor" href="#_extension_concepts"></a>Extension Concepts</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_dynamic_rendering"><a class="anchor" href="#_dynamic_rendering"></a>Dynamic Rendering</h3>
+<div class="paragraph">
+<p>Dynamic rendering eliminates the need to create <code>VkRenderPass</code> and <code>VkFramebuffer</code> objects ahead of time. Instead, rendering attachments are specified at runtime using <code>VkRenderingInfoKHR</code>. This simplifies integration into modern render graphs and pipelines.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="../dynamic_rendering/README.html" class="xref page">dynamic rendering sample</a> for more context.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_rendering_local_read"><a class="anchor" href="#_dynamic_rendering_local_read"></a>Dynamic Rendering Local Read</h3>
+<div class="paragraph">
+<p>The <code>VK_KHR_dynamic_rendering_local_read</code> extension enables framebuffer fetch (shader reads of color attachments) in dynamic rendering, similar to traditional subpass input attachments. Shaders can read the current value of the color attachment at the fragment&#8217;s location using <code>subpassLoad()</code>-like access. Per-attachment indices are provided via <code>vkCmdSetRenderingInputAttachmentIndicesKHR</code>. On tile-based GPUs, these reads happen from on-chip tile memory rather than main memory, avoiding costly tile flushes and reducing bandwidth and power consumption.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="../dynamic_rendering_local_read/README.html" class="xref page">dynamic rendering local read sample</a> and the <a href="https://docs.vulkan.org/tutorial/latest/Building_a_Simple_Engine/Mobile_Development/05_vulkan_extensions.html#_vk_khr_dynamic_rendering_local_read">Vulkan tutorial on mobile extensions</a> for more context.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rasterization_order_attachment_access_roaa"><a class="anchor" href="#_rasterization_order_attachment_access_roaa"></a>Rasterization Order Attachment Access (ROAA)</h3>
+<div class="paragraph">
+<p>To understand what ROAA provides, it helps to first clarify two related concepts. Primitive order is the order in which primitives appear in your index/vertex buffer (triangle 0, then 1, then 2, etc.). Rasterization order extends this to fragments on a per-pixel basis: at any given pixel, fragments from overlapping primitives are ordered according to their primitive order. There is no ordering between fragments at different pixels.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">Triangle 0 covers pixels: A, B, C
+Triangle 1 covers pixels:    B, C, D
+Triangle 2 covers pixels: A,       D
+
+At pixel A: Triangle 0 then Triangle 2 (ordered by primitive order)
+At pixel B: Triangle 0 then Triangle 1
+At pixel C: Triangle 0 then Triangle 1
+At pixel D: Triangle 1 then Triangle 2</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Fixed-function operations (blending, depth/stencil tests) are always performed in rasterization order, even without ROAA. Fragment shaders may run in parallel and out of order, but the GPU ensures that fixed-function outputs are committed in the correct order.</p>
+</div>
+<div class="paragraph">
+<p>The problem arises with framebuffer fetch (input attachment reads). Without ROAA, there is no synchronization between one fragment&#8217;s color attachment write and a later fragment&#8217;s input attachment read at the same pixel.</p>
+</div>
+<div class="paragraph">
+<p>Without ROAA:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>At a given pixel, fragment B may read the input attachment before fragment A&#8217;s shader has written its result</p>
+</li>
+<li>
+<p>This is a read-after-write hazard on the input attachment</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>With ROAA:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The implementation ensures that input attachment reads at a pixel wait until previous fragment shaders at that pixel have completed their writes</p>
+</li>
+<li>
+<p>Fragment B&#8217;s <code>subpassLoad</code> is guaranteed to see fragment A&#8217;s output</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">Without ROAA (read-after-write hazard):
+  Fragment A: reads input attachment (value = X)
+  Fragment B: reads input attachment (value = X)  // A hasn't written yet!
+  Fragment A: writes color attachment
+  Fragment B: writes color attachment  // Based on stale data
+
+With ROAA (synchronized):
+  Fragment A: reads input attachment (value = X)
+  Fragment A: writes color attachment (Y)
+  Fragment B: reads input attachment (value = Y)  // Sees A's write
+  Fragment B: writes color attachment (Z)</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+ROAA provides ordering for overlapping fragments within the same rendering scope (between <code>vkCmdBeginRenderingKHR</code>/<code>vkCmdEndRenderingKHR</code> for dynamic rendering, or within a subpass for traditional render passes), including across multiple draw calls. Barriers between draws are not required when ROAA is enabled. However, ROAA does not make blending order-independent. The blend result still depends on primitive submission order.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>ROAA is enabled via pipeline state using <code>VkPipelineColorBlendStateCreateInfo::flags</code>, setting the bit <code>VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT</code>. In dynamic rendering, subpasses are not used, so this bit enables ordering at the pipeline level.</p>
+</div>
+<div class="sect3">
+<h4 id="_use_cases"><a class="anchor" href="#_use_cases"></a>Use Cases</h4>
+<div class="paragraph">
+<p>This technique is useful for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Particle systems: Many transparent particles rendered in a single instanced draw call</p>
+</li>
+<li>
+<p>Custom blending: Manual blend equations not supported by fixed-function hardware</p>
+</li>
+<li>
+<p>Layered transparency: Overlapping transparent geometry submitted in a single draw call</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_scope_and_limitations"><a class="anchor" href="#_scope_and_limitations"></a>Scope and Limitations</h4>
+<div class="paragraph">
+<p>On some GPU architectures, the synchronization that ROAA provides between attachment writes and input attachment reads may already happen naturally, so the lack of ROAA may not visibly break rendering. However, without the extension, this synchronization is not guaranteed by Vulkan. On architectures that support it, ROAA provides this synchronization efficiently. On architectures where ROAA is not available, the same correctness can be achieved using explicit pipeline barriers between draw calls.</p>
+</div>
+<div class="paragraph">
+<p>ROAA guarantees correct per-pixel memory ordering for overlapping fragments within the same rendering scope (including across draw calls), but it does not:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Make blending order-independent or commutative</p>
+</li>
+<li>
+<p>Replace the need for depth sorting when a specific visual order is desired</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>ROAA ensures deterministic results for a given primitive order. Changing the primitive order will produce different (but still deterministic) results.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ordering_and_transparency"><a class="anchor" href="#_ordering_and_transparency"></a>Ordering and Transparency</h4>
+<div class="paragraph">
+<p>ROAA guarantees that overlapping fragments at the same pixel are processed in primitive order, which is the order primitives are submitted to the GPU. This is not the same as depth-sorted order.</p>
+</div>
+<div class="paragraph">
+<p>For correct alpha-blended transparency, primitives should generally be submitted back-to-front (painter&#8217;s algorithm). If the application sorts primitives before submission, ROAA guarantees that the sorted order is respected at the pixel level, producing both deterministic and visually correct results.</p>
+</div>
+<div class="paragraph">
+<p>If primitives are not sorted, the result is still deterministic and well-defined, exactly like fixed-function blending with the same submission order. The image will be stable across frames with no flickering. However, the blend result may not match what a depth-sorted compositing pass would produce.</p>
+</div>
+<div class="paragraph">
+<p>Without ROAA, overlapping fragments within a single draw call that use framebuffer fetch (<code>subpassLoad</code>) have no ordering guarantee. The result may vary between frames, between vendors, or between GPU architectures. ROAA eliminates this undefined behavior.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_sample"><a class="anchor" href="#_the_sample"></a>The Sample</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_scene_setup"><a class="anchor" href="#_scene_setup"></a>Scene Setup</h3>
+<div class="paragraph">
+<p>This sample renders 64 transparent spheres arranged in a 4x4x4 grid. Each sphere has random RGB color and an opacity value between 0.2 and 1.0.</p>
+</div>
+<div class="paragraph">
+<p>The spheres are intentionally not depth-sorted. They are rendered in a fixed grid order regardless of camera view, to keep the sample focused on the API setup and performance comparison rather than on implementing a full compositing pipeline. As a result, the blending is deterministic but not depth-correct. For production use, applications would typically sort primitives back-to-front before submission.</p>
+</div>
+<div class="paragraph">
+<p>With ROAA, all spheres are drawn in a single instanced draw call. Without it, each sphere requires a separate draw call with an explicit barrier before the next.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendering_technique"><a class="anchor" href="#_rendering_technique"></a>Rendering Technique</h3>
+<div class="paragraph">
+<p>The fragment shader performs alpha blending manually using framebuffer fetch:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">void main()
+{
+    // Read current color at the fragment's location
+    vec4 dst = subpassLoad(colorAttachment);
+
+    // Source color and alpha
+    vec4 src = inColor;
+
+    // Alpha blending: src over dst
+    outColor.rgb = src.rgb * src.a + dst.rgb * (1.0 - src.a);
+    outColor.a = 1.0;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Pipeline configuration:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ROAA enabled via pipeline create flags</p>
+</li>
+<li>
+<p>Input attachment index set via <code>vkCmdSetRenderingInputAttachmentIndicesKHR</code></p>
+</li>
+<li>
+<p>Fixed-function blending disabled (blending is handled in the shader)</p>
+</li>
+<li>
+<p>Dynamic rendering with local reads specified using <code>VkRenderingInfoKHR</code> and associated dynamic state</p>
+</li>
+<li>
+<p>Back-face culling (<code>VK_CULL_MODE_BACK_BIT</code>) on both blend pipelines, so the ROAA and no-ROAA paths produce identical images</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_key_implementation_details"><a class="anchor" href="#_key_implementation_details"></a>Key Implementation Details</h3>
+<div class="paragraph">
+<p>Enabling ROAA on the pipeline. The ROAA flag is set on <code>VkPipelineColorBlendStateCreateInfo</code>, which is then passed to the graphics pipeline via <code>pColorBlendState</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkPipelineColorBlendStateCreateInfo color_blend_state{};
+color_blend_state.flags = VK_PIPELINE_COLOR_BLEND_STATE_CREATE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_BIT_EXT;
+
+// ...
+
+pipeline_info.pColorBlendState = &amp;color_blend_state;
+vkCreateGraphicsPipelines(device, pipeline_cache, 1, &amp;pipeline_info, nullptr, &amp;blend_pipeline);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Setting up input attachment mapping for dynamic rendering local read:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Map color attachment 0 to input_attachment_index 0 in the fragment shader
+const uint32_t COLOR_ATTACHMENT_INPUT_INDEX = 0;
+const VkRenderingInputAttachmentIndexInfo INPUT_ATTACHMENT_INDEX_INFO{
+    VK_STRUCTURE_TYPE_RENDERING_INPUT_ATTACHMENT_INDEX_INFO_KHR,
+    nullptr,
+    1,                                // colorAttachmentCount
+    &amp;COLOR_ATTACHMENT_INPUT_INDEX,    // pColorAttachmentInputIndices
+    nullptr,                          // pDepthInputAttachmentIndex
+    nullptr                           // pStencilInputAttachmentIndex
+};
+
+// Chain to VkRenderingInfoKHR during pipeline creation
+rendering_info.pNext = &amp;INPUT_ATTACHMENT_INDEX_INFO;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>At draw time, set the input attachment indices:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">vkCmdSetRenderingInputAttachmentIndicesKHR(cmd, &amp;INPUT_ATTACHMENT_INDEX_INFO);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_validating_correctness"><a class="anchor" href="#_validating_correctness"></a>Validating Correctness</h3>
+<div class="paragraph">
+<p>Because some GPU architectures already provide the necessary synchronization between attachment writes and input attachment reads, ROAA may not produce visible changes. To confirm the sample is working:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Visual correctness: Transparent spheres blend smoothly with no artifacts when ROAA is enabled</p>
+</li>
+<li>
+<p>Frame stability: No flickering or pop-in in either mode</p>
+</li>
+<li>
+<p>Consistent appearance: The ROAA and no-ROAA paths should look the same. Both use back-face culling, so the same front-facing fragments are drawn in both cases. The difference is only in how ordering is achieved. One instanced draw call versus multiple draws with explicit barriers.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>On devices that do not support ROAA, only the barrier fallback path is available.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_gui"><a class="anchor" href="#_gui"></a>GUI</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The sample provides a toggle and real-time metrics:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Element</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enable ROAA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Toggle on/off to compare behavior</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Draw calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of draw commands issued</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Barriers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Number of memory barriers inserted</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GPU time</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Time spent on the full render pass (background + spheres + UI)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_performance"><a class="anchor" href="#_performance"></a>Performance</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>ROAA eliminates the need for explicit synchronization between overlapping fragments within a draw call. Without ROAA, correct ordering requires splitting draws and inserting barriers.</p>
+</div>
+<div class="paragraph">
+<p>With the default 64-sphere scene (4×4×4 grid):</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Metric</th>
+<th class="tableblock halign-left valign-top">ROAA Enabled</th>
+<th class="tableblock halign-left valign-top">ROAA Disabled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Draw calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2 (background + instanced spheres)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">65 (background + one per sphere)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Memory barriers</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">63 (between each draw)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Command buffer size</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Minimal</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Larger (barrier commands)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The performance difference is most significant on:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Tile-based GPUs: Barriers can force tile flushes, reducing efficiency</p>
+</li>
+<li>
+<p>High fragment count scenes: More overlapping fragments means more potential synchronization overhead</p>
+</li>
+<li>
+<p>Mobile devices: Where bandwidth and power are constrained</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practices"><a class="anchor" href="#_best_practices"></a>Best Practices</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Do</th>
+<th class="tableblock halign-left valign-top">Don&#8217;t</th>
+<th class="tableblock halign-left valign-top">Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use ROAA for transparency within a single draw call when available</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rely on implicit GPU ordering without ROAA</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Avoids read-after-write hazards on input attachments</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Batch transparent geometry into fewer draw calls</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Issue separate draws when ROAA can handle it</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reduces CPU overhead and barrier count</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use <code>VK_DEPENDENCY_BY_REGION_BIT</code> for barriers when ROAA is disabled</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use global barriers for tile-local synchronization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allows tile-based GPUs to keep data on-chip</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Check for <code>rasterizationOrderColorAttachmentAccess</code> feature support</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Assume ROAA is available on all devices</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Graceful fallback on unsupported hardware</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_additional_information"><a class="anchor" href="#_additional_information"></a>Additional Information</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_EXT_rasterization_order_attachment_access.html">VK_EXT_rasterization_order_attachment_access specification</a></p>
+</li>
+<li>
+<p><a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_dynamic_rendering_local_read.html">VK_KHR_dynamic_rendering_local_read specification</a></p>
+</li>
+<li>
+<p><a href="https://developer.arm.com/documentation/102479/0100">Understanding Render Passes (ARM Developer)</a></p>
+</li>
+<li>
+<p><a href="https://developer.arm.com/community/arm-community-blogs/b/mobile-graphics-and-gaming-blog/posts/framebuffer-fetch-in-vulkan">Framebuffer Fetch in Vulkan (ARM Developer)</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

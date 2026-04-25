@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>GUI: Setting Up Dear ImGui :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>GUI</li>
+    <li><a href="02_imgui_setup.html">ImGui setup</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">GUI: Setting Up Dear ImGui</h1>
+<div class="sect1">
+<h2 id="_setting_up_dear_imgui"><a class="anchor" href="#_setting_up_dear_imgui"></a>Setting Up Dear ImGui</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this section, we&#8217;ll set up Dear ImGui in our Vulkan application. Dear ImGui (also known simply as ImGui) is a bloat-free graphical user interface library for C++. It outputs optimized vertex buffers that you can render with your 3D-pipeline-enabled application. It&#8217;s particularly well-suited for integration with graphics APIs like Vulkan.</p>
+</div>
+<div class="sect2">
+<h3 id="_adding_imgui_to_your_project"><a class="anchor" href="#_adding_imgui_to_your_project"></a>Adding ImGui to Your Project</h3>
+<div class="paragraph">
+<p>First, we need to add ImGui to our project. There are several ways to do this:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Git Submodule</strong>: Add ImGui as a Git submodule to your project</p>
+</li>
+<li>
+<p><strong>Package Manager</strong>: Use a package manager like vcpkg or Conan</p>
+</li>
+<li>
+<p><strong>Manual Integration</strong>: Download and include the ImGui source files directly</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>For this tutorial, we&#8217;ll use the manual integration approach for simplicity:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Clone ImGui repository
+git clone https://github.com/ocornut/imgui.git external/imgui
+
+# Copy necessary files to your project
+cp external/imgui/imgui.h include/
+cp external/imgui/imgui.cpp src/
+cp external/imgui/imgui_draw.cpp src/
+cp external/imgui/imgui_widgets.cpp src/
+cp external/imgui/imgui_tables.cpp src/
+cp external/imgui/imgui_demo.cpp src/</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, update your CMakeLists.txt to include these files:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake"># ImGui files
+set(IMGUI_SOURCES
+    src/imgui.cpp
+    src/imgui_draw.cpp
+    src/imgui_widgets.cpp
+    src/imgui_tables.cpp
+    src/imgui_demo.cpp
+)
+
+# Our custom ImGui Vulkan integration
+set(IMGUI_VULKAN_SOURCES
+    src/imgui_vulkan_util.cpp
+)
+
+add_executable(VulkanApp
+    src/main.cpp
+    ${IMGUI_SOURCES}
+    ${IMGUI_VULKAN_SOURCES}
+)
+
+target_include_directories(VulkanApp PRIVATE include)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_creating_an_imgui_integration"><a class="anchor" href="#_creating_an_imgui_integration"></a>Creating an ImGui Integration</h3>
+<div class="paragraph">
+<p>Let&#8217;s implement the ImGuiVulkanUtil class to handle the integration between ImGui and Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>The ImGuiVulkanUtil class serves as the bridge between ImGui&#8217;s immediate-mode GUI system and Vulkan&#8217;s explicit graphics API. This integration requires careful management of GPU resources, synchronization, and rendering state to efficiently display user interface elements alongside our 3D graphics. Let&#8217;s break down the class architecture into logical components to understand how each part contributes to the overall integration.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_imguivulkanutil_architecture_gpu_resource_management_foundation"><a class="anchor" href="#_imguivulkanutil_architecture_gpu_resource_management_foundation"></a>ImGuiVulkanUtil Architecture: GPU Resource Management Foundation</h3>
+<div class="paragraph">
+<p>First, we establish the core Vulkan resources needed to render ImGui&#8217;s dynamically generated UI geometry on the GPU.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// ImGuiVulkanUtil.h
+#pragma once
+
+#include &lt;vulkan/vulkan_raii.hpp&gt;
+#include &lt;imgui.h&gt;
+
+class ImGuiVulkanUtil {
+private:
+    // Core GPU rendering resources for UI display
+    // These objects form the foundation of our ImGui-to-Vulkan rendering pipeline
+    vk::raii::Sampler sampler{nullptr};                    // Texture sampling configuration for font rendering
+    Buffer vertexBuffer;                                    // Dynamic vertex buffer for UI geometry
+    Buffer indexBuffer;                                     // Dynamic index buffer for UI triangle connectivity
+    uint32_t vertexCount = 0;                              // Current vertex count for draw commands
+    uint32_t indexCount = 0;                               // Current index count for draw commands
+    Image fontImage;                                        // GPU texture containing ImGui font atlas
+    ImageView fontImageView;                                // Shader-accessible view of font texture</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The GPU resource foundation reflects ImGui&#8217;s dynamic rendering model, where UI geometry is generated fresh each frame based on the current interface layout. The vertex and index buffers use host-visible memory to enable efficient CPU updates, while the font texture remains static once loaded. This hybrid approach balances the need for dynamic UI updates with the performance benefits of GPU-resident font data.</p>
+</div>
+<div class="paragraph">
+<p>The buffer sizing strategy must accommodate ImGui&#8217;s variable geometry output, which can change dramatically based on UI complexity. Unlike static 3D models, ImGui generates different amounts of geometry each frame, requiring our buffers to resize dynamically or be pre-allocated with sufficient capacity for worst-case scenarios.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_imguivulkanutil_architecture_vulkan_pipeline_infrastructure"><a class="anchor" href="#_imguivulkanutil_architecture_vulkan_pipeline_infrastructure"></a>ImGuiVulkanUtil Architecture: Vulkan Pipeline Infrastructure</h3>
+<div class="paragraph">
+<p>Next, we set up the Vulkan pipeline objects that define how UI geometry is processed and rendered by the GPU.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Vulkan pipeline infrastructure for UI rendering
+    // These objects define the complete GPU processing pipeline for ImGui elements
+    vk::raii::PipelineCache pipelineCache{nullptr};        // Pipeline compilation cache for faster startup
+    vk::raii::PipelineLayout pipelineLayout{nullptr};      // Resource binding layout (textures, uniforms)
+    vk::raii::Pipeline pipeline{nullptr};                  // Complete graphics pipeline for UI rendering
+    vk::raii::DescriptorPool descriptorPool{nullptr};      // Pool for allocating descriptor sets
+    vk::raii::DescriptorSetLayout descriptorSetLayout{nullptr}; // Layout defining shader resource bindings
+    vk::raii::DescriptorSet descriptorSet{nullptr};        // Actual resource bindings for font texture</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The pipeline infrastructure creates a specialized graphics pipeline optimized for UI rendering, which differs significantly from typical 3D rendering pipelines. UI rendering typically requires alpha blending for transparency effects, operates in 2D screen space rather than 3D world space, and uses simpler shading models focused on texture sampling rather than complex lighting calculations.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Frames-in-flight safety: If your renderer uses more than one frame in flight and you do not stall the GPU between frames, you must duplicate the dynamic ImGui buffers (vertex/index) per frame-in-flight. Using a single shared vertex/index buffer risks the CPU overwriting data still in use by the GPU from a previous frame. The simple single-buffer members shown above are for conceptual clarity; in production, store vectors of buffers/memories sized to the max frames in flight and update/bind the buffers for the current frame index.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The descriptor system manages the connection between our CPU-side resources and the GPU shaders. For UI rendering, this primarily involves binding the font atlas texture to the fragment shader, though more complex UI systems might include additional textures for icons, backgrounds, or other visual elements.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_imguivulkanutil_architecture_device_context_and_system_integration"><a class="anchor" href="#_imguivulkanutil_architecture_device_context_and_system_integration"></a>ImGuiVulkanUtil Architecture: Device Context and System Integration</h3>
+<div class="paragraph">
+<p>Then, we maintain references to the Vulkan device context and manage integration with the broader graphics system.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Vulkan device context and system integration
+    // These references connect our UI system to the broader Vulkan application context
+    vk::raii::Device* device = nullptr;                    // Primary Vulkan device for resource creation
+    vk::raii::PhysicalDevice* physicalDevice = nullptr;    // GPU hardware info for capability queries
+    vk::raii::Queue* graphicsQueue = nullptr;              // Command submission queue for UI rendering
+    uint32_t graphicsQueueFamily = 0;                      // Queue family index for validation</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The device context integration demonstrates the explicit nature of Vulkan&#8217;s resource management, where every operation requires specific device and queue references. Unlike higher-level graphics APIs that maintain global state, Vulkan requires explicit specification of which GPU device and command queue should handle each operation.</p>
+</div>
+<div class="paragraph">
+<p>The queue family index enables validation and optimization by ensuring that UI rendering operations use compatible queue types. While UI rendering typically uses the same graphics queue as 3D rendering, some applications might benefit from dedicated queues for different rendering responsibilities.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_imguivulkanutil_architecture_ui_state_and_rendering_configuration"><a class="anchor" href="#_imguivulkanutil_architecture_ui_state_and_rendering_configuration"></a>ImGuiVulkanUtil Architecture: UI State and Rendering Configuration</h3>
+<div class="paragraph">
+<p>After that, we manage UI-specific state including styling, rendering parameters, and dynamic update tracking.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // UI state management and rendering configuration
+    // These members control the visual appearance and dynamic behavior of the UI system
+    ImGuiStyle vulkanStyle;                                 // Custom visual styling for Vulkan applications
+
+    // Push constants for efficient per-frame parameter updates
+    // This structure enables fast updates of transformation and styling data
+    struct PushConstBlock {
+        glm::vec2 scale;                                    // UI scaling factors for different screen sizes
+        glm::vec2 translate;                                // Translation offset for UI positioning
+    } pushConstBlock;
+
+    // Dynamic state tracking for performance optimization
+    bool needsUpdateBuffers = false;                        // Flag indicating buffer resize requirements
+
+    // Modern Vulkan rendering configuration
+    vk::PipelineRenderingCreateInfo renderingInfo{};        // Dynamic rendering setup parameters
+    vk::Format colorFormat = vk::Format::eB8G8R8A8Unorm;   // Target framebuffer format</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The styling and configuration management reflects ImGui&#8217;s flexibility in visual presentation while maintaining compatibility with Vulkan&#8217;s explicit rendering model. The push constants provide an efficient mechanism for updating per-frame parameters like screen resolution changes or UI scaling factors without requiring descriptor set updates.</p>
+</div>
+<div class="paragraph">
+<p>The dynamic state tracking optimizes performance by avoiding unnecessary GPU resource updates when the UI layout remains stable between frames. This optimization becomes particularly important in applications with complex UIs where buffer updates could otherwise impact frame rates.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_imguivulkanutil_architecture_public_interface_and_lifecycle_management"><a class="anchor" href="#_imguivulkanutil_architecture_public_interface_and_lifecycle_management"></a>ImGuiVulkanUtil Architecture: Public Interface and Lifecycle Management</h3>
+<div class="paragraph">
+<p>Finally, we define the external interface that applications use to integrate ImGui rendering into their Vulkan rendering pipeline.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">public:
+    // Lifecycle management for proper resource initialization and cleanup
+    ImGuiVulkanUtil(vk::raii::Device&amp; device, vk::raii::PhysicalDevice&amp; physicalDevice,
+                   vk::raii::Queue&amp; graphicsQueue, uint32_t graphicsQueueFamily);
+    ~ImGuiVulkanUtil();
+
+    // Core functionality methods for ImGui integration
+    void init(float width, float height);                   // Initialize ImGui context and configure display
+    void initResources();                                    // Create all Vulkan resources for rendering
+    void setStyle(uint32_t index);                          // Apply visual styling themes
+
+    // Frame-by-frame rendering operations
+    bool newFrame();                                         // Begin new ImGui frame and generate geometry
+    void updateBuffers();                                    // Upload updated geometry to GPU buffers
+    void drawFrame(vk::raii::CommandBuffer&amp; commandBuffer); // Record rendering commands to command buffer
+
+    // Input event handling for interactive UI elements
+    void handleKey(int key, int scancode, int action, int mods); // Process keyboard input events
+    bool getWantKeyCapture();                               // Query if ImGui wants keyboard focus
+    void charPressed(uint32_t key);                         // Handle character input for text widgets
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The public interface design balances ease of integration with performance considerations, separating one-time setup operations from per-frame rendering tasks. The initialization methods handle the expensive resource creation that should happen once during application startup, while the frame-by-frame methods focus on efficient updates and rendering.</p>
+</div>
+<div class="paragraph">
+<p>The input handling interface enables proper integration with existing input systems, allowing ImGui to capture relevant events while passing through others to the main application. This cooperative approach ensures that UI elements can respond to user interaction without interfering with 3D scene controls or other input handling.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_the_imguivulkanutil_class"><a class="anchor" href="#_implementing_the_imguivulkanutil_class"></a>Implementing the ImGuiVulkanUtil Class</h3>
+<div class="paragraph">
+<p>Now let&#8217;s implement the methods of our ImGuiVulkanUtil class for the Vulkan implementation.</p>
+</div>
+<div class="sect3">
+<h4 id="_constructor_and_destructor"><a class="anchor" href="#_constructor_and_destructor"></a>Constructor and Destructor</h4>
+<div class="paragraph">
+<p>First, let&#8217;s implement the constructor and destructor:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">ImGuiVulkanUtil::ImGuiVulkanUtil(vk::raii::Device&amp; device, vk::raii::PhysicalDevice&amp; physicalDevice,
+                               vk::raii::Queue&amp; graphicsQueue, uint32_t graphicsQueueFamily)
+    : device(&amp;device), physicalDevice(&amp;physicalDevice),
+      graphicsQueue(&amp;graphicsQueue), graphicsQueueFamily(graphicsQueueFamily),
+      // Initialize buffers directly
+      vertexBuffer(*device, 1,
+                 vk::BufferUsageFlagBits::eVertexBuffer,
+                 vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent),
+      indexBuffer(*device, 1,
+                vk::BufferUsageFlagBits::eIndexBuffer,
+                vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent) {
+
+    // Set up dynamic rendering info
+    renderingInfo.colorAttachmentCount = 1;
+    vk::Format formats[] = { colorFormat };
+    renderingInfo.pColorAttachmentFormats = &amp;colorFormat;
+}
+
+ImGuiVulkanUtil::~ImGuiVulkanUtil() {
+    // Wait for device to finish operations before destroying resources
+    // NOTE: waitIdle() is acceptable in destructors/cleanup code but should NEVER be used
+    // in the main rendering loop as it causes severe performance issues. For frame
+    // synchronization, use fences and semaphores instead.
+    if (device) {
+        device-&gt;waitIdle();
+    }
+
+    // All resources are automatically cleaned up by their destructors
+    // No manual cleanup needed
+
+    // ImGui context is destroyed separately
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_initialization"><a class="anchor" href="#_initialization"></a>Initialization</h4>
+<div class="paragraph">
+<p>Next, let&#8217;s implement the initialization methods:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void ImGuiVulkanUtil::init(float width, float height) {
+    // Initialize ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    // Configure ImGui
+    ImGuiIO&amp; io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable keyboard controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable docking
+
+    // Set display size
+    io.DisplaySize = ImVec2(width, height);
+    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
+
+    // Set up style
+    vulkanStyle = ImGui::GetStyle();
+    vulkanStyle.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.6f);
+    vulkanStyle.Colors[ImGuiCol_TitleBgActive] = ImVec4(1.0f, 0.0f, 0.0f, 0.8f);
+    vulkanStyle.Colors[ImGuiCol_MenuBarBg] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
+    vulkanStyle.Colors[ImGuiCol_Header] = ImVec4(1.0f, 0.0f, 0.0f, 0.4f);
+    vulkanStyle.Colors[ImGuiCol_CheckMark] = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+
+    // Apply default style
+    setStyle(0);
+}
+
+void ImGuiVulkanUtil::setStyle(uint32_t index) {
+    ImGuiStyle&amp; style = ImGui::GetStyle();
+
+    switch (index) {
+        case 0:
+            // Custom Vulkan style
+            style = vulkanStyle;
+            break;
+        case 1:
+            // Classic style
+            ImGui::StyleColorsClassic();
+            break;
+        case 2:
+            // Dark style
+            ImGui::StyleColorsDark();
+            break;
+        case 3:
+            // Light style
+            ImGui::StyleColorsLight();
+            break;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_resource_initialization"><a class="anchor" href="#_resource_initialization"></a>Resource Initialization</h4>
+<div class="paragraph">
+<p>Now let&#8217;s implement the method to initialize all Vulkan resources needed for ImGui rendering. This complex process involves several distinct steps that work together to create the GPU resources required for text and UI rendering.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_initialization_font_data_extraction_and_memory_calculation"><a class="anchor" href="#_resource_initialization_font_data_extraction_and_memory_calculation"></a>Resource Initialization: Font Data Extraction and Memory Calculation</h3>
+<div class="paragraph">
+<p>First extract font atlas data from ImGui and calculate the memory requirements for GPU storage.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void ImGuiVulkanUtil::initResources() {
+    // Extract font atlas data from ImGui's internal font system
+    // ImGui generates a texture atlas containing all glyphs needed for text rendering
+    ImGuiIO&amp; io = ImGui::GetIO();
+    unsigned char* fontData;                    // Raw pixel data from font atlas
+    int texWidth, texHeight;                    // Dimensions of the generated font atlas
+    io.Fonts-&gt;GetTexDataAsRGBA32(&amp;fontData, &amp;texWidth, &amp;texHeight);
+
+    // Calculate total memory requirements for GPU transfer
+    // Each pixel contains 4 bytes (RGBA) requiring precise memory allocation
+    vk::DeviceSize uploadSize = texWidth * texHeight * 4 * sizeof(char);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The font data extraction represents the bridge between ImGui&#8217;s CPU-based text rendering system and Vulkan&#8217;s GPU-based texture pipeline. ImGui automatically generates a font atlas that combines all required character glyphs into a single texture, optimizing GPU memory usage and reducing draw calls during text rendering. The RGBA32 format provides full color and alpha support for anti-aliased text rendering.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_initialization_gpu_image_creation_and_memory_allocation"><a class="anchor" href="#_resource_initialization_gpu_image_creation_and_memory_allocation"></a>Resource Initialization: GPU Image Creation and Memory Allocation</h3>
+<div class="paragraph">
+<p>Next, create the GPU image resources that will store the font texture data in video memory.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Define image dimensions and create extent structure
+    // Vulkan requires explicit specification of all image dimensions
+    vk::Extent3D fontExtent{
+        static_cast&lt;uint32_t&gt;(texWidth),        // Image width in pixels
+        static_cast&lt;uint32_t&gt;(texHeight),       // Image height in pixels
+        1                                       // Single layer (not a 3D texture or array)
+    };
+
+    // Create optimized GPU image for font texture storage
+    // This image will be sampled by shaders during UI rendering
+    fontImage = Image(*device, fontExtent, vk::Format::eR8G8B8A8Unorm,
+                    vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst,
+                    vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+    // Create image view for shader access
+    // The image view defines how shaders interpret the raw image data
+    fontImageView = ImageView(*device, fontImage.getHandle(), vk::Format::eR8G8B8A8Unorm,
+                           vk::ImageAspectFlagBits::eColor);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The GPU image creation step establishes the foundation for efficient text rendering by allocating device-local memory that provides optimal access speeds for the GPU. The dual usage flags (eSampled | eTransferDst) enable both data upload operations and shader sampling, while the RGBA8_UNORM format ensures consistent color representation across different GPU architectures.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_initialization_staging_buffer_creation_and_data_transfer"><a class="anchor" href="#_resource_initialization_staging_buffer_creation_and_data_transfer"></a>Resource Initialization — Staging Buffer Creation and Data Transfer</h3>
+<div class="paragraph">
+<p>Next, we create a temporary staging buffer and transfer the font data from CPU memory to GPU memory.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Create staging buffer for efficient CPU-to-GPU data transfer
+    // Host-visible memory allows direct CPU access for data upload
+    Buffer stagingBuffer(*device, uploadSize, vk::BufferUsageFlagBits::eTransferSrc,
+                       vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+    // Map staging buffer memory and copy font data
+    // Direct memory mapping provides the fastest path for data transfer
+    void* data = stagingBuffer.map();                          // Map GPU memory to CPU address space
+    memcpy(data, fontData, uploadSize);                        // Copy font atlas data to GPU memory
+    stagingBuffer.unmap();                                     // Unmap memory to ensure data consistency</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The staging buffer approach represents the most efficient method for transferring large amounts of data from CPU to GPU memory in Vulkan. Host-visible memory enables direct CPU access while host-coherent ensures that CPU writes are immediately visible to the GPU without requiring explicit cache flushes. This intermediate step is necessary because device-local memory (where the final image resides) is typically not directly accessible by the CPU.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_initialization_image_layout_transitions_and_data_upload"><a class="anchor" href="#_resource_initialization_image_layout_transitions_and_data_upload"></a>Resource Initialization — Image Layout Transitions and Data Upload</h3>
+<div class="paragraph">
+<p>Then, we manage the image layout transitions required for safe data transfer in Vulkan&#8217;s explicit synchronization model.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Transition image to optimal layout for data reception
+    // Vulkan requires explicit layout transitions for optimal performance and correctness
+    transitionImageLayout(fontImage.getHandle(), vk::Format::eR8G8B8A8Unorm,
+                         vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
+
+    // Execute the actual buffer-to-image copy operation
+    // This transfers font data from staging buffer to the final GPU image
+    copyBufferToImage(stagingBuffer.getHandle(), fontImage.getHandle(),
+                     static_cast&lt;uint32_t&gt;(texWidth), static_cast&lt;uint32_t&gt;(texHeight));
+
+    // Transition image to shader-readable layout for rendering
+    // Final layout optimization enables efficient sampling during UI rendering
+    transitionImageLayout(fontImage.getHandle(), vk::Format::eR8G8B8A8Unorm,
+                         vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The layout transition sequence ensures that the GPU memory subsystem can optimize its internal data arrangements for each operation type. The eTransferDstOptimal layout provides the best performance for receiving data uploads, while eShaderReadOnlyOptimal enables efficient texture sampling during rendering. These transitions include automatic memory barriers that synchronize access between different GPU pipeline stages.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_initialization_texture_sampling_configuration_and_descriptor_management"><a class="anchor" href="#_resource_initialization_texture_sampling_configuration_and_descriptor_management"></a>Resource Initialization — Texture Sampling Configuration and Descriptor Management</h3>
+<div class="paragraph">
+<p>Finally, we create the sampling configuration and descriptor resources needed for shader access to the font texture.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Configure texture sampling parameters for optimal text rendering
+    // These settings directly impact text quality and performance
+    vk::SamplerCreateInfo samplerInfo{};
+    samplerInfo.magFilter = vk::Filter::eLinear;                    // Smooth scaling when magnified
+    samplerInfo.minFilter = vk::Filter::eLinear;                    // Smooth scaling when minified
+    samplerInfo.mipmapMode = vk::SamplerMipmapMode::eLinear;        // Smooth transitions between mip levels
+    samplerInfo.addressModeU = vk::SamplerAddressMode::eClampToEdge;  // Prevent texture wrapping
+    samplerInfo.addressModeV = vk::SamplerAddressMode::eClampToEdge;  // Clean edge handling
+    samplerInfo.addressModeW = vk::SamplerAddressMode::eClampToEdge;  // 3D consistency
+    samplerInfo.borderColor = vk::BorderColor::eFloatOpaqueWhite;   // White border for clamped areas
+
+    sampler = device-&gt;createSampler(samplerInfo);                   // Create the GPU sampler object
+
+    // Create descriptor pool for shader resource binding
+    // Descriptors provide the interface between shaders and GPU resources
+    vk::DescriptorPoolSize poolSize{vk::DescriptorType::eCombinedImageSampler, 1};
+
+    vk::DescriptorPoolCreateInfo poolInfo{};
+    poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;     // Allow individual descriptor set freeing
+    poolInfo.maxSets = 2;                                                      // Maximum number of descriptor sets
+    poolInfo.poolSizeCount = 1;                                                // Number of pool size specifications
+    poolInfo.pPoolSizes = &amp;poolSize;                                           // Pool size configuration
+
+    descriptorPool = device-&gt;createDescriptorPool(poolInfo);                   // Create descriptor pool
+
+    // Create descriptor set layout defining shader resource interface
+    // This layout must match the binding declarations in the ImGui shaders
+    vk::DescriptorSetLayoutBinding binding{};
+    binding.descriptorType = vk::DescriptorType::eCombinedImageSampler;        // Combined texture and sampler
+    binding.descriptorCount = 1;                                               // Single texture binding
+    binding.stageFlags = vk::ShaderStageFlagBits::eFragment;                   // Used in fragment shader
+    binding.binding = 0;                                                       // Shader binding point 0
+
+    vk::DescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.bindingCount = 1;                                               // Number of bindings in layout
+    layoutInfo.pBindings = &amp;binding;                                           // Binding configuration array
+
+    descriptorSetLayout = device-&gt;createDescriptorSetLayout(layoutInfo);       // Create layout object
+
+    // Allocate descriptor set from pool using the defined layout
+    // This creates the actual binding that connects GPU resources to shaders
+    vk::DescriptorSetAllocateInfo allocInfo{};
+    allocInfo.descriptorPool = *descriptorPool;                                // Source pool for allocation
+    allocInfo.descriptorSetCount = 1;                                          // Number of sets to allocate
+    vk::DescriptorSetLayout layouts[] = {*descriptorSetLayout};                // Layout template array
+    allocInfo.pSetLayouts = layouts;                                           // Layout configuration
+
+    descriptorSet = std::move(device-&gt;allocateDescriptorSets(allocInfo).front()); // Allocate and store set
+
+    // Update descriptor set with actual font texture and sampler resources
+    // This final step connects the physical GPU resources to the shader binding points
+    vk::DescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;           // Expected image layout
+    imageInfo.imageView = fontImageView.getHandle();                           // Font texture view
+    imageInfo.sampler = *sampler;                                              // Texture sampler
+
+    vk::WriteDescriptorSet writeSet{};
+    writeSet.dstSet = *descriptorSet;                                          // Target descriptor set
+    writeSet.descriptorCount = 1;                                              // Number of resources to bind
+    writeSet.descriptorType = vk::DescriptorType::eCombinedImageSampler;       // Resource type
+    writeSet.pImageInfo = &amp;imageInfo;                                          // Image resource information
+    writeSet.dstBinding = 0;                                                   // Binding point in shader
+
+    device-&gt;updateDescriptorSets(1, &amp;writeSet, 0, nullptr);                   // Execute the binding update
+
+    // Create pipeline cache
+    vk::PipelineCacheCreateInfo pipelineCacheInfo{};
+    pipelineCache = device-&gt;createPipelineCache(pipelineCacheInfo);
+
+    // Create pipeline layout
+    vk::PushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = vk::ShaderStageFlagBits::eVertex;
+    pushConstantRange.offset = 0;
+    pushConstantRange.size = sizeof(PushConstBlock);
+
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.setLayoutCount = 1;
+    vk::DescriptorSetLayout setLayouts[] = {*descriptorSetLayout};
+    pipelineLayoutInfo.pSetLayouts = setLayouts;
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges = &amp;pushConstantRange;
+
+    pipelineLayout = device-&gt;createPipelineLayout(pipelineLayoutInfo);
+
+    // Create the graphics pipeline with dynamic rendering
+    // ... (shader loading, pipeline state setup, etc.)
+
+    // For brevity, we're omitting the full pipeline creation code here
+    // In a real implementation, you would:
+    // 1. Load the vertex and fragment shaders
+    // 2. Set up all the pipeline state (vertex input, input assembly, rasterization, etc.)
+    // 3. Include the renderingInfo in the pipeline creation to enable dynamic rendering
+}</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_frame_management_and_rendering"><a class="anchor" href="#_frame_management_and_rendering"></a>Frame Management and Rendering</h4>
+<div class="paragraph">
+<p>Finally, let&#8217;s implement the methods for frame management and rendering:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">bool ImGuiVulkanUtil::newFrame() {
+    // Start a new ImGui frame
+    ImGui::NewFrame();
+
+    // Create your UI elements here
+    // For example:
+    ImGui::Begin("Vulkan ImGui Demo");
+    ImGui::Text("Hello, Vulkan!");
+    if (ImGui::Button("Click me!")) {
+        // Handle button click
+    }
+    ImGui::End();
+
+    // End the frame
+    ImGui::EndFrame();
+
+    // Render to generate draw data
+    ImGui::Render();
+
+    // Check if buffers need updating
+    ImDrawData* drawData = ImGui::GetDrawData();
+    if (drawData &amp;&amp; drawData-&gt;CmdListsCount &gt; 0) {
+        if (drawData-&gt;TotalVtxCount &gt; vertexCount || drawData-&gt;TotalIdxCount &gt; indexCount) {
+            needsUpdateBuffers = true;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void ImGuiVulkanUtil::updateBuffers() {
+    ImDrawData* drawData = ImGui::GetDrawData();
+    if (!drawData || drawData-&gt;CmdListsCount == 0) {
+        return;
+    }
+
+    // Calculate required buffer sizes
+    vk::DeviceSize vertexBufferSize = drawData-&gt;TotalVtxCount * sizeof(ImDrawVert);
+    vk::DeviceSize indexBufferSize = drawData-&gt;TotalIdxCount * sizeof(ImDrawIdx);
+
+    // Resize buffers if needed
+    if (drawData-&gt;TotalVtxCount &gt; vertexCount) {
+        // Recreate vertex buffer with new size
+        vertexBuffer = Buffer(*device, vertexBufferSize,
+                            vk::BufferUsageFlagBits::eVertexBuffer,
+                            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        vertexCount = drawData-&gt;TotalVtxCount;
+    }
+
+    if (drawData-&gt;TotalIdxCount &gt; indexCount) {
+        // Recreate index buffer with new size
+        indexBuffer = Buffer(*device, indexBufferSize,
+                           vk::BufferUsageFlagBits::eIndexBuffer,
+                           vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+        indexCount = drawData-&gt;TotalIdxCount;
+    }
+
+    // Upload data to buffers
+    ImDrawVert* vtxDst = static_cast&lt;ImDrawVert*&gt;(vertexBuffer.map());
+    ImDrawIdx* idxDst = static_cast&lt;ImDrawIdx*&gt;(indexBuffer.map());
+
+    for (int n = 0; n &lt; drawData-&gt;CmdListsCount; n++) {
+        const ImDrawList* cmdList = drawData-&gt;CmdLists[n];
+        memcpy(vtxDst, cmdList-&gt;VtxBuffer.Data, cmdList-&gt;VtxBuffer.Size * sizeof(ImDrawVert));
+        memcpy(idxDst, cmdList-&gt;IdxBuffer.Data, cmdList-&gt;IdxBuffer.Size * sizeof(ImDrawIdx));
+        vtxDst += cmdList-&gt;VtxBuffer.Size;
+        idxDst += cmdList-&gt;IdxBuffer.Size;
+    }
+
+    vertexBuffer.unmap();
+    indexBuffer.unmap();
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_begin_a_rendering_scope"><a class="anchor" href="#_begin_a_rendering_scope"></a>Begin a rendering scope</h4>
+<div class="paragraph">
+<p>Before issuing any UI draw commands, we open a dynamic rendering scope that targets the current framebuffer. This replaces vkCmdBeginRenderPass/EndRenderPass and keeps the UI pass lightweight.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void ImGuiVulkanUtil::drawFrame(vk::raii::CommandBuffer&amp; commandBuffer) {
+    ImDrawData* drawData = ImGui::GetDrawData();
+    if (!drawData || drawData-&gt;CmdListsCount == 0) {
+        return;
+    }
+
+    // Begin dynamic rendering
+    vk::RenderingAttachmentInfo colorAttachment{};
+    // Note: In a real implementation, you would set imageView, imageLayout,
+    // loadOp, storeOp, and clearValue based on your swapchain image
+
+    vk::RenderingInfo renderingInfo{};
+    renderingInfo.renderArea = vk::Rect2D{{0, 0}, {static_cast&lt;uint32_t&gt;(drawData-&gt;DisplaySize.x),
+                                                   static_cast&lt;uint32_t&gt;(drawData-&gt;DisplaySize.y)}};
+    renderingInfo.layerCount = 1;
+    renderingInfo.colorAttachmentCount = 1;
+    renderingInfo.pColorAttachments = &amp;colorAttachment;
+
+    commandBuffer.beginRendering(renderingInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>At this point, commands affect the UI overlay only. Next we bind state that doesn’t change per draw.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bind_pipeline_and_set_viewport"><a class="anchor" href="#_bind_pipeline_and_set_viewport"></a>Bind pipeline and set viewport</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Bind the pipeline used for ImGui
+    commandBuffer.bindPipeline(vk::PipelineBindPoint::eGraphics, *pipeline);
+
+    // Configure viewport for UI pixel coordinates
+    vk::Viewport viewport{};
+    viewport.width = drawData-&gt;DisplaySize.x;
+    viewport.height = drawData-&gt;DisplaySize.y;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    commandBuffer.setViewport(0, viewport);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The pipeline has blending and raster states tailored for UI. The viewport maps ImGui’s coordinate system to the framebuffer.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_push_per_frame_constants"><a class="anchor" href="#_push_per_frame_constants"></a>Push per-frame constants</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Convert from ImGui coordinates into NDC via a simple scale/translate
+    pushConstBlock.scale = glm::vec2(2.0f / drawData-&gt;DisplaySize.x, 2.0f / drawData-&gt;DisplaySize.y);
+    pushConstBlock.translate = glm::vec2(-1.0f);
+    commandBuffer.pushConstants(*pipelineLayout, vk::ShaderStageFlagBits::eVertex,
+                              0, sizeof(PushConstBlock), &amp;pushConstBlock);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This keeps the shader simple and avoids per-vertex work for coordinate transforms.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_bind_geometry_buffers"><a class="anchor" href="#_bind_geometry_buffers"></a>Bind geometry buffers</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // We already filled these buffers this frame
+    vk::Buffer vertexBuffers[] = { vertexBuffer.getHandle() };
+    vk::DeviceSize offsets[] = { 0 };
+    commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+    commandBuffer.bindIndexBuffer(indexBuffer.getHandle(), 0, vk::IndexType::eUint16);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_iterate_command_lists_set_scissor_draw"><a class="anchor" href="#_iterate_command_lists_set_scissor_draw"></a>Iterate command lists, set scissor, draw</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    int vertexOffset = 0;
+    int indexOffset = 0;
+
+    for (int i = 0; i &lt; drawData-&gt;CmdListsCount; i++) {
+        const ImDrawList* cmdList = drawData-&gt;CmdLists[i];
+
+        for (int j = 0; j &lt; cmdList-&gt;CmdBuffer.Size; j++) {
+            const ImDrawCmd* pcmd = &amp;cmdList-&gt;CmdBuffer[j];
+
+            // Clip per draw call
+            vk::Rect2D scissor{};
+            scissor.offset.x = std::max(static_cast&lt;int32_t&gt;(pcmd-&gt;ClipRect.x), 0);
+            scissor.offset.y = std::max(static_cast&lt;int32_t&gt;(pcmd-&gt;ClipRect.y), 0);
+            scissor.extent.width = static_cast&lt;uint32_t&gt;(pcmd-&gt;ClipRect.z - pcmd-&gt;ClipRect.x);
+            scissor.extent.height = static_cast&lt;uint32_t&gt;(pcmd-&gt;ClipRect.w - pcmd-&gt;ClipRect.y);
+            commandBuffer.setScissor(0, scissor);
+
+            // Bind font (and any UI) textures for this draw
+            commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics,
+                                           *pipelineLayout, 0, *descriptorSet, {});
+
+            // Issue indexed draw for this UI batch
+            commandBuffer.drawIndexed(pcmd-&gt;ElemCount, 1, indexOffset, vertexOffset, 0);
+            indexOffset += pcmd-&gt;ElemCount;
+        }
+
+        vertexOffset += cmdList-&gt;VtxBuffer.Size;
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each ImDrawCmd provides a scissor rect that clips widgets efficiently without extra passes.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_end_the_rendering_scope"><a class="anchor" href="#_end_the_rendering_scope"></a>End the rendering scope</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Close the rendering scope for the UI overlay
+    commandBuffer.endRendering();
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_input_handling"><a class="anchor" href="#_input_handling"></a>Input Handling</h3>
+<div class="paragraph">
+<p>Let&#8217;s implement the input handling methods:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void ImGuiVulkanUtil::handleKey(int key, int scancode, int action, int mods) {
+    ImGuiIO&amp; io = ImGui::GetIO();
+
+    // This example uses GLFW key codes and actions, but you can adapt this
+    // to work with any windowing library's input system
+
+    // Map the platform-specific key action to ImGui's key state
+    // In GLFW: GLFW_PRESS = 1, GLFW_RELEASE = 0
+    const int KEY_PRESSED = 1;  // Generic key pressed value
+    const int KEY_RELEASED = 0; // Generic key released value
+
+    if (action == KEY_PRESSED)
+        io.KeysDown[key] = true;
+    if (action == KEY_RELEASED)
+        io.KeysDown[key] = false;
+
+    // Update modifier keys
+    // These key codes are GLFW-specific, but you would use your windowing library's
+    // equivalent key codes for other libraries
+    const int KEY_LEFT_CTRL = 341;   // GLFW_KEY_LEFT_CONTROL
+    const int KEY_RIGHT_CTRL = 345;  // GLFW_KEY_RIGHT_CONTROL
+    const int KEY_LEFT_SHIFT = 340;  // GLFW_KEY_LEFT_SHIFT
+    const int KEY_RIGHT_SHIFT = 344; // GLFW_KEY_RIGHT_SHIFT
+    const int KEY_LEFT_ALT = 342;    // GLFW_KEY_LEFT_ALT
+    const int KEY_RIGHT_ALT = 346;   // GLFW_KEY_RIGHT_ALT
+    const int KEY_LEFT_SUPER = 343;  // GLFW_KEY_LEFT_SUPER
+    const int KEY_RIGHT_SUPER = 347; // GLFW_KEY_RIGHT_SUPER
+
+    io.KeyCtrl = io.KeysDown[KEY_LEFT_CTRL] || io.KeysDown[KEY_RIGHT_CTRL];
+    io.KeyShift = io.KeysDown[KEY_LEFT_SHIFT] || io.KeysDown[KEY_RIGHT_SHIFT];
+    io.KeyAlt = io.KeysDown[KEY_LEFT_ALT] || io.KeysDown[KEY_RIGHT_ALT];
+    io.KeySuper = io.KeysDown[KEY_LEFT_SUPER] || io.KeysDown[KEY_RIGHT_SUPER];
+}
+
+bool ImGuiVulkanUtil::getWantKeyCapture() {
+    return ImGui::GetIO().WantCaptureKeyboard;
+}
+
+void ImGuiVulkanUtil::charPressed(uint32_t key) {
+    ImGuiIO&amp; io = ImGui::GetIO();
+    io.AddInputCharacter(key);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_the_imguivulkanutil_class"><a class="anchor" href="#_using_the_imguivulkanutil_class"></a>Using the ImGuiVulkanUtil Class</h3>
+<div class="paragraph">
+<p>Now that we&#8217;ve implemented our ImGuiVulkanUtil class, let&#8217;s see how to use it in a Vulkan application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// In your application class
+ImGuiVulkanUtil imGui;
+
+// During initialization
+void initImGui() {
+    // Initialize ImGui directly
+    imGui = ImGuiVulkanUtil(
+        device,
+        physicalDevice,
+        graphicsQueue,
+        graphicsQueueFamily
+    );
+
+    imGui.init(swapChainExtent.width, swapChainExtent.height);
+    imGui.initResources(); // No renderPass needed with dynamic rendering
+}
+
+// In your render loop
+void drawFrame() {
+    // ... existing frame preparation code ...
+
+    // Update ImGui
+    if (imGui.newFrame()) {
+        imGui.updateBuffers();
+    }
+
+    // Begin command buffer recording
+    // Note: With dynamic rendering, we don't need to begin a render pass
+    // The ImGui drawFrame method will handle dynamic rendering internally
+
+    // Render scene using dynamic rendering
+    // ...
+
+    // Render ImGui (in multi-frame renderers, pass the current frame index to bind per-frame buffers)
+    imGui.drawFrame(commandBuffer);
+
+    // ... submit command buffer ...
+}
+
+// Input handling
+// This example shows how to handle input with GLFW, but you can adapt this
+// to work with any windowing library's input system
+
+// Example key callback function for GLFW
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    // First check if ImGui wants to capture this input
+    imGui.handleKey(key, scancode, action, mods);
+
+    // If ImGui doesn't want to capture the keyboard, process for your application
+    if (!imGui.getWantKeyCapture()) {
+        // Process key for your application
+    }
+}
+
+// Example character input callback for GLFW
+void charCallback(GLFWwindow* window, unsigned int codepoint) {
+    imGui.charPressed(codepoint);
+}
+
+// With other windowing libraries, you would implement similar callback functions
+// using their equivalent APIs and event systems
+
+// Cleanup
+void cleanup() {
+    // ... existing cleanup code ...
+
+    // ImGui will be automatically cleaned up when the application exits
+    // No manual cleanup needed
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_testing_the_integration"><a class="anchor" href="#_testing_the_integration"></a>Testing the Integration</h3>
+<div class="paragraph">
+<p>To verify that our ImGui integration is working correctly, we can use the ImGui demo window, which showcases all of ImGui&#8217;s features:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// In your ImGuiVulkanUtil::newFrame method
+bool ImGuiVulkanUtil::newFrame() {
+    ImGui::NewFrame();
+
+    // Show the demo window
+    ImGui::ShowDemoWindow();
+
+    ImGui::EndFrame();
+    ImGui::Render();
+
+    // Check if buffers need updating
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this implementation, you have a Vulkan implementation for ImGui that allows you to customize the rendering process to fit your specific needs.</p>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll explore how to handle input for both the GUI and the 3D scene.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_input_handling.html" class="xref page">Next: Input Handling</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

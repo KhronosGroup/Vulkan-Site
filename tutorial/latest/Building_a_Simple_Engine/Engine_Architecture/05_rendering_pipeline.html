@@ -1,0 +1,2541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Engine Architecture: Rendering Pipeline :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Engine Architecture</li>
+    <li><a href="05_rendering_pipeline.html">Rendering pipeline</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Engine Architecture: Rendering Pipeline</h1>
+<div class="sect1">
+<h2 id="_rendering_pipeline"><a class="anchor" href="#_rendering_pipeline"></a>Rendering Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A well-designed rendering pipeline is essential for creating a flexible and efficient rendering engine. In this section, we&#8217;ll explore how to structure your rendering pipeline to support various rendering techniques and effects.</p>
+</div>
+<div class="sect2">
+<h3 id="_rendering_pipeline_overview"><a class="anchor" href="#_rendering_pipeline_overview"></a>Rendering Pipeline Overview</h3>
+<div class="paragraph">
+<p>The following diagram provides a high-level overview of a modern Vulkan rendering pipeline:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/rendering_pipeline_flowchart.png" alt="Flowchart showing the stages of a modern Vulkan rendering pipeline" width="600">
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p><strong>Diagram Legend:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Boxes</strong>: Represent the different stages of the rendering pipeline</p>
+</li>
+<li>
+<p><strong>Arrows</strong>: Show the flow of data and execution between stages</p>
+</li>
+<li>
+<p><strong>Colors</strong>: Different colors indicate different types of operations (processing, management, execution)</p>
+</li>
+<li>
+<p><strong>Supporting Components</strong>: Rendergraphs and Synchronization primitives are shown as connected to the main pipeline flow</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The rendering pipeline consists of several key stages:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Scene Culling</strong> - Determine which objects are visible and need to be rendered.</p>
+</li>
+<li>
+<p><strong>Render Pass Management</strong> - Organize rendering into passes with specific purposes.</p>
+</li>
+<li>
+<p><strong>Command Generation</strong> - Generate commands for the GPU to execute.</p>
+</li>
+<li>
+<p><strong>Execution</strong> - Submit commands to the GPU for execution.</p>
+</li>
+<li>
+<p><strong>Post-Processing</strong> - Apply effects to the rendered image.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Supporting components like Rendergraphs help manage dependencies between render passes, while Synchronization primitives ensure correct execution order. Different rendering techniques (Deferred, Forward+, PBR) can be implemented within this pipeline architecture.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendering_pipeline_challenges"><a class="anchor" href="#_rendering_pipeline_challenges"></a>Rendering Pipeline Challenges</h3>
+<div class="paragraph">
+<p>When designing a rendering pipeline, you&#8217;ll need to address several challenges:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Flexibility</strong> - Support different rendering techniques and effects.</p>
+</li>
+<li>
+<p><strong>Performance</strong> - Efficiently utilize the GPU and minimize state changes.</p>
+</li>
+<li>
+<p><strong>Extensibility</strong> - Allow for easy addition of new rendering features.</p>
+</li>
+<li>
+<p><strong>Maintainability</strong> - Keep the code organized and easy to understand.</p>
+</li>
+<li>
+<p><strong>Platform Independence</strong> - Abstract away platform-specific details.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendering_pipeline_architecture"><a class="anchor" href="#_rendering_pipeline_architecture"></a>Rendering Pipeline Architecture</h3>
+<div class="paragraph">
+<p>Earlier we outlined the major stages of a modern pipeline. Rather than repeating that list, we&#8217;ll now dive into each stage, focusing on responsibilities, data flow, and practical implementation patterns that keep the engine flexible and performant.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scene_culling"><a class="anchor" href="#_scene_culling"></a>Scene Culling</h3>
+<div class="paragraph">
+<p>Before rendering, we need to determine which objects are visible to the camera. This process is called culling and can significantly improve performance by reducing the number of objects that need to be rendered.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class CullingSystem {
+private:
+    Camera* camera;
+    std::vector&lt;Entity*&gt; visibleEntities;
+
+public:
+    explicit CullingSystem(Camera* cam) : camera(cam) {}
+
+    void SetCamera(Camera* cam) {
+        camera = cam;
+    }
+
+    void CullScene(const std::vector&lt;Entity*&gt;&amp; allEntities) {
+        visibleEntities.clear();
+
+        if (!camera) return;
+
+        // Get camera frustum
+        Frustum frustum = camera-&gt;GetFrustum();
+
+        // Check each entity against the frustum
+        for (auto entity : allEntities) {
+            if (!entity-&gt;IsActive()) continue;
+
+            auto meshComponent = entity-&gt;GetComponent&lt;MeshComponent&gt;();
+            if (!meshComponent) continue;
+
+            auto transformComponent = entity-&gt;GetComponent&lt;TransformComponent&gt;();
+            if (!transformComponent) continue;
+
+            // Get bounding box of the mesh
+            BoundingBox boundingBox = meshComponent-&gt;GetBoundingBox();
+
+            // Transform bounding box by entity transform
+            boundingBox.Transform(transformComponent-&gt;GetTransformMatrix());
+
+            // Check if bounding box is visible
+            if (frustum.Intersects(boundingBox)) {
+                visibleEntities.push_back(entity);
+            }
+        }
+    }
+
+    const std::vector&lt;Entity*&gt;&amp; GetVisibleEntities() const {
+        return visibleEntities;
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_render_pass_management"><a class="anchor" href="#_render_pass_management"></a>Render Pass Management</h3>
+<div class="paragraph">
+<p>Modern rendering techniques often require multiple passes, each with a specific purpose. A render pass manager helps organize these passes and their dependencies.</p>
+</div>
+<div class="paragraph">
+<p>In this tutorial, we use Vulkan&#8217;s dynamic rendering feature with vk::raii instead of traditional render passes. Dynamic rendering simplifies the rendering process by allowing us to begin and end rendering operations with a single command, without explicitly creating VkRenderPass and VkFramebuffer objects.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendergraphs_and_synchronization"><a class="anchor" href="#_rendergraphs_and_synchronization"></a>Rendergraphs and Synchronization</h3>
+<div class="paragraph">
+<p>A rendergraph is a higher-level abstraction that represents the entire rendering process as a directed acyclic graph (DAG), where nodes are render passes and edges represent dependencies between them. This approach offers several advantages over traditional render pass management:</p>
+</div>
+<div class="sect3">
+<h4 id="_what_is_a_rendergraph"><a class="anchor" href="#_what_is_a_rendergraph"></a>What is a Rendergraph?</h4>
+<div class="paragraph">
+<p>A rendergraph is a data structure that:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Describes Resources</strong>: Tracks all resources (textures, buffers) used in rendering.</p>
+</li>
+<li>
+<p><strong>Defines Operations</strong>: Specifies what operations (render passes) will be performed.</p>
+</li>
+<li>
+<p><strong>Manages Dependencies</strong>: Automatically determines the dependencies between operations.</p>
+</li>
+<li>
+<p><strong>Handles Synchronization</strong>: Automatically inserts necessary synchronization primitives.</p>
+</li>
+<li>
+<p><strong>Optimizes Memory</strong>: Can perform memory aliasing and other optimizations.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendergraph_data_structure_architecture_and_resource_representation"><a class="anchor" href="#_rendergraph_data_structure_architecture_and_resource_representation"></a>Rendergraph: Data Structure Architecture and Resource Representation</h3>
+<div class="paragraph">
+<p>First, we need to  establish the fundamental data structures that represent rendering resources and passes within the rendergraph system.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// A comprehensive rendergraph implementation for automated dependency management
+class Rendergraph {
+private:
+    // Resource description and management structure
+    // Represents Image resource used during rendering (textures)
+    struct Resource {
+        std::string name;                     // Human-readable identifier for debugging and referencing
+        vk::Format format;                    // Pixel format (RGBA8, Depth24Stencil8, etc.)
+        vk::Extent2D extent;                  // Dimensions in pixels for 2D resources
+        vk::ImageUsageFlags usage;            // How this resource will be used (color attachment, texture, etc.)
+        vk::ImageLayout initialLayout;        // Expected layout when the frame begins
+        vk::ImageLayout finalLayout;          // Required layout when the frame ends
+
+        // Actual GPU resources - populated during compilation
+        vk::raii::Image image = nullptr;      // The GPU image object
+        vk::raii::DeviceMemory memory = nullptr;  // Backing memory allocation
+        vk::raii::ImageView view = nullptr;   // Shader-accessible view of the image
+    };
+
+    // Render pass representation within the graph structure
+    // Each pass represents a distinct rendering operation with defined inputs and outputs
+    struct Pass {
+        std::string name;                     // Descriptive name for debugging and profiling
+        std::vector&lt;std::string&gt; inputs;      // Resources this pass reads from (dependencies)
+        std::vector&lt;std::string&gt; outputs;     // Resources this pass writes to (products)
+        std::function&lt;void(vk::raii::CommandBuffer&amp;)&gt; executeFunc;  // The actual rendering code
+    };
+
+    // Core data storage for the rendergraph system
+    std::unordered_map&lt;std::string, Resource&gt; resources;  // All resources referenced in the graph
+    std::vector&lt;Pass&gt; passes;                             // All rendering passes in definition order
+    std::vector&lt;size_t&gt; executionOrder;                   // Computed optimal execution sequence
+
+    // Automatic synchronization management
+    // These objects ensure correct GPU execution order without manual barriers
+    std::vector&lt;vk::raii::Semaphore&gt; semaphores;          // GPU synchronization primitives
+    std::vector&lt;std::pair&lt;size_t, size_t&gt;&gt; semaphoreSignalWaitPairs;  // (signaling pass, waiting pass)
+
+    vk::raii::Device&amp; device;  // Vulkan device for resource creation
+
+public:
+    explicit Rendergraph(vk::raii::Device&amp; dev) : device(dev) {}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The data structure architecture reflects the core philosophy of rendergraphs: treating rendering as a series of transformations on resources rather than imperative GPU commands. The Resource structure encapsulates everything needed to create and manage GPU resources, while the Pass structure defines rendering operations in terms of their resource dependencies rather than their implementation details.</p>
+</div>
+<div class="paragraph">
+<p>This approach enables powerful optimizations like automatic memory aliasing (where multiple resources share the same memory if their lifetimes don&#8217;t overlap) and optimal resource layout transitions. The separation between resource description and actual GPU objects allows the rendergraph to make informed decisions about resource management during the compilation phase.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendergraph_resource_registration_and_pass_definition_interface"><a class="anchor" href="#_rendergraph_resource_registration_and_pass_definition_interface"></a>Rendergraph: Resource Registration and Pass Definition Interface</h3>
+<div class="paragraph">
+<p>Now for the public interface for building the rendergraph by registering resources and defining rendering passes with their dependencies.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Resource registration interface for declaring all resources used during rendering
+    // This method establishes resource metadata without creating actual GPU resources
+    void AddResource(const std::string&amp; name, vk::Format format, vk::Extent2D extent,
+                    vk::ImageUsageFlags usage, vk::ImageLayout initialLayout,
+                    vk::ImageLayout finalLayout) {
+        Resource resource;
+        resource.name = name;                    // Store human-readable identifier
+        resource.format = format;                // Define pixel format and bit depth
+        resource.extent = extent;                // Set resource dimensions
+        resource.usage = usage;                  // Specify intended usage patterns
+        resource.initialLayout = initialLayout; // Define starting layout state
+        resource.finalLayout = finalLayout;     // Define required ending state
+
+        resources[name] = resource;              // Register in the global resource map
+    }
+
+    // Pass registration interface for defining rendering operations and their dependencies
+    // This method establishes the logical structure of rendering without immediate execution
+    void AddPass(const std::string&amp; name,
+                const std::vector&lt;std::string&gt;&amp; inputs,
+                const std::vector&lt;std::string&gt;&amp; outputs,
+                std::function&lt;void(vk::raii::CommandBuffer&amp;)&gt; executeFunc) {
+        Pass pass;
+        pass.name = name;                        // Assign descriptive identifier
+        pass.inputs = inputs;                    // List all resources this pass reads
+        pass.outputs = outputs;                  // List all resources this pass writes
+        pass.executeFunc = executeFunc;          // Store the actual rendering implementation
+
+        passes.push_back(pass);                  // Add to the ordered pass list
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The registration interface enables declarative rendergraph construction where developers specify what they want to achieve rather than how to achieve it. This high-level approach allows the rendergraph to analyze the entire rendering pipeline before making resource allocation and scheduling decisions.</p>
+</div>
+<div class="paragraph">
+<p>The deferred execution model (where passes store function objects rather than immediate GPU commands) enables powerful compile-time optimizations. The rendergraph can reorder passes, merge compatible operations, and optimize resource usage based on the complete dependency graph rather than making local decisions for each pass.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendergraph_dependency_analysis_and_execution_ordering"><a class="anchor" href="#_rendergraph_dependency_analysis_and_execution_ordering"></a>Rendergraph: Dependency Analysis and Execution Ordering</h3>
+<div class="paragraph">
+<p>Now we implement the core algorithmic logic that analyzes pass dependencies and computes an optimal execution order for the rendering pipeline.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Rendergraph compilation - transforms declarative descriptions into executable pipeline
+    // This method performs dependency analysis, resource allocation, and execution planning
+    void Compile() {
+        // Dependency Graph Construction
+        // Build bidirectional dependency relationships between passes
+        std::vector&lt;std::vector&lt;size_t&gt;&gt; dependencies(passes.size());  // What each pass depends on
+        std::vector&lt;std::vector&lt;size_t&gt;&gt; dependents(passes.size());    // What depends on each pass
+
+        // Track which pass produces each resource (write-after-write dependencies)
+        std::unordered_map&lt;std::string, size_t&gt; resourceWriters;
+
+        // Dependency Discovery Through Resource Usage Analysis
+        // Analyze each pass to determine data flow relationships
+        for (size_t i = 0; i &lt; passes.size(); ++i) {
+            const auto&amp; pass = passes[i];
+
+            // Process input dependencies - this pass must wait for producers
+            for (const auto&amp; input : pass.inputs) {
+                auto it = resourceWriters.find(input);
+                if (it != resourceWriters.end()) {
+                    // Found the pass that produces this input - create dependency link
+                    dependencies[i].push_back(it-&gt;second);      // This pass depends on the producer
+                    dependents[it-&gt;second].push_back(i);        // Producer has this as dependent
+                }
+            }
+
+            // Register output production - subsequent passes may depend on these
+            for (const auto&amp; output : pass.outputs) {
+                resourceWriters[output] = i;                    // Record this pass as producer
+            }
+        }
+
+        // Topological Sort for Optimal Execution Order
+        // Use depth-first search to compute valid execution sequence while detecting cycles
+        std::vector&lt;bool&gt; visited(passes.size(), false);       // Track completed nodes
+        std::vector&lt;bool&gt; inStack(passes.size(), false);       // Track current recursion path
+
+        std::function&lt;void(size_t)&gt; visit = [&amp;](size_t node) {
+            if (inStack[node]) {
+                // Cycle detection - circular dependency found
+                throw std::runtime_error("Cycle detected in rendergraph");
+            }
+
+            if (visited[node]) {
+                return;  // Already processed this node and its dependencies
+            }
+
+            inStack[node] = true;   // Mark as currently being processed
+
+            // Recursively process all dependent passes first (post-order traversal)
+            for (auto dependent : dependents[node]) {
+                visit(dependent);
+            }
+
+            inStack[node] = false;  // Remove from current path
+            visited[node] = true;   // Mark as completely processed
+            executionOrder.push_back(node);  // Add to execution sequence
+        };
+
+        // Process all unvisited nodes to handle disconnected graph components
+        for (size_t i = 0; i &lt; passes.size(); ++i) {
+            if (!visited[i]) {
+                visit(i);
+            }
+        }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The dependency analysis represents the mathematical core of the rendergraph system, transforming an abstract description of rendering operations into a concrete execution plan. The bidirectional dependency tracking enables efficient graph traversal algorithms and provides the information needed for automatic synchronization.</p>
+</div>
+<div class="paragraph">
+<p>The topological sort algorithm ensures that passes execute in dependency order while detecting impossible circular dependencies that would represent logical errors in the rendering pipeline design. This compile-time validation catches many common rendering pipeline bugs before they manifest as runtime GPU synchronization issues.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendergraph_automatic_synchronization_and_resource_allocation"><a class="anchor" href="#_rendergraph_automatic_synchronization_and_resource_allocation"></a>Rendergraph: Automatic Synchronization and Resource Allocation</h3>
+<div class="paragraph">
+<p>Next create the GPU synchronization objects needed for correct execution ordering and allocate the actual Vulkan resources for all registered resources.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">        // Automatic Synchronization Object Creation
+        // Generate semaphores for all dependencies identified during analysis
+        for (size_t i = 0; i &lt; passes.size(); ++i) {
+            for (auto dep : dependencies[i]) {
+                // Create a GPU semaphore for this dependency relationship
+                // The dependent pass will wait on this semaphore before executing
+                semaphores.emplace_back(device.createSemaphore({}));
+                semaphoreSignalWaitPairs.emplace_back(dep, i);    // (producer, consumer) pair
+            }
+        }
+
+        // Physical Resource Allocation and Creation
+        // Transform resource descriptions into actual GPU objects
+        for (auto&amp; [name, resource] : resources) {
+            // Configure image creation parameters based on resource description
+            vk::ImageCreateInfo imageInfo;
+            imageInfo.setImageType(vk::ImageType::e2D)                    // 2D texture/render target
+                     .setFormat(resource.format)                          // Pixel format from description
+                     .setExtent({resource.extent.width, resource.extent.height, 1})  // Dimensions
+                     .setMipLevels(1)                                      // Single mip level for simplicity
+                     .setArrayLayers(1)                                    // Single layer (not array texture)
+                     .setSamples(vk::SampleCountFlagBits::e1)              // No multisampling
+                     .setTiling(vk::ImageTiling::eOptimal)                 // GPU-optimal memory layout
+                     .setUsage(resource.usage)                             // Usage flags from registration
+                     .setSharingMode(vk::SharingMode::eExclusive)          // Single queue family access
+                     .setInitialLayout(vk::ImageLayout::eUndefined);       // Initial layout (will be transitioned)
+
+            resource.image = device.createImage(imageInfo);               // Create the GPU image object
+
+            // Allocate backing memory for the image
+            vk::MemoryRequirements memRequirements = resource.image.getMemoryRequirements();
+
+            vk::MemoryAllocateInfo allocInfo;
+            allocInfo.setAllocationSize(memRequirements.size)             // Required memory size
+                     .setMemoryTypeIndex(FindMemoryType(memRequirements.memoryTypeBits,
+                                                       vk::MemoryPropertyFlagBits::eDeviceLocal));  // GPU-local memory
+
+            resource.memory = device.allocateMemory(allocInfo);           // Allocate GPU memory
+            resource.image.bindMemory(*resource.memory, 0);               // Bind memory to image
+
+            // Create image view for shader access
+            vk::ImageViewCreateInfo viewInfo;
+            viewInfo.setImage(*resource.image)                            // Reference the created image
+                    .setViewType(vk::ImageViewType::e2D)                   // 2D view type
+                    .setFormat(resource.format)                            // Match image format
+                    .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1});  // Full image access
+
+            resource.view = device.createImageView(viewInfo);             // Create shader-accessible view
+        }
+    }
+
+    // Resource access interface for retrieving compiled resources
+    Resource* GetResource(const std::string&amp; name) {
+        auto it = resources.find(name);
+        return (it != resources.end()) ? &amp;it-&gt;second : nullptr;
+    }</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendergraph_execution_engine_and_command_recording"><a class="anchor" href="#_rendergraph_execution_engine_and_command_recording"></a>Rendergraph: Execution Engine and Command Recording</h3>
+<div class="paragraph">
+<p>Finally, implement the execution engine that coordinates pass execution with proper synchronization and resource transitions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Rendergraph execution engine - coordinates pass execution with automatic synchronization
+    // This method transforms the compiled rendergraph into actual GPU work
+    void Execute(vk::raii::CommandBuffer&amp; commandBuffer, vk::Queue queue) {
+        // Execution state management for dynamic synchronization
+        std::vector&lt;vk::CommandBuffer&gt; cmdBuffers;           // Command buffer storage
+        std::vector&lt;vk::Semaphore&gt; waitSemaphores;           // Synchronization dependencies for current pass
+        std::vector&lt;vk::PipelineStageFlags&gt; waitStages;      // Pipeline stages to wait on
+        std::vector&lt;vk::Semaphore&gt; signalSemaphores;         // Semaphores to signal after current pass
+
+        // Ordered Pass Execution with Automatic Dependency Management
+        // Execute each pass in the computed dependency-safe order
+        for (auto passIdx : executionOrder) {
+            const auto&amp; pass = passes[passIdx];
+
+            // Synchronization Setup - Collect Dependencies for Current Pass
+            // Determine what this pass must wait for before executing
+            waitSemaphores.clear();
+            waitStages.clear();
+
+            for (size_t i = 0; i &lt; semaphoreSignalWaitPairs.size(); ++i) {
+                if (semaphoreSignalWaitPairs[i].second == passIdx) {
+                    // This pass depends on the completion of another pass
+                    waitSemaphores.push_back(*semaphores[i]);                           // Wait for dependency completion
+                    waitStages.push_back(vk::PipelineStageFlagBits::eColorAttachmentOutput);  // Wait at output stage
+                }
+            }
+
+            // Collect semaphores that this pass will signal for dependent passes
+            signalSemaphores.clear();
+            for (size_t i = 0; i &lt; semaphoreSignalWaitPairs.size(); ++i) {
+                if (semaphoreSignalWaitPairs[i].first == passIdx) {
+                    // Other passes depend on this pass's completion
+                    signalSemaphores.push_back(*semaphores[i]);                         // Signal completion for dependents
+                }
+            }
+
+            // Command Buffer Preparation and Resource Layout Transitions
+            // Set up command recording and transition resources to appropriate layouts
+            commandBuffer.begin({});                                                   // Begin command recording
+
+            // Transition input resources to shader-readable layouts
+            for (const auto&amp; input : pass.inputs) {
+                auto&amp; resource = resources[input];
+
+                vk::ImageMemoryBarrier barrier;
+                barrier.setOldLayout(resource.initialLayout)                           // Current resource layout
+                       .setNewLayout(vk::ImageLayout::eShaderReadOnlyOptimal)          // Target layout for reading
+                       .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)                // No queue family transfer
+                       .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                       .setImage(*resource.image)                                      // Target image
+                       .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1})  // Full image range
+                       .setSrcAccessMask(vk::AccessFlagBits::eMemoryWrite)             // Previous write access
+                       .setDstAccessMask(vk::AccessFlagBits::eShaderRead);             // Required read access
+
+                // Insert pipeline barrier for safe layout transition
+                commandBuffer.pipelineBarrier(
+                    vk::PipelineStageFlagBits::eAllCommands,                           // Wait for all previous work
+                    vk::PipelineStageFlagBits::eFragmentShader,                        // Enable fragment shader access
+                    vk::DependencyFlagBits::eByRegion,                                 // Region-local dependency
+                    0, nullptr, 0, nullptr, 1, &amp;barrier                               // Image barrier only
+                );
+            }
+
+            // Transition output resources to render target layouts
+            for (const auto&amp; output : pass.outputs) {
+                auto&amp; resource = resources[output];
+
+                vk::ImageMemoryBarrier barrier;
+                barrier.setOldLayout(resource.initialLayout)                           // Current layout state
+                       .setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)         // Optimal for color output
+                       .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                       .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                       .setImage(*resource.image)
+                       .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1})
+                       .setSrcAccessMask(vk::AccessFlagBits::eMemoryRead)              // Previous read access
+                       .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite);   // Required write access
+
+                // Insert barrier for safe transition to writable state
+                commandBuffer.pipelineBarrier(
+                    vk::PipelineStageFlagBits::eAllCommands,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,                 // Enable color attachment writes
+                    vk::DependencyFlagBits::eByRegion,
+                    0, nullptr, 0, nullptr, 1, &amp;barrier
+                );
+            }
+
+            // Pass Execution - Execute the Actual Rendering Logic
+            // Call the user-provided rendering function with prepared command buffer
+            pass.executeFunc(commandBuffer);                                           // Execute pass-specific rendering
+
+            // Final Layout Transitions - Prepare Resources for Subsequent Use
+            // Transition output resources to their final required layouts
+            for (const auto&amp; output : pass.outputs) {
+                auto&amp; resource = resources[output];
+
+                vk::ImageMemoryBarrier barrier;
+                barrier.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)         // Current writable layout
+                       .setNewLayout(resource.finalLayout)                             // Required final layout
+                       .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                       .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                       .setImage(*resource.image)
+                       .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1})
+                       .setSrcAccessMask(vk::AccessFlagBits::eColorAttachmentWrite)    // Previous write operations
+                       .setDstAccessMask(vk::AccessFlagBits::eMemoryRead);             // Enable subsequent reads
+
+                // Insert final barrier for layout transition
+                commandBuffer.pipelineBarrier(
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput,                 // After color writes complete
+                    vk::PipelineStageFlagBits::eAllCommands,                           // Before any subsequent work
+                    vk::DependencyFlagBits::eByRegion,
+                    0, nullptr, 0, nullptr, 1, &amp;barrier
+                );
+            }
+
+            // Command Submission with Synchronization
+            // Submit command buffer with appropriate dependency and signaling semaphores
+            commandBuffer.end();                                                       // Finalize command recording
+
+            vk::SubmitInfo submitInfo;
+            submitInfo.setWaitSemaphoreCount(static_cast&lt;uint32_t&gt;(waitSemaphores.size()))      // Dependencies to wait for
+                      .setPWaitSemaphores(waitSemaphores.data())                                 // Dependency semaphores
+                      .setPWaitDstStageMask(waitStages.data())                                   // Pipeline stages to wait at
+                      .setCommandBufferCount(1)                                                  // Single command buffer
+                      .setPCommandBuffers(&amp;*commandBuffer)                                      // Command buffer to execute
+                      .setSignalSemaphoreCount(static_cast&lt;uint32_t&gt;(signalSemaphores.size()))  // Semaphores to signal
+                      .setPSignalSemaphores(signalSemaphores.data());                           // Signal semaphores
+
+            queue.submit(1, &amp;submitInfo, nullptr);                                              // Submit to GPU queue
+        }
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The execution engine represents the culmination of the rendergraph system, where all the analysis and preparation work pays off in coordinated GPU execution. The automatic synchronization ensures that passes execute in the correct order without manual barrier management, while the automatic layout transitions handle the complex state management that Vulkan requires for optimal performance.</p>
+</div>
+<div class="paragraph">
+<p>This execution model demonstrates the power of the rendergraph abstraction: complex multi-pass rendering with dozens of resources and dependencies gets reduced to a simple <code>Execute()</code> call, with all the synchronization and resource management handled automatically based on the declarative pass and resource descriptions.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">private:
+    uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
+        // Implementation to find suitable memory type
+        // ...
+        return 0; // Placeholder
+    }
+};</code></pre>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_synchronization"><a class="anchor" href="#_vulkan_synchronization"></a>Vulkan Synchronization</h4>
+<div class="paragraph">
+<p>Synchronization in Vulkan is one of the most complicated topics.  Vulkan provides several synchronization primitives to ensure correct execution order and memory visibility:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Semaphores</strong>: Used for synchronization between queue operations (GPU-GPU synchronization).</p>
+</li>
+<li>
+<p><strong>Fences</strong>: Used for synchronization between CPU and GPU.</p>
+</li>
+<li>
+<p><strong>Events</strong>: Used for fine-grained synchronization within a command buffer.</p>
+</li>
+<li>
+<p><strong>Barriers</strong>: Used to synchronize access to resources and perform layout transitions.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Proper synchronization is crucial in Vulkan because:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>No Implicit Synchronization</strong>: Unlike OpenGL, Vulkan doesn&#8217;t provide implicit synchronization between operations.</p>
+</li>
+<li>
+<p><strong>Parallel Execution</strong>: Modern GPUs execute commands in parallel, which can lead to race conditions without proper synchronization.</p>
+</li>
+<li>
+<p><strong>Memory Visibility</strong>: Changes made by one operation may not be visible to another without proper barriers.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The vulkan tutorial includes a more detailed discussion of synchronization, the proper uses of the primitives described above.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html" class="xref page">Synchronization</a></p>
+</li>
+<li>
+<p><a href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html" class="xref page">Frames In Flight</a></p>
+</li>
+<li>
+<p><a href="../../11_Compute_Shader.html" class="xref page">Compute Shader</a></p>
+</li>
+<li>
+<p><a href="../../17_Multithreading.html" class="xref page">Multithreading</a></p>
+</li>
+</ul>
+</div>
+<div class="sect4">
+<h5 id="_pipeline_barriers"><a class="anchor" href="#_pipeline_barriers"></a>Pipeline Barriers</h5>
+<div class="paragraph">
+<p>Pipeline barriers are one of the most important synchronization primitives in Vulkan. They ensure that operations before the barrier are complete before operations after the barrier begin, and they can also perform layout transitions for images. Let&#8217;s examine how to implement proper image layout transitions through a comprehensive breakdown of the process.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_image_layout_transition_barrier_configuration_and_resource_specification"><a class="anchor" href="#_image_layout_transition_barrier_configuration_and_resource_specification"></a>Image Layout Transition: Barrier Configuration and Resource Specification</h3>
+<div class="paragraph">
+<p>First, we establish the basic barrier structure and identify which image resource needs to transition between layouts.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Comprehensive image layout transition implementation
+// This function demonstrates proper synchronization and layout management in Vulkan
+void TransitionImageLayout(vk::raii::CommandBuffer&amp; commandBuffer,
+                          vk::Image image,
+                          vk::Format format,
+                          vk::ImageLayout oldLayout,
+                          vk::ImageLayout newLayout) {
+
+    // Configure the basic image memory barrier structure
+    // This barrier will coordinate memory access and layout transitions
+    vk::ImageMemoryBarrier barrier;
+    barrier.setOldLayout(oldLayout)                                        // Current image layout state
+           .setNewLayout(newLayout)                                        // Target layout after transition
+           .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)                // No queue family ownership transfer
+           .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)                // Same queue family throughout
+           .setImage(image)                                                // Target image for the transition
+           .setSubresourceRange({vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}); // Full color image range</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The image memory barrier serves as the fundamental mechanism for coordinating both memory access patterns and image layout transitions in Vulkan. Unlike OpenGL where these operations happen automatically, Vulkan requires explicit specification of when and how image layouts change. The queue family settings using VK_QUEUE_FAMILY_IGNORED indicate that we&#8217;re not transferring ownership between different queue families, which simplifies the synchronization requirements.</p>
+</div>
+<div class="paragraph">
+<p>The subresource range specification defines exactly which portions of the image are affected by this barrier. In this case, we&#8217;re transitioning the entire color aspect of the image across all mip levels and array layers, which is the most common scenario for basic texture operations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_image_layout_transition_pipeline_stage_and_access_mask_determination"><a class="anchor" href="#_image_layout_transition_pipeline_stage_and_access_mask_determination"></a>Image Layout Transition: Pipeline Stage and Access Mask Determination</h3>
+<div class="paragraph">
+<p>Next, we analyze the specific layout transition being performed and determine the appropriate pipeline stages and memory access patterns for optimal synchronization.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Initialize pipeline stage tracking for synchronization timing
+    // These stages define when operations must complete and when new operations can begin
+    vk::PipelineStageFlags sourceStage;      // When previous operations must finish
+    vk::PipelineStageFlags destinationStage; // When subsequent operations can start
+
+    // Configure synchronization for undefined-to-transfer layout transitions
+    // This pattern is common when preparing images for data uploads
+    if (oldLayout == vk::ImageLayout::eUndefined &amp;&amp;
+        newLayout == vk::ImageLayout::eTransferDstOptimal) {
+
+        // Configure memory access permissions for upload preparation
+        barrier.setSrcAccessMask(vk::AccessFlagBits::eNone)                // No previous access to synchronize
+               .setDstAccessMask(vk::AccessFlagBits::eTransferWrite);      // Enable transfer write operations
+
+        // Set pipeline stage synchronization points for upload workflow
+        sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;               // No previous work to wait for
+        destinationStage = vk::PipelineStageFlagBits::eTransfer;           // Transfer operations can proceed
+
+    // Configure synchronization for transfer-to-shader layout transitions
+    // This pattern prepares uploaded images for shader sampling
+    } else if (oldLayout == vk::ImageLayout::eTransferDstOptimal &amp;&amp;
+               newLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+
+        // Configure memory access transition from writing to reading
+        barrier.setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)       // Previous transfer writes must complete
+               .setDstAccessMask(vk::AccessFlagBits::eShaderRead);         // Enable shader read access
+
+        // Set pipeline stage synchronization for shader usage workflow
+        sourceStage = vk::PipelineStageFlagBits::eTransfer;                // Transfer operations must complete
+        destinationStage = vk::PipelineStageFlagBits::eFragmentShader;     // Fragment shaders can access
+
+    } else {
+        // Handle unsupported transition combinations
+        // Production code would include additional common transition patterns
+        throw std::invalid_argument("Unsupported layout transition!");
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The pipeline stage and access mask configuration represents the heart of Vulkan&#8217;s explicit synchronization model. By specifying exactly which operations must complete before the barrier (source stage) and which operations can begin after the barrier (destination stage), we create precise control over GPU execution timing without unnecessary stalls.</p>
+</div>
+<div class="paragraph">
+<p>The access mask patterns define the memory visibility requirements for each transition. The transition from "no access" to "transfer write" enables efficient image upload without waiting for non-existent previous operations. The transition from "transfer write" to "shader read" ensures that uploaded data is fully written and visible before shaders attempt to sample from the texture.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_image_layout_transition_barrier_execution_and_gpu_synchronization"><a class="anchor" href="#_image_layout_transition_barrier_execution_and_gpu_synchronization"></a>Image Layout Transition: Barrier Execution and GPU Synchronization</h3>
+<div class="paragraph">
+<p>Finally, we submit the configured barrier to the GPU command stream, ensuring that the layout transition and synchronization occur at the correct point in the rendering pipeline.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Execute the pipeline barrier with configured synchronization
+    // This commits the layout transition and memory synchronization to the command buffer
+    commandBuffer.pipelineBarrier(
+        sourceStage,                                                       // Wait for these operations to complete
+        destinationStage,                                                  // Before allowing these operations to begin
+        vk::DependencyFlagBits::eByRegion,                                 // Enable region-local optimizations
+        0, nullptr,                                                        // No memory barriers needed
+        0, nullptr,                                                        // No buffer barriers needed
+        1, &amp;barrier                                                        // Apply our image memory barrier
+    );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The pipeline barrier submission represents the culmination of our synchronization planning, where the configured barrier becomes part of the GPU&#8217;s command stream. The <code>ByRegion</code> dependency flag enables GPU optimizations for cases where different regions of the image can be processed independently, potentially improving performance on tile-based renderers and other advanced GPU architectures.</p>
+</div>
+<div class="paragraph">
+<p>The parameter structure clearly separates different types of barriers (memory, buffer, and image), allowing the GPU driver to apply the most efficient synchronization strategy for each resource type. In our case, we only need image barrier synchronization, so the other barrier arrays remain empty, avoiding unnecessary overhead.</p>
+</div>
+<div class="sect3">
+<h4 id="_semaphores_and_fences"><a class="anchor" href="#_semaphores_and_fences"></a>Semaphores and Fences</h4>
+<div class="paragraph">
+<p>Semaphores and fences are used for coarser-grained synchronization between different stages of the rendering pipeline and between CPU and GPU operations. Let&#8217;s examine how to properly coordinate frame rendering using these synchronization primitives through a comprehensive breakdown of the frame rendering process.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_frame_rendering_cpu_gpu_synchronization_and_frame_pacing"><a class="anchor" href="#_frame_rendering_cpu_gpu_synchronization_and_frame_pacing"></a>Frame Rendering: CPU-GPU Synchronization and Frame Pacing</h3>
+<div class="paragraph">
+<p>First, we ensure proper coordination between CPU frame preparation and GPU execution, preventing the CPU from getting too far ahead of the GPU and managing resource contention.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Comprehensive frame rendering with proper synchronization
+// This function demonstrates the complete cycle of frame rendering coordination
+void RenderFrame(vk::raii::Device&amp; device, vk::Queue graphicsQueue, vk::Queue presentQueue) {
+
+    // Synchronize with previous frame completion
+    // Prevent CPU from submitting work faster than GPU can process it
+    vk::Result result = device.waitForFences(1, &amp;*inFlightFence, VK_TRUE, UINT64_MAX);
+
+    // Reset fence for this frame's completion tracking
+    // Prepare the fence to signal when this frame's GPU work completes
+    device.resetFences(1, &amp;*inFlightFence);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The fence-based synchronization serves as the primary mechanism for CPU-GPU coordination in frame rendering. By waiting for the previous frame&#8217;s fence, we ensure that the GPU has completed processing the previous frame before beginning work on the current frame. This prevents the CPU from overwhelming the GPU with work and helps maintain stable frame pacing.</p>
+</div>
+<div class="paragraph">
+<p>The fence reset operation prepares the synchronization object for the current frame. Fences are binary signals that transition from unsignaled to signaled state when associated GPU work completes, so they must be explicitly reset before reuse. The timeout value UINT64_MAX effectively means "wait indefinitely," which is appropriate for frame synchronization where we must ensure completion.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_frame_rendering_swapchain_image_acquisition_and_resource_preparation"><a class="anchor" href="#_frame_rendering_swapchain_image_acquisition_and_resource_preparation"></a>Frame Rendering: Swapchain Image Acquisition and Resource Preparation</h3>
+<div class="paragraph">
+<p>Next, we acquire the next available swapchain image for rendering, coordinating with the presentation engine to ensure proper image availability.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Acquire next available image from the swapchain
+    // This operation coordinates with the presentation engine and display system
+    uint32_t imageIndex;
+    result = device.acquireNextImageKHR(*swapchain,                        // Target swapchain for acquisition
+                                       UINT64_MAX,                         // Wait indefinitely for image availability
+                                       *imageAvailableSemaphore,          // Semaphore signaled when image is available
+                                       nullptr,                           // No fence needed for this operation
+                                       &amp;imageIndex);                      // Receives index of acquired image
+
+    // Record command buffer for this frame's rendering
+    // Command buffer recording happens here with acquired image as render target
+    // ... (command recording implementation would go here)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The swapchain image acquisition represents a critical synchronization point between the rendering system and the presentation engine. The operation may block if no images are currently available (for example, if all swapchain images are being displayed or processed), making it essential for frame pacing. The semaphore signaled by this operation will be used later to ensure that rendering doesn&#8217;t begin until the acquired image is truly available for modification.</p>
+</div>
+<div class="paragraph">
+<p>The indefinite timeout ensures that acquisition will eventually succeed even under heavy load or when dealing with variable refresh rate displays. The acquired image index determines which swapchain image becomes the render target for this frame, affecting descriptor set bindings and render pass configuration in the subsequent command recording phase.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_frame_rendering_gpu_work_submission_and_inter_queue_synchronization"><a class="anchor" href="#_frame_rendering_gpu_work_submission_and_inter_queue_synchronization"></a>Frame Rendering: GPU Work Submission and Inter-Queue Synchronization</h3>
+<div class="paragraph">
+<p>Next, we submit the recorded rendering commands to the GPU with proper synchronization to coordinate between image acquisition, rendering, and presentation operations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Configure GPU work submission with comprehensive synchronization
+    // This submission coordinates image availability, rendering, and presentation readiness
+    vk::SubmitInfo submitInfo;
+    vk::PipelineStageFlags waitStages[] = {vk::PipelineStageFlagBits::eColorAttachmentOutput};
+
+    submitInfo.setWaitSemaphoreCount(1)                                    // Wait for one semaphore before execution
+              .setPWaitSemaphores(&amp;*imageAvailableSemaphore)               // Don't start until image is available
+              .setPWaitDstStageMask(waitStages)                            // Specifically wait before color output
+              .setCommandBufferCount(1)                                    // Submit one command buffer
+              .setPCommandBuffers(&amp;*commandBuffer)                        // The recorded rendering commands
+              .setSignalSemaphoreCount(1)                                  // Signal one semaphore when complete
+              .setPSignalSemaphores(&amp;*renderFinishedSemaphore);            // Notify when rendering is finished
+
+    // Submit work to GPU with fence-based completion tracking
+    // The fence allows CPU to know when this frame's GPU work has completed
+    graphicsQueue.submit(1, &amp;submitInfo, *inFlightFence);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The submission configuration demonstrates Vulkan&#8217;s explicit synchronization model for coordinating multiple GPU operations. The wait semaphore ensures that rendering commands don&#8217;t execute until the swapchain image is actually available for modification. The wait stage mask specifies exactly which part of the graphics pipeline must wait—in this case, color attachment output—allowing earlier pipeline stages to proceed if they don&#8217;t depend on the swapchain image.</p>
+</div>
+<div class="paragraph">
+<p>The signal semaphore communicates completion of rendering work to other operations that depend on the rendered result, such as presentation. The fence provides CPU-visible completion notification, enabling the frame pacing logic we saw in earlier. This three-way synchronization (wait semaphore, signal semaphore, and fence) creates a complete coordination system for the frame rendering pipeline.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_frame_rendering_presentation_coordination_and_display_integration"><a class="anchor" href="#_frame_rendering_presentation_coordination_and_display_integration"></a>Frame Rendering: Presentation Coordination and Display Integration</h3>
+<div class="paragraph">
+<p>Finally, we coordinate with the presentation engine to display the rendered frame, ensuring that presentation waits for rendering completion and handles the transition from rendering to display.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Present the rendered image to the display
+    // This operation transfers the completed frame from rendering to display system
+    vk::PresentInfoKHR presentInfo;
+    presentInfo.setWaitSemaphoreCount(1)                                   // Wait for rendering completion
+               .setPWaitSemaphores(&amp;*renderFinishedSemaphore)              // Don't present until rendering finishes
+               .setSwapchainCount(1)                                       // Present to one swapchain
+               .setPSwapchains(&amp;*swapchain)                                // Target swapchain for presentation
+               .setPImageIndices(&amp;imageIndex);                             // Present the image we rendered to
+
+    // Submit presentation request to the presentation engine
+    result = presentQueue.presentKHR(&amp;presentInfo);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The presentation phase completes the frame rendering cycle by coordinating the transfer from rendering to display. The wait semaphore ensures that presentation doesn&#8217;t begin until all rendering operations have completed, preventing the display of partially rendered frames. This synchronization is crucial because presentation and rendering may occur on different GPU queues with different timing characteristics.</p>
+</div>
+<div class="paragraph">
+<p>The presentation operation itself is asynchronous—it queues the presentation request and returns immediately, allowing the CPU to begin preparing the next frame. The presentation engine handles the actual coordination with the display hardware, including timing synchronization with refresh rates and managing the transition of the swapchain image from "rendering" to "displaying" to "available for reuse" states.</p>
+</div>
+<div class="sect3">
+<h4 id="_how_rendergraphs_help_with_synchronization"><a class="anchor" href="#_how_rendergraphs_help_with_synchronization"></a>How Rendergraphs Help with Synchronization</h4>
+<div class="paragraph">
+<p>Rendergraphs simplify synchronization by:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Automatic Dependency Tracking</strong>: The rendergraph knows which passes depend on which resources, so it can automatically insert the necessary synchronization primitives.</p>
+</li>
+<li>
+<p><strong>Optimal Barrier Placement</strong>: The rendergraph can analyze the entire rendering process and place barriers only where needed, reducing overhead.</p>
+</li>
+<li>
+<p><strong>Layout Transitions</strong>: The rendergraph can automatically handle image layout transitions based on how resources are used.</p>
+</li>
+<li>
+<p><strong>Resource Aliasing</strong>: The rendergraph can reuse memory for resources that aren&#8217;t used simultaneously, reducing memory usage.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dynamic_rendering_and_its_integration_with_rendergraphs"><a class="anchor" href="#_dynamic_rendering_and_its_integration_with_rendergraphs"></a>Dynamic Rendering and Its Integration with Rendergraphs</h4>
+<div class="paragraph">
+<p>Dynamic rendering is a modern Vulkan feature that simplifies the rendering process and works particularly well with rendergraphs. Before diving into implementation examples, let&#8217;s understand what dynamic rendering is and how it relates to our rendering pipeline architecture.</p>
+</div>
+<div class="sect4">
+<h5 id="_benefits_of_dynamic_rendering"><a class="anchor" href="#_benefits_of_dynamic_rendering"></a>Benefits of Dynamic Rendering</h5>
+<div class="paragraph">
+<p>Dynamic rendering offers several advantages over traditional render passes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Simplified API</strong>: No need to create and manage VkRenderPass and VkFramebuffer objects, reducing code complexity.</p>
+</li>
+<li>
+<p><strong>More Flexible Rendering</strong>: Easier to change render targets and attachment formats at runtime.</p>
+</li>
+<li>
+<p><strong>Improved Compatibility</strong>: Works better with modern rendering techniques that don&#8217;t fit well into the traditional render pass model.</p>
+</li>
+<li>
+<p><strong>Reduced State Management</strong>: Fewer objects to track and synchronize.</p>
+</li>
+<li>
+<p><strong>Easier Debugging</strong>: Simpler rendering code is easier to debug and maintain.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>With dynamic rendering, we specify all rendering states (render targets,
+load/store operations, etc.) directly within the vkCmdBeginRendering call,
+rather than setting it up ahead of time in a VkRenderPass object. This allows for more dynamic rendering workflows and simplifies the implementation of techniques like deferred rendering.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_dynamic_rendering_in_rendergraphs"><a class="anchor" href="#_dynamic_rendering_in_rendergraphs"></a>Dynamic Rendering in Rendergraphs</h5>
+<div class="paragraph">
+<p>When combined with rendergraphs, dynamic rendering becomes even more powerful. The rendergraph handles the resource dependencies and synchronization, while dynamic rendering simplifies the actual rendering process. This combination provides both flexibility and performance.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_example_implementing_a_deferred_renderer_with_a_rendergraph_and_dynamic_rendering"><a class="anchor" href="#_example_implementing_a_deferred_renderer_with_a_rendergraph_and_dynamic_rendering"></a>Example: Implementing a Deferred Renderer with a Rendergraph and Dynamic Rendering</h5>
+<div class="paragraph">
+<p>Deferred rendering represents a sophisticated rendering technique that separates geometry processing from lighting calculations, enabling efficient handling of complex lighting scenarios. Let&#8217;s examine how to implement this technique using rendergraphs and dynamic rendering through a comprehensive breakdown of the setup process.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deferred_renderer_setup_g_buffer_resource_configuration"><a class="anchor" href="#_deferred_renderer_setup_g_buffer_resource_configuration"></a>Deferred Renderer Setup: G-Buffer Resource Configuration</h3>
+<div class="paragraph">
+<p>First, we establish the G-Buffer (Geometry Buffer) resources that will store intermediate geometry information for the deferred lighting pass.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Comprehensive deferred renderer setup demonstrating rendergraph resource management
+// This implementation shows how to efficiently organize multi-pass rendering workflows
+void SetupDeferredRenderer(Rendergraph&amp; graph, uint32_t width, uint32_t height) {
+
+    // Configure position buffer for world-space vertex positions
+    // High precision format preserves positional accuracy for lighting calculations
+    graph.AddResource("GBuffer_Position", vk::Format::eR16G16B16A16Sfloat, {width, height},
+                     vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment,
+                     vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+    // Configure normal buffer for surface orientation data
+    // High precision normals enable accurate lighting and reflection calculations
+    graph.AddResource("GBuffer_Normal", vk::Format::eR16G16B16A16Sfloat, {width, height},
+                     vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment,
+                     vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+    // Configure albedo buffer for surface color information
+    // Standard 8-bit precision sufficient for color data with gamma encoding
+    graph.AddResource("GBuffer_Albedo", vk::Format::eR8G8B8A8Unorm, {width, height},
+                     vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eInputAttachment,
+                     vk::ImageLayout::eUndefined, vk::ImageLayout::eShaderReadOnlyOptimal);
+
+    // Configure depth buffer for occlusion and depth testing
+    // High precision depth enables accurate depth reconstruction in lighting pass
+    graph.AddResource("Depth", vk::Format::eD32Sfloat, {width, height},
+                     vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eInputAttachment,
+                     vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+    // Configure final color buffer for the completed lighting result
+    // Standard color format with transfer capability for presentation or post-processing
+    graph.AddResource("FinalColor", vk::Format::eR8G8B8A8Unorm, {width, height},
+                     vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferSrc,
+                     vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferSrcOptimal);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The G-Buffer resource configuration represents the foundation of deferred rendering, where each buffer stores specific geometric information that will be consumed during lighting calculations. The format choices reflect a balance between precision requirements and memory efficiency: positions and normals use 16-bit floating point for accurate lighting calculations, while albedo uses 8-bit integers for color data where gamma correction naturally reduces precision requirements.</p>
+</div>
+<div class="paragraph">
+<p>The usage flag combinations enable each resource to serve dual roles: first as render targets during the geometry pass, then as input textures during the lighting pass. This dual usage pattern is characteristic of deferred rendering workflows, where the same data moves through multiple pipeline stages with different access patterns.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deferred_renderer_setup_geometry_pass_configuration_and_multiple_render_target_setup"><a class="anchor" href="#_deferred_renderer_setup_geometry_pass_configuration_and_multiple_render_target_setup"></a>Deferred Renderer Setup: Geometry Pass Configuration and Multiple Render Target Setup</h3>
+<div class="paragraph">
+<p>Next, we configure the geometry pass that populates the G-Buffer with geometric information from the scene&#8217;s 3D models.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Configure geometry pass for G-Buffer population
+    // This pass renders all geometry and stores intermediate data for lighting calculations
+    graph.AddPass("GeometryPass",
+                 {},                                                        // No input dependencies - first pass in pipeline
+                 {"GBuffer_Position", "GBuffer_Normal", "GBuffer_Albedo", "Depth"},  // Outputs all G-Buffer components
+                 [&amp;](vk::raii::CommandBuffer&amp; cmd) {
+
+                     // Configure multiple render target attachments for G-Buffer output
+                     // Each attachment corresponds to a different geometric property
+                     std::array&lt;vk::RenderingAttachmentInfoKHR, 3&gt; colorAttachments;
+
+                     // Configure position attachment - world space vertex positions
+                     colorAttachments[0].setImageView(/* GBuffer_Position view */)    // Target position buffer
+                                       .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)  // Optimal for writes
+                                       .setLoadOp(vk::AttachmentLoadOp::eClear)       // Clear to known state
+                                       .setStoreOp(vk::AttachmentStoreOp::eStore);    // Preserve for lighting pass
+
+                     // Configure normal attachment - surface normals in world space
+                     colorAttachments[1].setImageView(/* GBuffer_Normal view */)      // Target normal buffer
+                                       .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                                       .setLoadOp(vk::AttachmentLoadOp::eClear)       // Clear to default normal
+                                       .setStoreOp(vk::AttachmentStoreOp::eStore);    // Preserve for lighting
+
+                     // Configure albedo attachment - surface color and material properties
+                     colorAttachments[2].setImageView(/* GBuffer_Albedo view */)      // Target albedo buffer
+                                       .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                                       .setLoadOp(vk::AttachmentLoadOp::eClear)       // Clear to default color
+                                       .setStoreOp(vk::AttachmentStoreOp::eStore);    // Preserve for lighting
+
+                     // Configure depth attachment for occlusion culling
+                     vk::RenderingAttachmentInfoKHR depthAttachment;
+                     depthAttachment.setImageView(/* Depth view */)                   // Target depth buffer
+                                   .setImageLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)  // Optimal for depth ops
+                                   .setLoadOp(vk::AttachmentLoadOp::eClear)           // Clear to far plane
+                                   .setStoreOp(vk::AttachmentStoreOp::eStore)         // Preserve for lighting pass
+                                   .setClearValue({1.0f, 0});                        // Clear to maximum depth
+
+                     // Assemble complete rendering configuration
+                     vk::RenderingInfoKHR renderingInfo;
+                     renderingInfo.setRenderArea({{0, 0}, {width, height}})          // Full screen rendering
+                                  .setLayerCount(1)                                   // Single layer rendering
+                                  .setColorAttachmentCount(colorAttachments.size())  // Number of G-Buffer targets
+                                  .setPColorAttachments(colorAttachments.data())     // G-Buffer attachment array
+                                  .setPDepthAttachment(&amp;depthAttachment);            // Depth testing configuration
+
+                     // Execute geometry rendering with dynamic rendering
+                     cmd.beginRendering(renderingInfo);                              // Begin G-Buffer population
+
+                     // Bind geometry pipeline and render all scene objects
+                     // Each draw call populates position, normal, and albedo for visible fragments
+                     // ... (geometry rendering implementation would go here)
+
+                     cmd.endRendering();                                             // Complete G-Buffer population
+                 });</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The geometry pass configuration demonstrates the power of deferred rendering&#8217;s separation of concerns, where geometric complexity is handled independently of lighting complexity. The multiple render target setup enables simultaneous output to all G-Buffer components in a single rendering pass, maximizing GPU efficiency compared to multiple separate passes.</p>
+</div>
+<div class="paragraph">
+<p>The dynamic rendering approach eliminates the need to pre-configure render pass objects, providing flexibility to adjust G-Buffer formats or attachment counts based on runtime requirements. This flexibility is particularly valuable for techniques like adaptive quality settings or optional G-Buffer components for different material types.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deferred_renderer_setup_lighting_pass_configuration_and_screen_space_processing"><a class="anchor" href="#_deferred_renderer_setup_lighting_pass_configuration_and_screen_space_processing"></a>Deferred Renderer Setup: Lighting Pass Configuration and Screen-Space Processing</h3>
+<div class="paragraph">
+<p>Now we should set up the lighting pass that reads from the G-Buffer and performs all lighting calculations in screen space, producing the final rendered image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Configure lighting pass for screen-space illumination calculations
+    // This pass reads G-Buffer data and computes final lighting for each pixel
+    graph.AddPass("LightingPass",
+                 {"GBuffer_Position", "GBuffer_Normal", "GBuffer_Albedo", "Depth"},  // Read all G-Buffer components
+                 {"FinalColor"},                                            // Output final lit result
+                 [&amp;](vk::raii::CommandBuffer&amp; cmd) {
+
+                     // Configure single color output for final lighting result
+                     vk::RenderingAttachmentInfoKHR colorAttachment;
+                     colorAttachment.setImageView(/* FinalColor view */)             // Target final color buffer
+                                   .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)  // Optimal for color writes
+                                   .setLoadOp(vk::AttachmentLoadOp::eClear)          // Clear to background color
+                                   .setStoreOp(vk::AttachmentStoreOp::eStore)        // Preserve final result
+                                   .setClearValue({0.0f, 0.0f, 0.0f, 1.0f});        // Clear to black background
+
+                     // Configure lighting pass rendering without depth testing
+                     // Depth testing unnecessary since we're processing each pixel exactly once
+                     vk::RenderingInfoKHR renderingInfo;
+                     renderingInfo.setRenderArea({{0, 0}, {width, height}})          // Full screen processing
+                                  .setLayerCount(1)                                   // Single layer output
+                                  .setColorAttachmentCount(1)                        // Single color output
+                                  .setPColorAttachments(&amp;colorAttachment);           // Final color attachment
+
+                     // Execute screen-space lighting calculations
+                     cmd.beginRendering(renderingInfo);                              // Begin lighting pass
+
+                     // Bind lighting pipeline and draw full-screen quad
+                     // Fragment shader reads G-Buffer textures and computes lighting for each pixel
+                     // All scene lights are processed in a single screen-space pass
+                     // ... (lighting calculation implementation would go here)
+
+                     cmd.endRendering();                                             // Complete lighting calculations
+                 });
+
+    // Compile the complete rendergraph for execution
+    // This analyzes dependencies and generates optimal execution plan
+    graph.Compile();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The lighting pass represents the core advantage of deferred rendering: decoupling lighting complexity from geometric complexity. By processing lighting in screen space, the cost becomes proportional to screen resolution rather than scene complexity, enabling efficient handling of scenes with many lights or complex lighting models.</p>
+</div>
+<div class="paragraph">
+<p>The single render target configuration reflects the unified nature of the lighting pass, where all lighting contributions are accumulated into the final color buffer. This approach enables advanced lighting techniques like physically-based rendering or global illumination algorithms that would be prohibitively expensive in forward rendering scenarios with complex geometry.</p>
+</div>
+<div class="sect3">
+<h4 id="_best_practices_for_rendergraphs_and_synchronization"><a class="anchor" href="#_best_practices_for_rendergraphs_and_synchronization"></a>Best Practices for Rendergraphs and Synchronization</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Minimize Synchronization</strong>: Use the rendergraph to minimize the number of synchronization points.</p>
+</li>
+<li>
+<p><strong>Batch Similar Operations</strong>: Group similar operations together to reduce state changes.</p>
+</li>
+<li>
+<p><strong>Use Appropriate Access Flags</strong>: Be specific about which access types you need to synchronize.</p>
+</li>
+<li>
+<p><strong>Avoid Redundant Barriers</strong>: Let the rendergraph eliminate redundant barriers.</p>
+</li>
+<li>
+<p><strong>Consider Memory Aliasing</strong>: Use the rendergraph&#8217;s memory aliasing capabilities to reduce memory usage.</p>
+</li>
+<li>
+<p><strong>Profile and Optimize</strong>: Use GPU profiling tools to identify synchronization bottlenecks.</p>
+</li>
+<li>
+<p><strong>Handle Platform Differences</strong>: Different GPUs may have different synchronization requirements.</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Forward declarations
+class RenderPass;
+class RenderTarget;
+
+// Render pass manager
+class RenderPassManager {
+private:
+    std::unordered_map&lt;std::string, std::unique_ptr&lt;RenderPass&gt;&gt; renderPasses;
+    std::vector&lt;RenderPass*&gt; sortedPasses;
+    bool dirty = true;
+
+public:
+    template&lt;typename T, typename... Args&gt;
+    T* AddRenderPass(const std::string&amp; name, Args&amp;&amp;... args) {
+        static_assert(std::is_base_of&lt;RenderPass, T&gt;::value, "T must derive from RenderPass");
+
+        auto it = renderPasses.find(name);
+        if (it != renderPasses.end()) {
+            return dynamic_cast&lt;T*&gt;(it-&gt;second.get());
+        }
+
+        auto pass = std::make_unique&lt;T&gt;(std::forward&lt;Args&gt;(args)...);
+        T* passPtr = pass.get();
+        renderPasses[name] = std::move(pass);
+        dirty = true;
+
+        return passPtr;
+    }
+
+    RenderPass* GetRenderPass(const std::string&amp; name) {
+        auto it = renderPasses.find(name);
+        if (it != renderPasses.end()) {
+            return it-&gt;second.get();
+        }
+        return nullptr;
+    }
+
+    void RemoveRenderPass(const std::string&amp; name) {
+        auto it = renderPasses.find(name);
+        if (it != renderPasses.end()) {
+            renderPasses.erase(it);
+            dirty = true;
+        }
+    }
+
+    void Execute(vk::raii::CommandBuffer&amp; commandBuffer) {
+        if (dirty) {
+            SortPasses();
+            dirty = false;
+        }
+
+        for (auto pass : sortedPasses) {
+            pass-&gt;Execute(commandBuffer);
+        }
+    }
+
+private:
+    void SortPasses() {
+        // Topologically sort render passes based on dependencies
+        sortedPasses.clear();
+
+        // Create a copy of render passes for sorting
+        std::unordered_map&lt;std::string, RenderPass*&gt; passMap;
+        for (const auto&amp; [name, pass] : renderPasses) {
+            passMap[name] = pass.get();
+        }
+
+        // Perform topological sort
+        std::unordered_set&lt;std::string&gt; visited;
+        std::unordered_set&lt;std::string&gt; visiting;
+
+        for (const auto&amp; [name, pass] : passMap) {
+            if (visited.find(name) == visited.end()) {
+                TopologicalSort(name, passMap, visited, visiting);
+            }
+        }
+    }
+
+    void TopologicalSort(const std::string&amp; name,
+                         const std::unordered_map&lt;std::string, RenderPass*&gt;&amp; passMap,
+                         std::unordered_set&lt;std::string&gt;&amp; visited,
+                         std::unordered_set&lt;std::string&gt;&amp; visiting) {
+        visiting.insert(name);
+
+        auto pass = passMap.at(name);
+        for (const auto&amp; dep : pass-&gt;GetDependencies()) {
+            if (visited.find(dep) == visited.end()) {
+                if (visiting.find(dep) != visiting.end()) {
+                    // Circular dependency detected
+                    throw std::runtime_error("Circular dependency detected in render passes");
+                }
+                TopologicalSort(dep, passMap, visited, visiting);
+            }
+        }
+
+        visiting.erase(name);
+        visited.insert(name);
+        sortedPasses.push_back(pass);
+    }
+};
+
+// Base render pass class
+class RenderPass {
+private:
+    std::string name;
+    std::vector&lt;std::string&gt; dependencies;
+    RenderTarget* target = nullptr;
+    bool enabled = true;
+
+public:
+    explicit RenderPass(const std::string&amp; passName) : name(passName) {}
+    virtual ~RenderPass() = default;
+
+    const std::string&amp; GetName() const { return name; }
+
+    void AddDependency(const std::string&amp; dependency) {
+        dependencies.push_back(dependency);
+    }
+
+    const std::vector&lt;std::string&gt;&amp; GetDependencies() const {
+        return dependencies;
+    }
+
+    void SetRenderTarget(RenderTarget* renderTarget) {
+        target = renderTarget;
+    }
+
+    RenderTarget* GetRenderTarget() const {
+        return target;
+    }
+
+    void SetEnabled(bool isEnabled) {
+        enabled = isEnabled;
+    }
+
+    bool IsEnabled() const {
+        return enabled;
+    }
+
+    virtual void Execute(vk::raii::CommandBuffer&amp; commandBuffer) {
+        if (!enabled) return;
+
+        BeginPass(commandBuffer);
+        Render(commandBuffer);
+        EndPass(commandBuffer);
+    }
+
+protected:
+    // With dynamic rendering, BeginPass typically calls vkCmdBeginRendering
+    // instead of vkCmdBeginRenderPass
+    virtual void BeginPass(vk::raii::CommandBuffer&amp; commandBuffer) = 0;
+    virtual void Render(vk::raii::CommandBuffer&amp; commandBuffer) = 0;
+    // With dynamic rendering, EndPass typically calls vkCmdEndRendering
+    // instead of vkCmdEndRenderPass
+    virtual void EndPass(vk::raii::CommandBuffer&amp; commandBuffer) = 0;
+};
+
+// Render target class
+class RenderTarget {
+private:
+    vk::raii::Image colorImage = nullptr;
+    vk::raii::DeviceMemory colorMemory = nullptr;
+    vk::raii::ImageView colorImageView = nullptr;
+
+    vk::raii::Image depthImage = nullptr;
+    vk::raii::DeviceMemory depthMemory = nullptr;
+    vk::raii::ImageView depthImageView = nullptr;
+
+    uint32_t width;
+    uint32_t height;
+
+public:
+    RenderTarget(uint32_t w, uint32_t h) : width(w), height(h) {
+        // Create color and depth images
+        CreateColorResources();
+        CreateDepthResources();
+
+        // Note: With dynamic rendering, we don't need to create VkRenderPass
+        // or VkFramebuffer objects. Instead, we just create the images and
+        // image views that will be used directly with vkCmdBeginRendering.
+    }
+
+    // No need for explicit destructor with RAII objects
+
+    vk::ImageView GetColorImageView() const { return *colorImageView; }
+    vk::ImageView GetDepthImageView() const { return *depthImageView; }
+
+    uint32_t GetWidth() const { return width; }
+    uint32_t GetHeight() const { return height; }
+
+private:
+    void CreateColorResources() {
+        // Implementation to create color image, memory, and view
+        // With dynamic rendering, we just need to create the image and image view
+        // that will be used with vkCmdBeginRendering
+        // ...
+    }
+
+    void CreateDepthResources() {
+        // Implementation to create depth image, memory, and view
+        // With dynamic rendering, we just need to create the image and image view
+        // that will be used with vkCmdBeginRendering
+        // ...
+    }
+
+    vk::raii::Device&amp; GetDevice() {
+        // Get device from somewhere (e.g., singleton or parameter)
+        // ...
+        static vk::raii::Device device = nullptr; // Placeholder
+        return device;
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_specific_render_passes"><a class="anchor" href="#_implementing_specific_render_passes"></a>Implementing Specific Render Passes</h3>
+<div class="paragraph">
+<p>Now let&#8217;s implement some specific render passes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Geometry pass for deferred rendering
+class GeometryPass : public RenderPass {
+private:
+    CullingSystem* cullingSystem;
+
+    // G-buffer textures
+    RenderTarget* gBuffer;
+
+public:
+    GeometryPass(const std::string&amp; name, CullingSystem* culling)
+        : RenderPass(name), cullingSystem(culling) {
+        // Create G-buffer render target
+        gBuffer = new RenderTarget(1920, 1080); // Example resolution
+        SetRenderTarget(gBuffer);
+    }
+
+    ~GeometryPass() override {
+        delete gBuffer;
+    }
+
+protected:
+    void BeginPass(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // Begin rendering with dynamic rendering
+        vk::RenderingInfoKHR renderingInfo;
+
+        // Set up color attachment
+        vk::RenderingAttachmentInfoKHR colorAttachment;
+        colorAttachment.setImageView(gBuffer-&gt;GetColorImageView())
+                       .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                       .setLoadOp(vk::AttachmentLoadOp::eClear)
+                       .setStoreOp(vk::AttachmentStoreOp::eStore)
+                       .setClearValue(vk::ClearColorValue(std::array&lt;float, 4&gt;{0.0f, 0.0f, 0.0f, 1.0f}));
+
+        // Set up depth attachment
+        vk::RenderingAttachmentInfoKHR depthAttachment;
+        depthAttachment.setImageView(gBuffer-&gt;GetDepthImageView())
+                       .setImageLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal)
+                       .setLoadOp(vk::AttachmentLoadOp::eClear)
+                       .setStoreOp(vk::AttachmentStoreOp::eStore)
+                       .setClearValue(vk::ClearDepthStencilValue(1.0f, 0));
+
+        // Configure rendering info
+        renderingInfo.setRenderArea(vk::Rect2D({0, 0}, {gBuffer-&gt;GetWidth(), gBuffer-&gt;GetHeight()}))
+                     .setLayerCount(1)
+                     .setColorAttachmentCount(1)
+                     .setPColorAttachments(&amp;colorAttachment)
+                     .setPDepthAttachment(&amp;depthAttachment);
+
+        // Begin dynamic rendering
+        commandBuffer.beginRendering(renderingInfo);
+    }
+
+    void Render(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // Get visible entities
+        const auto&amp; visibleEntities = cullingSystem-&gt;GetVisibleEntities();
+
+        // Render each entity to G-buffer
+        for (auto entity : visibleEntities) {
+            auto meshComponent = entity-&gt;GetComponent&lt;MeshComponent&gt;();
+            auto transformComponent = entity-&gt;GetComponent&lt;TransformComponent&gt;();
+
+            if (meshComponent &amp;&amp; transformComponent) {
+                // Bind pipeline for G-buffer rendering
+                // ...
+
+                // Set model matrix
+                // ...
+
+                // Draw mesh
+                // ...
+            }
+        }
+    }
+
+    void EndPass(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // End dynamic rendering
+        commandBuffer.endRendering();
+    }
+};
+
+// Lighting pass for deferred rendering
+class LightingPass : public RenderPass {
+private:
+    GeometryPass* geometryPass;
+    std::vector&lt;Light*&gt; lights;
+
+public:
+    LightingPass(const std::string&amp; name, GeometryPass* gPass)
+        : RenderPass(name), geometryPass(gPass) {
+        // Add dependency on geometry pass
+        AddDependency(gPass-&gt;GetName());
+    }
+
+    void AddLight(Light* light) {
+        lights.push_back(light);
+    }
+
+    void RemoveLight(Light* light) {
+        auto it = std::find(lights.begin(), lights.end(), light);
+        if (it != lights.end()) {
+            lights.erase(it);
+        }
+    }
+
+protected:
+    void BeginPass(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // Begin rendering with dynamic rendering
+        vk::RenderingInfoKHR renderingInfo;
+
+        // Set up color attachment for the lighting pass
+        vk::RenderingAttachmentInfoKHR colorAttachment;
+        colorAttachment.setImageView(GetRenderTarget()-&gt;GetColorImageView())
+                       .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                       .setLoadOp(vk::AttachmentLoadOp::eClear)
+                       .setStoreOp(vk::AttachmentStoreOp::eStore)
+                       .setClearValue(vk::ClearColorValue(std::array&lt;float, 4&gt;{0.0f, 0.0f, 0.0f, 1.0f}));
+
+        // Configure rendering info
+        renderingInfo.setRenderArea(vk::Rect2D({0, 0}, {GetRenderTarget()-&gt;GetWidth(), GetRenderTarget()-&gt;GetHeight()}))
+                     .setLayerCount(1)
+                     .setColorAttachmentCount(1)
+                     .setPColorAttachments(&amp;colorAttachment);
+
+        // Begin dynamic rendering
+        commandBuffer.beginRendering(renderingInfo);
+    }
+
+    void Render(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // Bind G-buffer textures from the geometry pass
+        auto gBuffer = geometryPass-&gt;GetRenderTarget();
+
+        // Set up descriptor sets for G-buffer textures
+        // With dynamic rendering, we access the G-buffer textures directly as shader resources
+        // rather than as subpass inputs
+
+        // Render full-screen quad with lighting shader
+        // ...
+
+        // For each light
+        for (auto light : lights) {
+            // Set light properties
+            // ...
+
+            // Draw light volume
+            // ...
+        }
+    }
+
+    void EndPass(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // End dynamic rendering
+        commandBuffer.endRendering();
+    }
+};
+
+// Post-process effect base class
+class PostProcessEffect {
+public:
+    virtual ~PostProcessEffect() = default;
+    virtual void Apply(vk::raii::CommandBuffer&amp; commandBuffer) = 0;
+};
+
+// Post-processing pass
+class PostProcessPass : public RenderPass {
+private:
+    LightingPass* lightingPass;
+    std::vector&lt;PostProcessEffect*&gt; effects;
+
+public:
+    PostProcessPass(const std::string&amp; name, LightingPass* lPass)
+        : RenderPass(name), lightingPass(lPass) {
+        // Add dependency on lighting pass
+        AddDependency(lPass-&gt;GetName());
+    }
+
+    void AddEffect(PostProcessEffect* effect) {
+        effects.push_back(effect);
+    }
+
+    void RemoveEffect(PostProcessEffect* effect) {
+        auto it = std::find(effects.begin(), effects.end(), effect);
+        if (it != effects.end()) {
+            effects.erase(it);
+        }
+    }
+
+protected:
+    void BeginPass(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // Begin rendering with dynamic rendering
+        vk::RenderingInfoKHR renderingInfo;
+
+        // Set up color attachment for the post-processing pass
+        vk::RenderingAttachmentInfoKHR colorAttachment;
+        colorAttachment.setImageView(GetRenderTarget()-&gt;GetColorImageView())
+                       .setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
+                       .setLoadOp(vk::AttachmentLoadOp::eClear)
+                       .setStoreOp(vk::AttachmentStoreOp::eStore)
+                       .setClearValue(vk::ClearColorValue(std::array&lt;float, 4&gt;{0.0f, 0.0f, 0.0f, 1.0f}));
+
+        // Configure rendering info
+        renderingInfo.setRenderArea(vk::Rect2D({0, 0}, {GetRenderTarget()-&gt;GetWidth(), GetRenderTarget()-&gt;GetHeight()}))
+                     .setLayerCount(1)
+                     .setColorAttachmentCount(1)
+                     .setPColorAttachments(&amp;colorAttachment);
+
+        // Begin dynamic rendering
+        commandBuffer.beginRendering(renderingInfo);
+    }
+
+    void Render(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // With dynamic rendering, each effect can set up its own rendering state
+        // and access input textures directly as shader resources
+
+        // Apply each post-process effect
+        for (auto effect : effects) {
+            effect-&gt;Apply(commandBuffer);
+        }
+    }
+
+    void EndPass(vk::raii::CommandBuffer&amp; commandBuffer) override {
+        // End dynamic rendering
+        commandBuffer.endRendering();
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_command_generation_and_execution"><a class="anchor" href="#_command_generation_and_execution"></a>Command Generation and Execution</h3>
+<div class="paragraph">
+<p>Once we have our render passes set up, we need to generate and execute commands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class Renderer {
+private:
+    vk::raii::Device device = nullptr;
+    vk::Queue graphicsQueue;
+    vk::raii::CommandPool commandPool = nullptr;
+
+    RenderPassManager renderPassManager;
+    CullingSystem cullingSystem;
+
+    // Current frame resources
+    vk::raii::CommandBuffer commandBuffer = nullptr;
+    vk::raii::Fence fence = nullptr;
+    vk::raii::Semaphore imageAvailableSemaphore = nullptr;
+    vk::raii::Semaphore renderFinishedSemaphore = nullptr;
+
+public:
+    Renderer(vk::raii::Device&amp; dev, vk::Queue queue) : device(dev), graphicsQueue(queue) {
+        // Create command pool
+        // ...
+
+        // Create synchronization objects
+        // ...
+
+        // Set up render passes
+        SetupRenderPasses();
+    }
+
+    // No need for explicit destructor with RAII objects
+
+    void SetCamera(Camera* camera) {
+        cullingSystem.SetCamera(camera);
+    }
+
+    void Render(const std::vector&lt;Entity*&gt;&amp; entities) {
+        // Wait for previous frame to finish
+        fence.wait(UINT64_MAX);
+        fence.reset();
+
+        // Reset command buffer
+        commandBuffer.reset();
+
+        // Perform culling
+        cullingSystem.CullScene(entities);
+
+        // Record commands
+        vk::CommandBufferBeginInfo beginInfo;
+        commandBuffer.begin(beginInfo);
+
+        // Execute render passes
+        renderPassManager.Execute(commandBuffer);
+
+        commandBuffer.end();
+
+        // Submit command buffer
+        vk::SubmitInfo submitInfo;
+
+        // With vk::raii, we need to dereference the command buffer
+        vk::CommandBuffer rawCommandBuffer = *commandBuffer;
+        submitInfo.setCommandBufferCount(1);
+        submitInfo.setPCommandBuffers(&amp;rawCommandBuffer);
+
+        // Set up wait and signal semaphores
+        vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+
+        // With vk::raii, we need to dereference the semaphores
+        vk::Semaphore rawImageAvailableSemaphore = *imageAvailableSemaphore;
+        vk::Semaphore rawRenderFinishedSemaphore = *renderFinishedSemaphore;
+
+        submitInfo.setWaitSemaphoreCount(1);
+        submitInfo.setPWaitSemaphores(&amp;rawImageAvailableSemaphore);
+        submitInfo.setPWaitDstStageMask(waitStages);
+        submitInfo.setSignalSemaphoreCount(1);
+        submitInfo.setPSignalSemaphores(&amp;rawRenderFinishedSemaphore);
+
+        // With vk::raii, we need to dereference the fence
+        vk::Fence rawFence = *fence;
+        graphicsQueue.submit(1, &amp;submitInfo, rawFence);
+    }
+
+private:
+    void SetupRenderPasses() {
+        // Create geometry pass
+        auto geometryPass = renderPassManager.AddRenderPass&lt;GeometryPass&gt;("GeometryPass", &amp;cullingSystem);
+
+        // Create lighting pass
+        auto lightingPass = renderPassManager.AddRenderPass&lt;LightingPass&gt;("LightingPass", geometryPass);
+
+        // Create post-process pass
+        auto postProcessPass = renderPassManager.AddRenderPass&lt;PostProcessPass&gt;("PostProcessPass", lightingPass);
+
+        // Add post-process effects
+        // ...
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_rendering_techniques"><a class="anchor" href="#_advanced_rendering_techniques"></a>Advanced Rendering Techniques</h3>
+<div class="paragraph">
+<p>For detailed information about advanced rendering techniques such as Deferred Rendering, Forward+ Rendering, and Physically Based Rendering (PBR), please refer to the <a href="../Appendix/appendix.html#advanced-rendering-techniques" class="xref page">Advanced Rendering Techniques</a> section in the Appendix. This section includes references to valuable resources for further reading.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h3>
+<div class="paragraph">
+<p>A well-designed rendering pipeline is essential for creating a flexible and efficient rendering engine. By implementing the techniques described in this section, you can create a system that:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Efficiently culls invisible objects</p>
+</li>
+<li>
+<p>Organizes rendering into passes with clear dependencies</p>
+</li>
+<li>
+<p>Supports advanced rendering techniques like deferred rendering and PBR</p>
+</li>
+<li>
+<p>Can be easily extended with new effects and features</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll explore event systems, which provide a flexible way for different parts of your engine to communicate with each other.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_resource_management.html" class="xref page">Previous: Resource Management</a> | <a href="06_event_systems.html" class="xref page">Next: Event Systems</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

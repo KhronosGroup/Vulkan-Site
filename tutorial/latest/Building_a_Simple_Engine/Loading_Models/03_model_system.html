@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Loading Models: Implementing the Model Loading System :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Loading Models</li>
+    <li><a href="03_model_system.html">Model system</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Loading Models: Implementing the Model Loading System</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_implementing_the_model_loading_system">1. Implementing the Model Loading System</a>
+<ul class="sectlevel2">
+<li><a href="#_building_on_gltf_knowledge">1.1. Building on glTF Knowledge</a></li>
+<li><a href="#_setting_up_our_engines_model_system">1.2. Setting Up Our Engine&#8217;s Model System</a></li>
+<li><a href="#_defining_data_structures">1.3. Defining Data Structures</a></li>
+<li><a href="#_why_we_need_a_scene_graph">1.4. Why We Need a Scene Graph</a></li>
+<li><a href="#_architectural_decisions">1.5. Architectural Decisions</a></li>
+<li><a href="#_how_developers_would_use_the_model_system">1.6. How Developers Would Use the Model System</a></li>
+<li><a href="#_back_to_our_tutorial">1.7. Back to our tutorial</a></li>
+<li><a href="#_implementing_a_scene_graph">1.8. Implementing a Scene Graph</a></li>
+<li><a href="#_animation_structures">1.9. Animation Structures</a></li>
+<li><a href="#_the_model_class">1.10. The Model Class</a></li>
+<li><a href="#_next_steps_loading_gltf_files">1.11. Next Steps: Loading glTF Files</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_implementing_the_model_loading_system"><a class="anchor" href="#_implementing_the_model_loading_system"></a>1. Implementing the Model Loading System</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_building_on_gltf_knowledge"><a class="anchor" href="#_building_on_gltf_knowledge"></a>1.1. Building on glTF Knowledge</h3>
+<div class="paragraph">
+<p>As we learned in the <a href="../../15_GLTF_KTX2_Migration.html" class="xref page">glTF and KTX2 Migration chapter</a>, glTF is a modern 3D format that supports a wide range of features including PBR materials, animations, and scene hierarchies. In this chapter, we&#8217;ll leverage these capabilities to build a more robust engine.</p>
+</div>
+<div class="paragraph">
+<p>While the previous chapter covered the basics of loading glTF models, here we&#8217;ll focus on organizing the loaded data into a proper scene graph and implementing animation support. This approach will allow us to create more complex and dynamic scenes.</p>
+</div>
+<div class="paragraph">
+<p>In this chapter, we&#8217;ll not only implement the technical aspects of model loading but also discuss the architectural decisions behind our design and how developers can effectively use this system in their applications. Understanding these concepts is crucial for building a maintainable and extensible engine.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_setting_up_our_engines_model_system"><a class="anchor" href="#_setting_up_our_engines_model_system"></a>1.2. Setting Up Our Engine&#8217;s Model System</h3>
+<div class="paragraph">
+<p>We&#8217;ll start with the same tinygltf library setup as in the previous chapter:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Include tinygltf for model loading
+#include &lt;tiny_gltf.h&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, instead of just loading the model data directly into vertex and index buffers, we&#8217;ll create a more structured approach with proper data classes to represent our scene.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_defining_data_structures"><a class="anchor" href="#_defining_data_structures"></a>1.3. Defining Data Structures</h3>
+<div class="paragraph">
+<p>To handle the rich data provided by glTF, we need to define several data structures:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Vertex structure with position, normal, color, and texture coordinates
+struct Vertex {
+    glm::vec3 pos;
+    glm::vec3 normal;
+    glm::vec3 color;
+    glm::vec2 texCoord;
+
+    // Binding and attribute descriptions for Vulkan
+    static vk::VertexInputBindingDescription getBindingDescription() {
+        return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
+    }
+
+    static std::array&lt;vk::VertexInputAttributeDescription, 4&gt; getAttributeDescriptions() {
+        return {
+            vk::VertexInputAttributeDescription( 0, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, pos) ),
+            vk::VertexInputAttributeDescription( 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, normal) ),
+            vk::VertexInputAttributeDescription( 2, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color) ),
+            vk::VertexInputAttributeDescription( 3, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord) )
+        };
+    }
+
+    // Equality operator and hash function for vertex deduplication
+    bool operator==(const Vertex&amp; other) const {
+        return pos == other.pos &amp;&amp; normal == other.normal &amp;&amp; color == other.color &amp;&amp; texCoord == other.texCoord;
+    }
+};
+
+// Structure for PBR material properties
+struct Material {
+    glm::vec4 baseColorFactor = glm::vec4(1.0f);
+    float metallicFactor = 1.0f;
+    float roughnessFactor = 1.0f;
+    glm::vec3 emissiveFactor = glm::vec3(0.0f);
+
+    int baseColorTextureIndex = -1;
+    int metallicRoughnessTextureIndex = -1;
+    int normalTextureIndex = -1;
+    int occlusionTextureIndex = -1;
+    int emissiveTextureIndex = -1;
+};
+
+// Structure for a mesh with vertices, indices, and material
+struct Mesh {
+    std::vector&lt;Vertex&gt; vertices;
+    std::vector&lt;uint32_t&gt; indices;
+    int materialIndex = -1;
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_we_need_a_scene_graph"><a class="anchor" href="#_why_we_need_a_scene_graph"></a>1.4. Why We Need a Scene Graph</h3>
+<div class="paragraph">
+<p>A scene graph is a tree-like data structure that organizes the spatial representation of a graphical scene. While it might seem tempting to use a simple collection or map to store 3D objects, scene graphs offer several critical advantages:</p>
+</div>
+<div class="sect3">
+<h4 id="_benefits_of_using_a_scene_graph"><a class="anchor" href="#_benefits_of_using_a_scene_graph"></a>1.4.1. Benefits of Using a Scene Graph</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Hierarchical Transformations</strong>: Scene graphs allow child objects to inherit transformations from their parents. When you move, rotate, or scale a parent node, all its children are automatically transformed relative to the parent. This is essential for complex models like characters where moving the torso should also move the attached limbs.</p>
+</li>
+<li>
+<p><strong>Spatial Organization</strong>: Scene graphs organize objects based on their spatial relationships, making it easier to perform operations like culling, collision detection, and level-of-detail management.</p>
+</li>
+<li>
+<p><strong>Animation Support</strong>: Hierarchical structures are crucial for skeletal animations, where movements propagate through a chain of bones.</p>
+</li>
+<li>
+<p><strong>Scene Management</strong>: Scene graphs facilitate operations like saving/loading scenes, instancing (reusing the same model in different locations), and dynamic scene modifications.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_scene_graphs_vs_simple_collections"><a class="anchor" href="#_scene_graphs_vs_simple_collections"></a>1.4.2. Scene Graphs vs. Simple Collections</h4>
+<div class="paragraph">
+<p>Unlike a simple map or array of objects, a scene graph:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Maintains parent-child relationships between objects</p>
+</li>
+<li>
+<p>Automatically propagates transformations down the hierarchy</p>
+</li>
+<li>
+<p>Provides a natural structure for traversal algorithms (rendering, picking, collision)</p>
+</li>
+<li>
+<p>Supports local-to-global coordinate transformations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For example, with a flat collection of objects, if you wanted to move a character and all its equipment, you&#8217;d need to update each piece individually. With a scene graph, you simply move the character node, and all attached equipment moves automatically.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_scene_graphs_vs_spatial_partitioning_systems_game_maps"><a class="anchor" href="#_scene_graphs_vs_spatial_partitioning_systems_game_maps"></a>1.4.3. Scene Graphs vs. Spatial Partitioning Systems (Game Maps)</h4>
+<div class="paragraph">
+<p>It&#8217;s important to distinguish between scene graphs and spatial partitioning systems (often referred to as "game maps" in engine development):</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Scene Graphs</strong> focus on hierarchical relationships and transformations between objects.</p>
+</li>
+<li>
+<p><strong>Spatial Partitioning Systems</strong> focus on efficiently organizing objects in space for collision detection, visibility determination, and physics calculations.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>While scene graphs organize objects based on logical relationships (like a character and its equipment), spatial partitioning systems organize objects based on their physical location in the game world.</p>
+</div>
+<div class="sect4">
+<h5 id="_common_spatial_partitioning_systems"><a class="anchor" href="#_common_spatial_partitioning_systems"></a>1.4.3.1. Common Spatial Partitioning Systems</h5>
+<div class="paragraph">
+<p>Several spatial partitioning techniques are used in game development:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Octrees</strong>: Divide 3D space into eight equal octants recursively. Used for large open worlds where objects are distributed unevenly. Octrees adapt to object density, with more subdivisions in crowded areas.</p>
+</li>
+<li>
+<p><strong>Binary Space Partitioning (BSP)</strong>: Recursively divides space using planes. Particularly efficient for indoor environments and was popularized by early first-person shooters like Doom and Quake.</p>
+</li>
+<li>
+<p><strong>Quadtrees</strong>: The 2D equivalent of octrees, dividing space into four quadrants recursively. Commonly used for 2D games or for terrain in 3D games.</p>
+</li>
+<li>
+<p><strong>Axis-Aligned Bounding Boxes (AABB) Trees</strong>: Organize objects based on their bounding boxes, creating a hierarchy that allows for efficient collision checks.</p>
+</li>
+<li>
+<p><strong>Portal Systems</strong>: Divide the world into "rooms" connected by "portals." This approach is particularly effective for indoor environments with distinct areas.</p>
+</li>
+<li>
+<p><strong>Spatial Hashing</strong>: Maps 3D positions to a hash table, allowing for constant-time lookups of nearby objects. Useful for particle systems and other scenarios with many similar-sized objects.</p>
+</li>
+<li>
+<p><strong>Bounding Volume Hierarchies (BVH)</strong>: Create a tree of nested bounding volumes, allowing for efficient ray casting and collision detection.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_spatial_partitioning_in_popular_engines"><a class="anchor" href="#_spatial_partitioning_in_popular_engines"></a>1.4.3.2. Spatial Partitioning in Popular Engines</h5>
+<div class="paragraph">
+<p>Different game engines use different spatial partitioning systems, often combining multiple approaches:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Unreal Engine</strong>: Uses a combination of octrees for the overall world and BSP for detailed indoor environments. Also uses a custom system called "Unreal Visibility Determination" that combines portals and potentially visible sets.</p>
+</li>
+<li>
+<p><strong>Unity</strong>: Implements a quadtree/octree hybrid system for its physics and rendering. For navigation, it uses a navigation mesh system.</p>
+</li>
+<li>
+<p><strong>CryEngine/CRYENGINE</strong>: Uses octrees for outdoor environments and portal systems for indoor areas.</p>
+</li>
+<li>
+<p><strong>Godot</strong>: Employs BVH trees for its physics engine and octrees for rendering.</p>
+</li>
+<li>
+<p><strong>Source Engine (Valve)</strong>: Famous for its Binary Space Partitioning (BSP) combined with a portal system called "Potentially Visible Set" (PVS).</p>
+</li>
+<li>
+<p><strong>id Tech (id Software)</strong>: Early versions (Doom, Quake) pioneered BSP usage. Later versions use combinations of BSP, octrees, and portal systems.</p>
+</li>
+<li>
+<p><strong>Frostbite (EA)</strong>: Uses a hierarchical grid system combined with octrees for its large-scale destructible environments.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In practice, many modern engines use hybrid approaches, selecting the appropriate partitioning system based on the specific needs of different parts of the game world.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_architectural_decisions"><a class="anchor" href="#_architectural_decisions"></a>1.5. Architectural Decisions</h3>
+<div class="paragraph">
+<p>When designing our model system, we made several key architectural decisions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Node-Based Structure</strong>: We use a node-based approach where each node can have a mesh, transformation, and children. This provides flexibility for complex scene hierarchies.</p>
+</li>
+<li>
+<p><strong>Separation of Concerns</strong>: We separate geometric data (vertices, indices) from material properties and transformations, allowing for more efficient memory use and easier updates.</p>
+</li>
+<li>
+<p><strong>Animation-Ready</strong>: Our design includes dedicated structures for animations, supporting keyframe interpolation and different animation channels (translation, rotation, scale).</p>
+</li>
+<li>
+<p><strong>Memory Management</strong>: We use a centralized ownership model where the Model class owns all nodes, simplifying cleanup and preventing memory leaks.</p>
+</li>
+<li>
+<p><strong>Efficient Traversal</strong>: We maintain both a hierarchical structure (<code>nodes</code>) and a flat list (<code>linearNodes</code>) to support different traversal patterns efficiently.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_developers_would_use_the_model_system"><a class="anchor" href="#_how_developers_would_use_the_model_system"></a>1.6. How Developers Would Use the Model System</h3>
+<div class="paragraph">
+<p>Here&#8217;s how a developer would typically use this model system in their application:</p>
+</div>
+<div class="sect3">
+<h4 id="_loading_and_initializing_models"><a class="anchor" href="#_loading_and_initializing_models"></a>1.6.1. Loading and Initializing Models</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create and load a model
+Model* characterModel = new Model();
+loadFromFile(characterModel, "character.gltf");
+
+// Find specific nodes in the model
+Node* headNode = characterModel-&gt;findNode("Head");
+Node* weaponAttachPoint = characterModel-&gt;findNode("RightHand");
+
+// Attach additional objects to the model
+Model* weaponModel = new Model();
+loadFromFile(weaponModel, "weapon.gltf");
+weaponAttachPoint-&gt;children.push_back(weaponModel-&gt;nodes[0]);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_updating_and_animating_models"><a class="anchor" href="#_updating_and_animating_models"></a>1.6.2. Updating and Animating Models</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Play an animation
+float deltaTime = 0.016f; // 16ms or ~60 FPS NB: Keep this relative to frame
+instead of a constant in actual code as some systems are faster resulting in
+faster animation on a constant that isn't tied to the frame time.
+characterModel-&gt;updateAnimation(0, deltaTime); // Play the first animation
+
+// Manually transform nodes
+headNode-&gt;rotation = glm::rotate(headNode-&gt;rotation, glm::radians(15.0f), glm::vec3(0, 1, 0)); // Look to the side</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_rendering_models"><a class="anchor" href="#_rendering_models"></a>1.6.3. Rendering Models</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void renderModel(Model* model, VkCommandBuffer commandBuffer) {
+    // Traverse all nodes in the model
+    for (auto&amp; node : model-&gt;linearNodes) {
+        if (node-&gt;mesh.indices.size() &gt; 0) {
+            // Get the global transformation matrix
+            glm::mat4 nodeMatrix = node-&gt;getGlobalMatrix();
+
+            // Update uniform buffer with the node's transformation
+            updateUniformBuffer(nodeMatrix);
+
+            // Bind the appropriate material
+            if (node-&gt;mesh.materialIndex &gt;= 0) {
+                bindMaterial(model-&gt;materials[node-&gt;mesh.materialIndex]);
+            }
+
+            // Draw the mesh
+            vkCmdDrawIndexed(commandBuffer,
+                static_cast&lt;uint32_t&gt;(node-&gt;mesh.indices.size()),
+                1, 0, 0, 0);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_back_to_our_tutorial"><a class="anchor" href="#_back_to_our_tutorial"></a>1.7. Back to our tutorial</h3>
+<div class="paragraph">
+<p>Now that you&#8217;ve seen how the model system API is used from a hypothetical
+developer&#8217;s perspective, it&#8217;s time to implement this functionality.
+In the following sections, we&#8217;ll guide you through implementing the scene
+graph, animation system, and model class that will power the engine.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_a_scene_graph"><a class="anchor" href="#_implementing_a_scene_graph"></a>1.8. Implementing a Scene Graph</h3>
+<div class="paragraph">
+<p>Now let&#8217;s look at the implementation of our scene graph structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure for a node in the scene graph
+struct Node {
+    Node* parent = nullptr;
+    std::vector&lt;Node*&gt; children;
+    Mesh mesh;
+    glm::mat4 matrix = glm::mat4(1.0f);
+
+    // For animation
+    glm::vec3 translation = glm::vec3(0.0f);
+    glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    glm::vec3 scale = glm::vec3(1.0f);
+
+    glm::mat4 getLocalMatrix() {
+        return glm::translate(glm::mat4(1.0f), translation) *
+               glm::toMat4(rotation) *
+               glm::scale(glm::mat4(1.0f), scale) *
+               matrix;
+    }
+
+    glm::mat4 getGlobalMatrix() {
+        glm::mat4 m = getLocalMatrix();
+        Node* p = parent;
+        while (p) {
+            m = p-&gt;getLocalMatrix() * m;
+            p = p-&gt;parent;
+        }
+        return m;
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_animation_structures"><a class="anchor" href="#_animation_structures"></a>1.9. Animation Structures</h3>
+<div class="paragraph">
+<p>To support animations, we need additional structures:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure for animation keyframes
+struct AnimationChannel {
+    enum PathType { TRANSLATION, ROTATION, SCALE };
+    PathType path;
+    Node* node = nullptr;
+    uint32_t samplerIndex;
+};
+
+// Structure for animation interpolation
+struct AnimationSampler {
+    enum InterpolationType { LINEAR, STEP, CUBICSPLINE };
+    InterpolationType interpolation;
+    std::vector&lt;float&gt; inputs;  // Key frame timestamps
+    std::vector&lt;glm::vec4&gt; outputsVec4;  // Key frame values (for rotations)
+    std::vector&lt;glm::vec3&gt; outputsVec3;  // Key frame values (for translations and scales)
+};
+
+// Structure for animation
+struct Animation {
+    std::string name;
+    std::vector&lt;AnimationSampler&gt; samplers;
+    std::vector&lt;AnimationChannel&gt; channels;
+    float start = std::numeric_limits&lt;float&gt;::max();
+    float end = std::numeric_limits&lt;float&gt;::min();
+    float currentTime = 0.0f;
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_model_class"><a class="anchor" href="#_the_model_class"></a>1.10. The Model Class</h3>
+<div class="paragraph">
+<p>Now we can define a Model class that brings everything together:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure for a model with nodes, meshes, materials, textures, and animations
+struct Model {
+    std::vector&lt;Node*&gt; nodes;
+    std::vector&lt;Node*&gt; linearNodes;
+    std::vector&lt;Material&gt; materials;
+    std::vector&lt;Animation&gt; animations;
+
+    ~Model() {
+        for (auto node : linearNodes) {
+            delete node;
+        }
+    }
+
+    Node* findNode(const std::string&amp; name) {
+        auto nodeIt = std::ranges::find_if(linearNodes, [&amp;name](auto const&amp; node) {
+            return node-&gt;name == name;
+        });
+        return (nodeIt != linearNodes.end()) ? *nodeIt : nullptr;
+    }
+
+    void updateAnimation(uint32_t index, float deltaTime) {
+        assert(!animations.empty() &amp;&amp; index &lt; animations.size());
+
+
+
+        Animation&amp; animation = animations[index];
+        animation.currentTime += deltaTime;
+        if (animation.currentTime &gt; animation.end) {
+            animation.currentTime = animation.start;
+        }
+
+        for (auto&amp; channel : animation.channels) {
+            AnimationSampler&amp; sampler = animation.samplers[channel.samplerIndex];
+
+            // Find the current key frame using binary search
+            auto keyFrameIt = std::ranges::lower_bound(sampler.inputs, animation.currentTime);
+            if (keyFrameIt != sampler.inputs.end() &amp;&amp; keyFrameIt != sampler.inputs.begin()) {
+                size_t i = std::distance(sampler.inputs.begin(), keyFrameIt) - 1;
+                float t = (animation.currentTime - sampler.inputs[i]) / (sampler.inputs[i + 1] - sampler.inputs[i]);
+
+                    switch (channel.path) {
+                        case AnimationChannel::TRANSLATION: {
+                            glm::vec3 start = sampler.outputsVec3[i];
+                            glm::vec3 end = sampler.outputsVec3[i + 1];
+                            channel.node-&gt;translation = glm::mix(start, end, t);
+                            break;
+                        }
+                        case AnimationChannel::ROTATION: {
+                            glm::quat start = glm::quat(sampler.outputsVec4[i].w, sampler.outputsVec4[i].x, sampler.outputsVec4[i].y, sampler.outputsVec4[i].z);
+                            glm::quat end = glm::quat(sampler.outputsVec4[i + 1].w, sampler.outputsVec4[i + 1].x, sampler.outputsVec4[i + 1].y, sampler.outputsVec4[i + 1].z);
+                            channel.node-&gt;rotation = glm::slerp(start, end, t);
+                            break;
+                        }
+                        case AnimationChannel::SCALE: {
+                            glm::vec3 start = sampler.outputsVec3[i];
+                            glm::vec3 end = sampler.outputsVec3[i + 1];
+                            channel.node-&gt;scale = glm::mix(start, end, t);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_next_steps_loading_gltf_files"><a class="anchor" href="#_next_steps_loading_gltf_files"></a>1.11. Next Steps: Loading glTF Files</h3>
+<div class="paragraph">
+<p>Now that we&#8217;ve designed our model system&#8217;s architecture and implemented the core data structures, the next step is to actually load 3D models from glTF files. In the next chapter, we&#8217;ll explore how to parse glTF files using the tinygltf library and populate our scene graph with the loaded data. We&#8217;ll learn how to extract meshes, materials, textures, and animations from glTF files and convert them into our engine&#8217;s internal representation.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_project_setup.html" class="xref page">Previous: Setting Up the Project</a> | <a href="04_loading_gltf.html" class="xref page">Next: Loading a glTF Model</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

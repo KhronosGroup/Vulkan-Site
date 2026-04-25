@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Subsystems: Physics Basics :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Subsystems</li>
+    <li><a href="04_physics_basics.html">Physics basics</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Subsystems: Physics Basics</h1>
+<div class="sect1">
+<h2 id="_physics_system_fundamentals"><a class="anchor" href="#_physics_system_fundamentals"></a>Physics System Fundamentals</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we explore how Vulkan can accelerate physics simulations, let&#8217;s establish a foundation by implementing a basic physics system for our engine. This will give us a framework that we can later enhance with Vulkan compute capabilities.</p>
+</div>
+<div class="sect2">
+<h3 id="_physics_system_architecture"><a class="anchor" href="#_physics_system_architecture"></a>Physics System Architecture</h3>
+<div class="paragraph">
+<p>A typical game physics system consists of several key components:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Rigid Body Dynamics</strong>: Simulation of solid objects with mass, velocity, and rotational properties.</p>
+</li>
+<li>
+<p><strong>Collision Detection</strong>: Determining when objects intersect or contact each other.</p>
+</li>
+<li>
+<p><strong>Collision Response</strong>: Calculating how objects should react when they collide.</p>
+</li>
+<li>
+<p><strong>Constraints</strong>: Limiting the movement of objects based on joints, hinges, or other connections.</p>
+</li>
+<li>
+<p><strong>Continuous Collision Detection</strong>: Handling fast-moving objects that might pass through others between frames.</p>
+</li>
+<li>
+<p><strong>Spatial Partitioning</strong>: Optimizing collision detection by dividing the world into regions.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s implement a simple physics system that covers these basics, using a modern C++ approach consistent with our engine&#8217;s design.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_physics_system_implementation"><a class="anchor" href="#_basic_physics_system_implementation"></a>Basic Physics System Implementation</h3>
+<div class="paragraph">
+<p>We&#8217;ll start by defining the core classes for our physics system:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Physics.h
+#pragma once
+
+#include &lt;vector&gt;
+#include &lt;memory&gt;
+#include &lt;unordered_map&gt;
+#include &lt;string&gt;
+#include &lt;glm/glm.hpp&gt;
+#include &lt;glm/gtc/quaternion.hpp&gt;
+
+namespace Engine {
+namespace Physics {
+
+enum class ColliderType {
+    Box,
+    Sphere,
+    Capsule,
+    Mesh
+};
+
+class Collider {
+public:
+    virtual ~Collider() = default;
+    virtual ColliderType GetType() const = 0;
+
+    void SetOffset(const glm::vec3&amp; offset) { m_Offset = offset; }
+    const glm::vec3&amp; GetOffset() const { return m_Offset; }
+
+protected:
+    glm::vec3 m_Offset = glm::vec3(0.0f);
+};
+
+class BoxCollider : public Collider {
+public:
+    BoxCollider(const glm::vec3&amp; halfExtents) : m_HalfExtents(halfExtents) {}
+
+    ColliderType GetType() const override { return ColliderType::Box; }
+
+    const glm::vec3&amp; GetHalfExtents() const { return m_HalfExtents; }
+    void SetHalfExtents(const glm::vec3&amp; halfExtents) { m_HalfExtents = halfExtents; }
+
+private:
+    glm::vec3 m_HalfExtents;
+};
+
+class SphereCollider : public Collider {
+public:
+    SphereCollider(float radius) : m_Radius(radius) {}
+
+    ColliderType GetType() const override { return ColliderType::Sphere; }
+
+    float GetRadius() const { return m_Radius; }
+    void SetRadius(float radius) { m_Radius = radius; }
+
+private:
+    float m_Radius;
+};
+
+class RigidBody {
+public:
+    RigidBody();
+    ~RigidBody();
+
+    // Kinematic state
+    void SetPosition(const glm::vec3&amp; position) { m_Position = position; }
+    void SetRotation(const glm::quat&amp; rotation) { m_Rotation = rotation; }
+    void SetLinearVelocity(const glm::vec3&amp; velocity) { m_LinearVelocity = velocity; }
+    void SetAngularVelocity(const glm::vec3&amp; velocity) { m_AngularVelocity = velocity; }
+
+    const glm::vec3&amp; GetPosition() const { return m_Position; }
+    const glm::quat&amp; GetRotation() const { return m_Rotation; }
+    const glm::vec3&amp; GetLinearVelocity() const { return m_LinearVelocity; }
+    const glm::vec3&amp; GetAngularVelocity() const { return m_AngularVelocity; }
+
+    // Physical properties
+    void SetMass(float mass);
+    float GetMass() const { return m_Mass; }
+    float GetInverseMass() const { return m_InverseMass; }
+
+    void SetRestitution(float restitution) { m_Restitution = restitution; }
+    float GetRestitution() const { return m_Restitution; }
+
+    void SetFriction(float friction) { m_Friction = friction; }
+    float GetFriction() const { return m_Friction; }
+
+    // Collider management
+    void SetCollider(std::shared_ptr&lt;Collider&gt; collider) { m_Collider = collider; }
+    std::shared_ptr&lt;Collider&gt; GetCollider() const { return m_Collider; }
+
+    // Forces and impulses
+    void ApplyForce(const glm::vec3&amp; force);
+    void ApplyImpulse(const glm::vec3&amp; impulse);
+    void ApplyTorque(const glm::vec3&amp; torque);
+    void ApplyTorqueImpulse(const glm::vec3&amp; torqueImpulse);
+
+    // Simulation flags
+    void SetKinematic(bool kinematic) { m_IsKinematic = kinematic; }
+    bool IsKinematic() const { return m_IsKinematic; }
+
+    void SetGravityEnabled(bool enabled) { m_UseGravity = enabled; }
+    bool IsGravityEnabled() const { return m_UseGravity; }
+
+private:
+    // Kinematic state
+    glm::vec3 m_Position = glm::vec3(0.0f);
+    glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    glm::vec3 m_LinearVelocity = glm::vec3(0.0f);
+    glm::vec3 m_AngularVelocity = glm::vec3(0.0f);
+
+    // Forces
+    glm::vec3 m_AccumulatedForce = glm::vec3(0.0f);
+    glm::vec3 m_AccumulatedTorque = glm::vec3(0.0f);
+
+    // Physical properties
+    float m_Mass = 1.0f;
+    float m_InverseMass = 1.0f;
+    glm::mat3 m_InertiaTensor = glm::mat3(1.0f);
+    glm::mat3 m_InverseInertiaTensor = glm::mat3(1.0f);
+    float m_Restitution = 0.5f;
+    float m_Friction = 0.5f;
+
+    // Collision
+    std::shared_ptr&lt;Collider&gt; m_Collider;
+
+    // Flags
+    bool m_IsKinematic = false;
+    bool m_UseGravity = true;
+
+    // Update inertia tensor based on mass and collider
+    void UpdateInertiaTensor();
+
+    friend class PhysicsSystem;
+};
+
+struct CollisionInfo {
+    std::shared_ptr&lt;RigidBody&gt; bodyA;
+    std::shared_ptr&lt;RigidBody&gt; bodyB;
+    glm::vec3 contactPoint;
+    glm::vec3 normal;
+    float penetrationDepth;
+};
+
+class PhysicsSystem {
+public:
+    PhysicsSystem();
+    ~PhysicsSystem();
+
+    void Initialize();
+    void Shutdown();
+
+    // Update physics simulation
+    void Update(float deltaTime);
+
+    // RigidBody management
+    std::shared_ptr&lt;RigidBody&gt; CreateRigidBody();
+    void DestroyRigidBody(std::shared_ptr&lt;RigidBody&gt; body);
+
+    // World settings
+    void SetGravity(const glm::vec3&amp; gravity) { m_Gravity = gravity; }
+    const glm::vec3&amp; GetGravity() const { return m_Gravity; }
+
+    // Collision detection
+    bool Raycast(const glm::vec3&amp; origin, const glm::vec3&amp; direction, float maxDistance, RaycastHit&amp; hit);
+
+private:
+    std::vector&lt;std::shared_ptr&lt;RigidBody&gt;&gt; m_RigidBodies;
+    glm::vec3 m_Gravity = glm::vec3(0.0f, -9.81f, 0.0f);
+
+    // Simulation steps
+    void IntegrateForces(RigidBody&amp; body, float deltaTime);
+    void IntegrateVelocities(RigidBody&amp; body, float deltaTime);
+
+    // Collision detection and response
+    void DetectCollisions(std::vector&lt;CollisionInfo&gt;&amp; collisions);
+    void ResolveCollisions(std::vector&lt;CollisionInfo&gt;&amp; collisions);
+
+    // Helper functions for collision detection
+    bool CheckCollision(const RigidBody&amp; bodyA, const RigidBody&amp; bodyB, CollisionInfo&amp; info);
+    bool SphereVsSphere(const RigidBody&amp; bodyA, const RigidBody&amp; bodyB, CollisionInfo&amp; info);
+    bool BoxVsBox(const RigidBody&amp; bodyA, const RigidBody&amp; bodyB, CollisionInfo&amp; info);
+    bool SphereVsBox(const RigidBody&amp; bodyA, const RigidBody&amp; bodyB, CollisionInfo&amp; info);
+};
+
+struct RaycastHit {
+    std::shared_ptr&lt;RigidBody&gt; body;
+    glm::vec3 point;
+    glm::vec3 normal;
+    float distance;
+};
+
+} // namespace Physics
+} // namespace Engine</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This basic structure provides a foundation for simulating rigid body physics with collision detection and response. In a real implementation, you would likely use a physics library like Bullet, PhysX, or Havok for more advanced features and optimizations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_with_the_engine"><a class="anchor" href="#_integrating_with_the_engine"></a>Integrating with the Engine</h3>
+<div class="paragraph">
+<p>To integrate our physics system with the rest of our engine, we&#8217;ll add it to our engine&#8217;s main class:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Engine.h
+#include "Physics.h"
+
+namespace Engine {
+
+class Engine {
+public:
+    // ... existing engine code ...
+
+    Physics::PhysicsSystem&amp; GetPhysicsSystem() { return m_PhysicsSystem; }
+
+private:
+    // ... existing engine members ...
+
+    Physics::PhysicsSystem m_PhysicsSystem;
+};
+
+} // namespace Engine</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And we&#8217;ll initialize it during engine startup:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Engine.cpp
+void Engine::Initialize() {
+    // ... existing initialization code ...
+
+    m_PhysicsSystem.Initialize();
+}
+
+void Engine::Shutdown() {
+    m_PhysicsSystem.Shutdown();
+
+    // ... existing shutdown code ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_implementation_of_physics_simulation"><a class="anchor" href="#_basic_implementation_of_physics_simulation"></a>Basic Implementation of Physics Simulation</h3>
+<div class="paragraph">
+<p>To keep the update loop easy to follow, think of a fixed‑timestep frame as six steps:</p>
+</div>
+<div class="paragraph">
+<p>1) Accumulate forces (e.g., gravity, user forces)
+2) Integrate forces (update velocities with damping)
+3) Detect collisions (broad/narrow checks per pair)
+4) Resolve collisions (impulses + positional correction)
+5) Integrate velocities (update positions and orientations)
+6) Clear forces (prepare for next step)</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s implement the core physics simulation functions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Physics.cpp
+#include "Physics.h"
+
+namespace Engine {
+namespace Physics {
+
+void PhysicsSystem::Update(float deltaTime) {
+    // Fixed timestep for stability
+    const float fixedTimeStep = 1.0f / 60.0f;
+
+    // Accumulate forces (e.g., gravity)
+    for (auto&amp; body : m_RigidBodies) {
+        if (!body-&gt;IsKinematic() &amp;&amp; body-&gt;IsGravityEnabled()) {
+            body-&gt;m_AccumulatedForce += m_Gravity * body-&gt;m_Mass;
+        }
+    }
+
+    // Integrate forces
+    for (auto&amp; body : m_RigidBodies) {
+        if (!body-&gt;IsKinematic()) {
+            IntegrateForces(*body, fixedTimeStep);
+        }
+    }
+
+    // Detect and resolve collisions
+    std::vector&lt;CollisionInfo&gt; collisions;
+    DetectCollisions(collisions);
+    ResolveCollisions(collisions);
+
+    // Integrate velocities
+    for (auto&amp; body : m_RigidBodies) {
+        if (!body-&gt;IsKinematic()) {
+            IntegrateVelocities(*body, fixedTimeStep);
+        }
+    }
+
+    // Clear accumulated forces
+    for (auto&amp; body : m_RigidBodies) {
+        body-&gt;m_AccumulatedForce = glm::vec3(0.0f);
+        body-&gt;m_AccumulatedTorque = glm::vec3(0.0f);
+    }
+}
+
+void PhysicsSystem::IntegrateForces(RigidBody&amp; body, float deltaTime) {
+    // Update linear velocity
+    body.m_LinearVelocity += (body.m_AccumulatedForce * body.m_InverseMass) * deltaTime;
+
+    // Update angular velocity
+    body.m_AngularVelocity += glm::vec3(body.m_InverseInertiaTensor * glm::vec4(body.m_AccumulatedTorque, 0.0f)) * deltaTime;
+
+    // Apply damping
+    const float linearDamping = 0.01f;
+    const float angularDamping = 0.01f;
+    body.m_LinearVelocity *= (1.0f - linearDamping);
+    body.m_AngularVelocity *= (1.0f - angularDamping);
+}
+
+void PhysicsSystem::IntegrateVelocities(RigidBody&amp; body, float deltaTime) {
+    // Update position
+    body.m_Position += body.m_LinearVelocity * deltaTime;
+
+    // Update rotation
+    glm::quat angularVelocityQuat(0.0f, body.m_AngularVelocity.x, body.m_AngularVelocity.y, body.m_AngularVelocity.z);
+    body.m_Rotation += (angularVelocityQuat * body.m_Rotation) * 0.5f * deltaTime;
+    body.m_Rotation = glm::normalize(body.m_Rotation);
+}
+
+void PhysicsSystem::DetectCollisions(std::vector&lt;CollisionInfo&gt;&amp; collisions) {
+    // Simple O(n²) collision detection
+    for (size_t i = 0; i &lt; m_RigidBodies.size(); i++) {
+        for (size_t j = i + 1; j &lt; m_RigidBodies.size(); j++) {
+            auto&amp; bodyA = m_RigidBodies[i];
+            auto&amp; bodyB = m_RigidBodies[j];
+
+            // Skip if both bodies are kinematic
+            if (bodyA-&gt;IsKinematic() &amp;&amp; bodyB-&gt;IsKinematic()) {
+                continue;
+            }
+
+            // Skip if either body doesn't have a collider
+            if (!bodyA-&gt;GetCollider() || !bodyB-&gt;GetCollider()) {
+                continue;
+            }
+
+            CollisionInfo info;
+            if (CheckCollision(*bodyA, *bodyB, info)) {
+                info.bodyA = bodyA;
+                info.bodyB = bodyB;
+                collisions.push_back(info);
+            }
+        }
+    }
+}
+
+void PhysicsSystem::ResolveCollisions(std::vector&lt;CollisionInfo&gt;&amp; collisions) {
+    for (auto&amp; collision : collisions) {
+        auto bodyA = collision.bodyA;
+        auto bodyB = collision.bodyB;
+
+        // Calculate relative velocity
+        glm::vec3 relativeVelocity = bodyB-&gt;m_LinearVelocity - bodyA-&gt;m_LinearVelocity;
+
+        // Calculate impulse magnitude
+        float velocityAlongNormal = glm::dot(relativeVelocity, collision.normal);
+
+        // Don't resolve if velocities are separating
+        if (velocityAlongNormal &gt; 0) {
+            continue;
+        }
+
+        // Calculate restitution (bounciness)
+        float restitution = std::min(bodyA-&gt;m_Restitution, bodyB-&gt;m_Restitution);
+
+        // Calculate impulse scalar
+        float j = -(1.0f + restitution) * velocityAlongNormal;
+        j /= bodyA-&gt;m_InverseMass + bodyB-&gt;m_InverseMass;
+
+        // Apply impulse
+        glm::vec3 impulse = collision.normal * j;
+
+        if (!bodyA-&gt;IsKinematic()) {
+            bodyA-&gt;m_LinearVelocity -= impulse * bodyA-&gt;m_InverseMass;
+        }
+
+        if (!bodyB-&gt;IsKinematic()) {
+            bodyB-&gt;m_LinearVelocity += impulse * bodyB-&gt;m_InverseMass;
+        }
+
+        // Resolve penetration (position correction)
+        const float percent = 0.2f; // usually 20% to 80%
+        const float slop = 0.01f; // small penetration allowed
+        glm::vec3 correction = std::max(collision.penetrationDepth - slop, 0.0f) * percent * collision.normal / (bodyA-&gt;m_InverseMass + bodyB-&gt;m_InverseMass);
+
+        if (!bodyA-&gt;IsKinematic()) {
+            bodyA-&gt;m_Position -= correction * bodyA-&gt;m_InverseMass;
+        }
+
+        if (!bodyB-&gt;IsKinematic()) {
+            bodyB-&gt;m_Position += correction * bodyB-&gt;m_InverseMass;
+        }
+    }
+}
+
+bool PhysicsSystem::CheckCollision(const RigidBody&amp; bodyA, const RigidBody&amp; bodyB, CollisionInfo&amp; info) {
+    auto colliderA = bodyA.GetCollider();
+    auto colliderB = bodyB.GetCollider();
+
+    if (colliderA-&gt;GetType() == ColliderType::Sphere &amp;&amp; colliderB-&gt;GetType() == ColliderType::Sphere) {
+        return SphereVsSphere(bodyA, bodyB, info);
+    }
+    else if (colliderA-&gt;GetType() == ColliderType::Box &amp;&amp; colliderB-&gt;GetType() == ColliderType::Box) {
+        return BoxVsBox(bodyA, bodyB, info);
+    }
+    else if (colliderA-&gt;GetType() == ColliderType::Sphere &amp;&amp; colliderB-&gt;GetType() == ColliderType::Box) {
+        return SphereVsBox(bodyA, bodyB, info);
+    }
+    else if (colliderA-&gt;GetType() == ColliderType::Box &amp;&amp; colliderB-&gt;GetType() == ColliderType::Sphere) {
+        bool result = SphereVsBox(bodyB, bodyA, info);
+        if (result) {
+            // Flip normal direction
+            info.normal = -info.normal;
+        }
+        return result;
+    }
+
+    // Unsupported collision types
+    return false;
+}
+
+bool PhysicsSystem::SphereVsSphere(const RigidBody&amp; bodyA, const RigidBody&amp; bodyB, CollisionInfo&amp; info) {
+    auto sphereA = std::static_pointer_cast&lt;SphereCollider&gt;(bodyA.GetCollider());
+    auto sphereB = std::static_pointer_cast&lt;SphereCollider&gt;(bodyB.GetCollider());
+
+    glm::vec3 posA = bodyA.GetPosition() + sphereA-&gt;GetOffset();
+    glm::vec3 posB = bodyB.GetPosition() + sphereB-&gt;GetOffset();
+
+    float radiusA = sphereA-&gt;GetRadius();
+    float radiusB = sphereB-&gt;GetRadius();
+
+    glm::vec3 direction = posB - posA;
+    float distance = glm::length(direction);
+    float minDistance = radiusA + radiusB;
+
+    if (distance &gt;= minDistance) {
+        return false;
+    }
+
+    // Normalize direction
+    direction = distance &gt; 0.0001f ? direction / distance : glm::vec3(0, 1, 0);
+
+    info.contactPoint = posA + direction * radiusA;
+    info.normal = direction;
+    info.penetrationDepth = minDistance - distance;
+
+    return true;
+}
+
+// Implementation of BoxVsBox and SphereVsBox collision detection would go here
+// These are more complex and would require additional helper functions
+
+} // namespace Physics
+} // namespace Engine</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_basic_usage_example"><a class="anchor" href="#_basic_usage_example"></a>Basic Usage Example</h3>
+<div class="paragraph">
+<p>Here&#8217;s how you might use this physics system in a game:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Game code
+void Game::Initialize() {
+    // Create a ground plane
+    auto ground = m_Engine.GetPhysicsSystem().CreateRigidBody();
+    ground-&gt;SetPosition(glm::vec3(0.0f, -1.0f, 0.0f));
+    ground-&gt;SetKinematic(true); // Static object
+    auto groundCollider = std::make_shared&lt;Physics::BoxCollider&gt;(glm::vec3(50.0f, 1.0f, 50.0f));
+    ground-&gt;SetCollider(groundCollider);
+
+    // Create a dynamic box
+    auto box = m_Engine.GetPhysicsSystem().CreateRigidBody();
+    box-&gt;SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+    box-&gt;SetMass(1.0f);
+    auto boxCollider = std::make_shared&lt;Physics::BoxCollider&gt;(glm::vec3(0.5f, 0.5f, 0.5f));
+    box-&gt;SetCollider(boxCollider);
+
+    // Create a dynamic sphere
+    auto sphere = m_Engine.GetPhysicsSystem().CreateRigidBody();
+    sphere-&gt;SetPosition(glm::vec3(1.0f, 10.0f, 0.0f));
+    sphere-&gt;SetMass(2.0f);
+    auto sphereCollider = std::make_shared&lt;Physics::SphereCollider&gt;(0.7f);
+    sphere-&gt;SetCollider(sphereCollider);
+
+    // Store references to our objects
+    m_PhysicsObjects.push_back(ground);
+    m_PhysicsObjects.push_back(box);
+    m_PhysicsObjects.push_back(sphere);
+}
+
+void Game::Update(float deltaTime) {
+    // Update physics
+    m_Engine.GetPhysicsSystem().Update(deltaTime);
+
+    // Update visual representations of physics objects
+    for (auto&amp; physicsObject : m_PhysicsObjects) {
+        auto visualObject = m_PhysicsToVisualMap[physicsObject];
+        if (visualObject) {
+            visualObject-&gt;SetPosition(physicsObject-&gt;GetPosition());
+            visualObject-&gt;SetRotation(physicsObject-&gt;GetRotation());
+        }
+    }
+}
+
+void Game::OnExplosion(const glm::vec3&amp; position, float force) {
+    // Apply radial impulse to nearby objects
+    for (auto&amp; physicsObject : m_PhysicsObjects) {
+        if (!physicsObject-&gt;IsKinematic()) {
+            glm::vec3 direction = physicsObject-&gt;GetPosition() - position;
+            float distance = glm::length(direction);
+
+            if (distance &lt; 10.0f) {
+                direction = glm::normalize(direction);
+                float impulseMagnitude = force * (1.0f - distance / 10.0f);
+                physicsObject-&gt;ApplyImpulse(direction * impulseMagnitude);
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_limitations_of_basic_physics_systems"><a class="anchor" href="#_limitations_of_basic_physics_systems"></a>Limitations of Basic Physics Systems</h3>
+<div class="paragraph">
+<p>While this basic physics system provides the essential functionality for simulating rigid bodies in a game, it has several limitations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Performance</strong>: The O(n²) collision detection becomes a bottleneck with many objects.</p>
+</li>
+<li>
+<p><strong>Limited Collision Shapes</strong>: We&#8217;ve only implemented basic shapes like boxes and spheres.</p>
+</li>
+<li>
+<p><strong>Stability Issues</strong>: Simple integrators and collision resolution can lead to instability.</p>
+</li>
+<li>
+<p><strong>No Continuous Collision Detection</strong>: Fast-moving objects might tunnel through thin obstacles.</p>
+</li>
+<li>
+<p><strong>Limited Constraints</strong>: We haven&#8217;t implemented joints, springs, or other constraints.</p>
+</li>
+<li>
+<p><strong>CPU-Bound Processing</strong>: All calculations are performed on the CPU, limiting scalability.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll explore how Vulkan compute shaders can address these limitations by offloading physics calculations to the GPU, particularly for large-scale simulations with many objects.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_vulkan_audio.html" class="xref page">Previous: Vulkan for Audio Processing</a> | <a href="05_vulkan_physics.html" class="xref page">Next: Vulkan for Physics Simulation</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

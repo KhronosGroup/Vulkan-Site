@@ -1,0 +1,268 @@
+# Base code
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/03_Drawing_a_triangle/00_Setup/00_Base_code.html
+
+## Table of Contents
+
+- [Vulkan-hpp and designated initializers](#_vulkan_hpp_and_designated_initializers)
+- [Vulkan-hpp_and_designated_initializers](#_vulkan_hpp_and_designated_initializers)
+- [General structure](#_general_structure)
+- [Resource management](#_resource_management)
+- [Integrating GLFW](#_integrating_glfw)
+
+## Content
+
+|  | We are going to use designated initializers introduced with C++ 20.
+| --- | --- |
+By default, Vulkan-hpp uses a different way of initializing and we need to explicitly enable this by using the `VULKAN_HPP_NO_STRUCT_CONSTRUCTORS` define. |
+
+This provides a better meaning towards what each option relates to in the structures that we’re depending upon.
+For this tutorial, said define is declared in the [CMake build setup](../../02_Development_environment.html#cmake).
+
+If you use a different build setup or want to write code from scratch, you need to manually define this before including the Vulkan-hpp headers like this:
+
+#define VULKAN_HPP_NO_STRUCT_CONSTRUCTORS
+#include 
+// or
+#include 
+
+In the previous chapter, you’ve created a Vulkan project with all the proper configurations and tested it with the sample code.
+In this chapter, we’re starting from scratch with the following code:
+
+#if defined(__INTELLISENSE__) || !defined(USE_CPP20_MODULES)
+#include 
+#else
+import vulkan_hpp;
+#endif
+#include 
+
+#include 
+#include 
+#include 
+
+class HelloTriangleApplication {
+public:
+    void run() {
+        initVulkan();
+        mainLoop();
+        cleanup();
+    }
+
+private:
+    void initVulkan() {
+
+    }
+
+    void mainLoop() {
+
+    }
+
+    void cleanup() {
+
+    }
+};
+
+int main()
+{
+    try
+    {
+        HelloTriangleApplication app;
+        app.run();
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr 
+
+We first include the Vulkan-Hpp RAII header by default, which provides the
+functions, structures and enumerations. If you enable C++20 modules
+(`-DENABLE_CPP20_MODULE=ON`), the code will `import vulkan_hpp;` instead via the
+`USE_CPP20_MODULES` define set by CMake. The `stdexcept` and `iostream` headers
+are included for reporting and propagating errors. The `cstdlib` header
+provides the `EXIT_SUCCESS` and `EXIT_FAILURE` macros.
+
+The program itself is wrapped into a class where we’ll store the Vulkan objects
+as private class members and add functions to initiate each of them, which will
+be called from the `initVulkan` function. Once everything has been prepared, we
+enter the main loop to start rendering frames. We’ll fill in the `mainLoop`
+function to include a loop that iterates until the window is closed in a moment.
+Once the window is closed and `mainLoop` returns, we’ll make sure to deallocate
+the resources we’ve used in the `cleanup` function.
+
+If any kind of fatal error occurs during execution, then we’ll throw a
+`std::runtime_error` exception with a descriptive message, which will propagate
+back to the `main` function and be printed to the command prompt. To handle
+a variety of standard exception types, as well, we catch the more general
+`std::exception`. One example of an error that we will deal with soon is finding
+out that a certain required extension is not supported.
+
+Roughly every chapter that follows after this one will add one new function that
+will be called from `initVulkan` and one or more new Vulkan objects to the
+private class members that need to be freed at the end in `cleanup`.
+
+Just like each chunk of memory allocated with `malloc` requires a call to
+`free`, every Vulkan object that we create needs to be explicitly destroyed when
+we no longer need it. In c++ it is possible to perform automatic resource
+management using [RAII](https://en.wikipedia.org/wiki/Resource_Acquisition_Is_Initialization)
+or smart pointers provided in the `` header. This tutorial is an attempt
+to make Vulkan easier to work with, and demonstrate modern Vulkan
+programming.  This tutorial will not only use RAII, it will endeavor to demonstrate the
+latest methods and extensions which should hopefully make Vulkan a joy to use.  Just
+because we enjoy working with low level graphics APIs, we shouldn’t make the bar too
+high to learn how to do so.  Where appropriate, we will discuss concerns for resource
+management for freeing resources.  However, for this tutorial, we’ll
+demonstrate that we can get pretty far with a basic destructor to clean up
+after our work.
+
+Vulkan objects are either created directly with functions like `vkCreateXXX`, or
+allocated through another object with functions like `vkAllocateXXX`. After
+making sure that an object is no longer used anywhere, you need to destroy it
+with the counterparts `vkDestroyXXX` and `vkFreeXXX`. The parameters for these
+functions generally vary for different types of objects, but there is one
+parameter that they all share: `pAllocator`. This is an optional parameter that
+allows you to specify callbacks for a custom memory allocator. We will ignore
+this parameter in the tutorial and always pass `nullptr` as argument.
+
+Using the Vulkan_hpp RAII module, we can rely upon the library to take care
+of `vkCreateXXX` `vkAllocateXXX` `vkDestroyXXX` and `vkFreeXXX` so a block
+of code that looks like this:
+
+VkInstance instance;
+VkApplicationInfo appInfo{};
+appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+appInfo.pApplicationName = "Hello Triangle";
+appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+appInfo.pEngineName = "No Engine";
+appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+appInfo.apiVersion = VK_API_VERSION_1_0;
+
+VkInstanceCreateInfo createInfo{};
+createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+createInfo.pApplicationInfo = &appInfo;
+createInfo.enabledExtensionCount = 0;
+createInfo.ppEnabledExtensionNames = nullptr;
+createInfo.enabledLayerCount = 0;
+createInfo.ppEnabledLayerNames = nullptr;
+
+if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+    throw std::runtime_error("failed to create instance!");
+}
+
+vkDestroyInstance(instance, nullptr);
+
+can be directly replaced by this:
+
+constexpr vk::ApplicationInfo appInfo{.pApplicationName   = "Hello Triangle",
+                                      .applicationVersion = VK_MAKE_VERSION( 1, 0, 0 ),
+                                      .pEngineName        = "No Engine",
+                                      .engineVersion      = VK_MAKE_VERSION( 1, 0, 0 ),
+                                      .apiVersion         = vk::ApiVersion14};
+
+vk::InstanceCreateInfo createInfo{
+    .pApplicationInfo = &appInfo
+};
+
+instance = vk::raii::Instance(context, createInfo);
+
+Vulkan works perfectly fine without creating a window if you want to use it for
+off-screen rendering, but it’s a lot more exciting to actually show something!
+First, let’s add GLFW: Note: we will continue to use the GLFW_INCLUDE_VULKAN as
+GLFW is designed to get a Vulkan Surface, but it uses the C surface directly.
+Other than that task, we can use GLFW_INCLUDE_NONE or not make that
+specification, and everything else works perfectly fine.
+
+#define GLFW_INCLUDE_VULKAN
+#include 
+
+That way, GLFW will include its own definitions and automatically load the Vulkan
+C header with it. Add a `initWindow` function and add a call to it from the
+`run` function before the other calls. We’ll use that function to initialize
+GLFW and create a window.
+
+void run() {
+    initWindow();
+    initVulkan();
+    mainLoop();
+    cleanup();
+}
+
+private:
+    void initWindow() {
+    }
+
+The very first call in `initWindow` should be `glfwInit()`, which initializes
+the GLFW library. Because GLFW was originally designed to create an OpenGL
+context, we need to tell it to not create an OpenGL context with a later
+call:
+
+glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+Because handling resized windows takes special care that we’ll look into later,
+disable it for now with another window hint call:
+
+glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+All that’s left now is creating the actual window. Add a `GLFWwindow* window;`
+private class member to store a reference to it and initialize the window with:
+
+window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
+
+The first three parameters specify the width, height and title of the window.
+The fourth parameter allows you to optionally specify a monitor to open the
+window on, and the last parameter is only relevant to OpenGL.
+
+It’s a good idea to use constants instead of hardcoded width and height numbers
+because we’ll be referring to these values a couple of times in the future. I’ve
+added the following lines above the `HelloTriangleApplication` class definition:
+
+constexpr uint32_t WIDTH = 800;
+constexpr uint32_t HEIGHT = 600;
+
+and replaced the window creation call with
+
+window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+
+You should now have a `initWindow` function that looks like this:
+
+void initWindow() {
+    glfwInit();
+
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+}
+
+To keep the application running until either an error occurs or the window is
+closed, we need to add an event loop to the `mainLoop` function as follows:
+
+void mainLoop() {
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+    }
+}
+
+This code should be fairly self-explanatory. It loops and checks for events like
+pressing the X button until the user has closed the window. This is also
+the loop where we’ll later call a function to render a single frame.
+
+Once the window is closed, we need to clean up resources by destroying it and
+terminating GLFW itself. This will be our first `cleanup` code:
+
+void cleanup() {
+    glfwDestroyWindow(window);
+
+    glfwTerminate();
+}
+
+Note that in this tutorial, this is the last time we’ll have to do anything
+in the cleanup() function. This code will never need to change again.
+
+When you run the program now, you should see a window titled `Vulkan` show up
+until the application is terminated by closing the window. Now that we have the
+skeleton for the Vulkan application, let’s [create the first Vulkan object](01_Instance.html)!
+
+[C++ code](../../_attachments/00_base_code.cpp)

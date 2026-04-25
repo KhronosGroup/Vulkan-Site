@@ -1,0 +1,394 @@
+# Timeline semaphore
+
+## Metadata
+
+- **Component**: samples
+- **Version**: latest
+- **URL**: /samples/latest/samples/extensions/timeline_semaphore/README.html
+
+## Table of Contents
+
+- [Overview](#_overview)
+- [The binary semaphore problems](#_the_binary_semaphore_problems)
+- [The_binary_semaphore_problems](#_the_binary_semaphore_problems)
+- [Viewing a VkQueue as a sequence - thinking in terms of counters](#_viewing_a_vkqueue_as_a_sequence_thinking_in_terms_of_counters)
+- [Viewing_a_VkQueue_as_a_sequence_-_thinking_in_terms_of_counters](#_viewing_a_vkqueue_as_a_sequence_thinking_in_terms_of_counters)
+- [Out-of-order signal and wait](#_out_of_order_signal_and_wait)
+- [Out-of-order_signal_and_wait](#_out_of_order_signal_and_wait)
+- [Single producer, multiple consumers](#_single_producer_multiple_consumers)
+- [Single_producer,_multiple_consumers](#_single_producer_multiple_consumers)
+- [Integration of host signal and wait, good night sweet VkFence](#_integration_of_host_signal_and_wait_good_night_sweet_vkfence)
+- [Integration_of_host_signal_and_wait,_good_night_sweet_VkFence](#_integration_of_host_signal_and_wait_good_night_sweet_vkfence)
+- [Using timeline semaphores](#_using_timeline_semaphores)
+- [Using_timeline_semaphores](#_using_timeline_semaphores)
+- [The sample](#_the_sample)
+- [The queues](#_the_queues)
+- [Async worker thread - out-of-order submission](#_async_worker_thread_out_of_order_submission)
+- [Async_worker_thread_-_out-of-order_submission](#_async_worker_thread_out_of_order_submission)
+- [Data flow](#_data_flow)
+- [Avoiding deadlocks in vkDeviceWaitIdle](#_avoiding_deadlocks_in_vkdevicewaitidle)
+- [Avoiding_deadlocks_in_vkDeviceWaitIdle](#_avoiding_deadlocks_in_vkdevicewaitidle)
+- [Avoiding deadlocks when tearing down worker thread](#_avoiding_deadlocks_when_tearing_down_worker_thread)
+- [Avoiding_deadlocks_when_tearing_down_worker_thread](#_avoiding_deadlocks_when_tearing_down_worker_thread)
+- [Out-of-order submission fallbacks for single queue implementations](#_out_of_order_submission_fallbacks_for_single_queue_implementations)
+- [Out-of-order_submission_fallbacks_for_single_queue_implementations](#_out_of_order_submission_fallbacks_for_single_queue_implementations)
+- [Holding back submissions](#_holding_back_submissions)
+- [Holding_back_submissions](#_holding_back_submissions)
+- [Locking vkQueueSubmit](#_locking_vkqueuesubmit)
+- [API limitations](#_api_limitations)
+- [Conclusion](#_conclusion)
+
+## Content
+
+|  | The source for this sample can be found in the [Khronos Vulkan samples github repository](https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/timeline_semaphore). |
+| --- | --- |
+
+In Vulkan 1.0, we were introduced to `VkSemaphore` which is able to synchronize work between Vulkan queues.
+It has some peculiar behavior which makes it somewhat difficult to use in practice.
+The timeline semaphore is designed to solve these problems and it also makes the queue synchronization model closer to what we see in D3D12.
+
+The existing semaphore as-is works fine in normal situations, but as applications learn to take advantage of async compute, async transfer, and other advanced synchronization use cases, there are problems which are hard to ignore.
+
+The existing semaphore type is now called a `BINARY` semaphore, as signals and waits must always happen in 1:1 pairs.
+Completing a wait for a semaphore on the `VkQueue` also **unsignals it**.
+This is problematic for more advanced use cases where we wish to create a single producer, multiple consumers scenario.
+To make binary semaphores work, we would have to signal multiple semaphores in a single `vkQueueSubmit`, and then assign one semaphore to each waiting queue.
+This is rather awkward, since it might not be obvious at signal time how this scenario will play out, and juggling N semaphores just for this case is not fun.
+
+When juggling N semaphores, it might also happen that a semaphore was not required after all, and we are now sitting with a signalled semaphore which cannot be recycled and signalled again unless we wait for it first.
+The solution here is to just destroy such "hung" semaphores, which is unfortunate.
+Ideally we would be able to reset semaphores on the host as well, but no such API exists and submitting a wait to GPU just for the purpose of unsignalling a semaphore is silly.
+
+There is also an object bloat problem.
+Usually, there are many submissions in flight on a GPU, and to be able to synchronize with each submission, we must keep track of a certain number of semaphores which are in-flight at any one time.
+This is doable, but inelegant.
+There is a similar problem for `VkFence` as well.
+
+The final problem is a lack of out-of-order signal and wait.
+This is a somewhat of a niche problem, but in a world with free threaded task graphs, it could make sense to be able to submit work out of order and let synchronization objects take care of synchronization on the GPU.
+With binary semaphores, a signal must be submitted before the wait, which guarantees forward progress, but guarantees jank in the engine.
+There are certainly good reasons for this restriction, but it removes some flexibility.
+
+In order to signal on a `VkQueue`, we wait for everything that happened before we signal anything.
+This also means that future signal operations will wait for a superset of the operations in the signal that came before.
+In this sense, instead of thinking of synchronizing against individual submissions, we can think about things like "Wait for submission #134 on compute queue to complete", i.e.
+we just associate a single monotonically increasing number to a queue.
+Submitting to a `VkQueue` can now be considered a simple increment of the monotonically increasing number.
+
+This is the foundation of timeline semaphores.
+A `VkSemaphore` can have a 64-bit counter associated with it and there are two new operations we can do:
+
+* 
+As a signal semaphore, wait for everything to complete in queue, then **monotonically** bump counter value to `$old_value + $increment`, where `$increment` is usually 1.
+
+* 
+As a wait semaphore, wait for the counter of the semaphore to reach **at least** the wait count value.
+
+From an application point of view, there is no longer a need to own synchronization objects and applications can instead agree on 64-bit counters.
+
+Timeline semaphores also adds support for submitting waits before the corresponding signal operation.
+This hands over the burden to the driver, where it will need to either hold back submissions on its own, or defer this work to the kernel driver.
+Either way, the application no longer needs to hold back submissions.
+
+This can be quite useful when applications have multiple threads which perform queue submission, since ensuring ordering otherwise would require a lot of careful thread synchronization.
+
+There is no unsignal operation with timeline semaphores, so it’s perfectly fine to do something like:
+
+* 
+Signal graphics queue, value 40
+
+* 
+Wait async compute queue 0, value 40
+
+* 
+Wait async compute queue 1, value 39
+
+* 
+Wait async compute queue 2, value 36
+
+Once the counter reaches 40, it will always be at least 40, and we can keep waiting for this counter as long as we wish.
+
+VkFence is somewhat redundant when we have timeline semaphores, since we can now wait for counter values on CPU as well.
+There is not even a requirement to externally synchronize `VkSemaphore` objects when doing so, which is very nice!
+To synchronize GPU work with CPU, we just need to know the timeline value we signalled with.
+
+First, we need to create a `VkSemaphore` with `TIMELINE` type.
+
+// A timeline semaphore is still a semaphore, but it is of TIMELINE type rather than BINARY.
+VkSemaphoreCreateInfo        create_info = vkb::initializers::semaphore_create_info();
+VkSemaphoreTypeCreateInfoKHR type_create_info{VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR};
+
+type_create_info.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
+type_create_info.initialValue  = 0;
+create_info.pNext              = &type_create_info;
+
+VK_CHECK(vkCreateSemaphore(get_device().get_handle(), &create_info, nullptr, &timeline.semaphore));
+
+We can signal the timeline in `vkQueueSubmit`.
+
+VkSubmitInfo submit         = vkb::initializers::submit_info();
+submit.pSignalSemaphores    = &timeline.semaphore;
+submit.signalSemaphoreCount = 1;
+submit.pCommandBuffers      = &cmd;
+submit.commandBufferCount   = 1;
+
+// For every timeline semaphore we signal, we give an auxillary timeline value.
+VkTimelineSemaphoreSubmitInfoKHR timeline_info{VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR};
+timeline_info.signalSemaphoreValueCount = 1;
+timeline_info.pSignalSemaphoreValues    = &timeline.timeline;
+
+submit.pNext = &timeline_info;
+
+VK_CHECK(vkQueueSubmit(signal_queue, 1, &submit, VK_NULL_HANDLE));
+
+Similarly, we can wait in `vkQueueSubmit`.
+
+const VkPipelineStageFlags wait_stages = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+
+VkSubmitInfo submit       = vkb::initializers::submit_info();
+submit.pWaitSemaphores    = &timeline.semaphore;
+submit.pWaitDstStageMask  = &wait_stages;
+submit.waitSemaphoreCount = 1;
+submit.pCommandBuffers    = &cmd;
+submit.commandBufferCount = 1;
+
+VkTimelineSemaphoreSubmitInfoKHR timeline_info{VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR};
+timeline_info.waitSemaphoreValueCount = 1;
+timeline_info.pWaitSemaphoreValues    = &timeline.timeline;
+
+submit.pNext = &timeline_info;
+
+VK_CHECK(vkQueueSubmit(wait_queue, 1, &submit, VK_NULL_HANDLE));
+
+We can wait for one or more semaphores on host as well!
+
+VkSemaphoreWaitInfoKHR wait_info{VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR};
+wait_info.pSemaphores    = &semaphore;
+wait_info.semaphoreCount = 1;
+wait_info.pValues        = &value;
+VK_CHECK(vkWaitSemaphoresKHR(device->get_handle(), &wait_info, UINT64_MAX));
+
+A somewhat esoteric feature is to signal a timeline on host, this can be used to "kick" the GPU.
+
+VkSemaphoreSignalInfoKHR signal_info{VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR};
+signal_info.semaphore = semaphore;
+signal_info.value     = value;
+VK_CHECK(vkSignalSemaphoreKHR(device->get_handle(), &signal_info));
+
+![Sample](../../../_images/samples/extensions/timeline_semaphore/images/sample.png)
+
+This sample demonstrates an esoteric way of implementing the well-known "Game of Life".
+Through this sample we end up using all the core features of timeline semaphores.
+
+In this sample, we make use of two `VkQueues`, an async compute queue which performs simulation, and the main graphics queue which blits to swapchain and presents the results.
+The two queues need to carefully synchronize with each other.
+This sample could trivially be done with binary semaphores of course, so in this sample we implement it in a difficult way to demonstrate the full API capabilities.
+
+The key aspects we use to demonstrate out of order submission are dedicated workers thread which perform all work related to simulation on the async compute queue, and drawing on the graphics queue.
+They never synchronize with the main thread except at teardown, so the only way to synchronize them is through timeline semaphores.
+To avoid issues when running the sample on Windows platforms (particularly when resizing the window), forward progress in the queues is throttled by the main thread (i.e. only allowing the timeline to advance
+when a render call is active).
+
+To simulate "Game of Life", we allocate two images of 64x64 RGBA8.
+First, one image is initialized with initial state, and from here there is a ping-pong where image N is updated, while reading from image 1 - N.
+After updating image N, the main thread will sample from image N.
+
+The sequential flow of the rendering is something like:
+
+* 
+Compute: wait for "submit"
+
+* 
+Graphics: wait for "submit"
+
+* 
+Main: acquires the swapchain image
+
+* 
+Main: signal "submit"
+
+* 
+Main: wait for "present"
+
+* 
+Compute: wait for "image_acquired" (binary semaphore)
+
+* 
+Graphics: wait for "draw"
+
+* 
+Compute: write image
+
+* 
+Compute: signal "draw"
+
+* 
+Compute: wait for "end of frame"
+
+* 
+Graphics: read image
+
+* 
+Graphics: signal "present"
+
+* 
+Graphics: wait for "end of frame"
+
+* 
+Main: present swapchain
+
+* 
+Main: signals "end of frame"
+
+* 
+Compute: wait for "submit"
+
+* 
+Graphics: wait for "submit"
+
+And so on …​
+With out of order signal, we can end up observing this order of submissions instead.
+
+* 
+Compute: wait for "submit"
+
+* 
+Graphics: wait for "submit"
+
+* 
+Main: acquires the swapchain image
+
+* 
+Main: signal "submit"
+
+* 
+Graphics: wait for "draw"
+
+* 
+Compute: wait for "image_acquired" (binary semaphore)
+
+* 
+Compute: write image
+
+* 
+Compute: signal "draw"
+
+* 
+Graphics: read image
+
+* 
+Graphics: signal "present"
+
+* 
+Main: wait for "present"
+
+* 
+Main: present swapchain
+
+* 
+Compute: wait for "end of frame"
+
+* 
+Main: signals "end of frame"
+
+* 
+Graphics: wait for "end of frame"
+
+* 
+Compute: wait for "submit"
+
+* 
+Graphics: wait for "submit"
+
+When submitting out of order, it is important that you don’t just submit work way ahead of where the GPU actually is, since the latency becomes extremely large.
+The natural place to keep submission explosion under control here is the place where we wait for the timeline on host, since we need to re-record command buffers anyways.
+
+When submitting out-of-order we end up in a situation where a queue cannot see any forward progress until another queue submits.
+Calling `vkDeviceWaitIdle` at this point triggers a deadlock of the application since `vkDeviceWaitIdle` will never finish, as there is one queue which cannot make forward progress.
+While calling `vkDeviceWaitIdle`, you cannot call `vkQueueSubmit` due to external synchronization rules.
+
+Instead, just wait for timeline semaphores on host to "drain" the GPU, or if you must use API calls, use `vkQueueWaitIdle` and only wait on queues which you need.
+
+Similar to `vkDeviceWaitIdle`, when tearing down the application, an out-of-order submission might be waiting on work which never comes, and that queue becomes deadlocked.
+To alleviate this, we can make use of host signalling of timeline semaphores to unblock everything in one fell swoop.
+
+From `TimelineSemaphore::finish_timeline_workers()`:
+
+	graphics_worker.alive = false;
+	compute_worker.alive  = false;
+
+	signal_timeline(Timeline::MAX_STAGES);
+
+	if (graphics_worker.thread.joinable())
+	{
+		graphics_worker.thread.join();
+	}
+
+	if (compute_worker.thread.joinable())
+	{
+		compute_worker.thread.join();
+	}
+
+From `TimelineSemaphore::finish_timeline_workers()`:
+
+	graphics_worker.alive = false;
+	compute_worker.alive  = false;
+
+	signal_timeline(Timeline::MAX_STAGES);
+
+	if (graphics_worker.thread.joinable())
+	{
+		graphics_worker.thread.join();
+	}
+
+	if (compute_worker.thread.joinable())
+	{
+		compute_worker.thread.join();
+	}
+
+Since this sample needs to run on all implementations which support timeline semaphores, the sample also demonstrates the limitations of out-of-order queue submissions.
+It’s easy to land in a situation where you deadlock the GPU or driver which only happens on single queue Vulkan implementations.
+There are two fixes we need to make this work.
+
+This workaround ensures that submissions happen in-order, where forward progress can always be made.
+Since we are using multiple submission threads this sample uses a condition variable to only allow a wait to be submitted if it ensures forward progress.
+This is handled by `TimelineSemaphore::update_pending()`:
+
+std::lock_guard holder{lock.lock};
+lock.pending_timeline = timeline;
+lock.cond.notify_one();
+
+and `TimelineSemaphore::wait_pending()`:
+
+std::unique_lock holder{lock.lock};
+lock.cond.wait(holder, [&lock, timeline]() -> bool {
+    return lock.pending_timeline >= timeline;
+});
+
+Blocking like this only works when multiple threads can submit, but that’s what this sample is doing, so it is a simple fix.
+
+The most robust workaround is probably to not lean too heavily on out-of-order submission unless you know you have all the `VkQueues` you need to resolve the dependencies properly.
+
+If two threads end up submitting to the same queue at the same time, we need to add locks due to external synchronization requirement of the `VkQueue`.
+In this sample, we only add the locks if we’re applying workarounds.
+
+Currently, the Vulkan WSI swapchain does not support timeline semaphores.
+In practice, this isn’t too big of a deal as swapchain integration tends to be a "special case" either way in most rendering backends.
+The acquire and release semaphores have no analog in other modern APIs.
+
+Another related issue with WSI swapchains is that when using binary semaphores, it is not possible to use wait-before-signal.
+The specification states that in order to submit a wait on a binary semaphore all dependencies for that semaphore wait must have been submitted already.
+This means that we need to potentially block a bit on host before we can call vkQueuePresentKHR.
+The sample does this right before calling `ApiVulkanSample::submit_frame()`.
+
+// Before we call present, which uses a binary semaphore, we must ensure that all dependent submissions
+// have been submitted, so that the presenting queue is unblocked at the time of calling.
+wait_pending(async_compute_timeline_lock, main_thread_timeline.timeline);
+
+ApiVulkanSample::submit_frame();
+
+Timeline semaphores grants a lot of flexibility to applications.
+With modern approaches of task graphs, many threads and free flowing synchronization, timeline semaphores simplify a lot of things and removes the need for emulating a similar concept with binary semaphores and fences.
+
+Be careful with out-of-order submissions.
+There are various pitfalls with this approach which have been outlined in this sample.

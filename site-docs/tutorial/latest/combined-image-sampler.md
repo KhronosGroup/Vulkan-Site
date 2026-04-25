@@ -1,0 +1,213 @@
+# Combined image sampler
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/06_Texture_mapping/02_Combined_image_sampler.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Updating the descriptors](#_updating_the_descriptors)
+- [Updating_the_descriptors](#_updating_the_descriptors)
+- [Texture coordinates](#_texture_coordinates)
+- [Shaders](#_shaders)
+
+## Content
+
+We looked at descriptors for the first time in the uniform buffers part of the tutorial.
+In this chapter, we will look at a new type of descriptor: *combined image sampler*.
+This descriptor makes it possible for shaders to access an image resource through a sampler object like the one we created in the previous chapter.
+
+It’s worth noting that Vulkan provides flexibility in how textures are accessed in shaders through different descriptor types. While we’ll be using a *combined image sampler* in this tutorial, Vulkan also supports separate descriptors for samplers (`VK_DESCRIPTOR_TYPE_SAMPLER`) and sampled images (`VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`). Using separate descriptors allows you to reuse the same sampler with multiple images or access the same image with different sampling parameters. This can be more efficient in scenarios where you have many textures that use identical sampling configurations. However, the combined image sampler is often more convenient and can offer better performance on some hardware due to optimized cache usage.
+
+We’ll start by modifying the descriptor set layout, descriptor pool and descriptor set to include such a combined image sampler descriptor.
+After that, we’re going to add texture coordinates to `Vertex` and modify the fragment shader to read colors from the texture instead of just interpolating the vertex colors.
+
+Browse to the `createDescriptorSetLayout` function and add a `VkDescriptorSetLayoutBinding` for a combined image sampler descriptor.
+We’ll simply put it in the binding after the uniform buffer:
+
+std::array bindings = {
+    vk::DescriptorSetLayoutBinding( 0, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eVertex, nullptr),
+    vk::DescriptorSetLayoutBinding( 1, vk::DescriptorType::eCombinedImageSampler, 1, vk::ShaderStageFlagBits::eFragment, nullptr)
+};
+
+vk::DescriptorSetLayoutCreateInfo layoutInfo({}, bindings.size(), bindings.data());
+
+Make sure to set the `stageFlags` to indicate that we intend to use the combined image sampler descriptor in the fragment shader.
+That’s where the color of the fragment is going to be determined.
+It is possible to use texture sampling in the vertex shader, for example to dynamically deform a grid of vertices by a [heightmap](https://en.wikipedia.org/wiki/Heightmap).
+
+We must also create a larger descriptor pool to make room for the allocation of the combined image sampler by adding another `VkPoolSize` of type `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` to the `VkDescriptorPoolCreateInfo`.
+Go to the `createDescriptorPool` function and modify it to include a `VkDescriptorPoolSize` for this descriptor:
+
+std::array poolSize {
+    vk::DescriptorPoolSize( vk::DescriptorType::eUniformBuffer, MAX_FRAMES_IN_FLIGHT),
+    vk::DescriptorPoolSize(  vk::DescriptorType::eCombinedImageSampler, MAX_FRAMES_IN_FLIGHT)
+};
+vk::DescriptorPoolCreateInfo poolInfo(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, MAX_FRAMES_IN_FLIGHT, poolSize);
+
+Inadequate descriptor pools are a good example of a problem that the validation layers will not catch: As of Vulkan 1.1, `vkAllocateDescriptorSets` may fail with the error code `VK_ERROR_POOL_OUT_OF_MEMORY` if the pool is not sufficiently large, but the driver may also try to solve the problem internally.
+This means that sometimes (depending on hardware, pool size and allocation size) the driver will let us get away with an allocation that exceeds the limits of our descriptor pool.
+Other times, `vkAllocateDescriptorSets` will fail and return `VK_ERROR_POOL_OUT_OF_MEMORY`.
+This can be particularly frustrating if the allocation succeeds on some machines, but fails on others.
+
+Since Vulkan shifts the responsibility for the allocation to the driver, it is no longer a strict requirement to only allocate as many descriptors of a certain type (`VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`, etc.) as specified by the corresponding `descriptorCount` members for the creation of the descriptor pool.
+However, it remains best practice to do so, and in the future, `VK_LAYER_KHRONOS_validation` will warn about this type of problem if you enable [Best Practice Validation](https://vulkan.lunarg.com/doc/view/latest/windows/best_practices.html).
+
+The final step is to bind the actual image and sampler resources to the descriptors in the descriptor set.
+Go to the `createDescriptorSets` function.
+
+for (size_t i = 0; i 
+
+The resources for a combined image sampler structure must be specified in a `VkDescriptorImageInfo` struct, just like the buffer resource for a uniform buffer descriptor is specified in a `VkDescriptorBufferInfo` struct.
+This is where the objects from the previous chapter come together.
+
+std::array descriptorWrites{
+    vk::WriteDescriptorSet{ .dstSet = descriptorSets[i], .dstBinding = 0, .dstArrayElement = 0, .descriptorCount = 1,
+        .descriptorType = vk::DescriptorType::eUniformBuffer, .pBufferInfo = &bufferInfo },
+    vk::WriteDescriptorSet{ .dstSet = descriptorSets[i], .dstBinding = 1, .dstArrayElement = 0, .descriptorCount = 1,
+        .descriptorType = vk::DescriptorType::eCombinedImageSampler, .pImageInfo = &imageInfo }
+};
+device.updateDescriptorSets(descriptorWrites, {});
+
+The descriptors must be updated with this image info, just like the buffer.
+This time we’re using the `pImageInfo` array instead of `pBufferInfo`.
+The descriptors are now ready to be used by the shaders!
+
+There is one important ingredient for texture mapping that is still missing, and that’s the actual texture coordinates for each vertex, often called "uv coordinates".
+The texture coordinates determine how the image is actually mapped to the geometry.
+
+struct Vertex {
+    glm::vec2 pos;
+    glm::vec3 color;
+    glm::vec2 texCoord;
+
+    static vk::VertexInputBindingDescription getBindingDescription() {
+        return { 0, sizeof(Vertex), vk::VertexInputRate::eVertex };
+    }
+
+    static std::array getAttributeDescriptions() {
+        return {
+            vk::VertexInputAttributeDescription( 0, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, pos) ),
+            vk::VertexInputAttributeDescription( 1, 0, vk::Format::eR32G32B32Sfloat, offsetof(Vertex, color) ),
+            vk::VertexInputAttributeDescription( 2, 0, vk::Format::eR32G32Sfloat, offsetof(Vertex, texCoord) )
+        };
+    }
+};
+
+Modify the `Vertex` struct to include a `vec2` for texture coordinates.
+Make sure to also add a `VkVertexInputAttributeDescription` so that we can use access texture coordinates as input in the vertex shader.
+That is necessary to be able to pass them to the fragment shader for interpolation across the surface of the square.
+
+const std::vector vertices = {
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+};
+
+In this tutorial, I will simply fill the square with the texture by using coordinates from `0, 0` in the top-left corner to `1, 1` in the bottom-right corner.
+Feel free to experiment with different coordinates.
+Try using coordinates below `0` or above `1` to see the addressing modes in action!
+
+The final step is modifying the shaders to sample colors from the texture.
+We first need to modify the vertex shader to pass through the texture coordinates to the fragment shader:
+
+struct VSInput {
+    float2 inPos;
+    float3 inColor;
+    float2 inTexCoord;
+};
+
+struct UniformBuffer {
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+};
+ConstantBuffer ubo;
+
+struct VSOutput
+{
+    float4 pos : SV_Position;
+    float3 fragColor;
+    float2 fragTexCoord;
+};
+
+[shader("vertex")]
+VSOutput vertMain(VSInput input) {
+    VSOutput output;
+    output.pos = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.inPos, 0.0, 1.0))));
+    output.fragColor = input.inColor;
+    output.fragTexCoord = input.inTexCoord;
+    return output;
+}
+
+Sampler2D texture;
+
+[shader("fragment")]
+float4 fragMain(VSOutput vertIn) : SV_TARGET {
+   return texture.Sample(vertIn.fragTexCoord);
+}
+
+You should see something like the image below.
+Remember to recompile the shaders!
+
+![texcoord visualization](../_images/images/texcoord_visualization.png)
+
+The green channel represents the horizontal coordinates and the red channel the vertical coordinates.
+The black and yellow corners confirm that the texture coordinates are correctly interpolated from `0, 0` to `1, 1` across the square.
+Visualizing data using colors is the shader programming equivalent of `printf` debugging, for lack of a better option!
+
+A sampler represents a combined image sampler descriptor in Slang.
+Add a reference to it in the fragment shader:
+
+Sampler2D texture;
+
+There are equivalent `sampler1D` and `sampler3D` types for other types of images.
+Make sure to use the correct binding here.
+
+[shader("fragment")]
+float4 fragMain(VSOutput vertIn) : SV_TARGET {
+   return texture.Sample(vertIn.fragTexCoord);
+}
+
+Textures are sampled using the built-in `texture` function.
+It takes a `sampler` and coordinate as arguments.
+The sampler automatically takes care of the filtering and transformations in the background.
+You should now see the texture on the square when you run the application:
+
+![texture on square](../_images/images/texture_on_square.png)
+
+Try experimenting with the addressing modes by scaling the texture coordinates to values higher than `1`.
+For example, the following fragment shader produces the result in the image below when using `VK_SAMPLER_ADDRESS_MODE_REPEAT`:
+
+[shader("fragment")]
+float4 fragMain(VSOutput vertIn) : SV_TARGET {
+   return texture.Sample(vertIn.fragTexCoord);
+}
+
+![texture on square repeated](../_images/images/texture_on_square_repeated.png)
+
+You can also manipulate the texture colors using the vertex colors:
+
+[shader("fragment")]
+float4 fragMain(VSOutput vertIn) : SV_TARGET {
+   return float4(vertIn.fragColor * texture.Sample(vertIn.fragTexCoord).rgb, 1.0);
+}
+
+I’ve separated the RGB and alpha channels here to not scale the alpha channel.
+
+![texture on square colorized](../_images/images/texture_on_square_colorized.png)
+
+You now know how to access images in shaders!
+This is a very powerful technique when combined with images that are also written to in framebuffers.
+You can use these images as inputs to implement cool effects like post-processing and camera displays within the 3D world.
+
+In the [next chapter](../07_Depth_buffering.html) we’ll learn how to add depth buffering for properly sorting objects.
+
+[C++ code](../_attachments/26_texture_mapping.cpp) /
+[slang shader](../_attachments/26_shader_textures.slang) /
+[GLSL Vertex shader](../_attachments/26_shader_textures.vert) /
+[GLSL Fragment shader](../_attachments/26_shader_textures.frag)

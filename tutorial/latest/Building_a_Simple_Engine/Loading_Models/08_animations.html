@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Loading Models: Updating Animations :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Loading Models</li>
+    <li><a href="08_animations.html">Animations</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Loading Models: Updating Animations</h1>
+<div class="sect1">
+<h2 id="_understanding_and_implementing_animations"><a class="anchor" href="#_understanding_and_implementing_animations"></a>Understanding and Implementing Animations</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_to_3d_animations"><a class="anchor" href="#_introduction_to_3d_animations"></a>Introduction to 3D Animations</h3>
+<div class="paragraph">
+<p>Animation is a crucial aspect of modern 3D applications, bringing static models to life with movement and interactivity. In our engine, we&#8217;ve implemented a robust animation system that supports skeletal animations from glTF files.</p>
+</div>
+<div class="paragraph">
+<p>Animations in 3D graphics typically involve:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Keyframes</strong>: Specific points in time where the state of an object is explicitly defined</p>
+</li>
+<li>
+<p><strong>Interpolation</strong>: The process of calculating intermediate states between keyframes</p>
+</li>
+<li>
+<p><strong>Channels</strong>: Different properties that can be animated (position, rotation, scale)</p>
+</li>
+<li>
+<p><strong>Bones/Joints</strong>: A hierarchical structure that defines how parts of a model move together</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>glTF provides a standardized way to store and transfer animations, which our engine can load and play back.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_animation_data_structures"><a class="anchor" href="#_animation_data_structures"></a>Animation Data Structures</h3>
+<div class="paragraph">
+<p>As we saw in the <a href="03_model_system.html" class="xref page">Model System chapter</a>, our engine uses several structures to represent animations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure for animation keyframes
+struct AnimationChannel {
+    enum PathType { TRANSLATION, ROTATION, SCALE };
+    PathType path;
+    Node* node = nullptr;
+    uint32_t samplerIndex;
+};
+
+// Structure for animation interpolation
+struct AnimationSampler {
+    enum InterpolationType { LINEAR, STEP, CUBICSPLINE };
+    InterpolationType interpolation;
+    std::vector&lt;float&gt; inputs;  // Key frame timestamps
+    std::vector&lt;glm::vec4&gt; outputsVec4;  // Key frame values (for rotations)
+    std::vector&lt;glm::vec3&gt; outputsVec3;  // Key frame values (for translations and scales)
+};
+
+// Structure for animation
+struct Animation {
+    std::string name;
+    std::vector&lt;AnimationSampler&gt; samplers;
+    std::vector&lt;AnimationChannel&gt; channels;
+    float start = std::numeric_limits&lt;float&gt;::max();
+    float end = std::numeric_limits&lt;float&gt;::min();
+    float currentTime = 0.0f;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These structures work together to define how animations are stored and processed:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Animation</strong>: Contains multiple channels and samplers, representing a complete animation sequence</p>
+</li>
+<li>
+<p><strong>AnimationChannel</strong>: Links a node in the scene graph to a specific animation property (translation, rotation, or scale)</p>
+</li>
+<li>
+<p><strong>AnimationSampler</strong>: Defines how to interpolate between keyframes for a specific channel</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_animation_playback_works"><a class="anchor" href="#_how_animation_playback_works"></a>How Animation Playback Works</h3>
+<div class="paragraph">
+<p>The animation update process is the heart of our animation system, responsible for translating time-based animation data into actual transformations applied to scene graph nodes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_animation_update_validation_and_time_management"><a class="anchor" href="#_animation_update_validation_and_time_management"></a>Animation Update: Validation and Time Management</h3>
+<div class="paragraph">
+<p>Before we start anything, we should validate that we have valid animation data and manage the progression of animation time, including looping behavior for cyclical animations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void Model::updateAnimation(uint32_t index, float deltaTime) {
+    // Validate animation data and index bounds
+    if (animations.empty() || index &gt;= animations.size()) {
+        return;
+    }
+
+    // Update animation timing with automatic looping
+    Animation&amp; animation = animations[index];
+    animation.currentTime += deltaTime;
+    while (animation.currentTime &gt;= animation.end) {
+        animation.currentTime -= (animation.end - animation.start);
+    }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Animation validation is critical for robust systems because not all models contain animations, and external code might request non-existent animation indices. By performing this check early, we avoid crashes and undefined behavior when working with static models or invalid animation requests. This defensive programming approach is essential in production game engines where content from various sources might have inconsistent animation data.</p>
+</div>
+<div class="paragraph">
+<p>Time management forms the foundation of animation playback, where the deltaTime parameter represents the elapsed time since the last update. This frame-rate independent approach ensures animations play at consistent speeds regardless of rendering performance. The automatic looping mechanism seamlessly restarts animations when they reach their end time, creating continuous motion that&#8217;s essential for idle animations, walking cycles, and other repetitive movements.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_animation_update_channel_iteration_and_sampler_access"><a class="anchor" href="#_animation_update_channel_iteration_and_sampler_access"></a>Animation Update: Channel Iteration and Sampler Access</h3>
+<div class="paragraph">
+<p>Now we iterate through all animation channels, establishing the connection between abstract animation data and the specific nodes in our scene graph that will receive transformation updates.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">    // Process each animation channel to update corresponding scene nodes
+    for (auto&amp; channel : animation.channels) {
+        assert(channel.samplerIndex &lt; animation.samplers.size());
+        AnimationSampler&amp; sampler = animation.samplers[channel.samplerIndex];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The channel iteration represents the heart of our animation-to-scene-graph mapping system. Each channel defines a specific transformation type (position, rotation, or scale) for a particular node in the scene hierarchy. This one-to-many relationship allows complex animations where multiple properties of multiple nodes can be animated simultaneously, enabling sophisticated character animations with dozens of moving parts.</p>
+</div>
+<div class="paragraph">
+<p>The sampler access pattern demonstrates the separation of concerns in our animation architecture. Samplers contain the actual keyframe data and interpolation logic, while channels define what gets animated. This design allows multiple channels to share the same sampler data, reducing memory usage when the same animation curve applies to different nodes or when different transformation components follow identical patterns.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_animation_update_keyframe_location_and_interpolation_factor_calculation"><a class="anchor" href="#_animation_update_keyframe_location_and_interpolation_factor_calculation"></a>Animation Update: Keyframe Location and Interpolation Factor Calculation</h3>
+<div class="paragraph">
+<p>Next, locate the appropriate keyframes that surround the current animation time and calculate the precise interpolation factor needed for smooth transitions between discrete animation samples.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">        // Find the current keyframe pair that brackets the animation time using binary search
+        auto nextKeyFrameIt = std::lower_bound(sampler.inputs.begin(), sampler.inputs.end(), animation.currentTime);
+        if (nextKeyFrameIt != sampler.inputs.end() &amp;&amp; nextKeyFrameIt != sampler.inputs.begin()) {
+            size_t i = std::distance(sampler.inputs.begin(), nextKeyFrameIt) - 1;
+            // Calculate normalized interpolation factor between keyframes
+            float t = (animation.currentTime - sampler.inputs[i]) / (sampler.inputs[i + 1] - sampler.inputs[i]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The keyframe search algorithm uses std::lower_bound to perform a binary search, finding the pair of keyframes that bracket the current animation time with O(log n) complexity. This efficient approach is ideal for animation data with many keyframes, providing optimal performance compared to linear scanning. The binary search returns an iterator to the first keyframe whose time is greater than or equal to the current animation time, allowing us to determine the bracketing pair by looking at the previous keyframe.</p>
+</div>
+<div class="paragraph">
+<p>The interpolation factor calculation creates a normalized value between 0.0 and 1.0 that represents exactly where the current time falls between two keyframes. When t=0.0, we&#8217;re at the first keyframe; when t=1.0, we&#8217;re at the second keyframe; values in between create smooth transitions. This mathematical foundation enables all the interpolation techniques that follow, whether for linear position changes or complex quaternion rotations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_animation_update_property_specific_interpolation_and_node_updates"><a class="anchor" href="#_animation_update_property_specific_interpolation_and_node_updates"></a>Animation Update: Property-Specific Interpolation and Node Updates</h3>
+<div class="paragraph">
+<p>Finally, apply the appropriate mathematical interpolation technique based on the transformation type, updating the actual scene graph nodes with the computed animation values.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">                // Apply transformation based on the specific animation channel type
+                switch (channel.path) {
+                    case AnimationChannel::TRANSLATION: {
+                        // Linear interpolation for position changes
+                        glm::vec3 start = sampler.outputsVec3[i];
+                        glm::vec3 end = sampler.outputsVec3[i + 1];
+                        channel.node-&gt;translation = glm::mix(start, end, t);
+                        break;
+                    }
+                    case AnimationChannel::ROTATION: {
+                        // Spherical linear interpolation for smooth rotation transitions
+                        glm::quat start = glm::quat(sampler.outputsVec4[i].w, sampler.outputsVec4[i].x, sampler.outputsVec4[i].y, sampler.outputsVec4[i].z);
+                        glm::quat end = glm::quat(sampler.outputsVec4[i + 1].w, sampler.outputsVec4[i + 1].x, sampler.outputsVec4[i + 1].y, sampler.outputsVec4[i + 1].z);
+                        channel.node-&gt;rotation = glm::slerp(start, end, t);
+                        break;
+                    }
+                    case AnimationChannel::SCALE: {
+                        // Linear interpolation for scaling transformations
+                        glm::vec3 start = sampler.outputsVec3[i];
+                        glm::vec3 end = sampler.outputsVec3[i + 1];
+                        channel.node-&gt;scale = glm::mix(start, end, t);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This method:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Updates the animation&#8217;s current time based on the delta time</p>
+</li>
+<li>
+<p>Loops the animation if it reaches the end</p>
+</li>
+<li>
+<p>For each channel in the animation:</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>Finds the current keyframe based on the current time</p>
+</li>
+<li>
+<p>Calculates the interpolation factor between the current and next keyframe</p>
+</li>
+<li>
+<p>Interpolates between keyframe values based on the channel type (translation, rotation, or scale)</p>
+</li>
+<li>
+<p>Updates the corresponding node&#8217;s transformation</p>
+</li>
+</ol>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integrating_animation_updates_in_the_main_loop"><a class="anchor" href="#_integrating_animation_updates_in_the_main_loop"></a>Integrating Animation Updates in the Main Loop</h3>
+<div class="paragraph">
+<p>To animate our models, we need to update the animation state each frame:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void mainLoop() {
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
+        // Update animation time
+        static auto lastTime = std::chrono::high_resolution_clock::now();
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float deltaTime = std::chrono::duration&lt;float, std::chrono::seconds::period&gt;(currentTime - lastTime).count();
+        lastTime = currentTime;
+
+        // Update model animations
+        animationTime += deltaTime;
+        if (!model.animations.empty()) {
+            model.updateAnimation(0, deltaTime);
+        }
+
+        drawFrame();
+    }
+
+    device.waitIdle();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This code:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Calculates the time elapsed since the last frame (deltaTime)</p>
+</li>
+<li>
+<p>Updates a global animation time counter (useful for custom animations)</p>
+</li>
+<li>
+<p>Calls <code>updateAnimation</code> on the model if it has animations</p>
+</li>
+<li>
+<p>Renders the frame with the updated animation state</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_animation_techniques"><a class="anchor" href="#_advanced_animation_techniques"></a>Advanced Animation Techniques</h3>
+<div class="paragraph">
+<p>While our basic animation system handles most common use cases, there are several advanced techniques you might want to implement:</p>
+</div>
+<div class="sect3">
+<h4 id="_animation_blending"><a class="anchor" href="#_animation_blending"></a>Animation Blending</h4>
+<div class="paragraph">
+<p>Animation blending is a technique that combines multiple animations to create smooth transitions or entirely new animations. This is essential for creating realistic character movement and responsive gameplay.</p>
+</div>
+<div class="sect4">
+<h5 id="_understanding_animation_blending"><a class="anchor" href="#_understanding_animation_blending"></a>Understanding Animation Blending</h5>
+<div class="paragraph">
+<p>At its core, animation blending works by interpolating between the transformations (position, rotation, scale) of corresponding bones or nodes in different animations. The key concepts include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Blend Factor</strong>: A value between 0.0 and 1.0 that determines how much of each animation contributes to the final result</p>
+</li>
+<li>
+<p><strong>Blend Space</strong>: A multidimensional space where animations are positioned based on parameters (like speed, direction)</p>
+</li>
+<li>
+<p><strong>Blend Trees</strong>: Hierarchical structures that organize multiple blends into complex animation systems</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_types_of_animation_blending"><a class="anchor" href="#_types_of_animation_blending"></a>Types of Animation Blending</h5>
+<div class="paragraph">
+<p>There are several common types of animation blending:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Linear Blending</strong>: Simple interpolation between two animations (e.g., transitioning from walk to run)</p>
+</li>
+<li>
+<p><strong>Additive Blending</strong>: One animation is added on top of another (e.g., adding a "wounded" limp to any movement animation)</p>
+</li>
+<li>
+<p><strong>Partial Blending</strong>: Blending that affects only certain parts of the skeleton (e.g., aiming a weapon while walking)</p>
+</li>
+<li>
+<p><strong>Parametric Blending</strong>: Blending multiple animations based on continuous parameters (e.g., direction + speed)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_implementing_basic_animation_blending"><a class="anchor" href="#_implementing_basic_animation_blending"></a>Implementing Basic Animation Blending</h5>
+<div class="paragraph">
+<p>Here&#8217;s how to implement a simple linear blend between two animations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void blendAnimations(uint32_t fromIndex, uint32_t toIndex, float blendFactor) {
+    // Store original node transformations
+    std::vector&lt;glm::vec3&gt; originalTranslations;
+    std::vector&lt;glm::quat&gt; originalRotations;
+    std::vector&lt;glm::vec3&gt; originalScales;
+
+    for (auto node : model.linearNodes) {
+        originalTranslations.push_back(node-&gt;translation);
+        originalRotations.push_back(node-&gt;rotation);
+        originalScales.push_back(node-&gt;scale);
+    }
+
+    // Apply first animation fully
+    model.updateAnimation(fromIndex, 0.0f);
+
+    // Store intermediate transformations
+    std::vector&lt;glm::vec3&gt; fromTranslations;
+    std::vector&lt;glm::quat&gt; fromRotations;
+    std::vector&lt;glm::vec3&gt; fromScales;
+
+    for (auto node : model.linearNodes) {
+        fromTranslations.push_back(node-&gt;translation);
+        fromRotations.push_back(node-&gt;rotation);
+        fromScales.push_back(node-&gt;scale);
+    }
+
+    // Restore original transformations
+    for (size_t i = 0; i &lt; model.linearNodes.size(); i++) {
+        model.linearNodes[i]-&gt;translation = originalTranslations[i];
+        model.linearNodes[i]-&gt;rotation = originalRotations[i];
+        model.linearNodes[i]-&gt;scale = originalScales[i];
+    }
+
+    // Apply second animation fully
+    model.updateAnimation(toIndex, 0.0f);
+
+    // Blend between the two animations
+    for (size_t i = 0; i &lt; model.linearNodes.size(); i++) {
+        model.linearNodes[i]-&gt;translation = glm::mix(fromTranslations[i], model.linearNodes[i]-&gt;translation, blendFactor);
+        model.linearNodes[i]-&gt;rotation = glm::slerp(fromRotations[i], model.linearNodes[i]-&gt;rotation, blendFactor);
+        model.linearNodes[i]-&gt;scale = glm::mix(fromScales[i], model.linearNodes[i]-&gt;scale, blendFactor);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This implementation:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Captures the original state of all nodes</p>
+</li>
+<li>
+<p>Applies the first animation and stores its transformations</p>
+</li>
+<li>
+<p>Restores the original state</p>
+</li>
+<li>
+<p>Applies the second animation</p>
+</li>
+<li>
+<p>Blends between the two animations using linear interpolation for positions and scales, and spherical interpolation for rotations</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_advanced_blending_techniques"><a class="anchor" href="#_advanced_blending_techniques"></a>Advanced Blending Techniques</h5>
+<div class="paragraph">
+<p>For more complex scenarios, we can implement more sophisticated blending:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Multi-way blending with weights
+void blendMultipleAnimations(const std::vector&lt;uint32_t&gt;&amp; animationIndices,
+                             const std::vector&lt;float&gt;&amp; weights) {
+    if (animationIndices.empty() || weights.empty() ||
+        animationIndices.size() != weights.size()) {
+        return;
+    }
+
+    // Normalize weights using std::accumulate for cleaner code
+    float totalWeight = std::accumulate(weights.begin(), weights.end(), 0.0f);
+
+    std::vector&lt;std::vector&lt;glm::vec3&gt;&gt; allTranslations;
+    std::vector&lt;std::vector&lt;glm::quat&gt;&gt; allRotations;
+    std::vector&lt;std::vector&lt;glm::vec3&gt;&gt; allScales;
+
+    // Store original transformations
+    std::vector&lt;glm::vec3&gt; originalTranslations;
+    std::vector&lt;glm::quat&gt; originalRotations;
+    std::vector&lt;glm::vec3&gt; originalScales;
+
+    // Reserve space to avoid reallocations
+    originalTranslations.reserve(model.linearNodes.size());
+    originalRotations.reserve(model.linearNodes.size());
+    originalScales.reserve(model.linearNodes.size());
+
+    for (auto node : model.linearNodes) {
+        originalTranslations.push_back(node-&gt;translation);
+        originalRotations.push_back(node-&gt;rotation);
+        originalScales.push_back(node-&gt;scale);
+    }
+
+    // Collect transformations from all animations
+    for (uint32_t animIndex : animationIndices) {
+        // Reset to original state
+        for (size_t i = 0; i &lt; model.linearNodes.size(); i++) {
+            model.linearNodes[i]-&gt;translation = originalTranslations[i];
+            model.linearNodes[i]-&gt;rotation = originalRotations[i];
+            model.linearNodes[i]-&gt;scale = originalScales[i];
+        }
+
+        // Apply this animation
+        model.updateAnimation(animIndex, 0.0f);
+
+        // Store transformations
+        std::vector&lt;glm::vec3&gt; translations;
+        std::vector&lt;glm::quat&gt; rotations;
+        std::vector&lt;glm::vec3&gt; scales;
+
+        for (auto node : model.linearNodes) {
+            translations.push_back(node-&gt;translation);
+            rotations.push_back(node-&gt;rotation);
+            scales.push_back(node-&gt;scale);
+        }
+
+        allTranslations.push_back(std::move(translations));
+        allRotations.push_back(std::move(rotations));
+        allScales.push_back(std::move(scales));
+    }
+
+    // Reset to original state
+    for (size_t i = 0; i &lt; model.linearNodes.size(); i++) {
+        model.linearNodes[i]-&gt;translation = originalTranslations[i];
+        model.linearNodes[i]-&gt;rotation = originalRotations[i];
+        model.linearNodes[i]-&gt;scale = originalScales[i];
+    }
+
+    // Apply weighted blend
+    for (size_t nodeIdx = 0; nodeIdx &lt; model.linearNodes.size(); nodeIdx++) {
+        glm::vec3 blendedTranslation(0.0f);
+        glm::quat blendedRotation(0.0f, 0.0f, 0.0f, 0.0f);
+        glm::vec3 blendedScale(0.0f);
+
+        // First pass for translations and scales
+        for (size_t animIdx = 0; animIdx &lt; animationIndices.size(); animIdx++) {
+            float normalizedWeight = weights[animIdx] / totalWeight;
+            blendedTranslation += allTranslations[animIdx][nodeIdx] * normalizedWeight;
+            blendedScale += allScales[animIdx][nodeIdx] * normalizedWeight;
+        }
+
+        // Special handling for quaternions (rotations)
+        // We use nlerp (normalized lerp) for multiple quaternions
+        for (size_t animIdx = 0; animIdx &lt; animationIndices.size(); animIdx++) {
+            float normalizedWeight = weights[animIdx] / totalWeight;
+            if (animIdx == 0) {
+                blendedRotation = allRotations[animIdx][nodeIdx] * normalizedWeight;
+            } else {
+                // Ensure we're interpolating along the shortest path
+                if (glm::dot(blendedRotation, allRotations[animIdx][nodeIdx]) &lt; 0) {
+                    blendedRotation += -allRotations[animIdx][nodeIdx] * normalizedWeight;
+                } else {
+                    blendedRotation += allRotations[animIdx][nodeIdx] * normalizedWeight;
+                }
+            }
+        }
+
+        // Normalize the resulting quaternion
+        blendedRotation = glm::normalize(blendedRotation);
+
+        // Apply the blended transformations
+        model.linearNodes[nodeIdx]-&gt;translation = blendedTranslation;
+        model.linearNodes[nodeIdx]-&gt;rotation = blendedRotation;
+        model.linearNodes[nodeIdx]-&gt;scale = blendedScale;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This more advanced implementation allows for blending between any number of animations with different weights, which is essential for complex animation systems like locomotion or facial expressions.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_blend_spaces"><a class="anchor" href="#_blend_spaces"></a>Blend Spaces</h5>
+<div class="paragraph">
+<p>For character movement, blend spaces are particularly useful. A blend space is a 2D or 3D space where animations are positioned based on parameters like speed and direction:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Simple 2D blend space for locomotion (direction + speed)
+struct BlendSpaceAnimation {
+    uint32_t animationIndex;
+    float directionAngle;  // In degrees, 0 = forward, 180 = backward
+    float speed;           // In units/second
+};
+
+void updateLocomotionBlendSpace(float currentDirection, float currentSpeed) {
+    // Define our blend space animations
+    std::vector&lt;BlendSpaceAnimation&gt; blendSpace = {
+        {0, 0.0f, 0.0f},     // Idle
+        {1, 0.0f, 1.0f},     // Walk Forward
+        {2, 0.0f, 3.0f},     // Run Forward
+        {3, 90.0f, 1.0f},    // Walk Right
+        {4, 90.0f, 3.0f},    // Run Right
+        {5, 180.0f, 1.0f},   // Walk Backward
+        {6, 180.0f, 3.0f},   // Run Backward
+        {7, 270.0f, 1.0f},   // Walk Left
+        {8, 270.0f, 3.0f}    // Run Left
+    };
+
+    // Find the closest animations and their weights
+    std::vector&lt;uint32_t&gt; animIndices;
+    std::vector&lt;float&gt; weights;
+
+    // Normalize direction to 0-360 range
+    currentDirection = fmod(currentDirection + 360.0f, 360.0f);
+
+    // Find the 3 closest animations in the blend space
+    // This is a simplified approach - a real implementation would use triangulation
+    for (const auto&amp; anim : blendSpace) {
+        float distDir = std::min(std::abs(currentDirection - anim.directionAngle),
+                                360.0f - std::abs(currentDirection - anim.directionAngle));
+        float distSpeed = std::abs(currentSpeed - anim.speed);
+
+        // Calculate distance in blend space (weighted combination of direction and speed)
+        float distance = std::sqrt(distDir * distDir * 0.01f + distSpeed * distSpeed);
+
+        // Use inverse distance weighting
+        if (distance &lt; 0.001f) {
+            // If we're very close to an exact animation, just use that one
+            animIndices = {anim.animationIndex};
+            weights = {1.0f};
+            break;
+        }
+
+        float weight = 1.0f / (distance + 0.1f);  // Add small epsilon to avoid division by zero
+        animIndices.push_back(anim.animationIndex);
+        weights.push_back(weight);
+
+        // Limit to 3 closest animations for performance
+        // Note: This works because we're inside the loop - we remove one element each time
+        // the size exceeds 3, maintaining a maximum of 3 elements as we iterate
+        if (animIndices.size() &gt; 3) {
+            // Find the smallest weight
+            auto minIt = std::min_element(weights.begin(), weights.end());
+            size_t minIdx = std::distance(weights.begin(), minIt);
+
+            // Remove the animation with the smallest weight
+            animIndices.erase(animIndices.begin() + minIdx);
+            weights.erase(weights.begin() + minIdx);
+        }
+    }
+
+    // Blend the selected animations
+    blendMultipleAnimations(animIndices, weights);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This blend space implementation allows for smooth transitions between different movement animations based on the character&#8217;s current direction and speed.</p>
+</div>
+<div class="paragraph">
+<p>While animation blending gives us powerful tools to combine pre-created animations, sometimes we need to adapt animations to dynamic environments in real-time. For example, how do we make a character&#8217;s hand precisely grab an object, or ensure feet properly plant on uneven terrain? This is where our next technique comes in.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_inverse_kinematics_ik"><a class="anchor" href="#_inverse_kinematics_ik"></a>Inverse Kinematics (IK)</h4>
+<div class="paragraph">
+<p>Inverse Kinematics complements our animation system by allowing procedural adjustments to character poses. While the animation playback we implemented earlier uses Forward Kinematics (calculating positions from rotations), IK works in reverse - determining the joint rotations needed to achieve a specific end position.</p>
+</div>
+<div class="sect4">
+<h5 id="_forward_vs_inverse_kinematics"><a class="anchor" href="#_forward_vs_inverse_kinematics"></a>Forward vs. Inverse Kinematics</h5>
+<div class="paragraph">
+<p>To understand IK, it helps to contrast it with Forward Kinematics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Forward Kinematics (FK)</strong>: Given joint angles, calculate the position of the end effector</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Straightforward to compute</p>
+</li>
+<li>
+<p>Predictable and stable</p>
+</li>
+<li>
+<p>Used in most animation playback</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Inverse Kinematics (IK)</strong>: Given a desired end effector position, calculate the joint angles</p>
+<div class="ulist">
+<ul>
+<li>
+<p>More complex to compute</p>
+</li>
+<li>
+<p>May have multiple solutions or no solution</p>
+</li>
+<li>
+<p>Essential for adaptive animations and interactions</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_common_ik_applications"><a class="anchor" href="#_common_ik_applications"></a>Common IK Applications</h5>
+<div class="paragraph">
+<p>Just as we use animation blending to create smooth transitions between predefined animations, we use IK to adapt those animations to dynamic environments. IK enhances our animation system in several key ways:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Foot Placement</strong>: Remember how our animations update node transformations? With IK, we can adjust those transformations to ensure feet properly contact uneven terrain, preventing the "floating feet" problem common in games</p>
+</li>
+<li>
+<p><strong>Hand Placement</strong>: Similar to our blend space example where we interpolate between different animations, IK lets us precisely position a character&#8217;s hands to grab objects at any position</p>
+</li>
+<li>
+<p><strong>Aiming</strong>: We can use IK to orient a character&#8217;s upper body toward a target while the lower body follows a different animation</p>
+</li>
+<li>
+<p><strong>Procedural Animation</strong>: IK allows us to generate new animations on-the-fly based on environmental constraints</p>
+</li>
+<li>
+<p><strong>Ragdoll Physics</strong>: When transitioning from animated to physics-driven movement (like when a character falls), IK helps create realistic physical responses</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_ik_algorithms"><a class="anchor" href="#_ik_algorithms"></a>IK Algorithms</h5>
+<div class="paragraph">
+<p>Just as we have different interpolation methods for animation keyframes (LINEAR, STEP, CUBICSPLINE in our AnimationSampler), we have different algorithms for solving IK problems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Analytical Methods</strong>: For simple cases like two-bone chains (arm or leg), we can use closed-form mathematical solutions - similar to how we directly interpolate between two keyframes</p>
+</li>
+<li>
+<p><strong>Cyclic Coordinate Descent (CCD)</strong>: An iterative approach that adjusts one joint at a time, working backward from the end effector</p>
+</li>
+<li>
+<p><strong>FABRIK (Forward And Backward Reaching Inverse Kinematics)</strong>: Works by iteratively adjusting the entire chain, often converging faster than CCD</p>
+</li>
+<li>
+<p><strong>Jacobian Inverse</strong>: Uses matrix operations to find optimal joint adjustments for complex chains</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_implementing_two_bone_ik"><a class="anchor" href="#_implementing_two_bone_ik"></a>Implementing Two-Bone IK</h5>
+<div class="paragraph">
+<p>The simplest and most common IK scenario involves a two-bone chain (like an arm or leg). Here&#8217;s an implementation of the analytical two-bone IK solution:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Two-bone IK solver
+bool solveTwoBoneIK(
+    Node* rootNode,      // The root joint (e.g., shoulder or hip)
+    Node* midNode,       // The middle joint (e.g., elbow or knee)
+    Node* endNode,       // The end effector (e.g., hand or foot)
+    const glm::vec3&amp; targetPosition,  // Target world position
+    const glm::vec3&amp; hingeAxis,       // Axis of rotation for the middle joint
+    float preferredAngle = 0.0f       // Preferred angle for resolving ambiguity
+) {
+    // Get the original global positions
+    glm::mat4 rootGlobal = rootNode-&gt;getGlobalMatrix();
+    glm::mat4 midGlobal = midNode-&gt;getGlobalMatrix();
+    glm::mat4 endGlobal = endNode-&gt;getGlobalMatrix();
+
+    glm::vec3 rootPos = glm::vec3(rootGlobal[3]);
+    glm::vec3 midPos = glm::vec3(midGlobal[3]);
+    glm::vec3 endPos = glm::vec3(endGlobal[3]);
+
+    // Calculate bone lengths
+    float bone1Length = glm::length(midPos - rootPos);
+    float bone2Length = glm::length(endPos - midPos);
+    float totalLength = bone1Length + bone2Length;
+
+    // Calculate the distance to the target
+    float targetDistance = glm::length(targetPosition - rootPos);
+
+    // Check if the target is reachable
+    if (targetDistance &gt; totalLength) {
+        // Target is too far - stretch as far as possible
+        glm::vec3 direction = glm::normalize(targetPosition - rootPos);
+
+        // Set mid node position
+        glm::vec3 newMidPos = rootPos + direction * bone1Length;
+
+        // Convert to local space and update node
+        glm::mat4 rootInv = glm::inverse(rootGlobal);
+        glm::vec3 localMidPos = glm::vec3(rootInv * glm::vec4(newMidPos, 1.0f));
+        midNode-&gt;translation = localMidPos;
+
+        // Update mid global matrix after changes
+        midGlobal = midNode-&gt;getGlobalMatrix();
+
+        // Set end node position
+        glm::vec3 newEndPos = newMidPos + direction * bone2Length;
+
+        // Convert to local space and update node
+        glm::mat4 midInv = glm::inverse(midGlobal);
+        glm::vec3 localEndPos = glm::vec3(midInv * glm::vec4(newEndPos, 1.0f));
+        endNode-&gt;translation = localEndPos;
+
+        return false; // Target not fully reached
+    }
+
+    // Target is reachable - apply cosine law to find the angles
+    float a = bone1Length;
+    float b = targetDistance;
+    float c = bone2Length;
+
+    // Calculate the angle between the first bone and the target direction
+    float cosAngle1 = (b*b + a*a - c*c) / (2*b*a);
+    cosAngle1 = glm::clamp(cosAngle1, -1.0f, 1.0f); // Avoid numerical errors
+    float angle1 = acos(cosAngle1);
+
+    // Calculate the direction to the target
+    glm::vec3 targetDir = glm::normalize(targetPosition - rootPos);
+
+    // Create a rotation that aligns the x-axis with the target direction
+    glm::vec3 xAxis(1.0f, 0.0f, 0.0f);
+    glm::vec3 rotAxis = glm::cross(xAxis, targetDir);
+
+    if (glm::length(rotAxis) &lt; 0.001f) {
+        // Target is along the x-axis, use the up vector
+        rotAxis = glm::vec3(0.0f, 1.0f, 0.0f);
+    } else {
+        rotAxis = glm::normalize(rotAxis);
+    }
+
+    float rotAngle = acos(glm::dot(xAxis, targetDir));
+    glm::quat targetRot = glm::angleAxis(rotAngle, rotAxis);
+
+    // Create a rotation around the target direction by the preferred angle
+    glm::quat prefRot = glm::angleAxis(preferredAngle, targetDir);
+
+    // Combine rotations
+    glm::quat finalRot = prefRot * targetRot * glm::angleAxis(angle1, hingeAxis);
+
+    // Apply the rotation to the root node
+    rootNode-&gt;rotation = finalRot;
+
+    // Update the mid node's global matrix after root changes
+    midGlobal = midNode-&gt;getGlobalMatrix();
+    midPos = glm::vec3(midGlobal[3]);
+
+    // Calculate the angle for the middle joint
+    float cosAngle2 = (a*a + c*c - b*b) / (2*a*c);
+    cosAngle2 = glm::clamp(cosAngle2, -1.0f, 1.0f); // Avoid numerical errors
+    float angle2 = acos(cosAngle2);
+
+    // The middle joint bends in the opposite direction (PI - angle2)
+    glm::quat midRot = glm::angleAxis(glm::pi&lt;float&gt;() - angle2, hingeAxis);
+    midNode-&gt;rotation = midRot;
+
+    return true; // Target reached
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This implementation:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Calculates the positions and lengths of the bones</p>
+</li>
+<li>
+<p>Checks if the target is reachable</p>
+</li>
+<li>
+<p>Uses the law of cosines to calculate the necessary angles</p>
+</li>
+<li>
+<p>Applies rotations to the joints to reach the target position</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_implementing_ccd_cyclic_coordinate_descent"><a class="anchor" href="#_implementing_ccd_cyclic_coordinate_descent"></a>Implementing CCD (Cyclic Coordinate Descent)</h5>
+<div class="paragraph">
+<p>For chains with more than two bones, CCD is a popular iterative approach:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// CCD IK solver
+void solveCCDIK(
+    std::vector&lt;Node*&gt; chain,         // Joint chain from root to end effector
+    const glm::vec3&amp; targetPosition,  // Target world position
+    int maxIterations = 10,           // Maximum iterations
+    float threshold = 0.01f           // Distance threshold for success
+) {
+    if (chain.size() &lt; 2) return;
+
+    // Get the end effector
+    Node* endEffector = chain.back();
+
+    for (int iteration = 0; iteration &lt; maxIterations; iteration++) {
+        // Get current end effector position
+        glm::vec3 endPos = glm::vec3(endEffector-&gt;getGlobalMatrix()[3]);
+
+        // Check if we're close enough to the target
+        if (glm::distance(endPos, targetPosition) &lt; threshold) {
+            return; // Success
+        }
+
+        // Work backwards from the second-to-last joint to the root
+        for (int i = chain.size() - 2; i &gt;= 0; i--) {
+            Node* currentJoint = chain[i];
+
+            // Get joint position in world space
+            glm::mat4 jointGlobal = currentJoint-&gt;getGlobalMatrix();
+            glm::vec3 jointPos = glm::vec3(jointGlobal[3]);
+
+            // Get updated end effector position
+            endPos = glm::vec3(endEffector-&gt;getGlobalMatrix()[3]);
+
+            // Calculate vectors from joint to end effector and target
+            glm::vec3 toEnd = glm::normalize(endPos - jointPos);
+            glm::vec3 toTarget = glm::normalize(targetPosition - jointPos);
+
+            // Calculate rotation to align the vectors
+            float cosAngle = glm::dot(toEnd, toTarget);
+            cosAngle = glm::clamp(cosAngle, -1.0f, 1.0f);
+
+            float angle = acos(cosAngle);
+
+            // If the angle is small enough, skip this joint
+            if (angle &lt; 0.01f) continue;
+
+            // Calculate rotation axis
+            glm::vec3 rotAxis = glm::cross(toEnd, toTarget);
+
+            // Handle the case where vectors are parallel
+            if (glm::length(rotAxis) &lt; 0.001f) {
+                // Find an arbitrary perpendicular axis
+                glm::vec3 tempAxis(0.0f, 1.0f, 0.0f);
+                if (abs(glm::dot(toEnd, tempAxis)) &gt; 0.9f) {
+                    tempAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+                }
+                rotAxis = glm::cross(toEnd, tempAxis);
+            }
+
+            rotAxis = glm::normalize(rotAxis);
+
+            // Create rotation quaternion
+            glm::quat rotation = glm::angleAxis(angle, rotAxis);
+
+            // Apply rotation to the joint
+            currentJoint-&gt;rotation = rotation * currentJoint-&gt;rotation;
+
+            // Check if we're close enough after this adjustment
+            endPos = glm::vec3(endEffector-&gt;getGlobalMatrix()[3]);
+            if (glm::distance(endPos, targetPosition) &lt; threshold) {
+                return; // Success
+            }
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This CCD implementation:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Iteratively processes each joint from the end effector toward the root</p>
+</li>
+<li>
+<p>For each joint, calculates the rotation needed to bring the end effector closer to the target</p>
+</li>
+<li>
+<p>Applies the rotation and continues to the next joint</p>
+</li>
+<li>
+<p>Repeats until the target is reached or the maximum iterations are exhausted</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_implementing_fabrik_forward_and_backward_reaching_ik"><a class="anchor" href="#_implementing_fabrik_forward_and_backward_reaching_ik"></a>Implementing FABRIK (Forward And Backward Reaching IK)</h5>
+<div class="paragraph">
+<p>FABRIK is another popular IK algorithm that often converges faster than CCD:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// FABRIK IK solver
+void solveFABRIK(
+    std::vector&lt;Node*&gt; chain,         // Joint chain from root to end effector
+    const glm::vec3&amp; targetPosition,  // Target world position
+    bool constrainRoot = true,        // Whether to keep the root fixed
+    int maxIterations = 10,           // Maximum iterations
+    float threshold = 0.01f           // Distance threshold for success
+) {
+    if (chain.size() &lt; 2) return;
+
+    // Store original positions and bone lengths
+    std::vector&lt;glm::vec3&gt; positions;
+    std::vector&lt;float&gt; lengths;
+    glm::vec3 rootOriginalPos;
+
+    // Initialize positions and calculate lengths
+    for (size_t i = 0; i &lt; chain.size(); i++) {
+        glm::vec3 pos = glm::vec3(chain[i]-&gt;getGlobalMatrix()[3]);
+        positions.push_back(pos);
+
+        if (i &gt; 0) {
+            lengths.push_back(glm::distance(positions[i], positions[i-1]));
+        }
+    }
+
+    rootOriginalPos = positions[0];
+
+    // Check if the target is reachable
+    float totalLength = 0.0f;
+    for (float length : lengths) {
+        totalLength += length;
+    }
+
+    glm::vec3 rootToTarget = targetPosition - positions[0];
+    float targetDistance = glm::length(rootToTarget);
+
+    if (targetDistance &gt; totalLength) {
+        // Target is unreachable - stretch the chain
+        glm::vec3 direction = glm::normalize(rootToTarget);
+
+        // Set all joints along the line to the target
+        positions[0] = constrainRoot ? rootOriginalPos : positions[0];
+
+        for (size_t i = 1; i &lt; chain.size(); i++) {
+            positions[i] = positions[i-1] + direction * lengths[i-1];
+        }
+    } else {
+        // Target is reachable - apply FABRIK
+        for (int iteration = 0; iteration &lt; maxIterations; iteration++) {
+            // Check if we're already close enough
+            if (glm::distance(positions.back(), targetPosition) &lt; threshold) {
+                break;
+            }
+
+            // BACKWARD PASS: Set the end effector to the target and work backwards
+            positions.back() = targetPosition;
+
+            for (int i = chain.size() - 2; i &gt;= 0; i--) {
+                // Get the direction from this joint to the next
+                glm::vec3 direction = glm::normalize(positions[i] - positions[i+1]);
+
+                // Set the position of this joint
+                positions[i] = positions[i+1] + direction * lengths[i];
+            }
+
+            // FORWARD PASS: Fix the root and work forwards
+            if (constrainRoot) {
+                positions[0] = rootOriginalPos;
+            }
+
+            for (size_t i = 0; i &lt; chain.size() - 1; i++) {
+                // Get the direction from this joint to the next
+                glm::vec3 direction = glm::normalize(positions[i+1] - positions[i]);
+
+                // Set the position of the next joint
+                positions[i+1] = positions[i] + direction * lengths[i];
+            }
+
+            // Check if we're close enough after this iteration
+            if (glm::distance(positions.back(), targetPosition) &lt; threshold) {
+                break;
+            }
+        }
+    }
+
+    // Apply the new positions to the joints by calculating rotations
+    for (size_t i = 0; i &lt; chain.size() - 1; i++) {
+        Node* currentJoint = chain[i];
+
+        // Calculate the original direction in local space
+        glm::mat4 parentGlobal = i &gt; 0 ? chain[i-1]-&gt;getGlobalMatrix() : glm::mat4(1.0f);
+        glm::mat4 localToGlobal = currentJoint-&gt;getGlobalMatrix() * glm::inverse(parentGlobal);
+        glm::vec3 originalDir = glm::normalize(glm::vec3(localToGlobal * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f)));
+
+        // Calculate the new direction
+        glm::vec3 newDir = glm::normalize(positions[i+1] - positions[i]);
+
+        // Calculate the rotation to align the directions
+        float cosAngle = glm::dot(originalDir, newDir);
+        cosAngle = glm::clamp(cosAngle, -1.0f, 1.0f);
+
+        float angle = acos(cosAngle);
+
+        // If the angle is small, skip this joint
+        if (angle &lt; 0.01f) continue;
+
+        // Calculate rotation axis
+        glm::vec3 rotAxis = glm::cross(originalDir, newDir);
+
+        // Handle the case where vectors are parallel
+        if (glm::length(rotAxis) &lt; 0.001f) {
+            // Find an arbitrary perpendicular axis
+            glm::vec3 tempAxis(0.0f, 1.0f, 0.0f);
+            if (abs(glm::dot(originalDir, tempAxis)) &gt; 0.9f) {
+                tempAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+            }
+            rotAxis = glm::cross(originalDir, tempAxis);
+        }
+
+        rotAxis = glm::normalize(rotAxis);
+
+        // Create rotation quaternion
+        glm::quat rotation = glm::angleAxis(angle, rotAxis);
+
+        // Apply rotation to the joint
+        currentJoint-&gt;rotation = rotation * currentJoint-&gt;rotation;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The FABRIK algorithm:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Works by alternating between forward and backward passes along the joint chain</p>
+</li>
+<li>
+<p>In the backward pass, it positions joints working from the end effector toward the root</p>
+</li>
+<li>
+<p>In the forward pass, it repositions joints from the root toward the end effector</p>
+</li>
+<li>
+<p>This process quickly converges to a solution that satisfies the constraints</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_ik_constraints"><a class="anchor" href="#_ik_constraints"></a>IK Constraints</h5>
+<div class="paragraph">
+<p>In practice, IK systems need constraints to produce realistic results:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Apply joint constraints to a node
+void applyJointConstraints(Node* node,
+                          const glm::vec3&amp; minAngles,
+                          const glm::vec3&amp; maxAngles) {
+    // Convert quaternion to Euler angles
+    glm::vec3 eulerAngles = glm::degrees(glm::eulerAngles(node-&gt;rotation));
+
+    // Apply constraints
+    eulerAngles.x = glm::clamp(eulerAngles.x, minAngles.x, maxAngles.x);
+    eulerAngles.y = glm::clamp(eulerAngles.y, minAngles.y, maxAngles.y);
+    eulerAngles.z = glm::clamp(eulerAngles.z, minAngles.z, maxAngles.z);
+
+    // Convert back to quaternion
+    glm::quat constrainedRotation = glm::quat(glm::radians(eulerAngles));
+
+    // Apply the constrained rotation
+    node-&gt;rotation = constrainedRotation;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_integrating_ik_with_animation"><a class="anchor" href="#_integrating_ik_with_animation"></a>Integrating IK with Animation</h5>
+<div class="paragraph">
+<p>Now that we&#8217;ve implemented several IK algorithms, let&#8217;s see how they integrate with our animation system. Remember that our animation system updates node transformations based on keyframes, but sometimes we need to override or adjust these transformations based on runtime conditions. Here&#8217;s how we can blend IK adjustments with our existing animation playback:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Apply IK on top of an animation
+void applyIKToAnimation(Model* model, uint32_t animationIndex, float deltaTime,
+                       Node* endEffector, const glm::vec3&amp; targetPosition,
+                       float ikWeight = 1.0f) {
+    // First, update the animation normally
+    model-&gt;updateAnimation(animationIndex, deltaTime);
+
+    // If IK weight is zero, we're done
+    if (ikWeight &lt;= 0.0f) return;
+
+    // Build the joint chain from end effector to root
+    std::vector&lt;Node*&gt; chain;
+    Node* current = endEffector;
+
+    // Add up to 3 joints to the chain (e.g., hand, elbow, shoulder)
+    while (current &amp;&amp; chain.size() &lt; 3) {
+        chain.push_back(current);
+        current = current-&gt;parent;
+    }
+
+    // Reverse the chain to go from root to end effector
+    std::reverse(chain.begin(), chain.end());
+
+    // Store original rotations
+    std::vector&lt;glm::quat&gt; originalRotations;
+    for (Node* node : chain) {
+        originalRotations.push_back(node-&gt;rotation);
+    }
+
+    // Apply IK
+    solveTwoBoneIK(chain[0], chain[1], chain[2], targetPosition,
+                  glm::vec3(0.0f, 0.0f, 1.0f));
+
+    // Blend between original and IK rotations based on weight
+    if (ikWeight &lt; 1.0f) {
+        for (size_t i = 0; i &lt; chain.size(); i++) {
+            chain[i]-&gt;rotation = glm::slerp(originalRotations[i],
+                                          chain[i]-&gt;rotation,
+                                          ikWeight);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_use_cases_and_limitations"><a class="anchor" href="#_use_cases_and_limitations"></a>Use Cases and Limitations</h5>
+<div class="paragraph">
+<p>IK is powerful but comes with considerations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Performance</strong>: Iterative IK algorithms can be computationally expensive</p>
+</li>
+<li>
+<p><strong>Stability</strong>: IK can produce jittery results without proper damping and constraints</p>
+</li>
+<li>
+<p><strong>Realism</strong>: Without constraints, IK can produce physically impossible poses</p>
+</li>
+<li>
+<p><strong>Integration</strong>: Blending IK with existing animations requires careful tuning</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Despite these challenges, IK is essential for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Environmental Adaptation</strong>: Making characters interact with varying terrain and objects</p>
+</li>
+<li>
+<p><strong>Procedural Animation</strong>: Generating animations that respond to dynamic conditions</p>
+</li>
+<li>
+<p><strong>Interactive Gameplay</strong>: Allowing precise control over character limbs for gameplay mechanics</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_animation_state_machines"><a class="anchor" href="#_animation_state_machines"></a>Animation State Machines</h4>
+<div class="paragraph">
+<p>So far, we&#8217;ve explored how to play individual animations, blend between animations, and adjust animations with IK. But in a real game, characters often have dozens of animations that need to be triggered based on player input and game state. How do we organize and manage all these animations and their transitions? This is where animation state machines come in.</p>
+</div>
+<div class="paragraph">
+<p>For complex characters, a state machine can manage transitions between animations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">enum class AnimationState {
+    IDLE,
+    WALKING,
+    RUNNING,
+    JUMPING
+};
+
+class CharacterAnimator {
+private:
+    Model* model;
+    AnimationState currentState = AnimationState::IDLE;
+    float blendTime = 0.3f;
+    float currentBlend = 0.0f;
+
+    struct StateAnimation {
+        uint32_t animationIndex;
+        float speed;
+        bool loop;
+    };
+
+    std::unordered_map&lt;AnimationState, StateAnimation&gt; stateMap;
+
+public:
+    CharacterAnimator(Model* model) : model(model) {
+        // Map states to animations
+        stateMap[AnimationState::IDLE] = {0, 1.0f, true};
+        stateMap[AnimationState::WALKING] = {1, 1.0f, true};
+        stateMap[AnimationState::RUNNING] = {2, 1.0f, true};
+        stateMap[AnimationState::JUMPING] = {3, 1.0f, false};
+    }
+
+    void setState(AnimationState newState) {
+        if (newState != currentState) {
+            // Start blending to new animation
+            currentBlend = 0.0f;
+            currentState = newState;
+        }
+    }
+
+    void update(float deltaTime) {
+        // Handle blending if needed
+        if (currentBlend &lt; blendTime) {
+            currentBlend += deltaTime;
+            float t = currentBlend / blendTime;
+            // Implement blending logic here
+        } else {
+            // Just update current animation
+            StateAnimation&amp; anim = stateMap[currentState];
+            model-&gt;updateAnimation(anim.animationIndex, deltaTime * anim.speed);
+        }
+    }
+};</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_procedural_animations"><a class="anchor" href="#_procedural_animations"></a>Procedural Animations</h4>
+<div class="paragraph">
+<p>You can also create animations procedurally:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void applyProceduralAnimation(float time) {
+    // Find the head node
+    Node* headNode = nullptr;
+    for (auto node : model.linearNodes) {
+        if (node-&gt;name == "Head") {
+            headNode = node;
+            break;
+        }
+    }
+
+    if (headNode) {
+        // Apply a simple bobbing motion
+        float bobAmount = sin(time * 2.0f) * 0.05f;
+        headNode-&gt;translation.y += bobAmount;
+
+        // Apply a simple looking around motion
+        float lookAmount = sin(time * 0.5f) * 0.2f;
+        glm::quat lookRotation = glm::angleAxis(lookAmount, glm::vec3(0.0f, 1.0f, 0.0f));
+        headNode-&gt;rotation = lookRotation * headNode-&gt;rotation;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>Performance Considerations</h3>
+<div class="paragraph">
+<p>Animations can be computationally expensive, especially with complex models. Here are some optimization techniques:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Level of Detail (LOD)</strong>: Use simpler animations for distant objects</p>
+</li>
+<li>
+<p><strong>Animation Culling</strong>: Don&#8217;t update animations for objects outside the view frustum</p>
+</li>
+<li>
+<p><strong>Keyframe Reduction</strong>: Reduce the number of keyframes in animations that don&#8217;t need high precision</p>
+</li>
+<li>
+<p><strong>Parallel Processing</strong>: Update animations in parallel using multiple threads</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h3>
+<div class="paragraph">
+<p>Our animation system provides a solid foundation for bringing 3D models to life. By leveraging the glTF format and our scene graph structure, we can efficiently load, play, and blend animations to create dynamic and engaging scenes.</p>
+</div>
+<div class="paragraph">
+<p>In the next chapter, we&#8217;ll wrap up our exploration of the model loading system and discuss future enhancements.</p>
+</div>
+<div class="paragraph">
+<p><a href="07_scene_rendering.html" class="xref page">Previous: Rendering the Scene</a> | <a href="09_conclusion.html" class="xref page">Next: Conclusion</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

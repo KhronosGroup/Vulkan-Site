@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Loading Models: Implementing PBR for glTF Models :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Loading Models</li>
+    <li><a href="05_pbr_rendering.html">PBR rendering</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Loading Models: Implementing PBR for glTF Models</h1>
+<div class="sect1">
+<h2 id="_applying_pbr_to_gltf_models"><a class="anchor" href="#_applying_pbr_to_gltf_models"></a>Applying PBR to glTF Models</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_building_on_pbr_knowledge"><a class="anchor" href="#_building_on_pbr_knowledge"></a>Building on PBR Knowledge</h3>
+<div class="paragraph">
+<p>In the <a href="../Lighting_Materials/01_introduction.html" class="xref page">Lighting &amp; Materials chapter</a>, we explored the fundamentals of Physically Based Rendering (PBR), including its core principles, the BRDF, and material properties. Now, we&#8217;ll apply that knowledge to implement a PBR pipeline for the glTF models we&#8217;ve loaded.</p>
+</div>
+<div class="paragraph">
+<p>As we learned in the <a href="../../15_GLTF_KTX2_Migration.html" class="xref page">glTF and KTX2 Migration chapter</a>, glTF uses PBR with the metallic-roughness workflow for its material system. This aligns perfectly with the PBR concepts we&#8217;ve already covered, making it straightforward to render our glTF models with physically accurate lighting.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_leveraging_gltfs_pbr_materials"><a class="anchor" href="#_leveraging_gltfs_pbr_materials"></a>Leveraging glTF&#8217;s PBR Materials</h3>
+<div class="paragraph">
+<p>The glTF format already includes all the material properties we need for PBR:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Base Color</strong>: Defined by the baseColorFactor and baseColorTexture</p>
+</li>
+<li>
+<p><strong>Metallic and Roughness</strong>: Defined by metallicFactor, roughnessFactor, and metallicRoughnessTexture</p>
+</li>
+<li>
+<p><strong>Normal Maps</strong>: For surface detail without additional geometry</p>
+</li>
+<li>
+<p><strong>Occlusion Maps</strong>: For approximating ambient occlusion</p>
+</li>
+<li>
+<p><strong>Emissive Maps</strong>: For self-illuminating parts of the material</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By using these properties directly, we can ensure our rendering matches the artist&#8217;s intent and produces physically accurate results.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_pbr_in_our_engine"><a class="anchor" href="#_implementing_pbr_in_our_engine"></a>Implementing PBR in Our Engine</h3>
+<div class="paragraph">
+<p>Now that we understand the theory behind PBR, let&#8217;s implement it in our engine. We&#8217;ll build on the material data we loaded from glTF files in the previous chapter.</p>
+</div>
+<div class="sect3">
+<h4 id="_uniform_buffer_for_pbr"><a class="anchor" href="#_uniform_buffer_for_pbr"></a>Uniform Buffer for PBR</h4>
+<div class="paragraph">
+<p>We need to extend our uniform buffer to include PBR parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure for uniform buffer object
+struct UniformBufferObject {
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
+
+    // PBR parameters
+    alignas(16) glm::vec4 lightPositions[4];  // Position and radius
+    alignas(16) glm::vec4 lightColors[4];     // RGB color and intensity
+    alignas(16) glm::vec4 camPos;             // Camera position for view-dependent effects
+    alignas(4) float exposure = 4.5f;         // Exposure for HDR rendering
+    alignas(4) float gamma = 2.2f;            // Gamma correction value
+    alignas(4) float prefilteredCubeMipLevels = 1.0f;  // For image-based lighting
+    alignas(4) float scaleIBLAmbient = 1.0f;  // Scale factor for ambient lighting
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This uniform buffer includes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Standard Transformation Matrices</strong>: Model, view, and projection matrices for vertex transformation</p>
+</li>
+<li>
+<p><strong>Light Information</strong>: Positions and colors of up to four light sources</p>
+</li>
+<li>
+<p><strong>Camera Position</strong>: Needed for view-dependent effects like Fresnel</p>
+</li>
+<li>
+<p><strong>Rendering Parameters</strong>: Exposure, gamma, and other values for post-processing</p>
+</li>
+<li>
+<p><strong>Image-Based Lighting Parameters</strong>: For environment reflections (we&#8217;ll cover this in a later chapter)</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_push_constants_for_materials"><a class="anchor" href="#_push_constants_for_materials"></a>Push Constants for Materials</h4>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>We introduced push constants earlier in <a href="../Lighting_Materials/03_push_constants.html" class="xref page">push constants</a>; here we focus on how the same mechanism carries glTF metallic‑roughness material knobs efficiently per draw.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll use <a href="https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#descriptorsets-pushconstant">push constants</a> to pass material properties to the shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure for push constants
+struct PushConstantBlock {
+    glm::vec4 baseColorFactor;            // RGB base color and alpha
+    float metallicFactor;                 // How metallic the surface is
+    float roughnessFactor;                // How rough the surface is
+    int baseColorTextureSet;              // Texture coordinate set for base color
+    int physicalDescriptorTextureSet;     // Texture coordinate set for metallic-roughness
+    int normalTextureSet;                 // Texture coordinate set for normal map
+    int occlusionTextureSet;              // Texture coordinate set for occlusion
+    int emissiveTextureSet;               // Texture coordinate set for emission
+    float alphaMask;                      // Whether to use alpha masking
+    float alphaMaskCutoff;                // Alpha threshold for masking
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Push constants are ideal for material properties because:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>They can be updated quickly between draw calls</p>
+</li>
+<li>
+<p>They don&#8217;t require descriptor sets</p>
+</li>
+<li>
+<p>They&#8217;re perfect for per-object data like material properties</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setting_up_the_descriptor_sets"><a class="anchor" href="#_setting_up_the_descriptor_sets"></a>Setting Up the Descriptor Sets</h4>
+<div class="paragraph">
+<p>To implement PBR, we need to set up descriptor sets for our textures and uniform buffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create descriptor set layout
+void createDescriptorSetLayout() {
+    // Binding for uniform buffer
+    vk::DescriptorSetLayoutBinding uboBinding{
+        .binding = 0,
+        .descriptorType = vk::DescriptorType::eUniformBuffer,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eVertex | vk::ShaderStageFlagBits::eFragment
+    };
+
+    // Bindings for textures
+    std::array&lt;vk::DescriptorSetLayoutBinding, 5&gt; textureBindings{};
+
+    // Base color texture
+    textureBindings[0].binding = 1;
+    textureBindings[0].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    textureBindings[0].descriptorCount = 1;
+    textureBindings[0].stageFlags = vk::ShaderStageFlagBits::eFragment;
+
+    // Metallic-roughness texture
+    textureBindings[1].binding = 2;
+    textureBindings[1].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    textureBindings[1].descriptorCount = 1;
+    textureBindings[1].stageFlags = vk::ShaderStageFlagBits::eFragment;
+
+    // Normal map
+    textureBindings[2].binding = 3;
+    textureBindings[2].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    textureBindings[2].descriptorCount = 1;
+    textureBindings[2].stageFlags = vk::ShaderStageFlagBits::eFragment;
+
+    // Occlusion map
+    textureBindings[3].binding = 4;
+    textureBindings[3].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    textureBindings[3].descriptorCount = 1;
+    textureBindings[3].stageFlags = vk::ShaderStageFlagBits::eFragment;
+
+    // Emissive map
+    textureBindings[4].binding = 5;
+    textureBindings[4].descriptorType = vk::DescriptorType::eCombinedImageSampler;
+    textureBindings[4].descriptorCount = 1;
+    textureBindings[4].stageFlags = vk::ShaderStageFlagBits::eFragment;
+
+    // Combine all bindings
+    std::array&lt;vk::DescriptorSetLayoutBinding, 6&gt; bindings = {
+        uboBinding,
+        textureBindings[0],
+        textureBindings[1],
+        textureBindings[2],
+        textureBindings[3],
+        textureBindings[4]
+    };
+
+    // Create the descriptor set layout
+    vk::DescriptorSetLayoutCreateInfo layoutInfo{
+        .bindingCount = static_cast&lt;uint32_t&gt;(bindings.size()),
+        .pBindings = bindings.data()
+    };
+
+    descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_setting_up_the_pipeline"><a class="anchor" href="#_setting_up_the_pipeline"></a>Setting Up the Pipeline</h4>
+<div class="paragraph">
+<p>Our PBR pipeline needs to be configured for the specific requirements of physically-based rendering:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void createPipeline() {
+    // ... (standard pipeline setup code)
+
+    // Enable alpha blending
+    vk::PipelineColorBlendAttachmentState colorBlendAttachment{
+        .blendEnable = vk::True,
+        .srcColorBlendFactor = vk::BlendFactor::eSrcAlpha,
+        .dstColorBlendFactor = vk::BlendFactor::eOneMinusSrcAlpha,
+        .colorBlendOp = vk::BlendOp::eAdd,
+        .srcAlphaBlendFactor = vk::BlendFactor::eOne,
+        .dstAlphaBlendFactor = vk::BlendFactor::eZero,
+        .alphaBlendOp = vk::BlendOp::eAdd,
+        .colorWriteMask =
+            vk::ColorComponentFlagBits::eR |
+            vk::ColorComponentFlagBits::eG |
+            vk::ColorComponentFlagBits::eB |
+            vk::ColorComponentFlagBits::eA
+    };
+
+    // Set up push constants for material properties
+    vk::PushConstantRange pushConstantRange{
+        .stageFlags = vk::ShaderStageFlagBits::eFragment,
+        .offset = 0,
+        .size = sizeof(PushConstantBlock)
+    };
+
+    // Create the pipeline layout
+    vk::PipelineLayoutCreateInfo pipelineLayoutInfo{
+        .setLayoutCount = 1,
+        .pSetLayouts = &amp;descriptorSetLayout,
+        .pushConstantRangeCount = 1,
+        .pPushConstantRanges = &amp;pushConstantRange
+    };
+
+    pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutInfo);
+
+    // ... (rest of pipeline creation)
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pbr_shader_implementation"><a class="anchor" href="#_pbr_shader_implementation"></a>PBR Shader Implementation</h3>
+<div class="paragraph">
+<p>The heart of our PBR implementation is in the fragment shader. Here&#8217;s a simplified version of a PBR fragment shader written in Slang:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Input from vertex shader
+struct VSOutput {
+    float3 WorldPos : POSITION;  // Automatically assigned to location 0
+    float3 Normal : NORMAL;      // Automatically assigned to location 1
+    float2 UV : TEXCOORD0;       // Automatically assigned to location 2
+    float4 Tangent : TANGENT;    // Automatically assigned to location 3
+};
+
+// Uniform buffer
+struct UniformBufferObject {
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+    float4 lightPositions[4];
+    float4 lightColors[4];
+    float4 camPos;
+    float exposure;
+    float gamma;
+    float prefilteredCubeMipLevels;
+    float scaleIBLAmbient;
+};
+
+// Push constants for material properties
+struct PushConstants {
+    float4 baseColorFactor;
+    float metallicFactor;
+    float roughnessFactor;
+    int baseColorTextureSet;
+    int physicalDescriptorTextureSet;
+    int normalTextureSet;
+    int occlusionTextureSet;
+    int emissiveTextureSet;
+    float alphaMask;
+    float alphaMaskCutoff;
+};
+
+// Constants
+static const float PI = 3.14159265359;
+
+// Bindings
+ConstantBuffer&lt;UniformBufferObject&gt; ubo;
+Texture2D baseColorMap;
+SamplerState baseColorSampler;
+Texture2D metallicRoughnessMap;
+SamplerState metallicRoughnessSampler;
+Texture2D normalMap;
+SamplerState normalSampler;
+Texture2D occlusionMap;
+SamplerState occlusionSampler;
+Texture2D emissiveMap;
+SamplerState emissiveSampler;
+
+[[vk::push_constant]] PushConstants material;
+
+// PBR functions
+float DistributionGGX(float NdotH, float roughness) {
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH2 = NdotH * NdotH;
+
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+
+float GeometrySmith(float NdotV, float NdotL, float roughness) {
+    float r = roughness + 1.0;
+    float k = (r * r) / 8.0;
+
+    float ggx1 = NdotV / (NdotV * (1.0 - k) + k);
+    float ggx2 = NdotL / (NdotL * (1.0 - k) + k);
+
+    return ggx1 * ggx2;
+}
+
+float3 FresnelSchlick(float cosTheta, float3 F0) {
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+// Main fragment shader function
+float4 main(VSOutput input) : SV_TARGET
+{
+    // Sample material textures
+    float4 baseColor = baseColorMap.Sample(baseColorSampler, input.UV) * material.baseColorFactor;
+    float2 metallicRoughness = metallicRoughnessMap.Sample(metallicRoughnessSampler, input.UV).bg;
+    float metallic = metallicRoughness.x * material.metallicFactor;
+    float roughness = metallicRoughness.y * material.roughnessFactor;
+    float ao = occlusionMap.Sample(occlusionSampler, input.UV).r;  // link:https://learnopengl.com/Advanced-Lighting/SSAO[Ambient occlusion]
+    float3 emissive = emissiveMap.Sample(emissiveSampler, input.UV).rgb;  // link:https://learnopengl.com/PBR/Lighting[Emissive lighting] (self-illumination)
+
+    // Calculate normal in link:https://learnopengl.com/Advanced-Lighting/Normal-Mapping[tangent space]
+    float3 N = normalize(input.Normal);
+    if (material.normalTextureSet &gt;= 0) {
+        // Apply link:https://learnopengl.com/Advanced-Lighting/Normal-Mapping[normal mapping]
+        float3 tangentNormal = normalMap.Sample(normalSampler, input.UV).xyz * 2.0 - 1.0;
+        float3 T = normalize(input.Tangent.xyz);
+        float3 B = normalize(cross(N, T)) * input.Tangent.w;
+        float3x3 TBN = float3x3(T, B, N);
+        N = normalize(mul(tangentNormal, TBN));
+    }
+
+    // Calculate view and reflection vectors
+    float3 V = normalize(ubo.camPos.xyz - input.WorldPos);
+    float3 R = reflect(-V, N);
+
+    // Calculate F0 (base reflectivity)
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, baseColor.rgb, metallic);
+
+    // Initialize lighting
+    float3 Lo = float3(0.0, 0.0, 0.0);
+
+    // Calculate lighting for each light
+    for (int i = 0; i &lt; 4; i++) {
+        float3 lightPos = ubo.lightPositions[i].xyz;
+        float3 lightColor = ubo.lightColors[i].rgb;
+
+        // Calculate light direction and distance
+        float3 L = normalize(lightPos - input.WorldPos);
+        float distance = length(lightPos - input.WorldPos);
+        float attenuation = 1.0 / (distance * distance);
+        float3 radiance = lightColor * attenuation;
+
+        // Calculate half vector (the normalized vector halfway between view and light direction)
+        // Used in link:https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model[Blinn-Phong] and PBR models
+        float3 H = normalize(V + L);
+
+        // Calculate BRDF terms
+        float NdotL = max(dot(N, L), 0.0);
+        float NdotV = max(dot(N, V), 0.0);
+        float NdotH = max(dot(N, H), 0.0);
+        float HdotV = max(dot(H, V), 0.0);
+
+        // Specular BRDF
+        float D = DistributionGGX(NdotH, roughness);
+        float G = GeometrySmith(NdotV, NdotL, roughness);
+        float3 F = FresnelSchlick(HdotV, F0);
+
+        float3 numerator = D * G * F;
+        float denominator = 4.0 * NdotV * NdotL + 0.0001;
+        float3 specular = numerator / denominator;
+
+        // link:https://learnopengl.com/PBR/Theory[Energy conservation]
+        float3 kS = F;
+        float3 kD = float3(1.0, 1.0, 1.0) - kS;
+        kD *= 1.0 - metallic;
+
+        // Add to outgoing radiance
+        Lo += (kD * baseColor.rgb / PI + specular) * radiance * NdotL;
+    }
+
+    // Add ambient and emissive
+    float3 ambient = float3(0.03, 0.03, 0.03) * baseColor.rgb * ao;
+    float3 color = ambient + Lo + emissive;
+
+    // link:https://en.wikipedia.org/wiki/High-dynamic-range_rendering[HDR] link:https://en.wikipedia.org/wiki/Tone_mapping[tonemapping] and link:https://en.wikipedia.org/wiki/Gamma_correction[gamma correction]
+    color = color / (color + float3(1.0, 1.0, 1.0));
+    color = pow(color, float3(1.0 / ubo.gamma, 1.0 / ubo.gamma, 1.0 / ubo.gamma));
+
+    return float4(color, baseColor.a);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This shader implements the core PBR lighting model, including:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Sampling material textures</p>
+</li>
+<li>
+<p>Calculating normal mapping</p>
+</li>
+<li>
+<p>Computing the specular BRDF with D, F, and G terms</p>
+</li>
+<li>
+<p>Applying energy conservation</p>
+</li>
+<li>
+<p>Handling multiple light sources</p>
+</li>
+<li>
+<p>Tone mapping and gamma correction</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_lighting_setup_for_pbr"><a class="anchor" href="#_lighting_setup_for_pbr"></a>Lighting Setup for PBR</h4>
+<div class="paragraph">
+<p>PBR requires careful setup of light sources to achieve realistic results. Here&#8217;s how we can set up lights in our application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void setupLights() {
+    // Set up four lights with different positions and colors
+    std::array&lt;glm::vec4, 4&gt; lightPositions = {
+        glm::vec4(-10.0f, 10.0f, 10.0f, 1.0f),
+        glm::vec4(10.0f, 10.0f, 10.0f, 1.0f),
+        glm::vec4(-10.0f, -10.0f, 10.0f, 1.0f),
+        glm::vec4(10.0f, -10.0f, 10.0f, 1.0f)
+    };
+
+    std::array&lt;glm::vec4, 4&gt; lightColors = {
+        glm::vec4(300.0f, 300.0f, 300.0f, 1.0f),  // White
+        glm::vec4(300.0f, 300.0f, 0.0f, 1.0f),    // Yellow
+        glm::vec4(0.0f, 0.0f, 300.0f, 1.0f),      // Blue
+        glm::vec4(300.0f, 0.0f, 0.0f, 1.0f)       // Red
+    };
+
+    // Update uniform buffer with light data
+    for (size_t i = 0; i &lt; maxConcurrentFrames; i++) {
+        UniformBufferObject ubo{};
+        // ... (set up transformation matrices)
+
+        // Set light positions and colors
+        for (int j = 0; j &lt; 4; j++) {
+            ubo.lightPositions[j] = lightPositions[j];
+            ubo.lightColors[j] = lightColors[j];
+        }
+
+        // Set camera position for view-dependent effects
+        ubo.camPos = glm::vec4(camera.getPosition(), 1.0f);
+
+        // Set other PBR parameters
+        ubo.exposure = 4.5f;
+        ubo.gamma = 2.2f;
+
+        // Copy to uniform buffer (per frame-in-flight)
+        memcpy(uniformBuffers[i].mapped, &amp;ubo, sizeof(ubo));
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_camera_integration_for_pbr"><a class="anchor" href="#_camera_integration_for_pbr"></a>Camera Integration for PBR</h4>
+<div class="paragraph">
+<p>PBR relies on view-dependent effects like the Fresnel effect, so we need to integrate our camera system:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void updateUniformBuffer(uint32_t currentFrame) {
+    UniformBufferObject ubo{};
+
+    // Update transformation matrices
+    ubo.model = glm::mat4(1.0f);  // Or get from the model's node
+    ubo.view = camera.getViewMatrix();
+    ubo.proj = camera.getProjectionMatrix(swapChainExtent.width / (float)swapChainExtent.height);
+
+    // Vulkan's Y coordinate is inverted compared to OpenGL
+    ubo.proj[1][1] *= -1;
+
+    // Update camera position for PBR calculations
+    ubo.camPos = glm::vec4(camera.getPosition(), 1.0f);
+
+    // ... (update other PBR parameters)
+
+    // Copy to uniform buffer (per frame-in-flight)
+    memcpy(uniformBuffers[currentFrame].mapped, &amp;ubo, sizeof(ubo));
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rendering_with_pbr"><a class="anchor" href="#_rendering_with_pbr"></a>Rendering with PBR</h3>
+<div class="paragraph">
+<p>Finally, let&#8217;s put it all together to render our models with PBR:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void drawModel(vk::raii::CommandBuffer&amp; commandBuffer, Model* model) {
+    // Bind descriptor set with uniform buffer and textures
+    commandBuffer.bindDescriptorSets(
+        vk::PipelineBindPoint::eGraphics,
+        pipelineLayout,
+        0,
+        1,
+        &amp;descriptorSets[currentFrame],
+        0,
+        nullptr
+    );
+
+    // Traverse the model's scene graph
+    for (auto&amp; node : model-&gt;linearNodes) {
+        if (node-&gt;mesh.indices.size() &gt; 0) {
+            // Get the global transformation matrix
+            glm::mat4 nodeMatrix = node-&gt;getGlobalMatrix();
+
+            // Update model matrix in uniform buffer
+            // (In a real implementation, we'd use a separate UBO for each model)
+
+            // Set up push constants for material properties
+            if (node-&gt;mesh.materialIndex &gt;= 0) {
+                Material&amp; mat = model-&gt;materials[node-&gt;mesh.materialIndex];
+
+                PushConstantBlock pushConstants{};
+                pushConstants.baseColorFactor = mat.baseColorFactor;
+                pushConstants.metallicFactor = mat.metallicFactor;
+                pushConstants.roughnessFactor = mat.roughnessFactor;
+                pushConstants.baseColorTextureSet = mat.baseColorTextureIndex;
+                pushConstants.physicalDescriptorTextureSet = mat.metallicRoughnessTextureIndex;
+                pushConstants.normalTextureSet = mat.normalTextureIndex;
+                pushConstants.occlusionTextureSet = mat.occlusionTextureIndex;
+                pushConstants.emissiveTextureSet = mat.emissiveTextureIndex;
+
+                commandBuffer.pushConstants(
+                    pipelineLayout,
+                    vk::ShaderStageFlagBits::eFragment,
+                    0,
+                    sizeof(PushConstantBlock),
+                    &amp;pushConstants
+                );
+            }
+
+            // Bind vertex and index buffers
+            vk::Buffer vertexBuffers[] = {*node-&gt;mesh.vertexBuffer};
+            vk::DeviceSize offsets[] = {0};
+            commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+            commandBuffer.bindIndexBuffer(*node-&gt;mesh.indexBuffer, 0, vk::IndexType::eUint32);
+
+            // Draw the mesh
+            commandBuffer.drawIndexed(
+                static_cast&lt;uint32_t&gt;(node-&gt;mesh.indices.size()),
+                1,
+                0,
+                0,
+                0
+            );
+        }
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_pbr_techniques"><a class="anchor" href="#_advanced_pbr_techniques"></a>Advanced PBR Techniques</h3>
+<div class="paragraph">
+<p>While we&#8217;ve covered the basics of PBR implementation, there are several advanced techniques that can enhance the realism of your rendering:</p>
+</div>
+<div class="sect3">
+<h4 id="_image_based_lighting_ibl"><a class="anchor" href="#_image_based_lighting_ibl"></a>Image-Based Lighting (IBL)</h4>
+<div class="paragraph">
+<p><a href="https://learnopengl.com/PBR/IBL/Diffuse-irradiance">IBL</a> uses environment maps to simulate global illumination:
+* <strong>Diffuse IBL</strong>: Uses <a href="https://learnopengl.com/PBR/IBL/Diffuse-irradiance">irradiance maps</a> for ambient lighting
+* <strong>Specular IBL</strong>: Uses <a href="https://learnopengl.com/PBR/IBL/Specular-IBL">pre-filtered environment maps</a> and <a href="https://learnopengl.com/PBR/IBL/Specular-IBL">BRDF integration maps</a> for reflections</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_subsurface_scattering"><a class="anchor" href="#_subsurface_scattering"></a>Subsurface Scattering</h4>
+<div class="paragraph">
+<p>For materials like skin, wax, or marble where light penetrates the surface:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-14-advanced-techniques-realistic-real-time-skin">Simulates how light scatters within translucent materials</a></p>
+</li>
+<li>
+<p>Can be approximated with techniques like subsurface scattering profiles</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_clear_coat"><a class="anchor" href="#_clear_coat"></a>Clear Coat</h4>
+<div class="paragraph">
+<p>For materials with a thin, glossy layer on top:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_clearcoat">Automotive paint, varnished wood, etc.</a></p>
+</li>
+<li>
+<p>Implemented as an additional specular lobe</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_anisotropy"><a class="anchor" href="#_anisotropy"></a>Anisotropy</h4>
+<div class="paragraph">
+<p>For materials with directional reflections:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://google.github.io/filament/Filament.html#materialsystem/anisotropicmodel">Brushed metal, hair, fabric, etc.</a></p>
+</li>
+<li>
+<p>Requires additional material parameters and modified BRDFs</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conclusion_and_next_steps"><a class="anchor" href="#_conclusion_and_next_steps"></a>Conclusion and Next Steps</h3>
+<div class="paragraph">
+<p>In this chapter, we&#8217;ve applied the PBR knowledge from the Lighting &amp; Materials chapter to implement a PBR pipeline for our glTF models. We&#8217;ve learned:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>How to leverage the material properties from glTF for PBR rendering</p>
+</li>
+<li>
+<p>How to set up uniform buffers and push constants for PBR parameters</p>
+</li>
+<li>
+<p>How to implement a PBR shader that works with glTF materials</p>
+</li>
+<li>
+<p>How to integrate our camera system with PBR for view-dependent effects</p>
+</li>
+<li>
+<p>How to render glTF models with physically accurate lighting</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This implementation allows us to render the glTF models we loaded in the previous chapter with physically accurate materials, resulting in more realistic and consistent rendering across different lighting conditions.</p>
+</div>
+<div class="paragraph">
+<p>In the next chapter, we&#8217;ll explore how to render multiple objects with different transformations, which will allow us to create more complex scenes with our PBR-enabled engine.</p>
+</div>
+<div class="paragraph">
+<p>If you want to dive deeper into lighting and materials, refer back to the Lighting &amp; Materials chapter, where we explored the theory behind PBR in detail.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_loading_gltf.html" class="xref page">Previous: Loading a glTF Model</a> | <a href="06_multiple_objects.html" class="xref page">Next: Rendering Multiple Objects</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

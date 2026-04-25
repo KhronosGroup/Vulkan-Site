@@ -1,0 +1,994 @@
+# VK_QCOM_tile_shading
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_QCOM_tile_shading.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Enabling Tile Shading](#_enabling_tile_shading)
+- [3.1._Enabling_Tile_Shading](#_enabling_tile_shading)
+- [3.2. Per-tile execution mode](#_per_tile_execution_mode)
+- [3.2._Per-tile_execution_mode](#_per_tile_execution_mode)
+- [3.3. Secondary Command Buffers](#_secondary_command_buffers)
+- [3.3._Secondary_Command_Buffers](#_secondary_command_buffers)
+- [3.4. Tile Attachments](#_tile_attachments)
+- [3.4._Tile_Attachments](#_tile_attachments)
+- [3.5. Per-Tile Command Restrictions](#_per_tile_command_restrictions)
+- [3.5._Per-Tile_Command_Restrictions](#_per_tile_command_restrictions)
+- [3.6. Tile Apron](#_tile_apron)
+- [3.6._Tile_Apron](#_tile_apron)
+- [3.7. Area-based dispatch](#_area_based_dispatch)
+- [3.7._Area-based_dispatch](#_area_based_dispatch)
+- [3.8. SPIR-V Changes](#spirv-changes)
+- [3.8._SPIR-V_Changes](#spirv-changes)
+- [3.9. High Level Language Exposure](#_high_level_language_exposure)
+- [3.9._High_Level_Language_Exposure](#_high_level_language_exposure)
+- [3.10. Synchronization](#_synchronization)
+- [3.11. Features and Properties structures](#_features_and_properties_structures)
+- [3.11._Features_and_Properties_structures](#_features_and_properties_structures)
+- [4. Issues](#_issues)
+- [4.1. Are all attachment types (color, depth/stencil, input, resolve) accessible via tile attachment load/store operations?](#_are_all_attachment_types_color_depthstencil_input_resolve_accessible_via_tile_attachment_loadstore_operations)
+- [4.1._Are_all_attachment_types_(color,_depth/stencil,_input,_resolve)_accessible_via_tile_attachment_load/store_operations?](#_are_all_attachment_types_color_depthstencil_input_resolve_accessible_via_tile_attachment_loadstore_operations)
+- [4.2. Should draw commands be allowed when per-tile execution mode is enabled?](#_should_draw_commands_be_allowed_when_per_tile_execution_mode_is_enabled)
+- [4.2._Should_draw_commands_be_allowed_when_per-tile_execution_mode_is_enabled?](#_should_draw_commands_be_allowed_when_per_tile_execution_mode_is_enabled)
+- [4.3. Should texture sampling be supported on tile attachments?](#_should_texture_sampling_be_supported_on_tile_attachments)
+- [4.3._Should_texture_sampling_be_supported_on_tile_attachments?](#_should_texture_sampling_be_supported_on_tile_attachments)
+- [4.4. Does this extension offer any guarantees for the granularity of the tile dimensions?](#_does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions)
+- [4.4._Does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions?](#_does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions)
+- [4.5. Should we support atomic operations on tile attachments?](#_should_we_support_atomic_operations_on_tile_attachments)
+- [4.5._Should_we_support_atomic_operations_on_tile_attachments?](#_should_we_support_atomic_operations_on_tile_attachments)
+- [4.6. Does this extension support multiview rendering?](#_does_this_extension_support_multiview_rendering)
+- [4.6._Does_this_extension_support_multiview_rendering?](#_does_this_extension_support_multiview_rendering)
+- [4.7. Does this extension support attachments with a layer count greater than 1?](#_does_this_extension_support_attachments_with_a_layer_count_greater_than_1)
+- [4.7._Does_this_extension_support_attachments_with_a_layer_count_greater_than_1?](#_does_this_extension_support_attachments_with_a_layer_count_greater_than_1)
+- [4.8. Are store operations allowed for apron pixels?](#_are_store_operations_allowed_for_apron_pixels)
+- [4.8._Are_store_operations_allowed_for_apron_pixels?](#_are_store_operations_allowed_for_apron_pixels)
+- [4.9. Is functionality and performance expected to be similar for both render pass objects and dynamic render passes?](#_is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes)
+- [4.9._Is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes?](#_is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes)
+- [4.10. Does this extension change the behavior of render pass LoadOp or StoreOp?](#_does_this_extension_change_the_behavior_of_render_pass_loadop_or_storeop)
+- [4.10._Does_this_extension_change_the_behavior_of_render_pass_LoadOp_or_StoreOp?](#_does_this_extension_change_the_behavior_of_render_pass_loadop_or_storeop)
+- [4.11. Can tile attachment load/store operations be used without enabling per-tile execution?](#_can_tile_attachment_loadstore_operations_be_used_without_enabling_per_tile_execution)
+- [4.11._Can_tile_attachment_load/store_operations_be_used_without_enabling_per-tile_execution?](#_can_tile_attachment_loadstore_operations_be_used_without_enabling_per_tile_execution)
+- [4.12. Should this extension include the ability for fragment or compute shader to reinterpret the format of tile attachment pixels?](#_should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels)
+- [4.12._Should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels?](#_should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels)
+- [4.13. Should this extension include an area-based dispatch?](#_should_this_extension_include_an_area_based_dispatch)
+- [4.13._Should_this_extension_include_an_area-based_dispatch?](#_should_this_extension_include_an_area_based_dispatch)
+- [4.14. Do we need a new VK_PIPELINE_CREATE bit to specify if per-tile execution mode will be enabled?](#_do_we_need_a_new_vk_pipeline_create_bit_to_specify_if_per_tile_execution_mode_will_be_enabled)
+- [4.14._Do_we_need_a_new_VK_PIPELINE_CREATE_bit_to_specify_if_per-tile_execution_mode_will_be_enabled?](#_do_we_need_a_new_vk_pipeline_create_bit_to_specify_if_per_tile_execution_mode_will_be_enabled)
+- [4.15. Should VkComputePipelineCreateInfo be extended with renderpass/subpass information?](#_should_vkcomputepipelinecreateinfo_be_extended_with_renderpasssubpass_information)
+- [4.15._Should_VkComputePipelineCreateInfo_be_extended_with_renderpass/subpass_information?](#_should_vkcomputepipelinecreateinfo_be_extended_with_renderpasssubpass_information)
+- [4.16. How does this extension differ from VK_EXT_shader_tile_image?](#_how_does_this_extension_differ_from_vk_ext_shader_tile_image)
+- [4.16._How_does_this_extension_differ_from_VK_EXT_shader_tile_image?](#_how_does_this_extension_differ_from_vk_ext_shader_tile_image)
+- [4.17. Is robustness specified for out-of-bounds tile attachment access?](#_is_robustness_specified_for_out_of_bounds_tile_attachment_access)
+- [4.17._Is_robustness_specified_for_out-of-bounds_tile_attachment_access?](#_is_robustness_specified_for_out_of_bounds_tile_attachment_access)
+- [4.18. How does this extension interact with VK_QCOM_image_processing?](#_how_does_this_extension_interact_with_vk_qcom_image_processing)
+- [4.18._How_does_this_extension_interact_with_VK_QCOM_image_processing?](#_how_does_this_extension_interact_with_vk_qcom_image_processing)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Enabling Tile Shading](#_enabling_tile_shading)
+[3.2. Per-tile execution mode](#_per_tile_execution_mode)
+[3.3. Secondary Command Buffers](#_secondary_command_buffers)
+[3.4. Tile Attachments](#_tile_attachments)
+[3.5. Per-Tile Command Restrictions](#_per_tile_command_restrictions)
+[3.6. Tile Apron](#_tile_apron)
+[3.7. Area-based dispatch](#_area_based_dispatch)
+[3.8. SPIR-V Changes](#spirv-changes)
+[3.9. High Level Language Exposure](#_high_level_language_exposure)
+[3.10. Synchronization](#_synchronization)
+[3.11. Features and Properties structures](#_features_and_properties_structures)
+
+[4. Issues](#_issues)
+
+[4.1. Are all attachment types (color, depth/stencil, input, resolve) accessible via tile attachment load/store operations?](#_are_all_attachment_types_color_depthstencil_input_resolve_accessible_via_tile_attachment_loadstore_operations)
+[4.2. Should draw commands be allowed when per-tile execution mode is enabled?](#_should_draw_commands_be_allowed_when_per_tile_execution_mode_is_enabled)
+[4.3. Should texture sampling be supported on tile attachments?](#_should_texture_sampling_be_supported_on_tile_attachments)
+[4.4. Does this extension offer any guarantees for the granularity of the tile dimensions?](#_does_this_extension_offer_any_guarantees_for_the_granularity_of_the_tile_dimensions)
+[4.5. Should we support atomic operations on tile attachments?](#_should_we_support_atomic_operations_on_tile_attachments)
+[4.6. Does this extension support multiview rendering?](#_does_this_extension_support_multiview_rendering)
+[4.7. Does this extension support attachments with a layer count greater than 1?](#_does_this_extension_support_attachments_with_a_layer_count_greater_than_1)
+[4.8. Are store operations allowed for apron pixels?](#_are_store_operations_allowed_for_apron_pixels)
+[4.9. Is functionality and performance expected to be similar for both render pass objects and dynamic render passes?](#_is_functionality_and_performance_expected_to_be_similar_for_both_render_pass_objects_and_dynamic_render_passes)
+[4.10. Does this extension change the behavior of render pass LoadOp or StoreOp?](#_does_this_extension_change_the_behavior_of_render_pass_loadop_or_storeop)
+[4.11. Can tile attachment load/store operations be used without enabling per-tile execution?](#_can_tile_attachment_loadstore_operations_be_used_without_enabling_per_tile_execution)
+[4.12. Should this extension include the ability for fragment or compute shader to reinterpret the format of tile attachment pixels?](#_should_this_extension_include_the_ability_for_fragment_or_compute_shader_to_reinterpret_the_format_of_tile_attachment_pixels)
+[4.13. Should this extension include an area-based dispatch?](#_should_this_extension_include_an_area_based_dispatch)
+[4.14. Do we need a new VK_PIPELINE_CREATE bit to specify if per-tile execution mode will be enabled?](#_do_we_need_a_new_vk_pipeline_create_bit_to_specify_if_per_tile_execution_mode_will_be_enabled)
+[4.15. Should VkComputePipelineCreateInfo be extended with renderpass/subpass information?](#_should_vkcomputepipelinecreateinfo_be_extended_with_renderpasssubpass_information)
+[4.16. How does this extension differ from VK_EXT_shader_tile_image?](#_how_does_this_extension_differ_from_vk_ext_shader_tile_image)
+[4.17. Is robustness specified for out-of-bounds tile attachment access?](#_is_robustness_specified_for_out_of_bounds_tile_attachment_access)
+[4.18. How does this extension interact with VK_QCOM_image_processing?](#_how_does_this_extension_interact_with_vk_qcom_image_processing)
+
+This document proposes a new extension that adds "tile shading" to Vulkan.
+
+Rendering pipelines that interleave compute with graphics have become
+increasingly common.
+Tile-based lighting techniques are commonly used in Forward+ and Tile
+Deferred renderers leverage compute shaders to optimize the subsequent
+lighting pass.
+Tile-based level of detail using compute shaders are used
+in some virtualized geometry systems. Tile-based approaches with compute
+are used for screen space ambient occlusion, de-noising, and other
+post-processing algorithms.
+
+Most mobile GPUs utilize Tile-Based Deferred Rendering (TBDR) combined
+with high-bandwidth "tile memory" to optimize for power and performance.
+Conversely, most desktop GPUs use Immediate-Mode (IM) rendering without
+tile memory.
+
+A TBDR architecture divides the color and depth buffer attachments into a regular
+grid of smaller regions called "tiles".
+When the commands for a renderpass instance are submitted for execution, the GPU
+may perform a tile visibility pass with the resulting per-tile visibility information
+deferred for use in a subsequent series of tile rendering passes — one rendering
+pass for each tile in the framebuffer. Since the tile rendering passes are
+independent, some implementations may render multiple tiles in parallel. After
+each tile is rendered, the resulting tile is copied to the framebuffer.
+The tile rendering passes render into a specialized high-bandwidth
+on-die memory called "tile memory".
+GPU access to tile memory is dramatically more efficient than the device memory
+that backs the framebuffer attachments.
+
+The TBDR architecture creates an opportunity to express operations that execute
+per-tile after each tile rendering pass completes, and while the framebuffer
+content is still cached in highly efficient tile memory.
+While the primary focus is on executing compute workloads that operate on
+tiles, there are also use cases for executing draw commands after the
+tile rendering pass completes.
+Since these dispatch and/or draw commands execute per-tile, they can only
+access those pixel locations within the boundaries of the current tile.
+This proposal describes a Vulkan API extension for the above
+tile-based features, collectively referred to as "tile shading".
+
+For the common use cases, the tile shading pass will consume the attachment
+pixels that were rendered in a previous pass, or will generate outputs that
+are to be consumed in a subsequent pass.
+For this reason, tile shading fits naturally as some variant of Vulkan render passes.
+
+The options considered for addressing this issue:
+  * Add tile shading functionality as a set of individual API extensions corresponding to individual features
+  * Create a single, cohesive extension for the tile shading, that brings Vulkan to parity with other APIs.
+
+Option 1 has an advantage in that each extension is smaller and has reduced API surface area. It also
+increases the likelihood that some extensions would be supported by multiple GPU vendors.
+This piecemeal approach is likely to result in fractured support in the ecosystem, and makes it difficult
+for developers to rely on a single cohesive set of functionality.
+
+Option 2 has the advantage of collecting a set of related features into a single extension, but
+is likely to align with the capabilities of a single TBDR architecture, in this case Adreno ™ GPUs.
+
+This proposal focuses on option 2, and specifically on evangelizing the tile shading features
+that are available on Adreno ™ GPUs. Some features in this vendor extension may
+be incorporated into a future cross-vendor tile shading extension while other features may
+be unique to Adreno ™ and never supported by other vendors.
+
+This proposal builds on two existing extensions:
+
+* 
+[VK_QCOM_tile_properties](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties) which exposes tile locations
+and dimensions to the application.
+
+* 
+[VK_KHR_dynamic_rendering_local_read](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering_local_read)
+which extends dynamic rendering to support multiple passes with input attachments.
+
+Implementations exposing this extension must support `VK_QCOM_tile_properties` because the ability
+to query how the implementation has sub-divided the attachments into tiles is so fundamental to tile
+shading. Implementations exposing this extension are encouraged (but not required) to support
+'VK_KHR_dynamic_rendering_local_read' because it significantly increases the set of tile shading use cases
+that can be supported with dynamic render passes.
+
+Tile shading extends Vulkan render passes with new functionality. When tile shading is
+enabled for a render pass instance, these are the highlights of the new functionality:
+
+* 
+Fragment shaders can declare [tile image attachment](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-attachment-access)
+resources allowing fragment shader invocations to load pixel values of other fragments
+within the same tile, or to sample from the pixels in a tile attachment.
+
+* 
+Fragment shaders can use [built-in input variables](#spirv-changes) that describe the
+active tile’s extent in framebuffer coordinates.
+
+* 
+[Tile aprons](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-aprons) can be enabled and pixels in the apron
+region can be accessed by the fragment shader.
+
+* 
+A new state command is added that enables/disables
+[per-tile execution model](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model).
+When this execution model is enabled:
+
+`VkCmdDispatch*` commands can be recorded in a render pass instance.
+
+* 
+Recorded draw and dispatch commands will be invoked multiple times; each recorded
+command is invoked once for each tile in the framebuffer. The tile’s
+extent is exposed in the shader via [built-in input variables](#spirv-changes)
+and in the API via `VK_QCOM_tile_properties`.
+
+* 
+Compute shaders have all the same functionality described above for fragment shaders.
+This includes load/store/sample of [tile image attachments](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-attachment-access),
+[built-in input variables](#spirv-changes), and [tile aprons](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-aprons).
+
+Vulkan tile shading will empower applications to leverage tile memory by injecting
+per-tile commands into the GPU’s existing TBDR geometry pipeline, allowing compute to
+participate fully in render passes, and enabling operations
+that happen while the color and depth values reside in tile memory.
+
+To enable tile shading for a render pass, add
+`VkRenderPassTileShadingCreateInfoQCOM` in the pNext chain of
+`VkRenderPassCreateInfo` or `VkRenderingInfo` with
+`VK_TILE_SHADING_RENDER_PASS_ENABLE_BIT_QCOM` set in `flags`.
+
+typedef enum VkTileShadingRenderPassFlagBitsQCOM {
+    VK_TILE_SHADING_RENDER_PASS_ENABLE_BIT_QCOM              = 0x00000001,
+    VK_TILE_SHADING_RENDER_PASS_PER_TILE_EXECUTION_BIT_QCOM  = 0x00000002,
+    VK_TILE_SHADING_RENDER_PASS_FLAG_BITS_MAX_ENUM           = 0x7FFFFFFF
+} VkTileShadingRenderPassFlagBitsQCOM;
+
+typedef VkFlags VkTileShadingRenderPassFlagsQCOM;
+
+typedef struct VkRenderPassTileShadingCreateInfoQCOM {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    VkTileShadingRenderPassFlagsQCOM    flags;
+    VkExtent2D                          tileApronSize;
+} VkRenderPassTileShadingCreateInfoQCOM;
+
+`tileApronSize` specifies the width and height of the
+[tile apron](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-aprons).
+If tile apron is not used, this should be set to 0.
+
+When tile shading is enabled for a render pass, the following
+features become available to shaders within that render pass:
+  * Compute shaders can declare the `TileShadingQCOM` capability.
+  * Fragment shaders can declare the `TileShadingQCOM` capability if the
+    `tileShadingFragmentStage` feature is enabled.
+
+Within a render pass that [enables tile shading](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading),
+the [per-tile execution mode](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model)
+can be enabled or disabled:
+
+typedef struct VkPerTileBeginInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkPerTileBeginInfoQCOM;
+
+typedef struct VkPerTileEndInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkPerTileEndInfoQCOM;
+
+void vkCmdBeginPerTileExecutionQCOM(
+    VkCommandBuffer               commandBuffer,
+    const VkPerTileBeginInfoQCOM* pPerTileBeginInfo);
+
+void vkCmdEndPerTileExecutionQCOM(
+    VkCommandBuffer               commandBuffer,
+    const VkPerTileEndInfoQCOM*   pPerTileEndInfo);
+
+Inside each begin/end block, *per-tile execution mode* is enabled.
+Begin/end blocks can only be recorded inside a render pass instance that
+enables tile shading.
+At the end of a render pass instance, *per-tile execution mode* must be disabled.
+
+When *per-tile execution mode* is enabled, any recorded commands (state, action,
+synchronization, and indirection) are executed for each tile. The order in which
+tiles are processed and the ordering of commands across tiles is undefined.
+
+When *per-tile execution mode* is enabled, and if the `tileShadingPerTileDispatch`
+feature is enabled, `VkCmdDispatch*` commands can be recorded inside a render pass.
+These per-tile dispatches can use the functionality described in
+[SPIR-V changes](#spirv-changes).
+
+When *per-tile execution mode* is enabled, the
+[Per-Tile Command Restrictions](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-command-restrictions) apply.
+
+When executing secondary command buffers in a render pass with tile shading enabled, a
+VkRenderPassTileShadingInfoQCOM must have been supplied when recording the secondary command
+buffer in VkCommandBufferInheritanceInfo.
+
+It must match the render pass for tiling enabled, per-tile mode active, and apron size.
+
+Tile attachment variables in the shader provide a per-tile storage image view
+of the color, depth, or input attachments of the current render pass instance.
+If the attachment is multisampled or layered, a corresponding layered or
+multisampled tile attachment variable is declared.
+
+Tile attachment variables can only be declared and statically referenced in compute
+and fragment shaders that declare the `TileShadingQCOM` capability.
+Tile attachment variables are backed by a descriptor that references the same
+`VkImageView` as specified for an attachment of the current render pass instance.
+
+Tile attachment variables are further subdivided into "storage tile
+attachment" and "sampled tile attachment" variables. The former supports
+load/store operations and is backed by a descriptor of
+type `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`, while the latter supports sampling
+and is backed by a descriptor of type `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`.
+
+Existing features and format restrictions for storage images and sampled images
+also apply when accessing a storage tile attachment or sampled tile attachment. For
+instance, the `fragmentStoresAndAtomicsreads` feature applies to storage tile attachment
+accesses in the fragment shader.
+Similarly, features `shaderStorageImageWriteWithoutFormat` and
+`shaderStorageImageReadWithoutFormat` apply to storage tile attachments.
+`OpAtomic*` operations are supported for storage tile attachments if the
+`tileShadingAtomicOps` feature is enabled.
+
+The basic data type of the shader variable must match the format of the attachment.
+In the case of depth/stencil attachments, the data type of the shader variable determines
+if the depth or stencil aspect of the tile is accessed by the shader.
+
+Accessing a tile attachment only requires that the image not be in the
+`VK_IMAGE_LAYOUT_UNDEFINED` or `VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL`
+layouts.
+
+Tile attachment variables can be aggregated into arrays.
+
+More details on tile attachment variable declarations and associated load/store/sample
+operations are described in the [SPIR-V Changes](#spirv-changes).
+
+When [per-tile execution mode](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model)
+is enabled within a render pass instance, the set of commands that can
+be recorded is largely unchanged. This section documents several exceptions.
+Due to the continuously evolving API, this may not be a complete list of exceptions.
+
+Where *per-tile execution model* is enabled, `vkCmdDispatch*` commands are allowed.
+
+Where *per-tile execution model* is enabled the following are disallowed:
+  * Transform feedback commands are not allowed:  `vkCmdBeginTransformFeedbackEXT`,
+   `vkCmdEndTransformFeedbackEXT`.
+  * Query commands are not allowed: `vkCmdBeginQueryIndexedEXT`, `vkCmdEndQueryIndexedEXT`,
+   `vkCmdBeginQuery`, `vkCmdWriteTimestamp`,
+   `vkCmdEndQuery`, `vkCmdDebugMarkerBeginEXT`, `vkCmdDebugMarkerEndEXT`,
+    `vkCmdDebugMarkerInsertEXT`.
+  * Some synchronization commands are not allowed:   `vkCmdWaitEvents2`, `vkCmdWaitEvents`.
+  * The following action command is not allowed: `vkCmdClearAttachments`
+  * Access of an attachment with layout `VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL`
+    as provided by [VK_EXT_attachment_feedback_loop_layout](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_attachment_feedback_loop_layout).
+  * Any commands that would cause an invocation of the tessellation, geometry, ray tracing,
+    or mesh shading shader stages.
+
+Other tile shading restrictions:
+
+* 
+A render pass that enables tile shading must not be recorded
+inside a command buffer created with the `VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT` usage flag set.
+
+* 
+A render pass that enables tile shading must not include the
+`VkRenderPassFragmentDensityMapCreateInfoEXT::fragmentDensityMapAttachment` equal
+ to a value other than `VK_NULL`.
+
+* 
+A render pass that enables tile shading must not render
+to Android Hardware Buffers with external formats as provided by
+[VK_ANDROID_external_format_resolve](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_ANDROID_external_format_resolve).
+
+In a render pass that enables tile shading, a *tile apron* can be enabled by setting
+`tileApronSize` to a value other than (0,0). Subpass must be specified with flags
+that include `VK_SUBPASS_DESCRIPTION_TILE_SHADING_APRON_BIT_QCOM` or the apron
+size will be (0,0) for that subpass, and apps must not access values outside the tile.
+The tile apron enables shader invocations to load from tile attachment variables at a
+location that is outside the current tile. The (width,height) value of `tileApronSize`
+specifies the number of pixels in the horizontal and vertical directions that are
+included in the apron region. For example, (1,1) means that the apron region extends
+the top, bottom, left, and right margins of the tile by 1 pixel. The `tileApronSize`
+must not exceed `VkPhysicalDeviceTileShadingPropertiesQCOM::maxApronSize`.
+
+The tile apron feature is expected to be important for image-based algorithms that require
+access to a single pixel and the neighborhood of pixels around it. These include image
+processing use cases such as convolution image processing and gaming use cases such as
+screen-space ambient occlusion (SSAO).
+A good mental model for the tile apron is to think of it as enabling "overlapping
+tiles".
+When enabled, the margins of each tile are extended in the horizontal and vertical
+directions, to include some pixels that belong to the adjacent tiles.
+Those pixels that are outside the original tile extents, but within the apron region
+are termed "apron pixels".
+
+Apron pixels will be initialized as specified by the render pass `VkAttachmentLoadOp`,
+and are updated by draw commands that execute inside the render pass, but they are
+always discarded at the end of the render pass (i.e., never stored to the attachment
+by VkAttachmentStoreOp).
+In a tile shading render pass, fragment and compute shader invocations can load apron
+pixels with `OpImageRead` or `OpImageSparseRead` but cannot store to apron pixels using
+`OpImageWrite` or with atomic operations using `OpImageTexelPointer`.
+Enabling the apron for a render pass instance affects color, depth, and input attachments.
+
+Enabling the apron will reduce the efficiency of TBDR GPU rendering, with larger apron sizes
+having greater impact. Aprons should be enabled judiciously.
+
+The following command executes a tile-sized dispatch, where
+[VK_QCOM_tile_properties](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties)
+`VkTilePropertiesQCOM::tileSize` or the associated shader built-ins provide
+the tile dimensions.
+
+typedef struct VkDispatchTileInfoQCOM {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkDispatchTileInfoQCOM;
+
+void vkCmdDispatchTileQCOM(
+    VkCommandBuffer               c,
+    const VkDispatchTileInfoQCOM* pDispatchTileInfo);
+
+This command operates in the
+[per-tile execution model](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model),
+invoking a separate dispatch for each *covered tile*.
+The global workgroup count and local workgroup size of each dispatch are defined by the
+implementation to efficiently iterate over a uniform grid of pixel blocks within
+the area of its *active tile*.
+
+Each shader invocation operates on a single pixel block and its size is determined by the shader’s
+tiling rate, which **must** be defined by shaders executed by this command. The TileShadingRateQCOM
+execution mode operand defines the shader’s tiling rate. Its x and y **must** be a power
+of two and less than or equal to the [maxTileShadingRate](https://docs.vulkan.org/spec/latest/chapters/limits.html#limits-maxTileShadingRate) limit.
+Its z **must** be less than or equal to the z value of the active tile size as returned by
+`VK_QCOM_tile_properties`, and
+`VkTilePropertiesQCOM::tileSize.z % TileShadingRateQCOM.z` **must** equal `0`.
+
+The start location of the shader invocation’s pixel block is
+`vec3(TileOffsetQCOM, 0) + (GlobalInvocationId * TileShadingRateQCOM)`
+
+Shader invocations **can** perform tile attachment load/store operations at
+any location within the *active tile*, but the most efficient access **may**
+be limited to fragment locations within and local to the shader invocation’s pixel block.
+
+The proposed SPIR-V extension `SPV_QCOM_tile_shading` will add the following SPIR-V Capabilities,
+Instructions, Storage Classes, and Decorations.
+
+Capability               Meaning
+-------------            ----------------------------------------------
+TileShadingQCOM          Enables access to tile image attachments.
+
+Storage Class            Meaning
+-------------            ----------------------------------------------
+TileAttachmentQCOM       Tile image variable. Fragment or Compute.
+
+Execution Mode                      Meaning
+-------------                       ---------------------------------------
+NonCoherentTileAttachmentReadQCOM   Disables raster order guarantee. Fragment only.
+
+[Tile attachment](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-attachment-access) variables are declared
+as  `OpTypeImage` variables with storage class `TileAttachmentQCOM`.
+Such variables can be used to perform tile read/write operations, tile sampling
+operations, or tile atomic operations.
+These variables must be 2D images but can be arrayed, layered, and/or
+multi-sampled.
+These variables require "DescriptorSet" and "Binding" decorations,
+but do not require the "Location" nor the "InputAttachmentIndex" decorations.
+
+Such variables can be consumed by `OpImageRead`, `OpImageSparseRead`, `OpImageWrite`,
+and `OpImageTexelPointer`.
+
+To declare a tile attachment variable compatible with sampling operations,
+the variable must be declared as described above except that the `Sampled`
+operand must be equal to `1`.
+
+Each tile attachment image variable must be backed by an associated descriptor of
+type `VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`, `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`,
+`VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`, `VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM`,
+`VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM`, or
+`VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT`
+that is equivalent to the `VkImageView` specified as an attachment in the current
+render pass instance.
+
+Other restrictions, such as the valid shader stages, formats, and image coordinates
+for access to these tile image variables are specified by Vulkan SPIR-V environment.
+
+The extension adds the optional execution mode `NonCoherentTileAttachmentReadQCOM`.
+When the new execution mode is enabled, the read operations of
+tile image attachments are not guaranteed to be in rasterization order.
+This execution mode is only valid for the fragment shader.
+
+The following built-in input variables are proposed, describing the (x,y)
+location and extent of the current tile:
+
+TileOffsetQCOM;      // uvec2 framebuffer coordinates of top-left
+                     // texel of active tile.
+TileDimensionQCOM;   // uvec3 tile size (width,height,layers) in texels of
+                     // the current tile.
+TileApronSizeQCOM;   // uvec2 size of (vertical,horizontal) apron for the
+                     // active tile.
+
+The Vulkan SPIR-V environment will specify that:
+
+* 
+The `tileShading` feature must be enabled to create fragment or compute shader
+modules with the `TileShadingQCOM` capability.
+
+* 
+A pipeline that contains shaders with `TileShadingQCOM` capability can only be bound in
+a render pass instance that enables tile shading.
+
+* 
+A compute shader can use stores (via `OpImageWrite`) and atomics (via `OpImageTexelPointer`)
+for tile color attachments. Compute shader stores and atomics are not allowed for tile
+depth/stencil or tile input attachments.
+
+* 
+A fragment shader must not use stores for tile color, tile input, or tile depth/stencil attachments.
+
+* 
+A fragment or compute shader can use loads (`OpImageRead`, `OpImageSparseRead`) for tile color, tile depth/stencil,
+or tile input attachments.
+
+* 
+If the [tile apron](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-tile-shading-aprons) has width or height greater than zero, then loads
+and sampling of apron pixels (outside the tile, but within
+the apron) are allowed. Stores to apron pixels are disallowed. If not executing in a dynamic render pass,
+the subpass flags must include `VK_SUBPASS_DESCRIPTION_TILE_SHADING_APRON_BIT_QCOM`.
+
+* 
+If the `OpImageRead`, `OpImageSparseRead`, `OpImageWrite`, or `OpImageTexelPointer` instructions access a
+tile attachment, the Coordinate must be a location within the tile extent and within
+the render pass `renderArea`.
+
+The GLSL extension GL_QCOM_tile_shading will add the following types, storage qualifiers,
+layout qualifiers, and built-in variables.
+
+Layout Qualifier                   Meaning
+---------------------------        ---------------------------------------------
+non_coherent_attachment_readQCOM   "In-only" fragment qualifier (like early_fragment_tests).
+                                   Specifies that image attachment reads do not follow raster order.
+
+tile_memoryQCOM                    A uniform qualifier for fragment and compute shaders.
+                                   Can be used for storage image types (i.e. image2D) as well as
+                                   read-only types (texture2D, sampler2D).
+
+Built-in Variable                 Meaning
+---------------------------       ---------------------------------------------
+in uvec2 gl_TileOffsetQCOM        The framebuffer coordinates of the top-left texel
+                                  of the current tile.
+in uvec3 gl_TileDimensionQCOM     The dimension of the current tile in pixels.
+in uvec2 gl_TileApronSizeQCOM     The apron width and height.
+
+Earlier versions of this proposal included new built-in functions for tile image load/stores
+and atomics. In the latest version these have been removed. Tile image
+attachments (both storage and sampled attachments) are accessed using existing load/store and image
+atomic built-in functions.
+
+Fragment shader sample showing tile attachment load/stores
+
+#version 310 es
+#extension GL_QCOM_tile_shading : enable
+precision highp float;
+
+// input attachment
+layout (set=0, binding=0, tile_memoryQCOM) uniform highp image2D input0;
+
+// tile color and depth/stencil attachments
+layout (set=0, binding=1, tile_memoryQCOM) uniform highp image2D color0;
+layout (set=0, binding=2, tile_memoryQCOM) uniform highp image2D color1;
+layout (set=0, binding=3, tile_memoryQCOM) uniform highp image2D depth0;
+layout (set=0, binding=3, tile_memoryQCOM) uniform highp image2D stencil0;
+
+layout (location=0) out vec4 fragColor;
+void main()
+{
+    uvec3 center = uvec3(gl_TileOffset,0) + (gl_TileSize/2);     // coordinates of center of tile
+
+    // load from tile attachments
+    vec4 colorB = imageLoad( input0, center );               // read input attachment
+    vec4 colorC = imageLoad( color0, center );               // read color attachment0
+    vec4 colorD = imageLoad( color1, center );               // read color attachment1
+    vec4 depthVal = vec4(imageLoad( depth0, center));        // read depth
+    vec4 stencilVal = vec4(imageLoad( stencil0, center));    // read stencil
+
+    // compute output value
+    vec4 outColor  = ( colorB + colorC + colorD + depthVal + stencilVal );
+
+    // write to tile attachments not allowed in fragment shader.
+    // imageStore( color0, center, outColor );        // not allowed in a fragment shader
+    // imageStore( depth0, center, depthVal );        // not allowed in fragment or compute shader
+
+    // write to color attachment 0 via fragment output
+    fragColor = outColor + vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+Compute shader sample showing tile attachment load/stores
+
+void main ()
+{
+  uvec2 center2D = clamp(gl_GlobalInvocationID.xy, gl_TileOffset, gl_TileOffset + gl_TileSize - uvec2(1,1));
+  uvec3 center = uvec3(center2D,0);
+
+  // read from attachments
+  vec4  colorA   = imageLoad( color0, center );
+  vec4  colorB   = imageLoad( color1, center );
+  vec4  colorC   = imageLoad( input0, center );
+
+  // compute output values
+  vec4 outColor   = ( colorA + colorB + colorC ) * 0.33f;
+
+  // write to color tile attachment
+  imageStore( color0, center, outColor );
+
+  // write to depth/stencil/input attachments not allowed in compute shader.
+  // imageStore( input0, center, outColor );     // not allowed
+  // imageStore( depth0, center, depthVal );     // not allowed
+  // imageStore( stencil0, center, stencilVal ); // not allowed
+
+return;
+}
+
+The following synchronization-related enumerations are added. These can be
+specified in synchronization commands or in subpass dependencies.
+
+VK_ACCESS_2_SHADER_TILE_ATTACHMENT_READ_BIT_QCOM   // read access to a tile attachment
+VK_ACCESS_2_SHADER_TILE_ATTACHMENT_WRITE_BIT_QCOM  // write access to a tile attachment
+
+Prior to this extension, the *framebuffer region* described by `VK_DEPENDENCY_BY_REGION_BIT`
+may be no larger than a single pixel or single sample. For a render pass that enables tile shading,
+the following changes are made:
+
+* 
+The framebuffer regions defined by `VK_DEPENDENCY_BY_REGION_BIT` are enlarged to
+be tile-sized regions, where [VK_QCOM_tile_properties](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties)
+exposes the tile regions. In other words, the framebuffer region is a tile region and
+framebuffer-local dependencies are tile granularity dependencies.
+
+* 
+Both synchronization scopes of a framebuffer-local dependency include all the pixels
+contained in the tile.
+
+* 
+The framebuffer-space pipeline stages are extended to include
+`VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT` and `VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT`. Allowing
+`VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT` with framebuffer-local dependencies enables important
+use cases of tile shading.
+
+* 
+Explicit ordering constraints must be expressed through explicit synchronization primitives.
+
+* 
+Dependencies between subpasses can be expressed with subpass dependencies, including the
+above bits for tile attachments.
+
+* 
+Dependencies between synchronizing scopes within a subpass can be expressed with a
+pipeline barrier.
+
+For a render pass that enables tile shading, the following changes are
+made to pipeline barriers:
+ * The set of `VkAccessFlags` allowed in a render pass self-dependency or in a pipeline barrier within
+   a render pass are extended to include the following:
+
+   VK_ACCESS_INDIRECT_COMMAND_READ_BIT
+   VK_ACCESS_SHADER_SAMPLED_READ_BIT
+   VK_ACCESS_SHADER_STORAGE_READ_BIT
+   VK_ACCESS_SHADER_STORAGE_WRITE_BIT
+   VK_ACCESS_SHADER_TILE_ATTACHMENT_READ_BIT
+   VK_ACCESS_SHADER_TILE_ATTACHMENT_WRITE_BIT
+
+* 
+Consistent with the above, the source and destination stage masks in
+a render pass self-dependency or pipeline barrier within a render pass are extended
+to include:
+
+   VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT
+   VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT
+
+The following feature structure is proposed. Most of the features should be
+self-explanatory.
+
+typedef struct VkPhysicalDeviceTileShadingFeaturesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           tileShading;
+    VkBool32           tileShadingFragmentStage;
+    VkBool32           tileShadingColorAttachments;
+    VkBool32           tileShadingDepthAttachments;
+    VkBool32           tileShadingStencilAttachments;
+    VkBool32           tileShadingInputAttachments;
+    VkBool32           tileShadingSampledAttachments;
+    VkBool32           tileShadingPerTileDraw;
+    VkBool32           tileShadingPerTileDispatch;
+    VkBool32           tileShadingDispatchTile;
+    VkBool32           tileShadingApron;
+    VkBool32           tileShadingAnisotropicApron;
+    VkBool32           tileShadingAtomicOps;
+    VkBool32           tileShadingImageProcessing;
+} VkPhysicalDeviceTileShadingFeaturesQCOM;
+
+A few notable features are documented below.
+
+* 
+`tileShading` is the base feature, indicating the
+implementation supports creating a render pass that enables
+tile shading and shaders that enable the `TileShadingQCOM` capability.
+
+* 
+`tileShadingFragmentStage` indicates the implementation supports tile shading
+in the fragment stage.
+
+* 
+`tileShadingColorAttachments` indicates the implementation supports
+use of `OpImageRead` and `OpImageSparseRead` in the supported stages
+to access a color attachment.
+In addition, this feature indicates support for `OpImageStore` and
+`OpImageSparseRead` to access a color attachment in the compute stage.
+
+* 
+`tileShadingDepthAttachments` indicates the implementation supports
+use of `OpImageRead` and `OpImageSparseRead` in the supported
+stages to access the depth aspect of a depth/stencil attachment.
+
+* 
+`tileShadingStencilAttachments` indicates the implementation supports
+use of `OpImageRead` and `OpImageSparseRead` in the supported
+stages to access the stencil aspect of a depth/stencil attachment.
+
+* 
+`tileShadingInputAttachments` indicates the implementation supports
+use of `OpImageRead` in the supported
+stages to access an input attachment.
+
+* 
+`tileShadingSampledAttachments` indicates the implementation supports
+sampling instructions (`OpImageSample*`, `OpImageSparseSample*`,
+`OpImage*Gather`, `OpImageSparse*Gather`, `OpImageFetch`, `OpImageSparseFetch`,
+`OpImageSampleWeightedQCOM`, `OpImageBoxFilterQCOM`, `OpImageBlockMatch*SSD*QCOM`)
+for any tile attachment supporting `OpImageRead` or `OpImageSparseRead`.
+
+* 
+`tileShadingPerTileDraw` indicates the implementation supports the
+recording of draw commands inside a per-tile execution block.
+
+* 
+`tileShadingPerTileDispatch` indicates the implementation supports
+the recording of dispatch commands inside a render pass. Note that
+dispatches inside a render pass are allowed only where
+[per-tile execution](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model) is enabled.
+
+* 
+`tileShadingDispatchTile` indicates the implementation supports
+the `vkCmdDispatchTileQCOM` command. Note this feature requires
+`tileShadingPerTileDispatch`.
+
+* 
+`tileShadingApron` indicates the implementation supports an apron
+width/height greater than 0. Note that for aprons to be useful, one
+of the below tileShading*Attachments features needs to be supported.
+
+* 
+`tileShadingAnisotropicApron` indicates the implementation supports
+aprons with a width and height that are different values.
+
+* 
+`tileShadingAtomicOps` indicates the implementation support atomic
+operations with tile attachments.
+
+* 
+`tileShadingImageProcessing` indicates that the implementation
+supports image processing instructions with tile attachments.
+
+The following properties structure is proposed.
+
+typedef struct VkPhysicalDeviceTileShadingPropertiesQCOM {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           maxApronSize;
+    VkBool32           preferNonCoherent;
+    VkExtent2D         tileGranularity;
+    VkExtent2D         maxTileShadingRate;
+} VkPhysicalDeviceTileShadingPropertiesQCOM;
+
+* 
+The `maxApronSize` property defines the maximum tile apron size allowed.
+
+* 
+The `preferNonCoherent` property indicates whether the implementation prefers
+SPIR-V `NonCoherentTileAttachment` execution mode.
+
+* 
+The `tileGranularity` property provides a guarantee on the granularity of each tile.
+Each tile will have dimensions that are a multiple of this granularity in width and height.
+
+* 
+The `maxTileShadingRate` property defines the maximum value that the `TileShadingRateQCOM`
+specified in the shader can be, and must be a power of 2.
+
+No, we propose the following restrictions for specific attachment types and shader stages:
+
+* 
+Compute and fragment shaders must not store to depth/stencil attachments, resolve attachments,
+nor input attachments.
+
+* 
+Fragment shaders must not store to color attachments.
+
+There are no known use cases for tile stores to input attachments, and it seemed
+unexpected that an "input attachment" would be modified. Shader writes to
+depth/stencil attachments is unexpected and may require disablement of
+implementation-specific depth acceleration features. Resolve attachments are
+unlikely to be backed by tile memory. Within a fragment shader, stores to the
+color attachment do not seem useful and could be difficult to synchronize with
+fragment output writes. For those reasons, the above cases are disallowed
+in this extension.
+
+Yes, this is allowed, because it can be useful for certain use cases.
+
+Without this extension, a TBDR GPU can "distribute" the draw call across the tiles.
+As the GPU processes each tile, if a draw command includes primitives that do not
+cover the current tile, then the implementation may "skip" such primitives for
+that tile.
+If a draw command contains no primitives that cover the current tile, the
+draw call may be entirely skipped for that tile.
+This is an important feature for maximizing TBDR rendering efficiency.
+
+With this extension, per-tile draws are introduced. A per-tile draw guarantees
+the draw will be executed for each tile, effectively bypassing the above
+mechanisms.
+The intended use case for per-tile draws is for GPU-driven rendering.
+In this use case, a per-tile dispatch invokes a per-tile compute shader that writes
+data to an indirect buffer, followed by a per-tile vkCmdDrawIndirect* that
+consumes the same buffer. The application should ensure that each
+per-tile draw contains only primitives that cover the current tile. This is also
+the motivation for adding `VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT` as a
+framebuffer-space pipeline stage, enabling BY_REGION dependencies for the
+DRAW_INDIRECT stage.
+
+Other than such GPU-driven use cases, the use of per-tile draws is discouraged.
+
+Yes, this has been included in the current proposal, but
+guarded by feature bit `tileShadingSampledAttachments`.
+
+* 
+Tile attachment images used to construct `OpSampledImage` must
+have been declared with the `tileSampledImageQCOM` storage qualifier,
+and will have an associated `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE` or
+`VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` descriptor.
+
+* 
+The resulting `OpSampledImage` variable can be used with all the texture
+`OpImageSample*`, `OpImageSparseSample*`, `OpImage*Gather`, and `OpImageSparse*Gather`
+instructions.
+
+* 
+Texture coordinates are relative to the attachment dimensions, rather than
+relative to the tile dimensions.
+
+* 
+When sampling from a sampled tile attachment, if the texture coordinates
+are near a tile edge, or fully outside the tile, the texels participating in
+texture filter may extend beyond the boundaries of the tile, resulting in reads
+of invalid texel locations, resulting in undefined values returned to the
+shader. The implementation is not required to clamp the coordinates to a valid
+range. Applications will need to guarantee that the filter does not result in
+reading locations outside the tile+apron boundary.
+
+Yes, the granularity is guaranteed.
+
+[VK_QCOM_tile_properties](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_tile_properties) reports
+tile dimensions but does not provide any guarantees on the granularity of the tile
+dimension, making it difficult to author compute shaders that operate on a workgroup
+size of known dimensions.
+
+An extension property `tileGranularity` is exposed to provide this.
+
+Yes, the atomic operations on tile attachments are supported but
+the functionality is currently guarded by a feature bit.
+
+Yes, this is supported.
+
+Without this extension, implementations may implement multiview
+rendering as single-pass rendering to a multi-layered attachment, or multi-pass
+rendering where each pass renders one view/layer. With this extension,
+the former would use multi-layered tiles and the latter would use
+single-layered tiles. The number of layers in the tile would affect
+most application use cases for tile shading. `VK_QCOM_tile_properties` exposes
+the number of layers in the tile, allowing the application to handle either
+implementation style.
+
+Yes, this is supported. The existing `VK_QCOM_tile_properties`
+extension exposes support for multi-layered tiles.
+
+No, this is not allowed.
+
+There are no known use cases, for stores to the apron pixels
+and supporting this may come at a performance cost on some
+TBDRs.
+
+Yes, since this extension builds upon
+[VK_KHR_dynamic_rendering_local_read](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering_local_read),
+the functionality and performance is expected to be equivalent.
+
+Earlier versions of this extension that were not based on
+VK_KHR_dynamic_rendering_local_read resulted in far less functionality
+for dynamic render passes.
+
+No, there is no change to the behavior.
+
+Yes, if a render pass enables tile shading but not the
+[per-tile execution model](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model), then
+fragment shader invocations can load pixel values from tile attachment
+variables.
+
+This includes loading the pixel value of the fragment coordinate
+(aka "framebuffer fetch") as well as the ability to load pixel values
+of other fragments within the tile and/or the apron region.
+
+No, while such a feature is desirable for many TBDR GPUs and is related
+to this extension, but was considered beyond the scope of this extension.
+
+Use-cases such as deferred shading and deferred lighting are often implemented with multiple
+color attachments, representing the framebuffer pixels in different formats or layouts.
+The OpenGL extension `GL_EXT_shader_pixel_local_storage` supports such reinterpretation,
+and other tile shading APIs incorporate something similar. These mechanisms enable
+the same block of tile memory to be interpreted as multiple layouts or formats.
+
+Such reinterpretation of framebuffer pixels can be useful even if tile shading is not
+used. Therefore, it may be best handled as a completely separate extension.
+
+Yes, on some Adreno ™ GPUs and for some use cases, the tile-sized
+dispatch can improve GPU efficiency and has been incorporated into this extension.
+
+`vkCmdDispatchTileQCOM` provides a "tile-sized dispatch" where
+the number of compute shader invocations is a function of the tile dimensions,
+where the GPU can construct workgroups that are aligned to implementation specific
+micro-tiles and assign those workgroups to the shader core that is able to
+most optimally perform load/store operations for the micro tile’s pixels.
+
+No. In this proposal, a created graphics pipeline can be used in a render
+pass regardless whether the render pass enables tile shading, and regardless whether
+[per-tile execution mode](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model) is enabled. Similarly,
+a created compute pipelines can now be used inside or outside a render pass. We decided
+not to require these usage flags during pipeline creation because we think it would be a burden
+to developers and because we do not anticipate implementations will require this information.
+We do specify that the new shader built-ins (e.g., TileDimensionQCOM, TileOffsetQCOM, etc.) contain
+the value `0` if the shader is invoked when per-tile execution mode is disabled.
+
+No. Similar to above, we believe that limiting
+compute pipelines to a single renderpass/subpass would be a burden to developers
+and we do not anticipate that implementations need this information.
+
+The functionality of this extension is a superset of `VK_EXT_shader_tile_image`.
+
+VK_EXT_shader_tile_image is limited to bringing the functionality of
+GL_EXT_shader_framebuffer_fetch to Vulkan dynamic render passes. The
+associated SPV_EXT_shader_tile_image and GL_EXT_shader_tile_image
+extensions provide descriptor-less read-only access to only the current
+fragment location for only color/depth/stencil attachments. This extension
+is a superset of the functionality in VK_EXT_shader_tile_image with
+the exception of descriptor-less access.
+
+Possibly in a future extension. This extension requires that sampling
+and load/store tile attachment access must use an offset/coordinate that is within
+the boundary of the tile (plus any apron). Out-of-bounds access will result in
+undefined behavior. For many use cases, this will require the
+application shader clamps the coordinates to the tile’s boundaries.
+Note that although clamp/wrap modes are specified in the VkSampler object,
+and are fully supported with tile attachment access, those clamp/wrap operations are
+defined to occur at the edges of the VkImage and not at the edges of the tile.
+While shader-based clamping will add unwanted shader overhead, initial implementations
+supporting this extension may not support tile access with robustness.
+
+While this extension could define an optional tile robustness feature, we have not
+yet standardized on the robustness behavior(s) that should be provided for tile access.
+For example, a robust out-of-bounds tile access might return 0, or the coordinates might
+be clamped to the tile’s boundaries.
+In this initial proposal, we have elected to simply ban out-of-bounds tile access.
+
+The functionality VK_QCOM_image_processing and VK_QCOM_image_processing2 are
+available with tile shading with an optional feature bit `tileShadingImageProcessing`.
+
+VK_QCOM_image_processing and VK_QCOM_image_processing2 adds several new "high order" SPIR-V texture filtering operations
+for image processing (`OpImageSampleWeightedQCOM`, `OpImageBoxFilterQCOM`, `OpImageBlockMatch*`).

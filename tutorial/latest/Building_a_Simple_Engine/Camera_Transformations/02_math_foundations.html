@@ -1,0 +1,2672 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Camera &amp; Transformations: Mathematical Foundations :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Camera Transformations</li>
+    <li><a href="02_math_foundations.html">Math foundations</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Camera &amp; Transformations: Mathematical Foundations</h1>
+<div class="sect1">
+<h2 id="_mathematical_foundations_for_3d_graphics"><a class="anchor" href="#_mathematical_foundations_for_3d_graphics"></a>Mathematical Foundations for 3D Graphics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into camera implementation, let&#8217;s review the essential mathematical concepts that form the foundation of 3D graphics programming. Understanding these concepts is crucial for implementing a robust camera system.</p>
+</div>
+<div class="sect2">
+<h3 id="_vectors_in_3d_graphics"><a class="anchor" href="#_vectors_in_3d_graphics"></a>Vectors in 3D Graphics</h3>
+<div class="paragraph">
+<p>Vectors are fundamental to 3D graphics as they represent positions, directions, and movements in space. In our Vulkan application, we&#8217;ll primarily work with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>3D vectors (x, y, z)</strong>: Used for positions, directions, and normals</p>
+</li>
+<li>
+<p><strong>4D vectors (x, y, z, w)</strong>: Used for homogeneous coordinates in transformations</p>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_why_vectors_matter_in_graphics"><a class="anchor" href="#_why_vectors_matter_in_graphics"></a>Why Vectors Matter in Graphics</h4>
+<div class="paragraph">
+<p>In our camera system, vectors serve several critical purposes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The camera&#8217;s position is represented as a 3D vector</p>
+</li>
+<li>
+<p>The camera&#8217;s viewing direction is a 3D vector</p>
+</li>
+<li>
+<p>The "up" direction that orients the camera is also a vector</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vector_operations_and_their_applications"><a class="anchor" href="#_vector_operations_and_their_applications"></a>Vector Operations and Their Applications</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Addition and Subtraction</strong>: Used for calculating relative positions and movements</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: <code>newPosition = currentPosition + movementDirection * speed</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Scalar Multiplication</strong>: Used for scaling movements and directions</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: Slowing down camera movement by multiplying velocity by a factor &lt; 1</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Dot Product</strong>: Calculates the dot product between two vectors. For normalized vectors, this equals the cosine of the angle between them.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Applications: Determining if objects are facing the camera, calculating lighting intensity</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_right_hand_rule"><a class="anchor" href="#_the_right_hand_rule"></a>The Right-Hand Rule</h4>
+<div class="paragraph">
+<p>The right-hand rule is a convention used in 3D graphics and mathematics to determine the orientation of coordinate systems and the direction of cross-products.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>For Cross Products</strong>: When calculating A × B:</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Point your right hand&#8217;s index finger in the direction of vector A</p>
+</li>
+<li>
+<p>Point your middle finger in the direction of vector B (perpendicular to A)</p>
+</li>
+<li>
+<p>Your thumb now points in the direction of the resulting cross-product</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>For Coordinate Systems</strong>: In a right-handed coordinate system:</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Point your right hand&#8217;s index finger along the positive X-axis</p>
+</li>
+<li>
+<p>Point your middle finger along the positive Y-axis</p>
+</li>
+<li>
+<p>Your thumb points along the positive Z-axis</p>
+</li>
+</ol>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// The cross product direction follows the right-hand rule
+glm::vec3 xAxis(1.0f, 0.0f, 0.0f);  // Point right (positive X)
+glm::vec3 yAxis(0.0f, 1.0f, 0.0f);  // Point up (positive Y)
+
+// Cross product gives the Z axis in a right-handed system
+glm::vec3 zAxis = glm::cross(xAxis, yAxis);  // Points forward (positive Z)
+// zAxis will be (0.0f, 0.0f, 1.0f)
+
+// If we reverse the order, we get the opposite direction
+glm::vec3 negativeZ = glm::cross(yAxis, xAxis);  // Points backward (negative Z)
+// negativeZ will be (0.0f, 0.0f, -1.0f)</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Cross Product</strong>: Creates a vector perpendicular to two input vectors</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Applications: Generating the camera&#8217;s "right" vector from "forward" and "up" vectors</p>
+</li>
+<li>
+<p>The direction follows the right-hand rule (explained above)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Normalization</strong>: Preserves the direction while setting length to 1</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Applications: Ensuring consistent movement speed regardless of direction</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Vector operations using GLM
+glm::vec3 a(1.0f, 2.0f, 3.0f);
+glm::vec3 b(4.0f, 5.0f, 6.0f);
+
+// Addition - combining positions or offsets
+glm::vec3 sum = a + b; // (5.0, 7.0, 9.0)
+
+// Dot product - useful for lighting calculations
+float dotProduct = glm::dot(a, b); // 32.0
+// If vectors are normalized, dot product = cosine of angle between them
+float cosAngle = glm::dot(glm::normalize(a), glm::normalize(b)); // ~0.974
+
+// Cross product - creating perpendicular vectors (e.g., camera orientation)
+glm::vec3 crossProduct = glm::cross(a, b); // (-3.0, 6.0, -3.0)
+
+// Normalization - ensuring consistent movement speeds
+glm::vec3 normalized = glm::normalize(a); // (0.267, 0.535, 0.802)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_matrices_and_transformations"><a class="anchor" href="#_matrices_and_transformations"></a>Matrices and Transformations</h3>
+<div class="paragraph">
+<p>Matrices are used to represent transformations in 3D space. In Vulkan and other graphics APIs, we typically use 4×4 matrices to represent transformations in homogeneous coordinates.</p>
+</div>
+<div class="sect3">
+<h4 id="_why_we_use_44_matrices"><a class="anchor" href="#_why_we_use_44_matrices"></a>Why We Use 4×4 Matrices</h4>
+<div class="paragraph">
+<p>Even though we work in 3D space, we use 4×4 matrices because:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>They allow us to represent translation (movement) along with rotation and scaling</p>
+</li>
+<li>
+<p>They can be combined (multiplied) to create complex transformations</p>
+</li>
+<li>
+<p>They work with homogeneous coordinates (x, y, z, w) which are required for perspective projection</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_common_transformation_matrices"><a class="anchor" href="#_common_transformation_matrices"></a>Common Transformation Matrices</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Translation Matrix</strong>: Moves objects in 3D space</p>
+<div class="ulist">
+<ul>
+<li>
+<p>In a camera system: Moving the camera position</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Rotation Matrix</strong>: Rotates objects around an axis</p>
+<div class="ulist">
+<ul>
+<li>
+<p>In a camera system: Changing where the camera is looking</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Scale Matrix</strong>: Changes the size of objects</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Less commonly used for cameras, but important for objects in the scene</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Model Matrix</strong>: Combines transformations to position an object in world space</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Positions the objects relative to the world origin</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>View Matrix</strong>: Transforms world space to camera space</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Essentially positions the world relative to the camera</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Projection Matrix</strong>: Transforms camera space to clip space</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Defines how 3D objects are projected onto the 2D screen</p>
+</li>
+<li>
+<p>Controls perspective, field of view, and visible range (near/far planes)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Matrix transformations using GLM
+// Translation matrix - moving an object
+glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 2.0f, 3.0f));
+
+// Rotation matrix (45 degrees around Y axis) - turning an object
+glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+// Scale matrix - resizing an object
+glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(2.0f, 2.0f, 2.0f));
+
+// Combining transformations (scale, then rotate, then translate)
+// Order matters! The rightmost transformation is applied first
+glm::mat4 modelMatrix = translationMatrix * rotationMatrix * scaleMatrix;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_matrix_order_matters"><a class="anchor" href="#_matrix_order_matters"></a>Matrix Order Matters</h4>
+<div class="paragraph">
+<p>The order of matrix multiplication is crucial because transformations are applied from right to left. Getting the order wrong can completely change your object&#8217;s final position and orientation.</p>
+</div>
+<div class="paragraph">
+<p>Consider this practical example: if you want to rotate a cube around its own center and then move it to a new position, you must apply the transformations in the correct order:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// CORRECT: Scale first, then rotate, then translate
+// This rotates the cube around its own center, then moves it
+glm::mat4 modelMatrix = translationMatrix * rotationMatrix * scaleMatrix;
+
+// WRONG: Translate first, then rotate
+// This would move the cube away from origin, then rotate it around the world origin
+// The cube would orbit around the world center instead of rotating in place!
+glm::mat4 wrongMatrix = rotationMatrix * translationMatrix * scaleMatrix;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For our camera pipeline: <code>projectionMatrix * viewMatrix * modelMatrix * vertex</code>
+Each transformation prepares the data for the next stage, and changing this order would break the rendering pipeline.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_visual_example_why_matrix_order_matters"><a class="anchor" href="#_visual_example_why_matrix_order_matters"></a>Visual Example: Why Matrix Order Matters</h4>
+<div class="paragraph">
+<p>The following diagram illustrates the difference between correct and incorrect matrix multiplication order when transforming a cube:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/matrix-order-comparison.svg" alt="Matrix Order Comparison showing correct T×R×S vs incorrect R×T×S transformation sequences">
+</div>
+<div class="title">Figure 1. Matrix Transformation Order Comparison</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_row_major_vs_column_major_representation"><a class="anchor" href="#_row_major_vs_column_major_representation"></a>Row-Major vs. Column-Major Representation</h4>
+<div class="paragraph">
+<p>When working with matrices in graphics programming, it&#8217;s important to understand the difference between row-major and column-major representations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Row-Major</strong>: Matrix elements are stored row by row in memory</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Used by DirectX, C/C++ multi-dimensional arrays</p>
+</li>
+<li>
+<p>A matrix is accessed as <code>M[row][column]</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Column-Major</strong>: Matrix elements are stored column by column in memory</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Used by OpenGL, GLSL, and by default in GLM</p>
+</li>
+<li>
+<p>A matrix is accessed as <code>M[column][row]</code> (in memory layout terms)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Row-major vs Column-major representation of a 3x3 matrix
+// For a matrix:
+// [ a b c ]
+// [ d e f ]
+// [ g h i ]
+
+// Row-major memory layout:
+// [a, b, c, d, e, f, g, h, i]
+
+// Column-major memory layout:
+// [a, d, g, b, e, h, c, f, i]
+
+// In GLM, matrices are column-major by default
+glm::mat4 matrix = glm::mat4(1.0f);  // Identity matrix in column-major format
+
+// When passing matrices to Vulkan shaders, you need to be aware of the layout
+// Vulkan expects column-major by default, matching GLM's default</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_and_matrix_layouts"><a class="anchor" href="#_vulkan_and_matrix_layouts"></a>Vulkan and Matrix Layouts</h4>
+<div class="paragraph">
+<p>Vulkan works with both row-major and column-major formats, but you need to specify which one you&#8217;re using:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>By default, Vulkan expects matrices in column-major format</p>
+</li>
+<li>
+<p>You can specify row-major format in your shaders using the <code>row_major</code> qualifier</p>
+</li>
+<li>
+<p>GLM (commonly used with Vulkan) uses column-major by default, but can be configured for row-major</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The practical implications:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Matrix multiplication order may need to be reversed depending on the layout</p>
+</li>
+<li>
+<p>When debugging, matrix elements may appear transposed compared to mathematical notation</p>
+</li>
+<li>
+<p>When porting code between different APIs, matrix layouts may need to be transposed</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_affine_transformations"><a class="anchor" href="#_affine_transformations"></a>Affine Transformations</h3>
+<div class="paragraph">
+<p>Affine transformations are a fundamental concept in computer graphics that preserve parallel lines (but not necessarily angles or distances). They&#8217;re essential for representing most common operations in 3D graphics.</p>
+</div>
+<div class="sect3">
+<h4 id="_properties_of_affine_transformations"><a class="anchor" href="#_properties_of_affine_transformations"></a>Properties of Affine Transformations</h4>
+<div class="paragraph">
+<p>An affine transformation can be represented as a combination of:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Linear transformations (rotation, scaling, shearing)</p>
+</li>
+<li>
+<p>Translation (movement)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In mathematical terms, an affine transformation can be expressed as:</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -0.566ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="14.043ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 6207 1000"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mstyle"><g data-mml-node="mrow"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mrow" transform="translate(550,0)"><g data-mml-node="mo"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(389,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mo" transform="translate(961,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g></g></g><g data-mml-node="mo" transform="translate(2177.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mi" transform="translate(3233.6,0)"><path data-c="1D434" d="M208 74Q208 50 254 46Q272 46 272 35Q272 34 270 22Q267 8 264 4T251 0Q249 0 239 0T205 1T141 2Q70 2 50 0H42Q35 7 35 11Q37 38 48 46H62Q132 49 164 96Q170 102 345 401T523 704Q530 716 547 716H555H572Q578 707 578 706L606 383Q634 60 636 57Q641 46 701 46Q726 46 726 36Q726 34 723 22Q720 7 718 4T704 0Q701 0 690 0T651 1T578 2Q484 2 455 0H443Q437 6 437 9T439 27Q443 40 445 43L449 46H469Q523 49 533 63L521 213H283L249 155Q208 86 208 74ZM516 260Q516 271 504 416T490 562L463 519Q447 492 400 412L310 260L413 259Q516 259 516 260Z"></path></g><g data-mml-node="mi" transform="translate(3983.6,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mo" transform="translate(4777.8,0)"><path data-c="2B" d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path></g><g data-mml-node="mi" transform="translate(5778,0)"><path data-c="1D44F" d="M73 647Q73 657 77 670T89 683Q90 683 161 688T234 694Q246 694 246 685T212 542Q204 508 195 472T180 418L176 399Q176 396 182 402Q231 442 283 442Q345 442 383 396T422 280Q422 169 343 79T173 -11Q123 -11 82 27T40 150V159Q40 180 48 217T97 414Q147 611 147 623T109 637Q104 637 101 637H96Q86 637 83 637T76 640T73 647ZM336 325V331Q336 405 275 405Q258 405 240 397T207 376T181 352T163 330L157 322L136 236Q114 150 114 114Q114 66 138 42Q154 26 178 26Q211 26 245 58Q270 81 285 114T318 219Q336 291 336 325Z"></path></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p>where A is a matrix (linear transformation) and b is a vector (translation).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_why_affine_transformations_matter_in_graphics"><a class="anchor" href="#_why_affine_transformations_matter_in_graphics"></a>Why Affine Transformations Matter in Graphics</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>They preserve collinearity (points on a line remain on a line)</p>
+</li>
+<li>
+<p>They preserve ratios of distances along a line</p>
+</li>
+<li>
+<p>They can represent all the common transformations we need in 3D graphics</p>
+</li>
+<li>
+<p>They can be efficiently composed (combined) through matrix multiplication</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_representing_affine_transformations_with_homogeneous_coordinates"><a class="anchor" href="#_representing_affine_transformations_with_homogeneous_coordinates"></a>Representing Affine Transformations with Homogeneous Coordinates</h4>
+<div class="paragraph">
+<p>In 3D graphics, we use 4×4 matrices to represent affine transformations using homogeneous coordinates:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// A 4×4 matrix representing an affine transformation
+// [ R R R Tx ]
+// [ R R R Ty ]
+// [ R R R Tz ]
+// [ 0 0 0  1 ]
+// Where R represents rotation/scaling/shearing and T represents translation
+
+// Example of an affine transformation matrix in GLM
+glm::mat4 affineTransform = glm::mat4(
+    glm::vec4(r11, r12, r13, tx),  // First row
+    glm::vec4(r21, r22, r23, ty),  // Second row
+    glm::vec4(r31, r32, r33, tz),  // Third row
+    glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)  // Last row is always (0,0,0,1) for affine transformations
+);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_affine_transformations_in_practice"><a class="anchor" href="#_affine_transformations_in_practice"></a>Affine Transformations in Practice</h4>
+<div class="paragraph">
+<p>In our Vulkan application, almost all transformations we perform are affine:
+* Moving objects around the scene (translation)
+* Rotating objects to face different directions
+* Scaling objects to make them larger or smaller
+* Combining these operations to position and orient objects</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pose_matrices"><a class="anchor" href="#_pose_matrices"></a>Pose Matrices</h3>
+<div class="paragraph">
+<p>A pose matrix (also called a transformation matrix or rigid body transformation) is a specific type of affine transformation that represents both the position and orientation of an object in 3D space.</p>
+</div>
+<div class="sect3">
+<h4 id="_structure_of_a_pose_matrix"><a class="anchor" href="#_structure_of_a_pose_matrix"></a>Structure of a Pose Matrix</h4>
+<div class="paragraph">
+<p>A pose matrix combines rotation and translation in a single 4×4 matrix:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// A pose matrix has this structure:
+// [ R R R Tx ]
+// [ R R R Ty ]
+// [ R R R Tz ]
+// [ 0 0 0  1 ]
+// Where the 3×3 R submatrix represents rotation and [Tx,Ty,Tz] represents translation
+
+// Creating a pose matrix in GLM
+glm::mat4 poseMatrix = glm::mat4(1.0f);  // Start with identity matrix
+poseMatrix = glm::translate(poseMatrix, position);  // Apply translation
+poseMatrix = poseMatrix * rotationMatrix;  // Apply rotation</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applications_of_pose_matrices"><a class="anchor" href="#_applications_of_pose_matrices"></a>Applications of Pose Matrices</h4>
+<div class="paragraph">
+<p>Pose matrices are essential in graphics engines for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Object Positioning</strong>: Defining where objects are located and how they&#8217;re oriented</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: Placing a character model in the world with the correct position and facing direction</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Camera Representation</strong>: Defining the camera&#8217;s position and orientation</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: The view matrix is the inverse of the camera&#8217;s pose matrix</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Hierarchical Transformations</strong>: Building complex objects from simpler parts</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: A character&#8217;s hand position depends on the arm position, which depends on the torso position</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Animation</strong>: Interpolating between different poses</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Example: Smoothly transitioning a camera from one position/orientation to another</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_extracting_information_from_pose_matrices"><a class="anchor" href="#_extracting_information_from_pose_matrices"></a>Extracting Information from Pose Matrices</h4>
+<div class="paragraph">
+<p>We can extract useful information from pose matrices:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Extracting position from a pose matrix
+glm::vec3 extractPosition(const glm::mat4&amp; poseMatrix) {
+    return glm::vec3(poseMatrix[3]);  // The translation is stored in the last column
+}
+
+// Extracting forward direction (assuming standard OpenGL orientation)
+glm::vec3 extractForwardDirection(const glm::mat4&amp; poseMatrix) {
+    return -glm::vec3(poseMatrix[2]);  // Negative Z axis (third column)
+}
+
+// Extracting up direction
+glm::vec3 extractUpDirection(const glm::mat4&amp; poseMatrix) {
+    return glm::vec3(poseMatrix[1]);  // Y axis (second column)
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implementing_a_look_at_function"><a class="anchor" href="#_implementing_a_look_at_function"></a>Implementing a Look-At Function</h3>
+<div class="paragraph">
+<p>A "look-at" function is a fundamental tool in camera systems that creates a view matrix to orient the camera towards a specific target point. This is one of the most common operations in 3D graphics and provides an excellent example of how the mathematical concepts we&#8217;ve discussed are applied in practice.</p>
+</div>
+<div class="sect3">
+<h4 id="_purpose_of_the_look_at_function"><a class="anchor" href="#_purpose_of_the_look_at_function"></a>Purpose of the Look-At Function</h4>
+<div class="paragraph">
+<p>The look-at function serves several important purposes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Orients the camera to face a specific point in 3D space</p>
+</li>
+<li>
+<p>Establishes the camera&#8217;s local coordinate system (right, up, forward vectors)</p>
+</li>
+<li>
+<p>Creates a view matrix that transforms world coordinates into camera space</p>
+</li>
+<li>
+<p>Simplifies camera control by focusing on a target rather than managing rotation angles</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mathematical_principles"><a class="anchor" href="#_mathematical_principles"></a>Mathematical Principles</h4>
+<div class="paragraph">
+<p>The look-at function works by constructing an orthonormal basis (three perpendicular unit vectors) that defines the camera&#8217;s orientation:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Forward Vector (Z)</strong>: Points from the camera position to the target position</p>
+</li>
+<li>
+<p><strong>Right Vector (X)</strong>: Perpendicular to both the forward vector and the world up vector</p>
+</li>
+<li>
+<p><strong>Up Vector (Y)</strong>: Perpendicular to both the forward and right vectors</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>These three vectors, along with the camera position, form the view matrix that transforms world coordinates into camera space.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_step_by_step_implementation"><a class="anchor" href="#_step_by_step_implementation"></a>Step-by-Step Implementation</h4>
+<div class="paragraph">
+<p>Let&#8217;s implement a custom look-at function to understand how it works:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">glm::mat4 createLookAtMatrix(
+    const glm::vec3&amp; cameraPosition,  // Where the camera is
+    const glm::vec3&amp; targetPosition,  // What the camera is looking at
+    const glm::vec3&amp; worldUpVector    // Which way is "up" (usually Y axis)
+) {
+    // Step 1: Calculate the camera's forward direction (Z axis)
+    // Note: We negate this because in OpenGL/Vulkan, the camera looks down the negative Z-axis
+    glm::vec3 forward = glm::normalize(cameraPosition - targetPosition);
+
+    // Step 2: Calculate the camera's right direction (X axis)
+    // Using cross product between world up and forward direction
+    glm::vec3 right = glm::normalize(glm::cross(worldUpVector, forward));
+
+    // Step 3: Calculate the camera's up direction (Y axis)
+    // Using cross product between forward and right to ensure orthogonality
+    glm::vec3 up = glm::cross(forward, right);
+
+    // Step 4: Construct the rotation part of the view matrix
+    // Each row contains one of the camera's basis vectors
+    glm::mat4 rotation = glm::mat4(1.0f);
+    rotation[0][0] = right.x;
+    rotation[1][0] = right.y;
+    rotation[2][0] = right.z;
+    rotation[0][1] = up.x;
+    rotation[1][1] = up.y;
+    rotation[2][1] = up.z;
+    rotation[0][2] = forward.x;
+    rotation[1][2] = forward.y;
+    rotation[2][2] = forward.z;
+
+    // Step 5: Construct the translation part of the view matrix
+    glm::mat4 translation = glm::mat4(1.0f);
+    translation[3][0] = -cameraPosition.x;
+    translation[3][1] = -cameraPosition.y;
+    translation[3][2] = -cameraPosition.z;
+
+    // Step 6: Combine rotation and translation
+    // The translation is applied first, then the rotation
+    return rotation * translation;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_using_glms_built_in_look_at_function"><a class="anchor" href="#_using_glms_built_in_look_at_function"></a>Using GLM&#8217;s Built-in Look-At Function</h4>
+<div class="paragraph">
+<p>In practice, we typically use GLM&#8217;s built-in <code>lookAt</code> function, which implements the same algorithm:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Using GLM's built-in lookAt function
+glm::mat4 viewMatrix = glm::lookAt(
+    glm::vec3(0.0f, 0.0f, 5.0f),   // Camera position
+    glm::vec3(0.0f, 0.0f, 0.0f),   // Target position (origin)
+    glm::vec3(0.0f, 1.0f, 0.0f)    // World up vector (Y axis)
+);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_practical_applications"><a class="anchor" href="#_practical_applications"></a>Practical Applications</h4>
+<div class="paragraph">
+<p>The look-at function is used in various scenarios:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>First-Person Camera</strong>: Looking in the direction of movement</p>
+</li>
+<li>
+<p><strong>Third-Person Camera</strong>: Following a character while looking at them</p>
+</li>
+<li>
+<p><strong>Orbit Camera</strong>: Circling around a point of interest</p>
+</li>
+<li>
+<p><strong>Cinematic Camera</strong>: Creating smooth camera movements that focus on important objects</p>
+</li>
+<li>
+<p><strong>Object Inspection</strong>: Allowing users to examine 3D models from different angles</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_implementing_an_orbit_camera"><a class="anchor" href="#_example_implementing_an_orbit_camera"></a>Example: Implementing an Orbit Camera</h4>
+<div class="paragraph">
+<p>Here&#8217;s how you might use the look-at function to implement an orbit camera that circles around a target:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Orbit camera implementation
+void updateOrbitCamera(float deltaTime) {
+    // Update the orbit angle based on time
+    orbitAngle += orbitSpeed * deltaTime;
+
+    // Calculate the camera position on a circle around the target
+    float radius = 10.0f;
+    glm::vec3 cameraPosition(
+        targetPosition.x + radius * cos(orbitAngle),
+        targetPosition.y + 5.0f,  // Slightly above the target
+        targetPosition.z + radius * sin(orbitAngle)
+    );
+
+    // Create the view matrix using lookAt
+    viewMatrix = glm::lookAt(
+        cameraPosition,
+        targetPosition,
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_smooth_camera_transitions"><a class="anchor" href="#_example_smooth_camera_transitions"></a>Example: Smooth Camera Transitions</h4>
+<div class="paragraph">
+<p>The look-at function can also be used to create smooth transitions between different camera positions and targets:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Smooth camera transition
+void transitionCamera(float t) {  // t ranges from 0.0 to 1.0
+    // Interpolate between start and end positions
+    glm::vec3 currentPosition = glm::mix(startPosition, endPosition, t);
+
+    // Interpolate between start and end targets
+    glm::vec3 currentTarget = glm::mix(startTarget, endTarget, t);
+
+    // Update the view matrix
+    viewMatrix = glm::lookAt(
+        currentPosition,
+        currentTarget,
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By understanding how the look-at function works, you gain insight into how cameras are oriented in 3D space and how the view matrix transforms the world from the camera&#8217;s perspective.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_raycasting_in_3d_graphics"><a class="anchor" href="#_raycasting_in_3d_graphics"></a>Raycasting in 3D Graphics</h3>
+<div class="paragraph">
+<p>Raycasting is a fundamental technique in 3D graphics that involves projecting rays from a point into the scene and determining what they intersect with. It&#8217;s used for a wide range of applications, from picking objects in a scene to implementing collision detection and visibility determination.</p>
+</div>
+<div class="sect3">
+<h4 id="_ray_representation"><a class="anchor" href="#_ray_representation"></a>Ray Representation</h4>
+<div class="paragraph">
+<p>A ray in 3D space is defined by an origin point and a direction vector:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct Ray {
+    glm::vec3 origin;     // Starting point of the ray
+    glm::vec3 direction;  // Normalized direction vector
+};
+
+// Creating a ray
+Ray createRay(const glm::vec3&amp; origin, const glm::vec3&amp; direction) {
+    Ray ray;
+    ray.origin = origin;
+    ray.direction = glm::normalize(direction);  // Ensure direction is normalized
+    return ray;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ray_object_intersection"><a class="anchor" href="#_ray_object_intersection"></a>Ray-Object Intersection</h4>
+<div class="paragraph">
+<p>The core of raycasting is determining if and where a ray intersects with objects in the scene. Let&#8217;s look at some common intersection tests:</p>
+</div>
+<div class="sect4">
+<h5 id="_ray_sphere_intersection"><a class="anchor" href="#_ray_sphere_intersection"></a>Ray-Sphere Intersection</h5>
+<div class="paragraph">
+<p>One of the simplest intersection tests is between a ray and a sphere:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct Sphere {
+    glm::vec3 center;
+    float radius;
+};
+
+bool rayIntersectsSphere(const Ray&amp; ray, const Sphere&amp; sphere, float&amp; t) {
+    // Vector from ray origin to sphere center
+    glm::vec3 oc = sphere.center - ray.origin;
+
+    // Quadratic equation coefficients
+    float a = glm::dot(ray.direction, ray.direction);  // Always 1 if direction is normalized
+    float b = 2.0f * glm::dot(oc, ray.direction);
+    float c = glm::dot(oc, oc) - sphere.radius * sphere.radius;
+
+    // Discriminant
+    float discriminant = b * b - 4 * a * c;
+
+    if (discriminant &lt; 0) {
+        // No intersection
+        return false;
+    }
+
+    // Find the nearest intersection point
+    float sqrtDiscriminant = sqrt(discriminant);
+    float t0 = (-b - sqrtDiscriminant) / (2 * a);
+    float t1 = (-b + sqrtDiscriminant) / (2 * a);
+
+    // Check if intersection is in front of the ray
+    if (t0 &gt; 0) {
+        t = t0;
+        return true;
+    }
+
+    if (t1 &gt; 0) {
+        t = t1;
+        return true;
+    }
+
+    // Both intersections are behind the ray
+    return false;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_ray_triangle_intersection"><a class="anchor" href="#_ray_triangle_intersection"></a>Ray-Triangle Intersection</h5>
+<div class="paragraph">
+<p>Triangle intersection is essential for raycasting against 3D models:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct Triangle {
+    glm::vec3 v0, v1, v2;  // Vertices
+};
+
+bool rayIntersectsTriangle(const Ray&amp; ray, const Triangle&amp; triangle, float&amp; t, glm::vec2&amp; barycentricCoords) {
+    // Möller–Trumbore algorithm
+    glm::vec3 edge1 = triangle.v1 - triangle.v0;
+    glm::vec3 edge2 = triangle.v2 - triangle.v0;
+    glm::vec3 h = glm::cross(ray.direction, edge2);
+    float a = glm::dot(edge1, h);
+
+    // Check if ray is parallel to triangle
+    if (a &gt; -0.00001f &amp;&amp; a &lt; 0.00001f) {
+        return false;
+    }
+
+    float f = 1.0f / a;
+    glm::vec3 s = ray.origin - triangle.v0;
+    float u = f * glm::dot(s, h);
+
+    // Check if intersection is outside triangle
+    if (u &lt; 0.0f || u &gt; 1.0f) {
+        return false;
+    }
+
+    glm::vec3 q = glm::cross(s, edge1);
+    float v = f * glm::dot(ray.direction, q);
+
+    // Check if intersection is outside triangle
+    if (v &lt; 0.0f || u + v &gt; 1.0f) {
+        return false;
+    }
+
+    // Compute intersection distance
+    t = f * glm::dot(edge2, q);
+
+    // Check if intersection is behind the ray
+    if (t &lt;= 0.0f) {
+        return false;
+    }
+
+    // Store barycentric coordinates for interpolation
+    barycentricCoords = glm::vec2(u, v);
+    return true;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_ray_aabb_intersection"><a class="anchor" href="#_ray_aabb_intersection"></a>Ray-AABB Intersection</h5>
+<div class="paragraph">
+<p>Axis-Aligned Bounding Box (AABB) intersection is useful for broad-phase collision detection:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct AABB {
+    glm::vec3 min;  // Minimum corner
+    glm::vec3 max;  // Maximum corner
+};
+
+bool rayIntersectsAABB(const Ray&amp; ray, const AABB&amp; aabb, float&amp; tMin, float&amp; tMax) {
+    // Compute intersection with each slab
+    glm::vec3 invDir = 1.0f / ray.direction;
+    glm::vec3 t0 = (aabb.min - ray.origin) * invDir;
+    glm::vec3 t1 = (aabb.max - ray.origin) * invDir;
+
+    // Handle negative directions
+    glm::vec3 tSmaller = glm::min(t0, t1);
+    glm::vec3 tBigger = glm::max(t0, t1);
+
+    // Find entry and exit points
+    tMin = glm::max(tSmaller.x, glm::max(tSmaller.y, tSmaller.z));
+    tMax = glm::min(tBigger.x, glm::min(tBigger.y, tBigger.z));
+
+    // Check if there's a valid intersection
+    return tMax &gt;= tMin &amp;&amp; tMax &gt; 0;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_creating_camera_rays"><a class="anchor" href="#_creating_camera_rays"></a>Creating Camera Rays</h4>
+<div class="paragraph">
+<p>One of the most common uses of raycasting is to create rays from the camera into the scene, which is essential for picking objects or implementing ray tracing:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">Ray createCameraRay(
+    const glm::vec2&amp; screenCoord,    // Normalized screen coordinates (-1 to 1)
+    const glm::mat4&amp; viewMatrix,     // Camera view matrix
+    const glm::mat4&amp; projectionMatrix // Camera projection matrix
+) {
+    // Convert to clip space
+    glm::vec4 clipCoords(screenCoord.x, screenCoord.y, -1.0f, 1.0f);
+
+    // Convert to view space
+    glm::mat4 invProjection = glm::inverse(projectionMatrix);
+    glm::vec4 viewCoords = invProjection * clipCoords;
+    viewCoords.z = -1.0f;  // Point towards negative Z in view space
+    viewCoords.w = 0.0f;   // Convert to direction vector
+
+    // Convert to world space
+    glm::mat4 invView = glm::inverse(viewMatrix);
+    glm::vec4 worldCoords = invView * viewCoords;
+
+    // Create ray
+    Ray ray;
+    ray.origin = glm::vec3(invView[3]);  // Camera position in world space
+    ray.direction = glm::normalize(glm::vec3(worldCoords));
+
+    return ray;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applications_of_raycasting_in_graphics"><a class="anchor" href="#_applications_of_raycasting_in_graphics"></a>Applications of Raycasting in Graphics</h4>
+<div class="paragraph">
+<p>Raycasting has numerous applications in 3D graphics and game development:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Object Picking</strong>: Determining which object the user clicked on in a 3D scene</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Cast a ray from the camera through the mouse position and find the nearest intersection</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Collision Detection</strong>: Checking if objects will collide along a movement path</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Cast rays in the direction of movement to detect potential collisions</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Line of Sight</strong>: Determining if one object can "see" another</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Cast a ray between two objects and check for obstructions</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Terrain Height Sampling</strong>: Finding the height of terrain at a specific point</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Cast a ray downward from above the terrain</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Physics Simulations</strong>: Implementing realistic physics behaviors</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Raycasting is fundamental to many physics engines for collision resolution</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>AI Navigation</strong>: Helping AI characters navigate environments</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Raycasting can detect obstacles and determine valid paths</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_optimizing_raycasting_performance"><a class="anchor" href="#_optimizing_raycasting_performance"></a>Optimizing Raycasting Performance</h4>
+<div class="paragraph">
+<p>For complex scenes with many objects, raycasting can become computationally expensive. Here are some optimization techniques:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Spatial Partitioning</strong>: Use data structures like octrees, BVHs, or k-d trees to quickly eliminate objects that can&#8217;t possibly intersect with the ray</p>
+</li>
+<li>
+<p><strong>Bounding Volume Hierarchies</strong>: Test against simple bounding volumes (spheres, AABBs) before performing more expensive tests against detailed geometry</p>
+</li>
+<li>
+<p><strong>Level of Detail</strong>: Use simpler collision geometry for distant objects</p>
+</li>
+<li>
+<p><strong>Ray Batching</strong>: Process multiple rays together to take advantage of SIMD instructions</p>
+</li>
+<li>
+<p><strong>Early Termination</strong>: Stop testing once you&#8217;ve found any intersection (if that&#8217;s all you need)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_projection_in_3d_graphics"><a class="anchor" href="#_projection_in_3d_graphics"></a>Projection in 3D Graphics</h3>
+<div class="paragraph">
+<p>Projection is the process of transforming 3D coordinates in view space to 2D coordinates on the screen. In computer graphics, we use projection matrices to perform this transformation.</p>
+</div>
+<div class="sect3">
+<h4 id="_types_of_projection"><a class="anchor" href="#_types_of_projection"></a>Types of Projection</h4>
+<div class="paragraph">
+<p>There are two main types of projection used in 3D graphics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Perspective Projection</strong>: Objects appear smaller as they get farther away, simulating how we see the world</p>
+</li>
+<li>
+<p><strong>Orthographic Projection</strong>: Objects maintain their size regardless of distance, useful for technical drawings, 2D games, and UI elements</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_perspective_projection"><a class="anchor" href="#_perspective_projection"></a>Perspective Projection</h4>
+<div class="paragraph">
+<p>Perspective projection creates a realistic view where distant objects appear smaller, creating the illusion of depth:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Creating a perspective projection matrix
+glm::mat4 createPerspectiveMatrix(
+    float fovY,           // Vertical field of view in degrees
+    float aspectRatio,    // Width / height of the viewport
+    float nearPlane,      // Distance to the near clipping plane
+    float farPlane        // Distance to the far clipping plane
+) {
+    return glm::perspective(glm::radians(fovY), aspectRatio, nearPlane, farPlane);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The perspective projection matrix performs several transformations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Scales the view frustum based on the field of view and aspect ratio</p>
+</li>
+<li>
+<p>Maps the view volume to a canonical view volume (a cube from -1 to 1 in each dimension)</p>
+</li>
+<li>
+<p>Applies perspective division (dividing by w) to create the perspective effect</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The resulting matrix has this structure:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure of a perspective projection matrix
+// [ (h/w)*cot(fovY/2)    0             0                   0                ]
+// [        0         cot(fovY/2)       0                   0                ]
+// [        0             0        -(f+n)/(f-n)    -2*f*n/(f-n)             ]
+// [        0             0             -1                   0                ]
+// Where:
+// - fovY is the vertical field of view
+// - w/h is the aspect ratio
+// - n is the near plane distance
+// - f is the far plane distance</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_orthographic_projection"><a class="anchor" href="#_orthographic_projection"></a>Orthographic Projection</h4>
+<div class="paragraph">
+<p>Orthographic projection maintains the size of objects regardless of their distance from the camera:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Creating an orthographic projection matrix
+glm::mat4 createOrthographicMatrix(
+    float left,       // Left plane coordinate
+    float right,      // Right plane coordinate
+    float bottom,     // Bottom plane coordinate
+    float top,        // Top plane coordinate
+    float nearPlane,  // Near plane distance
+    float farPlane    // Far plane distance
+) {
+    return glm::ortho(left, right, bottom, top, nearPlane, farPlane);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The orthographic projection matrix simply scales and translates the view volume to the canonical view volume without applying any perspective division:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Structure of an orthographic projection matrix
+// [ 2/(r-l)      0           0           -(r+l)/(r-l) ]
+// [    0      2/(t-b)        0           -(t+b)/(t-b) ]
+// [    0         0       -2/(f-n)        -(f+n)/(f-n) ]
+// [    0         0           0                 1       ]
+// Where:
+// - l, r are the left and right planes
+// - b, t are the bottom and top planes
+// - n, f are the near and far planes</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_view_frustum"><a class="anchor" href="#_the_view_frustum"></a>The View Frustum</h4>
+<div class="paragraph">
+<p>The view frustum is the volume of space visible to the camera. For perspective projection, it&#8217;s a truncated pyramid:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Near Plane</strong>: The closest plane to the camera where rendering begins</p>
+</li>
+<li>
+<p><strong>Far Plane</strong>: The farthest plane from the camera where rendering ends</p>
+</li>
+<li>
+<p><strong>Field of View (FOV)</strong>: The angle that determines how wide the view is</p>
+</li>
+<li>
+<p><strong>Aspect Ratio</strong>: The ratio of width to height of the viewport</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Calculating the corners of the view frustum
+void calculateFrustumCorners(
+    float fovY,
+    float aspectRatio,
+    float nearPlane,
+    float farPlane,
+    glm::vec3 corners[8]  // Output array for the 8 corners
+) {
+    float tanHalfFovY = tan(glm::radians(fovY) / 2.0f);
+
+    // Near plane dimensions
+    float nearHeight = 2.0f * nearPlane * tanHalfFovY;
+    float nearWidth = nearHeight * aspectRatio;
+
+    // Far plane dimensions
+    float farHeight = 2.0f * farPlane * tanHalfFovY;
+    float farWidth = farHeight * aspectRatio;
+
+    // Near plane corners (in view space)
+    corners[0] = glm::vec3(-nearWidth/2, -nearHeight/2, -nearPlane);  // Bottom-left
+    corners[1] = glm::vec3( nearWidth/2, -nearHeight/2, -nearPlane);  // Bottom-right
+    corners[2] = glm::vec3( nearWidth/2,  nearHeight/2, -nearPlane);  // Top-right
+    corners[3] = glm::vec3(-nearWidth/2,  nearHeight/2, -nearPlane);  // Top-left
+
+    // Far plane corners (in view space)
+    corners[4] = glm::vec3(-farWidth/2, -farHeight/2, -farPlane);  // Bottom-left
+    corners[5] = glm::vec3( farWidth/2, -farHeight/2, -farPlane);  // Bottom-right
+    corners[6] = glm::vec3( farWidth/2,  farHeight/2, -farPlane);  // Top-right
+    corners[7] = glm::vec3(-farWidth/2,  farHeight/2, -farPlane);  // Top-left
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_projection_and_unprojection"><a class="anchor" href="#_projection_and_unprojection"></a>Projection and Unprojection</h4>
+<div class="paragraph">
+<p>Projection converts 3D world coordinates to 2D screen coordinates, while unprojection does the reverse. The following code examples demonstrate these concepts for educational purposes:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>These utility functions are provided to help understand the mathematical concepts behind projection and unprojection. While they may not be directly used in the basic rendering pipeline, they are valuable for implementing features like object picking, mouse interaction with 3D objects, and custom rendering techniques.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Project a 3D point to screen space
+glm::vec2 projectPoint(
+    const glm::vec3&amp; worldPoint,
+    const glm::mat4&amp; viewMatrix,
+    const glm::mat4&amp; projectionMatrix,
+    const glm::vec4&amp; viewport  // (x, y, width, height)
+) {
+    // Transform to clip space
+    glm::vec4 clipSpace = projectionMatrix * viewMatrix * glm::vec4(worldPoint, 1.0f);
+
+    // Perspective division
+    glm::vec3 ndcSpace = glm::vec3(clipSpace) / clipSpace.w;
+
+    // Map to viewport
+    glm::vec2 screenPos;
+    screenPos.x = (ndcSpace.x + 1.0f) * 0.5f * viewport.z + viewport.x;
+    screenPos.y = (1.0f - ndcSpace.y) * 0.5f * viewport.w + viewport.y;  // Y is flipped
+
+    return screenPos;
+}
+
+// Unproject a screen point to a ray in world space
+Ray unprojectScreenPoint(
+    const glm::vec2&amp; screenPoint,
+    const glm::mat4&amp; viewMatrix,
+    const glm::mat4&amp; projectionMatrix,
+    const glm::vec4&amp; viewport  // (x, y, width, height)
+) {
+    // Convert to normalized device coordinates
+    glm::vec3 ndcPos;
+    ndcPos.x = 2.0f * (screenPoint.x - viewport.x) / viewport.z - 1.0f;
+    ndcPos.y = 1.0f - 2.0f * (screenPoint.y - viewport.y) / viewport.w;  // Y is flipped
+    ndcPos.z = -1.0f;  // Near plane
+
+    // Create ray from camera through this point
+    return createCameraRay(glm::vec2(ndcPos.x, ndcPos.y), viewMatrix, projectionMatrix);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applications_of_projection_in_graphics"><a class="anchor" href="#_applications_of_projection_in_graphics"></a>Applications of Projection in Graphics</h4>
+<div class="paragraph">
+<p>Projection matrices are used in various ways in 3D graphics:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Rendering</strong>: Converting 3D scene geometry to 2D screen pixels</p>
+</li>
+<li>
+<p><strong>Shadow Mapping</strong>: Projecting the scene from a light&#8217;s perspective to determine shadows</p>
+</li>
+<li>
+<p><strong>Reflection/Refraction</strong>: Calculating how light bounces off or passes through surfaces</p>
+</li>
+<li>
+<p><strong>Texture Projection</strong>: Mapping textures onto surfaces based on a projector&#8217;s perspective</p>
+</li>
+<li>
+<p><strong>Screen-Space Effects</strong>: Implementing post-processing effects like screen-space reflections or ambient occlusion</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_choosing_the_right_projection"><a class="anchor" href="#_choosing_the_right_projection"></a>Choosing the Right Projection</h4>
+<div class="paragraph">
+<p>The choice between perspective and orthographic projection depends on the application:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Use Perspective Projection for</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>First-person or third-person games</p>
+</li>
+<li>
+<p>Realistic 3D visualizations</p>
+</li>
+<li>
+<p>Any application where depth perception is important</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Use Orthographic Projection for</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>2D games with 3D elements</p>
+</li>
+<li>
+<p>Technical drawings and CAD applications</p>
+</li>
+<li>
+<p>UI elements that shouldn&#8217;t be affected by perspective</p>
+</li>
+<li>
+<p>Isometric or top-down games</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_quaternions_for_rotations"><a class="anchor" href="#_quaternions_for_rotations"></a>Quaternions for Rotations</h3>
+<div class="paragraph">
+<p>While rotation matrices work well, quaternions offer advantages for certain rotation operations, particularly for smooth camera movements and avoiding "gimbal lock" (loss of a degree of freedom in certain orientations).</p>
+</div>
+<div class="sect3">
+<h4 id="_why_use_quaternions"><a class="anchor" href="#_why_use_quaternions"></a>Why Use Quaternions?</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>More compact representation (4 components vs. 9 for a rotation matrix)</p>
+</li>
+<li>
+<p>Easier to interpolate smoothly between orientations (important for camera animations)</p>
+</li>
+<li>
+<p>Avoids gimbal lock issues that can occur with Euler angles (pitch, yaw, roll)</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Quaternion operations using GLM
+// Create a quaternion from Euler angles (in radians)
+glm::quat rotation = glm::quat(glm::vec3(
+    glm::radians(30.0f),  // pitch (X) - looking up/down
+    glm::radians(45.0f),  // yaw (Y) - looking left/right
+    glm::radians(60.0f)   // roll (Z) - tilting the camera
+));
+
+// Convert quaternion to rotation matrix for use in rendering
+glm::mat4 rotationMatrix = glm::mat4_cast(rotation);
+
+// Rotate a vector using a quaternion (e.g., rotating the camera's forward vector)
+glm::vec3 original(1.0f, 0.0f, 0.0f);
+glm::vec3 rotated = rotation * original;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_coordinate_systems_in_3d_graphics"><a class="anchor" href="#_coordinate_systems_in_3d_graphics"></a>Coordinate Systems in 3D Graphics</h3>
+<div class="paragraph">
+<p>Understanding the different coordinate systems is essential for implementing a camera system. As data moves through the rendering pipeline, it undergoes several transformations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Local Space (Object Space)</strong>: Coordinates relative to the object&#8217;s origin</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Where vertices are initially defined relative to their own object</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>World Space</strong>: Coordinates relative to the world origin</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Where objects are positioned relative to each other in the scene</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>View Space (Camera Space)</strong>: Coordinates relative to the camera</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The world as seen from the camera&#8217;s position and orientation</p>
+</li>
+<li>
+<p>The camera is at the origin (0,0,0) looking down the negative Z-axis</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Clip Space</strong>: Coordinates after projection, in the range [-w, w] for each axis</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Determines what&#8217;s visible on screen (inside the view frustum)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Screen Space</strong>: Final 2D coordinates for display on the screen</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The actual pixel positions where objects appear</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="sect3">
+<h4 id="_handedness_of_coordinate_systems"><a class="anchor" href="#_handedness_of_coordinate_systems"></a>Handedness of Coordinate Systems</h4>
+<div class="paragraph">
+<p>Graphics APIs and engines use either right-handed or left-handed coordinate systems:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Right-Handed System</strong> (used by OpenGL and Vulkan by convention):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X-axis points right</p>
+</li>
+<li>
+<p>Y-axis points up</p>
+</li>
+<li>
+<p>Z-axis points out of the screen (toward the viewer)</p>
+</li>
+<li>
+<p>Cross product: Z = X × Y (using the right-hand rule)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Left-Handed System</strong> (used by DirectX):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>X-axis points right</p>
+</li>
+<li>
+<p>Y-axis points up</p>
+</li>
+<li>
+<p>Z-axis points into the screen (away from the viewer)</p>
+</li>
+<li>
+<p>Cross product: Z = X × Y (using the left-hand rule)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// In Vulkan, we typically use a right-handed coordinate system
+// But we can convert between systems if needed
+
+// Converting a point from left-handed to right-handed system
+// (just flip the Z coordinate)
+glm::vec3 leftHandedPoint(x, y, z);
+glm::vec3 rightHandedPoint(x, y, -z);
+
+// When setting up a camera, the handedness affects the view matrix
+// In a right-handed system, the camera typically looks down the negative Z-axis
+// This is why we often see -Z as the "forward" direction in camera code</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_implications_for_camera_systems"><a class="anchor" href="#_implications_for_camera_systems"></a>Implications for Camera Systems</h4>
+<div class="paragraph">
+<p>The handedness of your coordinate system affects how you set up your camera:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>In a right-handed system (Vulkan convention):</p>
+<div class="ulist">
+<ul>
+<li>
+<p>The camera typically looks down the negative Z-axis</p>
+</li>
+<li>
+<p>The "look" vector is often stored as a negative Z direction</p>
+</li>
+<li>
+<p>The view matrix is constructed using the right-hand rule for cross products</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>When extracting axes from a view matrix:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Right vector: X-axis of the view matrix</p>
+</li>
+<li>
+<p>Up vector: Y-axis of the view matrix</p>
+</li>
+<li>
+<p>Forward vector: Negative Z-axis of the view matrix</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_transformation_pipeline"><a class="anchor" href="#_the_transformation_pipeline"></a>The Transformation Pipeline</h4>
+<div class="paragraph">
+<p>The transformation pipeline typically follows this sequence:
+Local Space → World Space → View Space → Clip Space → Screen Space</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// A typical vertex transformation in a shader
+gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll implement these mathematical concepts to create a flexible camera system for our Vulkan application.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_further_resources"><a class="anchor" href="#_further_resources"></a>Further Resources</h3>
+<div class="paragraph">
+<p>If you&#8217;re finding some of the mathematical concepts challenging or want to deepen your understanding, here are some helpful resources organized by topic:</p>
+</div>
+<div class="sect3">
+<h4 id="_general_3d_math_resources"><a class="anchor" href="#_general_3d_math_resources"></a>General 3D Math Resources</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Books</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>"Mathematics for 3D Game Programming and Computer Graphics" by Eric Lengyel - Comprehensive reference for 3D math</p>
+</li>
+<li>
+<p>"3D Math Primer for Graphics and Game Development" by Fletcher Dunn and Ian Parberry - Excellent beginner-friendly introduction</p>
+</li>
+<li>
+<p>"Essential Mathematics for Games and Interactive Applications" by James M. Van Verth and Lars M. Bishop - Practical approach with code examples</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Online Courses</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.khanacademy.org/math/linear-algebra">Khan Academy Linear Algebra</a> - Free course covering vector and matrix fundamentals</p>
+</li>
+<li>
+<p><a href="https://www.coursera.org/learn/linear-algebra-machine-learning">Mathematics for Machine Learning: Linear Algebra</a> - Covers vectors, matrices, and transformations</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Interactive Tools</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://eater.net/quaternions">Quaternion Visualizer</a> - Interactive visualization of quaternion rotations</p>
+</li>
+<li>
+<p><a href="https://math.hws.edu/graphicsbook/c3/s5.html">Interactive 3D Transformations</a> - Experiment with different transformations</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vectors_and_vector_operations"><a class="anchor" href="#_vectors_and_vector_operations"></a>Vectors and Vector Operations</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Tutorials</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/vectors.html">Scratchapixel: Vectors</a> - Detailed explanation with graphics</p>
+</li>
+<li>
+<p><a href="https://www.youtube.com/watch?v=fNk_zzaMoSs&amp;list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">3Blue1Brown: Essence of Linear Algebra</a> - Excellent visual explanations of vectors</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Interactive Tools</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.geogebra.org/m/qCHzkpXh">GeoGebra: Vector Operations</a> - Interactive vector addition, subtraction, dot and cross products</p>
+</li>
+<li>
+<p><a href="https://www.falstad.com/dotproduct/">Dot Product Visualization</a> - Interactive visualization of dot products</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_matrices_and_transformations_2"><a class="anchor" href="#_matrices_and_transformations_2"></a>Matrices and Transformations</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Tutorials</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/transformations.html">Scratchapixel: Transformations</a> - Detailed explanation of transformation matrices</p>
+</li>
+<li>
+<p><a href="https://learnopengl.com/Getting-started/Transformations">LearnOpenGL: Transformations</a> - Practical guide to transformations in graphics</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Interactive Tools</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.shadertoy.com/view/ltBXW3">ShaderToy: Matrix Transformations</a> - Interactive visualization of matrix transformations</p>
+</li>
+<li>
+<p><a href="https://www.redblobgames.com/articles/transform/">Red Blob Games: Interactive Transformations</a> - Visual explanation of 2D transformations (concepts extend to 3D)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_quaternions"><a class="anchor" href="#_quaternions"></a>Quaternions</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Tutorials</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.youtube.com/watch?v=zjMuIxRvygQ">3Blue1Brown: Quaternions and 3D rotation</a> - Visual explanation of quaternions</p>
+</li>
+<li>
+<p><a href="https://www.3dgep.com/understanding-quaternions/">Understanding Quaternions</a> - Practical guide with code examples</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Interactive Tools</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://eater.net/quaternions">Quaternion Visualizer</a> - Interactive visualization of quaternion rotations</p>
+</li>
+<li>
+<p><a href="https://www.shadertoy.com/view/lsl3RH">ShaderToy: Quaternion Rotation</a> - Interactive quaternion rotation visualization</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_coordinate_systems_and_handedness"><a class="anchor" href="#_coordinate_systems_and_handedness"></a>Coordinate Systems and Handedness</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Tutorials</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://learnopengl.com/Getting-started/Coordinate-Systems">LearnOpenGL: Coordinate Systems</a> - Explanation of different coordinate systems in graphics</p>
+</li>
+<li>
+<p><a href="https://www.scratchapixel.com/lessons/mathematics-physics-for-computer-graphics/geometry/coordinate-systems.html">Scratchapixel: Coordinate Systems</a> - Detailed explanation with graphics</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>References</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.khronos.org/opengl/wiki/Coordinate_Transformations">OpenGL Wiki: Coordinate Transformations</a> - Reference for coordinate transformations</p>
+</li>
+<li>
+<p><a href="https://docs.microsoft.com/en-us/windows/win32/direct3d9/coordinate-systems">Microsoft Docs: Coordinate Systems</a> - Explanation of left-handed vs. right-handed systems</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_glm_library_used_in_our_examples"><a class="anchor" href="#_glm_library_used_in_our_examples"></a>GLM Library (Used in our examples)</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Documentation</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/g-truc/glm/blob/master/manual.md">GLM Manual</a> - Official documentation for the GLM math library</p>
+</li>
+<li>
+<p><a href="https://glm.g-truc.net/0.9.9/api/index.html">GLM API Documentation</a> - API reference</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Tutorials</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://learnopengl.com/Getting-started/Transformations">LearnOpenGL: Transformations with GLM</a> - Practical guide to using GLM for transformations</p>
+</li>
+<li>
+<p><a href="https://www.lighthouse3d.com/tutorials/glm-tutorial/">GLM Tutorial</a> - Tutorial on using GLM for graphics math</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_interactive_learning_tools"><a class="anchor" href="#_interactive_learning_tools"></a>Interactive Learning Tools</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Visualizations</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.geogebra.org/3d">GeoGebra 3D Calculator</a> - Create and manipulate 3D objects and transformations</p>
+</li>
+<li>
+<p><a href="https://www.shadertoy.com/">ShaderToy</a> - Experiment with shaders that use 3D math</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Practice Problems</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://www.khanacademy.org/math/linear-algebra/vectors-and-spaces">Khan Academy: Vectors and Spaces</a> - Practice problems for vector math</p>
+</li>
+<li>
+<p><a href="https://www.khanacademy.org/math/linear-algebra/matrix-transformations">Khan Academy: Matrix Transformations</a> - Practice problems for matrix transformations</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These resources should help you gain a deeper understanding of the mathematical concepts used in 3D graphics and camera systems. If you&#8217;re struggling with a particular concept, try looking at multiple resources as different explanations might resonate better with your learning style.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_transformation_matrices.html" class="xref page">Next: Transformation Matrices</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Subsystems: Vulkan for Physics Simulation :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Mobile_Development/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Subsystems</li>
+    <li><a href="05_vulkan_physics.html">Vulkan physics</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Subsystems: Vulkan for Physics Simulation</h1>
+<div class="sect1">
+<h2 id="_enhancing_physics_with_vulkan"><a class="anchor" href="#_enhancing_physics_with_vulkan"></a>Enhancing Physics with Vulkan</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the previous section, we implemented a basic physics system for our engine. Now, we&#8217;ll explore how Vulkan&#8217;s compute capabilities can enhance physics simulations, particularly for large-scale scenarios with many interacting objects.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_use_vulkan_for_physics"><a class="anchor" href="#_why_use_vulkan_for_physics"></a>Why Use Vulkan for Physics?</h3>
+<div class="paragraph">
+<p>Traditional physics simulations are performed on the CPU, but there are several compelling reasons to leverage Vulkan compute shaders for physics calculations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Parallelism</strong>: Physics calculations for multiple objects can be performed in parallel, making them well-suited for GPU computation.</p>
+</li>
+<li>
+<p><strong>Scalability</strong>: GPU-based physics can handle thousands or even millions of objects with relatively little performance degradation.</p>
+</li>
+<li>
+<p><strong>Reduced CPU Load</strong>: Offloading physics to the GPU frees up CPU resources for game logic, AI, and other tasks.</p>
+</li>
+<li>
+<p><strong>Unified Memory</strong>: With Vulkan, we can share memory between physics and graphics, reducing data transfer overhead.</p>
+</li>
+<li>
+<p><strong>Specialized Hardware</strong>: Modern GPUs often include hardware features specifically designed to accelerate physics-like calculations.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_common_gpu_physics_applications"><a class="anchor" href="#_common_gpu_physics_applications"></a>Common GPU Physics Applications</h3>
+<div class="paragraph">
+<p>While not all physics calculations are suitable for GPU acceleration, several common physics tasks can benefit significantly:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Particle Systems</strong>: Simulating thousands of particles for effects like smoke, fire, or fluid.</p>
+</li>
+<li>
+<p><strong>Cloth Simulation</strong>: Calculating the behavior of cloth, hair, or other deformable objects.</p>
+</li>
+<li>
+<p><strong>Soft Body Physics</strong>: Simulating objects that can bend, stretch, or compress.</p>
+</li>
+<li>
+<p><strong>Broad-Phase Collision Detection</strong>: Quickly identifying potential collision pairs among many objects.</p>
+</li>
+<li>
+<p><strong>Rigid Body Dynamics</strong>: Simulating the movement of large numbers of rigid bodies.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s focus on implementing GPU-accelerated rigid body dynamics and collision detection using Vulkan compute shaders.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gpu_accelerated_rigid_body_physics"><a class="anchor" href="#_gpu_accelerated_rigid_body_physics"></a>GPU-Accelerated Rigid Body Physics</h3>
+<div class="paragraph">
+<p>To implement GPU-accelerated physics, we&#8217;ll need to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Store physics data in GPU-accessible buffers</p>
+</li>
+<li>
+<p>Create compute shaders to perform physics calculations</p>
+</li>
+<li>
+<p>Integrate the GPU physics with our existing CPU-based system</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s extend our physics system to include Vulkan-accelerated components. We’ll approach it in four steps:</p>
+</div>
+<div class="paragraph">
+<p>1) Step 1: Data layout (GPUPhysicsData/GPUCollisionData structures)
+2) Step 2: GPU resource setup (descriptor set layout, pipelines, storage buffers, descriptor sets)
+3) Step 3: Simulation dispatch (integrate → broad‑phase → narrow‑phase → resolve with pipeline barriers)
+4) Step 4: Synchronization and readback (update GPU buffers, submit, read back state, integrate in Update)</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>We avoid repeating Vulkan compute fundamentals here; focus stays on physics‑specific wiring. Use earlier chapters (<a href="../Engine_Architecture/04_resource_management.html" class="xref page">Resource Management</a>, <a href="../Engine_Architecture/05_rendering_pipeline.html" class="xref page">Rendering Pipeline</a>) or the Vulkan Guide (<a href="https://docs.vulkan.org/guide/latest/" class="bare">https://docs.vulkan.org/guide/latest/</a>) if you need a refresher on descriptors, buffers, or pipeline creation.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Physics.h (additions)
+#include &lt;vulkan/vulkan_raii.hpp&gt;
+
+namespace Engine {
+namespace Physics {
+
+// Structure for GPU physics data
+struct GPUPhysicsData {
+    glm::vec4 position;        // xyz = position, w = inverse mass
+    glm::vec4 rotation;        // quaternion
+    glm::vec4 linearVelocity;  // xyz = velocity, w = restitution
+    glm::vec4 angularVelocity; // xyz = angular velocity, w = friction
+    glm::vec4 force;           // xyz = force, w = is kinematic (0 or 1)
+    glm::vec4 torque;          // xyz = torque, w = use gravity (0 or 1)
+    glm::vec4 colliderData;    // type-specific data (e.g., radius for spheres)
+    glm::vec4 colliderData2;   // additional collider data (e.g., box half extents)
+};
+
+// Structure for GPU collision data
+struct GPUCollisionData {
+    uint32_t bodyA;
+    uint32_t bodyB;
+    glm::vec4 contactNormal;   // xyz = normal, w = penetration depth
+    glm::vec4 contactPoint;    // xyz = contact point, w = unused
+};
+
+// Extended PhysicsSystem with Vulkan acceleration
+class PhysicsSystem {
+public:
+    // ... existing methods ...
+
+    // Enable/disable GPU acceleration
+    void SetGPUAccelerationEnabled(bool enabled) { m_GPUAccelerationEnabled = enabled; }
+    bool IsGPUAccelerationEnabled() const { return m_GPUAccelerationEnabled; }
+
+    // Set the maximum number of objects that can be simulated on the GPU
+    void SetMaxGPUObjects(uint32_t maxObjects);
+
+private:
+    // ... existing members ...
+
+    // GPU acceleration
+    bool m_GPUAccelerationEnabled = false;
+    uint32_t m_MaxGPUObjects = 1024;
+    uint32_t m_MaxGPUCollisions = 4096;
+
+    // Vulkan resources for physics simulation
+    struct VulkanResources {
+        // Shader modules
+        vk::raii::ShaderModule integrateShaderModule = nullptr;
+        vk::raii::ShaderModule broadPhaseShaderModule = nullptr;
+        vk::raii::ShaderModule narrowPhaseShaderModule = nullptr;
+        vk::raii::ShaderModule resolveShaderModule = nullptr;
+
+        // Pipeline layouts and compute pipelines
+        vk::raii::DescriptorSetLayout descriptorSetLayout = nullptr;
+        vk::raii::PipelineLayout pipelineLayout = nullptr;
+        vk::raii::Pipeline integratePipeline = nullptr;
+        vk::raii::Pipeline broadPhasePipeline = nullptr;
+        vk::raii::Pipeline narrowPhasePipeline = nullptr;
+        vk::raii::Pipeline resolvePipeline = nullptr;
+
+        // Descriptor pool and sets
+        vk::raii::DescriptorPool descriptorPool = nullptr;
+        std::vector&lt;vk::raii::DescriptorSet&gt; descriptorSets;
+
+        // Buffers for physics data
+        vk::raii::Buffer physicsBuffer = nullptr;
+        vk::raii::DeviceMemory physicsBufferMemory = nullptr;
+        vk::raii::Buffer collisionBuffer = nullptr;
+        vk::raii::DeviceMemory collisionBufferMemory = nullptr;
+        vk::raii::Buffer pairBuffer = nullptr;
+        vk::raii::DeviceMemory pairBufferMemory = nullptr;
+        vk::raii::Buffer counterBuffer = nullptr;
+        vk::raii::DeviceMemory counterBufferMemory = nullptr;
+
+        // Command buffer for compute operations
+        vk::raii::CommandPool commandPool = nullptr;
+        vk::raii::CommandBuffer commandBuffer = nullptr;
+    };
+
+    VulkanResources m_VulkanResources;
+
+    // Initialize Vulkan resources for physics simulation
+    void InitializeVulkanResources();
+    void CleanupVulkanResources();
+
+    // Update physics data on the GPU
+    void UpdateGPUPhysicsData();
+
+    // Read back physics data from the GPU
+    void ReadbackGPUPhysicsData();
+
+    // Perform GPU-accelerated physics simulation
+    void SimulatePhysicsOnGPU(float deltaTime);
+};
+
+} // namespace Physics
+} // namespace Engine</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, let&#8217;s implement the Vulkan-based physics simulation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Physics.cpp (implementation)
+
+void PhysicsSystem::InitializeVulkanResources() {
+    // Get Vulkan device from the engine
+    auto&amp; device = m_Engine.GetVulkanDevice();
+
+    // Create compute shader modules
+    auto integrateShaderCode = LoadShaderFile("shaders/physics_integrate.comp.spv");
+    vk::ShaderModuleCreateInfo integrateShaderModuleCreateInfo({}, integrateShaderCode.size() * sizeof(uint32_t),
+                                                             reinterpret_cast&lt;const uint32_t*&gt;(integrateShaderCode.data()));
+    m_VulkanResources.integrateShaderModule = vk::raii::ShaderModule(device, integrateShaderModuleCreateInfo);
+
+    auto broadPhaseShaderCode = LoadShaderFile("shaders/physics_broad_phase.comp.spv");
+    vk::ShaderModuleCreateInfo broadPhaseShaderModuleCreateInfo({}, broadPhaseShaderCode.size() * sizeof(uint32_t),
+                                                              reinterpret_cast&lt;const uint32_t*&gt;(broadPhaseShaderCode.data()));
+    m_VulkanResources.broadPhaseShaderModule = vk::raii::ShaderModule(device, broadPhaseShaderModuleCreateInfo);
+
+    auto narrowPhaseShaderCode = LoadShaderFile("shaders/physics_narrow_phase.comp.spv");
+    vk::ShaderModuleCreateInfo narrowPhaseShaderModuleCreateInfo({}, narrowPhaseShaderCode.size() * sizeof(uint32_t),
+                                                               reinterpret_cast&lt;const uint32_t*&gt;(narrowPhaseShaderCode.data()));
+    m_VulkanResources.narrowPhaseShaderModule = vk::raii::ShaderModule(device, narrowPhaseShaderModuleCreateInfo);
+
+    auto resolveShaderCode = LoadShaderFile("shaders/physics_resolve.comp.spv");
+    vk::ShaderModuleCreateInfo resolveShaderModuleCreateInfo({}, resolveShaderCode.size() * sizeof(uint32_t),
+                                                           reinterpret_cast&lt;const uint32_t*&gt;(resolveShaderCode.data()));
+    m_VulkanResources.resolveShaderModule = vk::raii::ShaderModule(device, resolveShaderModuleCreateInfo);
+
+    // Create descriptor set layout
+    std::array&lt;vk::DescriptorSetLayoutBinding, 4&gt; bindings = {
+        // Physics data buffer
+        vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eStorageBuffer, 1,
+                                      vk::ShaderStageFlagBits::eCompute),
+        // Collision data buffer
+        vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageBuffer, 1,
+                                      vk::ShaderStageFlagBits::eCompute),
+        // Pair buffer (for broad phase)
+        vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1,
+                                      vk::ShaderStageFlagBits::eCompute),
+        // Counter buffer
+        vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1,
+                                      vk::ShaderStageFlagBits::eCompute)
+    };
+
+    vk::DescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo({}, bindings);
+    m_VulkanResources.descriptorSetLayout = vk::raii::DescriptorSetLayout(device, descriptorSetLayoutCreateInfo);
+
+    // Create pipeline layout
+    vk::PipelineLayoutCreateInfo pipelineLayoutCreateInfo({}, *m_VulkanResources.descriptorSetLayout);
+    m_VulkanResources.pipelineLayout = vk::raii::PipelineLayout(device, pipelineLayoutCreateInfo);
+
+    // Create compute pipelines
+    vk::PipelineShaderStageCreateInfo integrateShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eCompute,
+                                                                   *m_VulkanResources.integrateShaderModule, "main");
+    vk::ComputePipelineCreateInfo integrateComputePipelineCreateInfo({}, integrateShaderStageCreateInfo,
+                                                                   *m_VulkanResources.pipelineLayout);
+    m_VulkanResources.integratePipeline = vk::raii::Pipeline(device, nullptr, integrateComputePipelineCreateInfo);
+
+    vk::PipelineShaderStageCreateInfo broadPhaseShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eCompute,
+                                                                    *m_VulkanResources.broadPhaseShaderModule, "main");
+    vk::ComputePipelineCreateInfo broadPhaseComputePipelineCreateInfo({}, broadPhaseShaderStageCreateInfo,
+                                                                    *m_VulkanResources.pipelineLayout);
+    m_VulkanResources.broadPhasePipeline = vk::raii::Pipeline(device, nullptr, broadPhaseComputePipelineCreateInfo);
+
+    vk::PipelineShaderStageCreateInfo narrowPhaseShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eCompute,
+                                                                     *m_VulkanResources.narrowPhaseShaderModule, "main");
+    vk::ComputePipelineCreateInfo narrowPhaseComputePipelineCreateInfo({}, narrowPhaseShaderStageCreateInfo,
+                                                                     *m_VulkanResources.pipelineLayout);
+    m_VulkanResources.narrowPhasePipeline = vk::raii::Pipeline(device, nullptr, narrowPhaseComputePipelineCreateInfo);
+
+    vk::PipelineShaderStageCreateInfo resolveShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eCompute,
+                                                                 *m_VulkanResources.resolveShaderModule, "main");
+    vk::ComputePipelineCreateInfo resolveComputePipelineCreateInfo({}, resolveShaderStageCreateInfo,
+                                                                 *m_VulkanResources.pipelineLayout);
+    m_VulkanResources.resolvePipeline = vk::raii::Pipeline(device, nullptr, resolveComputePipelineCreateInfo);
+
+    // Create descriptor pool
+    std::array&lt;vk::DescriptorPoolSize, 1&gt; poolSizes = {
+        vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 4)
+    };
+    vk::DescriptorPoolCreateInfo descriptorPoolCreateInfo({}, 1, poolSizes);
+    m_VulkanResources.descriptorPool = vk::raii::DescriptorPool(device, descriptorPoolCreateInfo);
+
+    // Allocate descriptor sets
+    vk::DescriptorSetAllocateInfo descriptorSetAllocateInfo(*m_VulkanResources.descriptorPool,
+                                                           1, &amp;*m_VulkanResources.descriptorSetLayout);
+    m_VulkanResources.descriptorSets = vk::raii::DescriptorSets(device, descriptorSetAllocateInfo);
+
+    // Create buffers for physics data
+    CreateBuffer(device, sizeof(GPUPhysicsData) * m_MaxGPUObjects,
+                vk::BufferUsageFlagBits::eStorageBuffer,
+                m_VulkanResources.physicsBuffer, m_VulkanResources.physicsBufferMemory);
+
+    CreateBuffer(device, sizeof(GPUCollisionData) * m_MaxGPUCollisions,
+                vk::BufferUsageFlagBits::eStorageBuffer,
+                m_VulkanResources.collisionBuffer, m_VulkanResources.collisionBufferMemory);
+
+    CreateBuffer(device, sizeof(uint32_t) * 2 * m_MaxGPUCollisions,
+                vk::BufferUsageFlagBits::eStorageBuffer,
+                m_VulkanResources.pairBuffer, m_VulkanResources.pairBufferMemory);
+
+    CreateBuffer(device, sizeof(uint32_t) * 2,
+                vk::BufferUsageFlagBits::eStorageBuffer,
+                m_VulkanResources.counterBuffer, m_VulkanResources.counterBufferMemory);
+
+    // Update descriptor sets
+    std::array&lt;vk::DescriptorBufferInfo, 4&gt; bufferInfos = {
+        vk::DescriptorBufferInfo(*m_VulkanResources.physicsBuffer, 0, VK_WHOLE_SIZE),
+        vk::DescriptorBufferInfo(*m_VulkanResources.collisionBuffer, 0, VK_WHOLE_SIZE),
+        vk::DescriptorBufferInfo(*m_VulkanResources.pairBuffer, 0, VK_WHOLE_SIZE),
+        vk::DescriptorBufferInfo(*m_VulkanResources.counterBuffer, 0, VK_WHOLE_SIZE)
+    };
+
+    std::array&lt;vk::WriteDescriptorSet, 4&gt; descriptorWrites = {
+        vk::WriteDescriptorSet(*m_VulkanResources.descriptorSets[0], 0, 0, 1,
+                              vk::DescriptorType::eStorageBuffer, nullptr, &amp;bufferInfos[0]),
+        vk::WriteDescriptorSet(*m_VulkanResources.descriptorSets[0], 1, 0, 1,
+                              vk::DescriptorType::eStorageBuffer, nullptr, &amp;bufferInfos[1]),
+        vk::WriteDescriptorSet(*m_VulkanResources.descriptorSets[0], 2, 0, 1,
+                              vk::DescriptorType::eStorageBuffer, nullptr, &amp;bufferInfos[2]),
+        vk::WriteDescriptorSet(*m_VulkanResources.descriptorSets[0], 3, 0, 1,
+                              vk::DescriptorType::eStorageBuffer, nullptr, &amp;bufferInfos[3])
+    };
+
+    device.updateDescriptorSets(descriptorWrites, {});
+
+    // Create command pool and command buffer
+    vk::CommandPoolCreateInfo commandPoolCreateInfo({}, m_Engine.GetVulkanQueueFamilyIndex());
+    m_VulkanResources.commandPool = vk::raii::CommandPool(device, commandPoolCreateInfo);
+
+    vk::CommandBufferAllocateInfo commandBufferAllocateInfo(*m_VulkanResources.commandPool,
+                                                           vk::CommandBufferLevel::ePrimary, 1);
+    auto commandBuffers = vk::raii::CommandBuffers(device, commandBufferAllocateInfo);
+    m_VulkanResources.commandBuffer = std::move(commandBuffers[0]);
+
+    // Initialize counter buffer
+    uint32_t initialCounters[2] = { 0, 0 }; // [0] = pair count, [1] = collision count
+    void* data;
+    vkMapMemory(device, *m_VulkanResources.counterBufferMemory, 0, sizeof(initialCounters), 0, &amp;data);
+    memcpy(data, initialCounters, sizeof(initialCounters));
+    vkUnmapMemory(device, *m_VulkanResources.counterBufferMemory);
+}
+
+void PhysicsSystem::UpdateGPUPhysicsData() {
+    auto&amp; device = m_Engine.GetVulkanDevice();
+
+    // Map the physics buffer
+    void* data;
+    vkMapMemory(device, *m_VulkanResources.physicsBufferMemory, 0,
+               sizeof(GPUPhysicsData) * m_RigidBodies.size(), 0, &amp;data);
+
+    // Copy physics data to the buffer
+    GPUPhysicsData* gpuData = static_cast&lt;GPUPhysicsData*&gt;(data);
+    for (size_t i = 0; i &lt; m_RigidBodies.size(); i++) {
+        auto&amp; body = m_RigidBodies[i];
+
+        gpuData[i].position = glm::vec4(body-&gt;GetPosition(), body-&gt;GetInverseMass());
+        gpuData[i].rotation = glm::vec4(body-&gt;GetRotation().x, body-&gt;GetRotation().y,
+                                       body-&gt;GetRotation().z, body-&gt;GetRotation().w);
+        gpuData[i].linearVelocity = glm::vec4(body-&gt;GetLinearVelocity(), body-&gt;GetRestitution());
+        gpuData[i].angularVelocity = glm::vec4(body-&gt;GetAngularVelocity(), body-&gt;GetFriction());
+        gpuData[i].force = glm::vec4(body-&gt;m_AccumulatedForce, body-&gt;IsKinematic() ? 1.0f : 0.0f);
+        gpuData[i].torque = glm::vec4(body-&gt;m_AccumulatedTorque, body-&gt;IsGravityEnabled() ? 1.0f : 0.0f);
+
+        // Set collider data based on collider type
+        auto collider = body-&gt;GetCollider();
+        if (collider) {
+            switch (collider-&gt;GetType()) {
+                case ColliderType::Sphere: {
+                    auto sphereCollider = std::static_pointer_cast&lt;SphereCollider&gt;(collider);
+                    gpuData[i].colliderData = glm::vec4(sphereCollider-&gt;GetRadius(), 0.0f, 0.0f,
+                                                      static_cast&lt;float&gt;(ColliderType::Sphere));
+                    gpuData[i].colliderData2 = glm::vec4(collider-&gt;GetOffset(), 0.0f);
+                    break;
+                }
+                case ColliderType::Box: {
+                    auto boxCollider = std::static_pointer_cast&lt;BoxCollider&gt;(collider);
+                    gpuData[i].colliderData = glm::vec4(boxCollider-&gt;GetHalfExtents(),
+                                                      static_cast&lt;float&gt;(ColliderType::Box));
+                    gpuData[i].colliderData2 = glm::vec4(collider-&gt;GetOffset(), 0.0f);
+                    break;
+                }
+                default:
+                    // Unsupported collider type
+                    gpuData[i].colliderData = glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+                    gpuData[i].colliderData2 = glm::vec4(0.0f);
+                    break;
+            }
+        } else {
+            // No collider
+            gpuData[i].colliderData = glm::vec4(0.0f, 0.0f, 0.0f, -1.0f);
+            gpuData[i].colliderData2 = glm::vec4(0.0f);
+        }
+    }
+
+    vkUnmapMemory(device, *m_VulkanResources.physicsBufferMemory);
+
+    // Reset counters
+    uint32_t initialCounters[2] = { 0, 0 }; // [0] = pair count, [1] = collision count
+    vkMapMemory(device, *m_VulkanResources.counterBufferMemory, 0, sizeof(initialCounters), 0, &amp;data);
+    memcpy(data, initialCounters, sizeof(initialCounters));
+    vkUnmapMemory(device, *m_VulkanResources.counterBufferMemory);
+}
+
+void PhysicsSystem::ReadbackGPUPhysicsData() {
+    auto&amp; device = m_Engine.GetVulkanDevice();
+
+    // Map the physics buffer
+    void* data;
+    vkMapMemory(device, *m_VulkanResources.physicsBufferMemory, 0,
+               sizeof(GPUPhysicsData) * m_RigidBodies.size(), 0, &amp;data);
+
+    // Copy physics data from the buffer
+    GPUPhysicsData* gpuData = static_cast&lt;GPUPhysicsData*&gt;(data);
+    for (size_t i = 0; i &lt; m_RigidBodies.size(); i++) {
+        auto&amp; body = m_RigidBodies[i];
+
+        // Skip kinematic bodies
+        if (body-&gt;IsKinematic()) {
+            continue;
+        }
+
+        body-&gt;SetPosition(glm::vec3(gpuData[i].position));
+        body-&gt;SetRotation(glm::quat(gpuData[i].rotation.w, gpuData[i].rotation.x,
+                                   gpuData[i].rotation.y, gpuData[i].rotation.z));
+        body-&gt;SetLinearVelocity(glm::vec3(gpuData[i].linearVelocity));
+        body-&gt;SetAngularVelocity(glm::vec3(gpuData[i].angularVelocity));
+    }
+
+    vkUnmapMemory(device, *m_VulkanResources.physicsBufferMemory);
+}
+
+void PhysicsSystem::SimulatePhysicsOnGPU(float deltaTime) {
+    auto&amp; device = m_Engine.GetVulkanDevice();
+    auto&amp; queue = m_Engine.GetVulkanComputeQueue();
+
+    // Update physics data on the GPU
+    UpdateGPUPhysicsData();
+
+    // Record command buffer
+    vk::CommandBufferBeginInfo beginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    m_VulkanResources.commandBuffer.begin(beginInfo);
+
+    // Bind descriptor set
+    m_VulkanResources.commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                                                     *m_VulkanResources.pipelineLayout, 0,
+                                                     *m_VulkanResources.descriptorSets[0], {});
+
+    // Push constants for simulation parameters
+    struct {
+        float deltaTime;
+        float gravity[3];
+        uint32_t numBodies;
+    } pushConstants;
+
+    pushConstants.deltaTime = deltaTime;
+    pushConstants.gravity[0] = m_Gravity.x;
+    pushConstants.gravity[1] = m_Gravity.y;
+    pushConstants.gravity[2] = m_Gravity.z;
+    pushConstants.numBodies = static_cast&lt;uint32_t&gt;(m_RigidBodies.size());
+
+    m_VulkanResources.commandBuffer.pushConstants(*m_VulkanResources.pipelineLayout,
+                                                vk::ShaderStageFlagBits::eCompute, 0,
+                                                sizeof(pushConstants), &amp;pushConstants);
+
+    // Step 1: Integrate forces and velocities
+    m_VulkanResources.commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute,
+                                               *m_VulkanResources.integratePipeline);
+    m_VulkanResources.commandBuffer.dispatch((pushConstants.numBodies + 63) / 64, 1, 1);
+
+    // Memory barrier to ensure integration is complete before collision detection
+    vk::MemoryBarrier memoryBarrier(vk::AccessFlagBits::eShaderWrite, vk::AccessFlagBits::eShaderRead);
+    m_VulkanResources.commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                                                  vk::PipelineStageFlagBits::eComputeShader,
+                                                  {}, memoryBarrier, {}, {});
+
+    // Step 2: Broad-phase collision detection
+    m_VulkanResources.commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute,
+                                               *m_VulkanResources.broadPhasePipeline);
+    // Each thread checks one pair of objects
+    uint32_t numPairs = (pushConstants.numBodies * (pushConstants.numBodies - 1)) / 2;
+    m_VulkanResources.commandBuffer.dispatch((numPairs + 63) / 64, 1, 1);
+
+    // Memory barrier to ensure broad phase is complete before narrow phase
+    m_VulkanResources.commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                                                  vk::PipelineStageFlagBits::eComputeShader,
+                                                  {}, memoryBarrier, {}, {});
+
+    // Step 3: Narrow-phase collision detection
+    m_VulkanResources.commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute,
+                                               *m_VulkanResources.narrowPhasePipeline);
+    // We don't know how many pairs were generated, so we use a conservative estimate
+    m_VulkanResources.commandBuffer.dispatch((m_MaxGPUCollisions + 63) / 64, 1, 1);
+
+    // Memory barrier to ensure narrow phase is complete before resolution
+    m_VulkanResources.commandBuffer.pipelineBarrier(vk::PipelineStageFlagBits::eComputeShader,
+                                                  vk::PipelineStageFlagBits::eComputeShader,
+                                                  {}, memoryBarrier, {}, {});
+
+    // Step 4: Collision resolution
+    m_VulkanResources.commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute,
+                                               *m_VulkanResources.resolvePipeline);
+    // We don't know how many collisions were detected, so we use a conservative estimate
+    m_VulkanResources.commandBuffer.dispatch((m_MaxGPUCollisions + 63) / 64, 1, 1);
+
+    m_VulkanResources.commandBuffer.end();
+
+    // Submit command buffer
+    vk::SubmitInfo submitInfo({}, {}, *m_VulkanResources.commandBuffer);
+    queue.submit(submitInfo, nullptr);
+    queue.waitIdle();
+
+    // Read back physics data from the GPU
+    ReadbackGPUPhysicsData();
+}
+
+void PhysicsSystem::Update(float deltaTime) {
+    if (m_GPUAccelerationEnabled &amp;&amp; m_RigidBodies.size() &lt;= m_MaxGPUObjects) {
+        // Use GPU-accelerated physics
+        SimulatePhysicsOnGPU(deltaTime);
+    } else {
+        // Fall back to CPU physics
+        // ... existing CPU physics code ...
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_physics_compute_shaders"><a class="anchor" href="#_physics_compute_shaders"></a>Physics Compute Shaders</h3>
+<div class="paragraph">
+<p>Now, let&#8217;s implement the compute shaders for our GPU-accelerated physics system:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// physics_integrate.comp
+#version 450
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+// Push constants
+layout(push_constant) uniform PushConstants {
+    float deltaTime;
+    vec3 gravity;
+    uint numBodies;
+} pushConstants;
+
+// Physics data
+struct PhysicsData {
+    vec4 position;        // xyz = position, w = inverse mass
+    vec4 rotation;        // quaternion
+    vec4 linearVelocity;  // xyz = velocity, w = restitution
+    vec4 angularVelocity; // xyz = angular velocity, w = friction
+    vec4 force;           // xyz = force, w = is kinematic (0 or 1)
+    vec4 torque;          // xyz = torque, w = use gravity (0 or 1)
+    vec4 colliderData;    // type-specific data (e.g., radius for spheres)
+    vec4 colliderData2;   // additional collider data (e.g., box half extents)
+};
+
+layout(std430, binding = 0) buffer PhysicsBuffer {
+    PhysicsData bodies[];
+} physicsBuffer;
+
+// Quaternion multiplication
+vec4 quatMul(vec4 q1, vec4 q2) {
+    return vec4(
+        q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
+        q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
+        q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w,
+        q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
+    );
+}
+
+// Quaternion normalization
+vec4 quatNormalize(vec4 q) {
+    float len = length(q);
+    if (len &gt; 0.0001) {
+        return q / len;
+    }
+    return vec4(0, 0, 0, 1);
+}
+
+void main() {
+    uint gID = gl_GlobalInvocationID.x;
+
+    // Check if this invocation is within the number of bodies
+    if (gID &gt;= pushConstants.numBodies) {
+        return;
+    }
+
+    // Get physics data for this body
+    PhysicsData body = physicsBuffer.bodies[gID];
+
+    // Skip kinematic bodies
+    if (body.force.w &gt; 0.5) {
+        return;
+    }
+
+    // Apply gravity if enabled
+    if (body.torque.w &gt; 0.5) {
+        body.force.xyz += pushConstants.gravity / body.position.w;
+    }
+
+    // Integrate forces
+    body.linearVelocity.xyz += body.force.xyz * body.position.w * pushConstants.deltaTime;
+    body.angularVelocity.xyz += body.torque.xyz * pushConstants.deltaTime; // Simplified, should use inertia tensor
+
+    // Apply damping
+    const float linearDamping = 0.01;
+    const float angularDamping = 0.01;
+    body.linearVelocity.xyz *= (1.0 - linearDamping);
+    body.angularVelocity.xyz *= (1.0 - angularDamping);
+
+    // Integrate velocities
+    body.position.xyz += body.linearVelocity.xyz * pushConstants.deltaTime;
+
+    // Update rotation
+    vec4 angularVelocityQuat = vec4(body.angularVelocity.xyz * 0.5, 0.0);
+    vec4 rotationDelta = quatMul(angularVelocityQuat, body.rotation);
+    body.rotation = quatNormalize(body.rotation + rotationDelta * pushConstants.deltaTime);
+
+    // Write updated data back to buffer
+    physicsBuffer.bodies[gID] = body;
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// physics_broad_phase.comp
+#version 450
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+// Push constants
+layout(push_constant) uniform PushConstants {
+    float deltaTime;
+    vec3 gravity;
+    uint numBodies;
+} pushConstants;
+
+// Physics data
+struct PhysicsData {
+    vec4 position;        // xyz = position, w = inverse mass
+    vec4 rotation;        // quaternion
+    vec4 linearVelocity;  // xyz = velocity, w = restitution
+    vec4 angularVelocity; // xyz = angular velocity, w = friction
+    vec4 force;           // xyz = force, w = is kinematic (0 or 1)
+    vec4 torque;          // xyz = torque, w = use gravity (0 or 1)
+    vec4 colliderData;    // type-specific data (e.g., radius for spheres)
+    vec4 colliderData2;   // additional collider data (e.g., box half extents)
+};
+
+layout(std430, binding = 0) buffer PhysicsBuffer {
+    PhysicsData bodies[];
+} physicsBuffer;
+
+// Pair buffer for potential collisions
+layout(std430, binding = 2) buffer PairBuffer {
+    uvec2 pairs[];
+} pairBuffer;
+
+// Counter buffer
+layout(std430, binding = 3) buffer CounterBuffer {
+    uint pairCount;
+    uint collisionCount;
+} counterBuffer;
+
+// Compute AABB for a body
+void computeAABB(PhysicsData body, out vec3 min, out vec3 max) {
+    // Default to a small AABB
+    min = body.position.xyz - vec3(0.1);
+    max = body.position.xyz + vec3(0.1);
+
+    // Check collider type
+    int colliderType = int(body.colliderData.w);
+
+    if (colliderType == 0) { // Sphere
+        float radius = body.colliderData.x;
+        vec3 center = body.position.xyz + body.colliderData2.xyz;
+        min = center - vec3(radius);
+        max = center + vec3(radius);
+    }
+    else if (colliderType == 1) { // Box
+        vec3 halfExtents = body.colliderData.xyz;
+        vec3 center = body.position.xyz + body.colliderData2.xyz;
+        // This is simplified - should account for rotation
+        min = center - halfExtents;
+        max = center + halfExtents;
+    }
+}
+
+bool aabbOverlap(vec3 minA, vec3 maxA, vec3 minB, vec3 maxB) {
+    return all(lessThan(minA, maxB)) &amp;&amp; all(lessThan(minB, maxA));
+}
+
+void main() {
+    uint gID = gl_GlobalInvocationID.x;
+
+    // Calculate which pair of bodies this thread should check
+    uint numBodies = pushConstants.numBodies;
+    uint numPairs = (numBodies * (numBodies - 1)) / 2;
+
+    if (gID &gt;= numPairs) {
+        return;
+    }
+
+    // Convert linear index to pair indices (i, j) where i &lt; j
+    uint i = 0;
+    uint j = 0;
+
+    // This is a mathematical formula to convert a linear index to a pair of indices
+    uint row = uint(floor(sqrt(float(2 * gID + 0.25)) - 0.5));
+    i = row;
+    j = gID - (row * (row + 1)) / 2;
+
+    // Ensure j &gt; i
+    j += i + 1;
+
+    // Get physics data for both bodies
+    PhysicsData bodyA = physicsBuffer.bodies[i];
+    PhysicsData bodyB = physicsBuffer.bodies[j];
+
+    // Skip if both bodies are kinematic
+    if (bodyA.force.w &gt; 0.5 &amp;&amp; bodyB.force.w &gt; 0.5) {
+        return;
+    }
+
+    // Skip if either body doesn't have a collider
+    if (bodyA.colliderData.w &lt; 0 || bodyB.colliderData.w &lt; 0) {
+        return;
+    }
+
+    // Compute AABBs
+    vec3 minA, maxA, minB, maxB;
+    computeAABB(bodyA, minA, maxA);
+    computeAABB(bodyB, minB, maxB);
+
+    // Check for AABB overlap
+    if (aabbOverlap(minA, maxA, minB, maxB)) {
+        // Add to potential collision pairs
+        uint pairIndex = atomicAdd(counterBuffer.pairCount, 1);
+        pairBuffer.pairs[pairIndex] = uvec2(i, j);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The narrow-phase and resolve shaders would follow a similar pattern, implementing the detailed collision detection and resolution algorithms.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>Performance Considerations</h3>
+<div class="paragraph">
+<p>When implementing GPU-accelerated physics with Vulkan, consider these performance optimizations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Batch Processing</strong>: Process multiple physics steps in a single dispatch to amortize the overhead of command submission.</p>
+</li>
+<li>
+<p><strong>Memory Transfers</strong>: Minimize transfers between CPU and GPU memory by keeping physics data on the GPU when possible.</p>
+</li>
+<li>
+<p><strong>Spatial Partitioning</strong>: Implement grid or tree-based spatial partitioning to reduce the number of potential collision pairs.</p>
+</li>
+<li>
+<p><strong>Workgroup Size</strong>: Tune the workgroup size based on your target hardware for optimal performance.</p>
+</li>
+<li>
+<p><strong>Memory Layout</strong>: Organize physics data for optimal cache coherency on the GPU.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_with_the_engine"><a class="anchor" href="#_integration_with_the_engine"></a>Integration with the Engine</h3>
+<div class="paragraph">
+<p>To integrate the GPU-accelerated physics into our engine, we need to modify the <code>PhysicsSystem::Initialize</code> method:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void PhysicsSystem::Initialize() {
+    // Initialize basic physics system
+    // ...
+
+    // Initialize Vulkan resources for GPU-accelerated physics
+    if (m_Engine.IsVulkanInitialized()) {
+        InitializeVulkanResources();
+        m_GPUAccelerationEnabled = true;
+    }
+}
+
+void PhysicsSystem::Shutdown() {
+    // Cleanup Vulkan resources
+    if (m_Engine.IsVulkanInitialized()) {
+        CleanupVulkanResources();
+    }
+
+    // Shutdown basic physics system
+    // ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advantages_of_vulkan_based_physics"><a class="anchor" href="#_advantages_of_vulkan_based_physics"></a>Advantages of Vulkan-Based Physics</h3>
+<div class="paragraph">
+<p>By implementing physics simulation with Vulkan compute shaders, we gain several advantages:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Scalability</strong>: The GPU can simulate thousands or even millions of objects in parallel.</p>
+</li>
+<li>
+<p><strong>Performance</strong>: GPU-accelerated physics can be orders of magnitude faster than CPU-based solutions for large-scale simulations.</p>
+</li>
+<li>
+<p><strong>CPU Offloading</strong>: Physics processing no longer competes with game logic for CPU resources.</p>
+</li>
+<li>
+<p><strong>Advanced Simulations</strong>: The GPU&#8217;s computational power enables more complex physics simulations like fluid dynamics or cloth.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_limitations_and_considerations"><a class="anchor" href="#_limitations_and_considerations"></a>Limitations and Considerations</h3>
+<div class="paragraph">
+<p>While Vulkan-based physics offers many advantages, there are some limitations to consider:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Complexity</strong>: Implementing and debugging GPU-based physics is more complex than CPU-based solutions.</p>
+</li>
+<li>
+<p><strong>Precision</strong>: GPUs typically use single-precision floating-point, which may lead to numerical stability issues in some simulations.</p>
+</li>
+<li>
+<p><strong>Platform Support</strong>: Not all platforms support Vulkan, so you may need fallback CPU implementations.</p>
+</li>
+<li>
+<p><strong>Synchronization</strong>: Keeping CPU and GPU physics data in sync can be challenging and may introduce latency.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_real_world_applications"><a class="anchor" href="#_real_world_applications"></a>Real-World Applications</h3>
+<div class="paragraph">
+<p>Several modern game engines and physics middleware solutions leverage GPU acceleration for physics simulations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>NVIDIA PhysX</strong>: Supports GPU acceleration for certain physics calculations.</p>
+</li>
+<li>
+<p><strong>Bullet Physics</strong>: Has experimental GPU acceleration using compute shaders.</p>
+</li>
+<li>
+<p><strong>Flex</strong>: NVIDIA&#8217;s particle-based physics solver designed specifically for GPU acceleration.</p>
+</li>
+<li>
+<p><strong>Custom Solutions</strong>: AAA game studios often implement custom GPU-accelerated physics for their titles.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>By implementing Vulkan-based physics in our engine, we&#8217;re following industry best practices for high-performance physics in modern games.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h3>
+<div class="paragraph">
+<p>In this chapter, we&#8217;ve explored how Vulkan compute shaders can be used to accelerate both audio and physics processing in a game engine. By leveraging the GPU&#8217;s massive parallel processing capabilities, we can create more immersive and dynamic game worlds with realistic audio and physics simulations.</p>
+</div>
+<div class="paragraph">
+<p>The techniques we&#8217;ve covered demonstrate the versatility of Vulkan beyond traditional graphics rendering. As you continue to develop your engine, consider other areas where GPU acceleration might provide benefits, such as AI pathfinding, procedural generation, or particle systems.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_physics_basics.html" class="xref page">Previous: Physics Basics</a> | <a href="06_conclusion.html" class="xref page">Next: Conclusion</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

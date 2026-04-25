@@ -1,0 +1,807 @@
+# VK_EXT_shader_object
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_EXT_shader_object.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Shaders](#_shaders)
+- [4. Examples](#_examples)
+- [4.1. Graphics](#_graphics)
+- [4.2. Compute](#_compute)
+- [5. Issues](#_issues)
+- [5.1. How should implementations which absolutely must link shader stages implement this extension?](#_how_should_implementations_which_absolutely_must_link_shader_stages_implement_this_extension)
+- [5.1._How_should_implementations_which_absolutely_must_link_shader_stages_implement_this_extension?](#_how_should_implementations_which_absolutely_must_link_shader_stages_implement_this_extension)
+- [5.2. Should this extension try to reuse pipeline objects and concepts?](#_should_this_extension_try_to_reuse_pipeline_objects_and_concepts)
+- [5.2._Should_this_extension_try_to_reuse_pipeline_objects_and_concepts?](#_should_this_extension_try_to_reuse_pipeline_objects_and_concepts)
+- [5.3. Should binary shader support be exposed in some way similar to existing pipeline caches or pipeline binaries?](#_should_binary_shader_support_be_exposed_in_some_way_similar_to_existing_pipeline_caches_or_pipeline_binaries)
+- [5.3._Should_binary_shader_support_be_exposed_in_some_way_similar_to_existing_pipeline_caches_or_pipeline_binaries?](#_should_binary_shader_support_be_exposed_in_some_way_similar_to_existing_pipeline_caches_or_pipeline_binaries)
+- [5.4. Should there be some kind of shader program object to represent a set of linked shaders?](#_should_there_be_some_kind_of_shader_program_object_to_represent_a_set_of_linked_shaders)
+- [5.4._Should_there_be_some_kind_of_shader_program_object_to_represent_a_set_of_linked_shaders?](#_should_there_be_some_kind_of_shader_program_object_to_represent_a_set_of_linked_shaders)
+- [5.5. Should there be some mechanism for applications to provide static state that is known at compile time?](#_should_there_be_some_mechanism_for_applications_to_provide_static_state_that_is_known_at_compile_time)
+- [5.5._Should_there_be_some_mechanism_for_applications_to_provide_static_state_that_is_known_at_compile_time?](#_should_there_be_some_mechanism_for_applications_to_provide_static_state_that_is_known_at_compile_time)
+- [5.6. Should this extension expose some abstraction for setting groups of related state?](#_should_this_extension_expose_some_abstraction_for_setting_groups_of_related_state)
+- [5.6._Should_this_extension_expose_some_abstraction_for_setting_groups_of_related_state?](#_should_this_extension_expose_some_abstraction_for_setting_groups_of_related_state)
+- [5.7. There is currently no dynamic state setting functionality for sample shading. How should this be handled?](#_there_is_currently_no_dynamic_state_setting_functionality_for_sample_shading_how_should_this_be_handled)
+- [5.7._There_is_currently_no_dynamic_state_setting_functionality_for_sample_shading._How_should_this_be_handled?](#_there_is_currently_no_dynamic_state_setting_functionality_for_sample_shading_how_should_this_be_handled)
+- [5.8. Is VK_INCOMPATIBLE_SHADER_BINARY_EXT a success code, or an error code?](#_is_vk_incompatible_shader_binary_ext_a_success_code_or_an_error_code)
+- [5.8._Is_VK_INCOMPATIBLE_SHADER_BINARY_EXT_a_success_code,_or_an_error_code?](#_is_vk_incompatible_shader_binary_ext_a_success_code_or_an_error_code)
+- [5.9. Is multiview allowed?](#_is_multiview_allowed)
+- [5.9._Is_multiview_allowed?](#_is_multiview_allowed)
+- [6. Further Functionality](#_further_functionality)
+- [6._Further_Functionality](#_further_functionality)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Shaders](#_shaders)
+
+[4. Examples](#_examples)
+
+[4.1. Graphics](#_graphics)
+[4.2. Compute](#_compute)
+
+[5. Issues](#_issues)
+
+[5.1. How should implementations which absolutely must link shader stages implement this extension?](#_how_should_implementations_which_absolutely_must_link_shader_stages_implement_this_extension)
+[5.2. Should this extension try to reuse pipeline objects and concepts?](#_should_this_extension_try_to_reuse_pipeline_objects_and_concepts)
+[5.3. Should binary shader support be exposed in some way similar to existing pipeline caches or pipeline binaries?](#_should_binary_shader_support_be_exposed_in_some_way_similar_to_existing_pipeline_caches_or_pipeline_binaries)
+[5.4. Should there be some kind of shader program object to represent a set of linked shaders?](#_should_there_be_some_kind_of_shader_program_object_to_represent_a_set_of_linked_shaders)
+[5.5. Should there be some mechanism for applications to provide static state that is known at compile time?](#_should_there_be_some_mechanism_for_applications_to_provide_static_state_that_is_known_at_compile_time)
+[5.6. Should this extension expose some abstraction for setting groups of related state?](#_should_this_extension_expose_some_abstraction_for_setting_groups_of_related_state)
+[5.7. There is currently no dynamic state setting functionality for sample shading. How should this be handled?](#_there_is_currently_no_dynamic_state_setting_functionality_for_sample_shading_how_should_this_be_handled)
+[5.8. Is `VK_INCOMPATIBLE_SHADER_BINARY_EXT` a success code, or an error code?](#_is_vk_incompatible_shader_binary_ext_a_success_code_or_an_error_code)
+[5.9. Is multiview allowed?](#_is_multiview_allowed)
+
+[6. Further Functionality](#_further_functionality)
+
+This document describes the proposed design for a new extension which aims to comprehensively address problems the pipeline abstraction has created for both applications and implementations.
+
+When Vulkan 1.0 and its precursor Mantle were originally developed the then-existing shader and state binding models of earlier APIs were beginning to show worrying limitations, both in terms of draw call scaling and driver complexity needed to support them. Application developers were being artificially constrained from accessing the full capabilities of GPUs, and many IHVs were forced to maintain rat’s nests of driver code full of heavy-handed draw time state validation and hacky shader patching, all in the service of simplicity at the API level. IHVs were understandably highly motivated to move away from such API designs.
+
+Enter the new low-level APIs like Mantle and ultimately Vulkan. These APIs set out to reduce driver overhead by exposing lower-level abstractions that would hopefully avoid the need for the draw time state validation and shader patching that was so problematic for IHVs, and so detrimental to performance for applications.
+
+One of the most significant changes to this end was the new concept of pipelines, which promised to shift the burden of the shader state combinatorics out of drivers and into applications, ideally avoiding the need for driver-side draw time state validation and shader patching entirely. The thinking went that application developers would design or redesign their renderers with pipelines in mind, and in so doing they would naturally learn to accomplish their goals with fewer combinations of state.
+
+Implicit in such a design was an assumption that applications would be able to know and provide nearly all of this state upfront. A very limited set of dynamic states was specified for the few pieces of state that had effectively unbounded ranges of values, but otherwise even state that could have been fully dynamic on all implementations was required to be baked into the static pipeline objects. This, the thinking went, would benefit even those implementations where the state was internally dynamic by enabling new possibilities for optimization during shader compilation.
+
+Also implicit in the design of pipelines was an assumption that the driver overhead of the pipeline abstraction would either be negligible, or that it would at least always be outweighed by the performance savings at draw time when compared to earlier APIs. The possibility that either setting dozens of individual pieces of state each time a pipeline is bound or tracking which of those dozens of pieces of state had changed since the previous pipeline bind might cause some implementations to exhibit problematically high overhead at pipeline bind time does not seem to have been a central consideration.
+
+Many of these assumptions have since proven to be unrealistic.
+
+On the application side, many developers considering or implementing Vulkan and similar APIs found them unable to efficiently support important use cases which were easily supportable in earlier APIs. This has not been simply a matter of developers being stuck in an old way of thinking or unwilling to "rein in" an unnecessarily large number of state combinations, but a reflection of the reality that the natural design patterns of the most demanding class of applications which use graphics APIs — video games — are inherently and deeply dependent on the very "dynamism" that pipelines set out to constrain.
+
+As a result, renderers with a choice of API have largely chosen to avoid Vulkan and its "pipelined" contemporaries, while those without a choice have largely just devised workarounds to make these new APIs behave like the old ones — usually in the form of the now nearly ubiquitous hash-n-cache pattern. These applications set various pieces of "pipeline" state independently, then hash it all at draw time and use the hash as a key into an application-managed pipeline cache, reusing an existing pipeline if it exists or creating and caching a new one if it does not. In effect, the messy and inefficient parts of GL drivers that pipelines sought to eliminate have simply moved into applications, except without the benefits of implementation specific knowledge which might have reduced their complexity or improved their performance.
+
+This is not just a problem of "legacy" application code where it might be viable for the API to wait it out until application codebases are rewritten or replaced. Applications need the features they need, and are unlikely to remove features they need just to satisfy what they know to be artificial limitations imposed by a graphics API’s made-up abstraction. This is especially true for developers working on platforms where the pipeline API does not offer substantial performance benefits over other APIs that do not share the same limitations.
+
+On the driver side, pipelines have provided some of their desired benefits for some implementations, but for others they have largely just shifted draw time overhead to pipeline bind time (while in some cases still not entirely eliminating the draw time overhead in the first place). Implementations where nearly all "pipeline" state is internally dynamic are forced to either redundantly re-bind all of this state each time a pipeline is bound, or to track what state has changed from pipeline to pipeline — either of which creates considerable overhead on CPU-constrained platforms.
+
+For certain implementations, the pipeline abstraction has also locked away a significant amount of the flexibility supported by their hardware, thereby paradoxically leaving many of their capabilities inaccessible in the newer and ostensibly "low level" API, though still accessible through older, high level ones. In effect, this is a return to the old problem of the graphics API artificially constraining applications from accessing the full capabilities of the GPU, only on a different axis.
+
+Finally, on fixed hardware platforms like game consoles and embedded systems pipelines have created some additional and unique challenges. These platforms tend to have limited CPU performance, memory, and storage capacity all at the same time. Because of this it is generally not desirable for applications on these platforms to waste storage space shipping both uncompiled SPIR-V and precompiled pipeline caches, however it is also not desirable to compile the same shaders from scratch on each system (even if they could be cached for subsequent runs). Also, the hardware and even driver versions on these systems are typically known in advance, and drivers might only ever change in tandem with applications. Vulkan applications on these systems are forced to waste precious storage space on not only shipping both SPIR-V and pipeline cached versions of their shaders, but on their pipeline caches containing potentially large numbers of slightly differently optimized permutations of the same shader code, with only minor differences in pipeline state (arguably this last point is a compression problem, but opaque pipeline caches mostly leave applications at the mercy of the driver to solve it for them).
+
+Fortunately, some of these problems have been acknowledged and various efforts have already begun to address several of them.
+
+These existing efforts have mainly chosen to tackle problems through the lens of existing hash-n-cache type application architectures, and have focused on those problems which are most acute at pipeline compile time. Their goals have included things like reducing pipeline counts, improving the usability and efficiency of pipeline caches, and introducing more granularity to the pipeline compilation and caching process. The extensions they have produced have preferred a targeted, piecemeal, and minimally invasive "band-aid" approach over a more holistic "rip off the band-aid" redesign.
+
+Such efforts have undoubtedly produced valuable improvements, but they have left the class of problems which manifest at bind time largely unaddressed. It might be possible to continue the existing piecemeal approach with a refocus onto bind time, but the solution space afforded by this kind of approach would necessarily remain constrained by the design decisions of the past.
+
+Several approaches are immediately apparent:
+
+Extend the existing graphics pipeline library concept somehow, perhaps by adding optional new, more granular library types and/or making pipeline binaries directly bindable without needing to be explicitly linked into a pipeline object
+
+Continue to expose more (maybe optional) dynamic state to minimize the number of pipeline objects needed
+
+Abandon pipelines entirely and introduce new functionality to compile and bind shaders directly
+
+Option 1 is a natural extension of recent efforts and requires relatively few API changes, but it adds even more complexity to the already very complex pipeline concept, while also failing to adequately address significant parts of the problem. While directly bindable pipeline libraries do reduce the dimensionality of pipeline combinatorics, they do not provide any meaningful absolute CPU performance improvement at pipeline bind time. The total overhead of binding N different pipeline libraries is still roughly on par with the overhead of binding a single (monolithic or linked) pipeline.
+
+Option 2 also requires relatively few API changes and would do more to address bind time CPU performance than option 1, but this option is limited in both the class of issues it can address and its portability across implementations. Much of the universally supportable "low hanging fruit" dynamic state has already been exposed by the existing extended dynamic state extensions, and the remaining state is mostly not universally dynamic. Exposing states A and B as dynamic on one implementation and states B and C on another is still valuable, but it limits this approach’s benefits for simplifying application architectures. Even though this option is not a complete solution, it can and should be pursued in parallel with other efforts — both for its own sake and as a potential foundation for more a comprehensive solution.
+
+Option 3 is more radical, but brings the API design more in line with developer expectations. The pipeline abstraction has been a consistent problem for many developers trying to use Vulkan since its inception, and this option can produce a cleaner, more user-friendly abstraction that bypasses the complexity of pipelines. With the benefit of years of hindsight and broader Working Group knowledge about the constraints of each others' implementations, it can aim to achieve a design which better balances API simplicity with adherence to the explicit design ethos of Vulkan.
+
+This proposal focuses on option 3, for the reasons outlined above.
+
+This extension introduces a new object type `VkShaderEXT` which represents a single compiled shader stage. `VkShaderEXT` objects may be created either independently or linked with other `VkShaderEXT` objects created at the same time. To create `VkShaderEXT` objects, applications call `vkCreateShadersEXT()`:
+
+VkResult vkCreateShadersEXT(
+    VkDevice                                    device,
+    uint32_t                                    createInfoCount,
+    VkShaderCreateInfoEXT*                      pCreateInfos,
+    VkAllocationCallbacks*                      pAllocator,
+    VkShaderEXT*                                pShaders);
+
+This function compiles the source code for one or more shader stages into `VkShaderEXT` objects. Whenever `createInfoCount` is greater than one, the shaders being created may optionally be linked together. Linking allows the implementation to perform cross-stage optimizations based on a promise by the application that the linked shaders will always be used together.
+
+Though a set of linked shaders may perform anywhere between the same to substantially better than equivalent unlinked shaders, this tradeoff is left to the application and linking is never mandatory.
+
+typedef enum VkShaderCreateFlagBitsEXT {
+    VK_SHADER_CREATE_LINK_STAGE_BIT_EXT = 0x00000001,
+    VK_SHADER_CREATE_ALLOW_VARYING_SUBGROUP_SIZE_BIT_EXT = 0x00000002,
+    VK_SHADER_CREATE_REQUIRE_FULL_SUBGROUPS_BIT_EXT = 0x00000004,
+    VK_SHADER_CREATE_NO_TASK_SHADER_BIT_EXT = 0x00000008,
+    VK_SHADER_CREATE_DISPATCH_BASE_BIT_EXT = 0x00000010,
+    VK_SHADER_CREATE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_EXT = 0x00000020,
+    VK_SHADER_CREATE_FRAGMENT_DENSITY_MAP_ATTACHMENT_BIT_EXT = 0x00000040
+} VkShaderCreateFlagBitsEXT;
+typedef VkFlags VkShaderCreateFlagsEXT;
+
+typedef enum VkShaderCodeTypeEXT {
+    VK_SHADER_CODE_TYPE_BINARY_EXT = 0,
+    VK_SHADER_CODE_TYPE_SPIRV_EXT = 1
+} VkShaderCodeTypeEXT;
+
+typedef struct VkShaderCreateInfoEXT {
+    VkStructureType                             sType;
+    const void*                                 pNext;
+    VkShaderCreateFlagsEXT                      flags;
+    VkShaderStageFlagBits                       stage;
+    VkShaderStageFlags                          nextStage;
+    VkShaderCodeTypeEXT                         codeType;
+    size_t                                      codeSize;
+    const void*                                 pCode;
+    const char*                                 pName;
+    uint32_t                                    setLayoutCount;
+    const VkDescriptorSetLayout*                pSetLayouts;
+    uint32_t                                    pushConstantRangeCount;
+    const VkPushConstantRange*                  pPushConstantRanges;
+    const VkSpecializationInfo*                 pSpecializationInfo;
+} VkShaderCreateInfoEXT;
+
+To specify that shaders should be linked, include the `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` flag in each of the `VkShaderCreateInfoEXT` structures passed to `vkCreateShadersEXT()`. The presence or absence of `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` must match across all `VkShaderCreateInfoEXT` structures passed to a single `vkCreateShadersEXT()` call: i.e., if any member of `pCreateInfos` includes `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` then all other members must include it too. `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` is ignored if `createInfoCount` is one, and a shader created this way is considered unlinked.
+
+The stage of the shader being compiled is specified by `stage`. Applications must also specify which stage types will be allowed to immediately follow the shader being created. For example, a vertex shader might specify a `nextStage` value of `VK_SHADER_STAGE_FRAGMENT_BIT` to indicate that the vertex shader being created will always be followed by a fragment shader (and never a geometry or tessellation shader). Applications that do not know this information at shader creation time or need the same shader to be compatible with multiple subsequent stages can specify a mask that includes as many valid next stages as they wish. For example, a vertex shader can specify a `nextStage` mask of `VK_SHADER_STAGE_GEOMETRY_BIT | VK_SHADER_STAGE_FRAGMENT_BIT` to indicate that the next stage could be either a geometry shader or fragment shader (but not a tessellation shader).
+
+|  | Certain implementations may incur a compile time and/or memory usage penalty whenever more than one stage bit is set in `nextStage`, so applications should strive to set the minimum number of bits they are able to. However, applications should **not** interpret this advice to mean that they should create multiple `VkShaderEXT` objects that differ only by the value of `nextStage`, as this will incur unnecessarily overhead on implementations where `nextStage` is ignored. |
+| --- | --- |
+
+The shader code is pointed to by `pCode` and may be provided as SPIR-V, or in an opaque implementation defined binary form specific to the physical device. The format of the shader code is specified by `codeType`.
+
+The `codeType` of all `VkShaderCreateInfoEXT` structures passed to a `vkCreateShadersEXT()` call must match. This also means that only shaders created with the same `codeType` may be linked together.
+
+Descriptor set layouts and push constant ranges used by each shader are specified directly (not via a `VkPipelineLayout`), though multiple stages can of course point to the same structures.
+
+Any time after a `VkShaderEXT` object has been created, its binary shader code can be queried using `vkGetShaderBinaryDataEXT()`:
+
+VkResult vkGetShaderBinaryDataEXT(
+    VkDevice                                    device,
+    VkShaderEXT                                 shader,
+    size_t*                                     pDataSize,
+    void*                                       pData);
+
+When `pData` is `NULL`, `size` is filled with the number of bytes needed to store the shader’s binary code and `VK_SUCCESS` is returned.
+
+When `pData` is non-`NULL`, `size` points to the application-provided size of `pData`. If the provided size is large enough then the location pointed to by `pData` is filled with the shader’s binary code and `VK_SUCCESS` is returned, otherwise nothing is written to `pData` and `VK_INCOMPLETE` is returned.
+
+The binary shader code returned in `pData` can be saved by the application and used in a future `vkCreateShadersEXT()` call (including on a different `VkInstance` and/or `VkDevice`) with a compatible physical device by setting `codeType` to `VK_SHADER_CODE_TYPE_BINARY_EXT`. This means that on fixed platforms like game consoles and embedded systems applications need not ship SPIR-V shader code at all. If the binary shader code in any `VkShaderCreateInfoEXT` passed to `vkCreateShadersEXT()` is not compatible with the physical device then the `vkCreateShadersEXT()` call returns `VK_INCOMPATIBLE_SHADER_BINARY_EXT`.
+
+Applications must pass the same values of `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` to a `vkCreateShadersEXT()` call with a `codeType` of `VK_SHADER_CODE_TYPE_BINARY_EXT` as were passed when those shaders were originally compiled from SPIR-V.
+
+`VkShaderEXT` objects can be bound on a command buffer using `vkCmdBindShadersEXT()`:
+
+void vkCmdBindShadersEXT(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    stageCount,
+    const VkShaderStageFlagBits*                pStages,
+    const VkShaderEXT*                          pShaders);
+
+It is possible to unbind shaders for a particular stage by calling `vkCmdBindShadersEXT()` with elements of `pShaders` set to `VK_NULL_HANDLE`. For example, an application may want to arbitrarily bind and unbind a known compatible passthrough geometry shader without knowing or caring what specific vertex and fragment shaders are bound at that time.
+
+Regardless of whether the shaders were created with `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` the interfaces of all stages bound at `vkCmdDraw*()` time must be compatible. This means that the union of descriptor set layouts and push constant ranges across all bound shaders must not conflict, and that the inputs of each stage are compatible with the outputs of the previous stage. It is the application’s responsibility to ensure that this is the case, and the implementation will not do any draw time state validation to guard against this kind of invalid usage.
+
+If any of the shaders bound at `vkCmdDraw*()` time were created with `VK_SHADER_CREATE_LINK_STAGE_BIT_EXT` then all shaders that were linked to that shader must also be bound. It is the application’s responsibility to ensure that this is the case, and the implementation will not do any draw time state validation to guard against this kind of invalid usage.
+
+When drawing with shaders bound with `vkCmdBindShadersEXT()` most state must be set dynamically. Specifically, the following existing commands must be used to set the corresponding state:
+
+* 
+`vkCmdSetViewportWithCount()`
+
+* 
+`vkCmdSetScissorWithCount()`
+
+* 
+`vkCmdSetLineWidth()`
+
+* 
+`vkCmdSetDepthBias()`
+
+* 
+`vkCmdSetBlendConstants()`
+
+* 
+`vkCmdSetDepthBounds()`
+
+* 
+`vkCmdSetStencilCompareMask()`
+
+* 
+`vkCmdSetStencilWriteMask()`
+
+* 
+`vkCmdSetStencilReference()`
+
+* 
+`vkCmdBindVertexBuffers2()`
+
+* 
+`vkCmdSetCullMode()`
+
+* 
+`vkCmdSetDepthBoundsTestEnable()`
+
+* 
+`vkCmdSetDepthCompareOp()`
+
+* 
+`vkCmdSetDepthTestEnable()`
+
+* 
+`vkCmdSetDepthWriteEnable()`
+
+* 
+`vkCmdSetFrontFace()`
+
+* 
+`vkCmdSetPrimitiveTopology()`
+
+* 
+`vkCmdSetStencilOp()`
+
+* 
+`vkCmdSetStencilTestEnable()`
+
+* 
+`vkCmdSetDepthBiasEnable()`
+
+* 
+`vkCmdSetPrimitiveRestartEnable()`
+
+* 
+`vkCmdSetRasterizerDiscardEnable()`
+
+* 
+`vkCmdSetVertexInputEXT()`
+
+* 
+`vkCmdSetLogicOpEXT()`
+
+* 
+`vkCmdSetPatchControlPointsEXT()`
+
+* 
+`vkCmdSetTessellationDomainOriginEXT()`
+
+* 
+`vkCmdSetDepthClampEnableEXT()`
+
+* 
+`vkCmdSetPolygonModeEXT()`
+
+* 
+`vkCmdSetRasterizationSamplesEXT()`
+
+* 
+`vkCmdSetSampleMaskEXT()`
+
+* 
+`vkCmdSetAlphaToCoverageEnableEXT()`
+
+* 
+`vkCmdSetAlphaToOneEnableEXT()`
+
+* 
+`vkCmdSetLogicOpEnableEXT()`
+
+* 
+`vkCmdSetColorBlendEnableEXT()`
+
+* 
+`vkCmdSetColorBlendEquationEXT()`
+
+* 
+`vkCmdSetColorWriteMaskEXT()`
+
+If [VK_KHR_fragment_shading_rate](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_fragment_shading_rate) is supported and enabled:
+
+* 
+`vkCmdSetFragmentShadingRateKHR()`
+
+If [VK_EXT_transform_feedback](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_transform_feedback) is supported and enabled:
+
+* 
+`vkCmdSetRasterizationStreamEXT()`
+
+If [VK_EXT_discard_rectangle](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_discard_rectangle) is supported and enabled:
+
+* 
+`vkCmdSetDiscardRectangleEnableEXT()`
+
+* 
+`vkCmdSetDiscardRectangleModeEXT()`
+
+* 
+`vkCmdSetDiscardRectangleEXT()`
+
+If [VK_EXT_conservative_rasterization](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_conservative_rasterization) is supported and enabled:
+
+* 
+`vkCmdSetConservativeRasterizationModeEXT()`
+
+* 
+`vkCmdSetExtraPrimitiveOverestimationSizeEXT()`
+
+If [VK_EXT_depth_clip_enable](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_depth_clip_enable) is supported and enabled:
+
+* 
+`vkCmdSetDepthClipEnableEXT()`
+
+If [VK_EXT_sample_locations](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_sample_locations) is supported and enabled:
+
+* 
+`vkCmdSetSampleLocationsEnableEXT()`
+
+* 
+`vkCmdSetSampleLocationsEXT()`
+
+If [VK_EXT_blend_operation_advanced](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_blend_operation_advanced) is supported and enabled:
+
+* 
+`vkCmdSetColorBlendAdvancedEXT()`
+
+If [VK_EXT_provoking_vertex](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_provoking_vertex) is supported and enabled:
+
+* 
+`vkCmdSetProvokingVertexModeEXT()`
+
+If [VK_EXT_line_rasterization](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_line_rasterization) is supported and enabled:
+
+* 
+`vkCmdSetLineRasterizationModeEXT()`
+
+* 
+`vkCmdSetLineStippleEnableEXT()`
+
+* 
+`vkCmdSetLineStippleEXT()`
+
+If [VK_EXT_depth_clip_control](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_depth_clip_control) is supported and enabled:
+
+* 
+`vkCmdSetDepthClipNegativeOneToOneEXT()`
+
+If [VK_EXT_color_write_enable](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_color_write_enable) is supported and enabled:
+
+* 
+`vkCmdSetColorWriteEnableEXT()`
+
+If [VK_NV_clip_space_w_scaling](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_clip_space_w_scaling) is supported and enabled:
+
+* 
+`vkCmdSetViewportWScalingEnableNV()`
+
+* 
+`vkCmdSetViewportWScalingNV()`
+
+If [VK_NV_viewport_swizzle](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_viewport_swizzle) is supported and enabled:
+
+* 
+`vkCmdSetViewportSwizzleNV()`
+
+If [VK_NV_fragment_coverage_to_color](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_fragment_coverage_to_color) is supported and enabled:
+
+* 
+`vkCmdSetCoverageToColorEnableNV()`
+
+* 
+`vkCmdSetCoverageToColorLocationNV()`
+
+If [VK_NV_framebuffer_mixed_samples](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_framebuffer_mixed_samples) is supported and enabled:
+
+* 
+`vkCmdSetCoverageModulationModeNV()`
+
+* 
+`vkCmdSetCoverageModulationTableEnableNV()`
+
+* 
+`vkCmdSetCoverageModulationTableNV()`
+
+If [VK_NV_coverage_reduction_mode](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_coverage_reduction_mode) is supported and enabled:
+
+* 
+`vkCmdSetCoverageReductionModeNV()`
+
+If [VK_NV_representative_fragment_test](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_representative_fragment_test) is supported and enabled:
+
+* 
+`vkCmdSetRepresentativeFragmentTestEnableNV()`
+
+If [VK_NV_shading_rate_image](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_shading_rate_image) is supported and enabled:
+
+* 
+`vkCmdSetCoarseSampleOrderNV()`
+
+* 
+`vkCmdSetShadingRateImageEnableNV()`
+
+* 
+`vkCmdSetViewportShadingRatePaletteNV()`
+
+If [VK_NV_scissor_exclusive](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_scissor_exclusive) is supported and enabled:
+
+* 
+`vkCmdSetExclusiveScissorEnableNV()`
+
+* 
+`vkCmdSetExclusiveScissorNV()`
+
+If [VK_NV_fragment_shading_rate_enums](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_NV_fragment_shading_rate_enums) is supported and enabled:
+
+* 
+`vkCmdSetFragmentShadingRateEnumNV()`
+
+Certain dynamic state setting commands have modified behavior from their original versions:
+
+* 
+`vkCmdSetPrimitiveTopology()` does not have any constraints on the topology class (i.e., it behaves as if the `dynamicPrimitiveTopologyUnrestricted` property is `VK_TRUE` even when the actual property is `VK_FALSE`).
+
+* 
+`vkCmdSetLogicOpEXT()` may be used on any implementation regardless of its support for the `extendedDynamicState2LogicOp` feature.
+
+* 
+`vkCmdSetPatchControlPointsEXT()` may be used on any implementation regardless of its support for the `extendedDynamicState2PatchControlPoints` feature.
+
+Any `VkShaderEXT` can be destroyed using `vkDestroyShaderEXT()`:
+
+void vkDestroyShaderEXT(
+    VkDevice                                    device,
+    VkShaderEXT                                 shader,
+    VkAllocationCallbacks*                      pAllocator);
+
+Destroying a `VkShaderEXT` object used by action commands in one or more command buffers in the *recording* or *executable* states causes those command buffers to enter the *invalid* state. A `VkShaderEXT` object must not be destroyed as long as any command buffer that issues any action command that uses it is in the *pending* state.
+
+Consider an application which always treats sets of shader stages as complete programs.
+
+At startup time, the application compiles and links the shaders for each complete program:
+
+VkShaderCreateInfoEXT shaderInfo[2] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+        .stage = VK_SHADER_STAGE_VERTEX_BIT,
+        .nextStage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = vertexShaderSpirvSize,
+        .pCode = pVertexShaderSpirv,
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .nextStage = 0,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = fragmentShaderSpirvSize,
+        .pCode = pFragmentShaderSpirv,
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    }
+};
+
+VkShaderEXT shaders[2];
+
+vkCreateShadersEXT(device, 2, shaderInfo, NULL, shaders);
+
+Later at draw time, the application binds the linked vertex and fragment shaders forming a complete program:
+
+VkShaderStageFlagBits stages[2] = {
+    VK_SHADER_STAGE_VERTEX_BIT,
+    VK_SHADER_STAGE_FRAGMENT_BIT
+};
+vkCmdBindShadersEXT(commandBuffer, 2, stages, shaders);
+
+Alternatively, the same result could be achieved by:
+
+{
+    VkShaderStageFlagBits stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vkCmdBindShadersEXT(commandBuffer, 1, &stage, &shaders[0]);
+}
+
+{
+    VkShaderStageFlagBits stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    vkCmdBindShadersEXT(commandBuffer, 1, &stage, &shaders[1]);
+}
+
+If the `tessellationShader` or `geometryShader` features are enabled, the application sets the corresponding shader types to VK_NULL_HANDLE:
+
+VkShaderStageFlagBits unusedStages[3] = {
+    VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+    VK_SHADER_STAGE_GEOMETRY_BIT
+};
+VkShaderEXT unusedShaders[3] = { /* VK_NULL_HANDLE, ... */ };
+vkCmdBindShadersEXT(commandBuffer, 3, unusedStages, unusedShaders);
+
+Alternatively, the same result could be achieved by:
+
+VkShaderStageFlagBits unusedStages[3] = {
+    VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+    VK_SHADER_STAGE_GEOMETRY_BIT
+};
+// Setting pShaders to NULL is equivalent to specifying an array of stageCount VK_NULL_HANDLE values
+vkCmdBindShadersEXT(commandBuffer, 3, unusedStages, NULL);
+
+Finally, the application issues a draw call:
+
+vkCmdDrawIndexed(commandBuffer, ...);
+
+Now consider a different application which needs to mix and match vertex and fragment shaders in arbitrary combinations that are not predictable at shader compile time.
+
+At startup time, the application compiles unlinked vertex and fragment shaders:
+
+VkShaderCreateInfoEXT shaderInfo[3] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = 0,
+        .stage = VK_SHADER_STAGE_VERTEX_BIT,
+        .nextStage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = vertexShaderSpirvSize,
+        .pCode = pVertexShaderSpirv,
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = 0,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .nextStage = 0,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = fragmentShaderSpirvSize[0],
+        .pCode = pFragmentShaderSpirv[0],
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = 0,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .nextStage = 0,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = fragmentShaderSpirvSize[1],
+        .pCode = pFragmentShaderSpirv[1],
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    }
+};
+
+VkShaderEXT shaders[3];
+
+vkCreateShadersEXT(device, 3, shaderInfo, NULL, shaders);
+
+Alternatively, the same result could be achieved by:
+
+VkShaderEXT shaders[3];
+
+{
+    VkShaderCreateInfoEXT shaderInfo = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = 0,
+        .stage = VK_SHADER_STAGE_VERTEX_BIT,
+        .nextStage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = vertexShaderSpirvSize,
+        .pCode = pVertexShaderSpirv,
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    };
+
+    vkCreateShadersEXT(device, 1, &shaderInfo, NULL, &shaders[0]);
+}
+
+{
+    VkShaderCreateInfoEXT shaderInfo = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = 0,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .nextStage = 0,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = fragmentShaderSpirvSize[0],
+        .pCode = pFragmentShaderSpirv[0],
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    };
+
+    vkCreateShadersEXT(device, 1, &shaderInfo, NULL, &shaders[1]);
+}
+
+{
+    VkShaderCreateInfoEXT shaderInfo = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+        .pNext = NULL,
+        .flags = 0,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .nextStage = 0,
+        .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+        .codeSize = fragmentShaderSpirvSize[1],
+        .pCode = pFragmentShaderSpirv[1],
+        .pName = "main",
+        .setLayoutCount = 1,
+        .pSetLayouts = &descriptorSetLayout,
+        .pushConstantRangeCount = 0,
+        .pPushConstantRanges = NULL,
+        .pSpecializationInfo = NULL
+    };
+
+    vkCreateShadersEXT(device, 1, &shaderInfo, NULL, &shaders[2]);
+}
+
+Later at draw time, the application binds independent vertex and fragment shaders forming a complete program:
+
+VkShaderStageFlagBits stages[2] = {
+    VK_SHADER_STAGE_VERTEX_BIT,
+    VK_SHADER_STAGE_FRAGMENT_BIT
+};
+vkCmdBindShadersEXT(commandBuffer, 2, stages, shaders);
+
+If the `tessellationShader` or `geometryShader` features are enabled, the application sets the corresponding shader types to VK_NULL_HANDLE:
+
+VkShaderStageFlagBits unusedStages[3] = {
+    VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+    VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+    VK_SHADER_STAGE_GEOMETRY_BIT
+};
+// Setting pShaders to NULL is equivalent to specifying an array of stageCount VK_NULL_HANDLE values
+vkCmdBindShadersEXT(commandBuffer, 3, unusedStages, NULL);
+
+Then, the application issues a draw call:
+
+vkCmdDrawIndexed(commandBuffer, ...);
+
+Later, the application binds a different fragment shader without disturbing any other stages:
+
+VkShaderStageFlagBits stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+vkCmdBindShadersEXT(commandBuffer, 1, &stage, &shaders[2]);
+
+Finally, the application issues another draw call:
+
+vkCmdDrawIndexed(commandBuffer, ...);
+
+At startup time, the application compiles a compute shader:
+
+VkShaderCreateInfoEXT shaderInfo = {
+    .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+    .pNext = NULL,
+    .flags = 0,
+    .stage = VK_SHADER_STAGE_COMPUTE_BIT,
+    .nextStage = 0,
+    .codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT,
+    .codeSize = computeShaderSpirvSize,
+    .pCode = pComputeShaderSpirv,
+    .pName = "main",
+    .setLayoutCount = 1,
+    .pSetLayouts = &descriptorSetLayout,
+    .pushConstantRangeCount = 0,
+    .pPushConstantRanges = NULL,
+    .pSpecializationInfo = NULL
+};
+
+VkShaderEXT shader;
+
+vkCreateShadersEXT(device, 1, &shaderInfo, NULL, &shader);
+
+Later, the application binds the compute shader:
+
+VkShaderStageFlagBits stage = VK_SHADER_STAGE_COMPUTE_BIT;
+vkCmdBindShadersEXT(commandBuffer, 1, &stage, &shader);
+
+Finally, the application dispatches the compute:
+
+vkCmdDispatch(commandBuffer, ...);
+
+The purpose of this extension is to expose the flexibility of those implementations which allow arbitrary combinations of unlinked but compatible shader stages and state to be bound independently. Attempting to modify this extension to support implementations which do not have this flexibility would defeat the entire purpose of the extension. For this reason, implementations which do not have the required flexibility should not implement this extension.
+
+IHVs whose implementations have such limitations today are encouraged to consider incorporating changes which could remove these limitations into their future hardware roadmaps.
+
+No - the pipeline abstraction was never designed with such a radically different design in mind.
+
+Avoiding the introduction of a new object type and a handful of new entry points is not a compelling reason to continue to pile less and less pipeline-like functionality into pipelines. Doing so would needlessly constrict or even undermine the design and future extensibility of both models.
+
+No - fixed platforms like game consoles and embedded systems have constraints which make shipping both SPIR-V and binary copies of the same shader code undesirable.
+
+No - the compiled code for each shader stage is represented by a single `VkShaderEXT` object whether it is linked to other stages or not.
+
+Introducing a shader program object would overly complicate the API and impose a new and unnecessary object lifetime management burden on applications. Vulkan is a low level API, and it should be the application’s responsibility to ensure that it keeps any promises it chooses to make about binding the correct stages together.
+
+|  | Whenever shaders are created linked together, the rules for binding them give implementations the freedom to (for example) internally store the compiled code for multiple linked stages in a single stage’s `VkShaderEXT` object and to leave the other stages' `VkShaderEXT` objects internally unused, though this is **strongly** discouraged. |
+| --- | --- |
+
+Not as part of this extension - it is possible to imagine some kind of "shader optimization hint" functionality to let applications provide implementations with "static state" similar to the existing static state in pipelines, but on an opt-in rather than opt-out basis. By providing a given piece of state in an optimization hint at shader creation time, an application could promise that the equivalent piece of dynamic state would always be set to some specific value whenever that shader is used, thereby allowing implementations to perform compile time optimizations similar to those they can make with pipelines today.
+
+For already pipeline-friendly applications with lots of static state this could serve as a "gentler" version of pipelines that might provide the best of both worlds, but it is unclear that the benefits of such a scheme for the (pipeline-unfriendly) majority of applications which actually need this extension would outweigh the costs of the added complexity to the API.
+
+If such functionality turns out to be important, it can be noninvasively layered on top of this extension in the form of another extension. Until then, applications wanting something that behaves like pipelines should just use pipelines.
+
+No - an earlier version of this proposal exposed a mechanism for applications to pre-create "interface shaders" which could then be bound on a command buffer to reduce draw time overhead. This added complexity to the API, and it was unclear that this solution would be able to deliver meaningful performance improvements over setting individual pieces of state on the command buffer.
+
+Such an abstraction may prove beneficial for certain implementations, but it should not be designed until those implementations have at least attempted to implement support for this extension in its existing form.
+
+Sample shading is already implicitly enabled (with minSampleShading = 1.0) whenever a shader reads from the SampleId or SamplePosition builtins. The main functionality missing in the absence of dynamic sample shading is the ability to specify minSampleShading values other than 1.0.
+
+This could be addressed by introducing a new MinSampleShading shader builtin which can be either hard-coded or specialized at SPIR-V compile time using the existing specialization constant mechanism. However, since introducing this functionality is orthogonal to the objective of this extension this is left up to a different extension.
+
+Until such an extension is available, applications that need to specify a minSampleShading other than 1.0 should use pipelines.
+
+A success code.
+
+Initially this token was named `VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT`,
+but as pointed out in
+[https://github.com/KhronosGroup/Vulkan-Docs/issues/2295](https://github.com/KhronosGroup/Vulkan-Docs/issues/2295) the numeric value
+assigned to the token was positive.
+
+On further discussion we agreed that the return code was a success code,
+much as `VK_INCOMPLETE` is, and aliased the original name to the current name
+without `ERROR` in it.
+
+No. The multiview mask is widely required static state since implementations may compute all views in one big shader invocation.
+This concept may be re-introduced in a different extension.
+
+* 
+Shader optimization hints
+
+* 
+State grouping
+
+* 
+Ray tracing shader objects

@@ -1,0 +1,1888 @@
+# VK_EXT_descriptor_heap
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_EXT_descriptor_heap.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Overview](#_overview)
+- [3.2. Getting Descriptors](#_getting_descriptors)
+- [3.2._Getting_Descriptors](#_getting_descriptors)
+- [3.2.1. YCBCR Images and Samplers](#_ycbcr_images_and_samplers)
+- [3.2.1._YCBCR_Images_and_Samplers](#_ycbcr_images_and_samplers)
+- [3.2.2. Fragment Density Maps and Subsampled Images and Samplers](#_fragment_density_maps_and_subsampled_images_and_samplers)
+- [3.2.2._Fragment_Density_Maps_and_Subsampled_Images_and_Samplers](#_fragment_density_maps_and_subsampled_images_and_samplers)
+- [3.3. Descriptor Heaps](#_descriptor_heaps)
+- [3.3._Descriptor_Heaps](#_descriptor_heaps)
+- [3.4. Resource Bindings](#_resource_bindings)
+- [3.4._Resource_Bindings](#_resource_bindings)
+- [3.4.1. Push Constants](#_push_constants)
+- [3.4.1._Push_Constants](#_push_constants)
+- [3.4.2. DescriptorSet and Binding Decorations](#SetAndBindingDecorations)
+- [3.4.2._DescriptorSet_and_Binding_Decorations](#SetAndBindingDecorations)
+- [Combined Image Samplers](#_combined_image_samplers)
+- [Combined_Image_Samplers](#_combined_image_samplers)
+- [Embedding Samplers](#_embedding_samplers)
+- [3.5. Synchronization](#_synchronization)
+- [3.6. Secondary Command Buffers](#_secondary_command_buffers)
+- [3.6._Secondary_Command_Buffers](#_secondary_command_buffers)
+- [3.7. Null Descriptors](#_null_descriptors)
+- [3.7._Null_Descriptors](#_null_descriptors)
+- [3.8. Custom Border Color](#_custom_border_color)
+- [3.8._Custom_Border_Color](#_custom_border_color)
+- [3.9. Capture and Replay](#_capture_and_replay)
+- [3.9._Capture_and_Replay](#_capture_and_replay)
+- [3.9.1. Samplers](#_samplers)
+- [3.9.2. Device Addresses](#_device_addresses)
+- [3.9.2._Device_Addresses](#_device_addresses)
+- [3.9.3. Images](#_images)
+- [3.9.4. Tensors](#_tensors)
+- [3.10. Interaction with VK_EXT_device_generated_commands](#_interaction_with_vk_ext_device_generated_commands)
+- [3.10._Interaction_with_VK_EXT_device_generated_commands](#_interaction_with_vk_ext_device_generated_commands)
+- [3.11. Interaction with VK_NV_device_generated_commands](#_interaction_with_vk_nv_device_generated_commands)
+- [3.11._Interaction_with_VK_NV_device_generated_commands](#_interaction_with_vk_nv_device_generated_commands)
+- [3.12. Interaction with VK_EXT_fragment_density_map](#_interaction_with_vk_ext_fragment_density_map)
+- [3.12._Interaction_with_VK_EXT_fragment_density_map](#_interaction_with_vk_ext_fragment_density_map)
+- [3.13. Device Features](#_device_features)
+- [3.13._Device_Features](#_device_features)
+- [3.14. Device Properties](#_device_properties)
+- [3.14._Device_Properties](#_device_properties)
+- [3.14.1. Tensor properties](#_tensor_properties)
+- [3.14.1._Tensor_properties](#_tensor_properties)
+- [3.15. Tighter bounds on descriptor sizes](#_tighter_bounds_on_descriptor_sizes)
+- [3.15._Tighter_bounds_on_descriptor_sizes](#_tighter_bounds_on_descriptor_sizes)
+- [4. Interaction with VK_EXT_debug_utils](#_interaction_with_vk_ext_debug_utils)
+- [4._Interaction_with_VK_EXT_debug_utils](#_interaction_with_vk_ext_debug_utils)
+- [5. Interaction with VK_KHR_pipeline_library](#_interaction_with_vk_khr_pipeline_library)
+- [5._Interaction_with_VK_KHR_pipeline_library](#_interaction_with_vk_khr_pipeline_library)
+- [6. Interaction with VK_EXT_graphics_pipeline_library](#_interaction_with_vk_ext_graphics_pipeline_library)
+- [6._Interaction_with_VK_EXT_graphics_pipeline_library](#_interaction_with_vk_ext_graphics_pipeline_library)
+- [7. VkDescriptorSetLayout Mapping](#_vkdescriptorsetlayout_mapping)
+- [7._VkDescriptorSetLayout_Mapping](#_vkdescriptorsetlayout_mapping)
+- [7.1. Example: Simple Resource Bindings](#_example_simple_resource_bindings)
+- [7.1._Example:_Simple_Resource_Bindings](#_example_simple_resource_bindings)
+- [7.2. Example: Push Constants](#_example_push_constants)
+- [7.2._Example:_Push_Constants](#_example_push_constants)
+- [7.3. Example: Push Descriptors](#_example_push_descriptors)
+- [7.3._Example:_Push_Descriptors](#_example_push_descriptors)
+- [7.4. Example: Immutable Samplers](#_example_immutable_samplers)
+- [7.4._Example:_Immutable_Samplers](#_example_immutable_samplers)
+- [8. SPIR-V Changes](#_spir_v_changes)
+- [8._SPIR-V_Changes](#_spir_v_changes)
+- [9. GLSL Mapping](#_glsl_mapping)
+- [9._GLSL_Mapping](#_glsl_mapping)
+- [10. HLSL Mapping](#_hlsl_mapping)
+- [10._HLSL_Mapping](#_hlsl_mapping)
+- [10.1. Global Root Signatures](#_global_root_signatures)
+- [10.1._Global_Root_Signatures](#_global_root_signatures)
+- [10.1.1. Example: Root Signature to Vulkan Mappings](#_example_root_signature_to_vulkan_mappings)
+- [10.1.1._Example:_Root_Signature_to_Vulkan_Mappings](#_example_root_signature_to_vulkan_mappings)
+- [10.2. Local Root Signatures](#_local_root_signatures)
+- [10.2._Local_Root_Signatures](#_local_root_signatures)
+- [10.3. Shader Model 6.6 - SamplerHeap and ResourceHeap](#_shader_model_6_6_samplerheap_and_resourceheap)
+- [10.3._Shader_Model_6.6_-_SamplerHeap_and_ResourceHeap](#_shader_model_6_6_samplerheap_and_resourceheap)
+- [11. Issues](#_issues)
+- [11.1. Is this the same as DirectX 12 descriptor heaps?](#_is_this_the_same_as_directx_12_descriptor_heaps)
+- [11.1._Is_this_the_same_as_DirectX_12_descriptor_heaps?](#_is_this_the_same_as_directx_12_descriptor_heaps)
+- [11.2. Do I need to change all my shaders to use this?](#_do_i_need_to_change_all_my_shaders_to_use_this)
+- [11.2._Do_I_need_to_change_all_my_shaders_to_use_this?](#_do_i_need_to_change_all_my_shaders_to_use_this)
+- [11.3. Does exposing all of this make debugging invalid descriptors worse?](#_does_exposing_all_of_this_make_debugging_invalid_descriptors_worse)
+- [11.3._Does_exposing_all_of_this_make_debugging_invalid_descriptors_worse?](#_does_exposing_all_of_this_make_debugging_invalid_descriptors_worse)
+- [11.4. How does YCBCR sampling work with the bindless interface?](#_how_does_ycbcr_sampling_work_with_the_bindless_interface)
+- [11.4._How_does_YCBCR_sampling_work_with_the_bindless_interface?](#_how_does_ycbcr_sampling_work_with_the_bindless_interface)
+- [11.5. How does sampling of subsampled images for fragment density maps work with the bindless interface?](#_how_does_sampling_of_subsampled_images_for_fragment_density_maps_work_with_the_bindless_interface)
+- [11.5._How_does_sampling_of_subsampled_images_for_fragment_density_maps_work_with_the_bindless_interface?](#_how_does_sampling_of_subsampled_images_for_fragment_density_maps_work_with_the_bindless_interface)
+- [11.6. Should embedded samplers be passed as descriptors rather than create infos?](#_should_embedded_samplers_be_passed_as_descriptors_rather_than_create_infos)
+- [11.6._Should_embedded_samplers_be_passed_as_descriptors_rather_than_create_infos?](#_should_embedded_samplers_be_passed_as_descriptors_rather_than_create_infos)
+- [11.7. Why is there an explicit custom border color registration?](#_why_is_there_an_explicit_custom_border_color_registration)
+- [11.7._Why_is_there_an_explicit_custom_border_color_registration?](#_why_is_there_an_explicit_custom_border_color_registration)
+- [11.8. Should descriptor layout compatibility be a separate extension?](#_should_descriptor_layout_compatibility_be_a_separate_extension)
+- [11.8._Should_descriptor_layout_compatibility_be_a_separate_extension?](#_should_descriptor_layout_compatibility_be_a_separate_extension)
+- [11.9. What are the indexing rules when using descriptor heaps?](#_what_are_the_indexing_rules_when_using_descriptor_heaps)
+- [11.9._What_are_the_indexing_rules_when_using_descriptor_heaps?](#_what_are_the_indexing_rules_when_using_descriptor_heaps)
+- [11.10. How are embedded samplers handled on implementations that cannot embed them in shader constant data?](#_how_are_embedded_samplers_handled_on_implementations_that_cannot_embed_them_in_shader_constant_data)
+- [11.10._How_are_embedded_samplers_handled_on_implementations_that_cannot_embed_them_in_shader_constant_data?](#_how_are_embedded_samplers_handled_on_implementations_that_cannot_embed_them_in_shader_constant_data)
+- [11.11. Why is so much state baked in when using VK_EXT_shader_object with bindings?](#_why_is_so_much_state_baked_in_when_using_vk_ext_shader_object_with_bindings)
+- [11.11._Why_is_so_much_state_baked_in_when_using_VK_EXT_shader_object_with_bindings?](#_why_is_so_much_state_baked_in_when_using_vk_ext_shader_object_with_bindings)
+- [11.12. Why is there a multiple sampler limit for samplers with YCBCR conversion?](#_why_is_there_a_multiple_sampler_limit_for_samplers_with_ycbcr_conversion)
+- [11.12._Why_is_there_a_multiple_sampler_limit_for_samplers_with_YCBCR_conversion?](#_why_is_there_a_multiple_sampler_limit_for_samplers_with_ycbcr_conversion)
+- [11.13. Why do the heaps have reserved ranges?](#_why_do_the_heaps_have_reserved_ranges)
+- [11.13._Why_do_the_heaps_have_reserved_ranges?](#_why_do_the_heaps_have_reserved_ranges)
+- [11.14. Is it possible to map input attachments without shader bindings?](#_is_it_possible_to_map_input_attachments_without_shader_bindings)
+- [11.14._Is_it_possible_to_map_input_attachments_without_shader_bindings?](#_is_it_possible_to_map_input_attachments_without_shader_bindings)
+- [11.15. Why does VK_NV_device_generated_commands have a specific token for push data but VK_EXT_device_generated_commands does not?](#_why_does_vk_nv_device_generated_commands_have_a_specific_token_for_push_data_but_vk_ext_device_generated_commands_does_not)
+- [11.15._Why_does_VK_NV_device_generated_commands_have_a_specific_token_for_push_data_but_VK_EXT_device_generated_commands_does_not?](#_why_does_vk_nv_device_generated_commands_have_a_specific_token_for_push_data_but_vk_ext_device_generated_commands_does_not)
+- [11.16. Can different shader stages in the same pipeline/draw use different resource mappings?](#_can_different_shader_stages_in_the_same_pipelinedraw_use_different_resource_mappings)
+- [11.16._Can_different_shader_stages_in_the_same_pipeline/draw_use_different_resource_mappings?](#_can_different_shader_stages_in_the_same_pipelinedraw_use_different_resource_mappings)
+- [11.17. Why is the VkResourceDescriptorDataEXT a union of pointers instead of a flat union?](#_why_is_the_vkresourcedescriptordataext_a_union_of_pointers_instead_of_a_flat_union)
+- [11.17._Why_is_the_VkResourceDescriptorDataEXT_a_union_of_pointers_instead_of_a_flat_union?](#_why_is_the_vkresourcedescriptordataext_a_union_of_pointers_instead_of_a_flat_union)
+- [11.18. How can I use debug labels with descriptor heaps?](#_how_can_i_use_debug_labels_with_descriptor_heaps)
+- [11.18._How_can_I_use_debug_labels_with_descriptor_heaps?](#_how_can_i_use_debug_labels_with_descriptor_heaps)
+- [11.19. Why is VK_KHR_shader_untyped_pointers not a dependency, but still required by implementations?](#_why_is_vk_khr_shader_untyped_pointers_not_a_dependency_but_still_required_by_implementations)
+- [11.19._Why_is_VK_KHR_shader_untyped_pointers_not_a_dependency,_but_still_required_by_implementations?](#_why_is_vk_khr_shader_untyped_pointers_not_a_dependency_but_still_required_by_implementations)
+- [12. Further Work](#_further_work)
+- [12._Further_Work](#_further_work)
+- [12.1. Embedded Samplers](#_embedded_samplers)
+- [12.1._Embedded_Samplers](#_embedded_samplers)
+- [12.2. Input Attachments](#_input_attachments)
+- [12.2._Input_Attachments](#_input_attachments)
+- [12.3. HLSL Bindless Push Data / Root Constants](#_hlsl_bindless_push_data_root_constants)
+- [12.3._HLSL_Bindless_Push_Data_/_Root_Constants](#_hlsl_bindless_push_data_root_constants)
+- [12.4. HLSL Heap Data Access](#_hlsl_heap_data_access)
+- [12.4._HLSL_Heap_Data_Access](#_hlsl_heap_data_access)
+- [12.5. Better Debugging](#_better_debugging)
+- [12.5._Better_Debugging](#_better_debugging)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Overview](#_overview)
+[3.2. Getting Descriptors](#_getting_descriptors)
+[3.3. Descriptor Heaps](#_descriptor_heaps)
+[3.4. Resource Bindings](#_resource_bindings)
+[3.5. Synchronization](#_synchronization)
+[3.6. Secondary Command Buffers](#_secondary_command_buffers)
+[3.7. Null Descriptors](#_null_descriptors)
+[3.8. Custom Border Color](#_custom_border_color)
+[3.9. Capture and Replay](#_capture_and_replay)
+[3.10. Interaction with VK_EXT_device_generated_commands](#_interaction_with_vk_ext_device_generated_commands)
+[3.11. Interaction with VK_NV_device_generated_commands](#_interaction_with_vk_nv_device_generated_commands)
+[3.12. Interaction with VK_EXT_fragment_density_map](#_interaction_with_vk_ext_fragment_density_map)
+[3.13. Device Features](#_device_features)
+[3.14. Device Properties](#_device_properties)
+[3.15. Tighter bounds on descriptor sizes](#_tighter_bounds_on_descriptor_sizes)
+
+[4. Interaction with VK_EXT_debug_utils](#_interaction_with_vk_ext_debug_utils)
+[5. Interaction with VK_KHR_pipeline_library](#_interaction_with_vk_khr_pipeline_library)
+[6. Interaction with VK_EXT_graphics_pipeline_library](#_interaction_with_vk_ext_graphics_pipeline_library)
+[7. VkDescriptorSetLayout Mapping](#_vkdescriptorsetlayout_mapping)
+
+[7.1. Example: Simple Resource Bindings](#_example_simple_resource_bindings)
+[7.2. Example: Push Constants](#_example_push_constants)
+[7.3. Example: Push Descriptors](#_example_push_descriptors)
+[7.4. Example: Immutable Samplers](#_example_immutable_samplers)
+
+[8. SPIR-V Changes](#_spir_v_changes)
+[9. GLSL Mapping](#_glsl_mapping)
+[10. HLSL Mapping](#_hlsl_mapping)
+
+[10.1. Global Root Signatures](#_global_root_signatures)
+[10.2. Local Root Signatures](#_local_root_signatures)
+[10.3. Shader Model 6.6 - SamplerHeap and ResourceHeap](#_shader_model_6_6_samplerheap_and_resourceheap)
+
+[11. Issues](#_issues)
+
+[11.1. Is this the same as DirectX 12 descriptor heaps?](#_is_this_the_same_as_directx_12_descriptor_heaps)
+[11.2. Do I need to change all my shaders to use this?](#_do_i_need_to_change_all_my_shaders_to_use_this)
+[11.3. Does exposing all of this make debugging invalid descriptors worse?](#_does_exposing_all_of_this_make_debugging_invalid_descriptors_worse)
+[11.4. How does YCBCR sampling work with the bindless interface?](#_how_does_ycbcr_sampling_work_with_the_bindless_interface)
+[11.5. How does sampling of subsampled images for fragment density maps work with the bindless interface?](#_how_does_sampling_of_subsampled_images_for_fragment_density_maps_work_with_the_bindless_interface)
+[11.6. Should embedded samplers be passed as descriptors rather than create infos?](#_should_embedded_samplers_be_passed_as_descriptors_rather_than_create_infos)
+[11.7. Why is there an explicit custom border color registration?](#_why_is_there_an_explicit_custom_border_color_registration)
+[11.8. Should descriptor layout compatibility be a separate extension?](#_should_descriptor_layout_compatibility_be_a_separate_extension)
+[11.9. What are the indexing rules when using descriptor heaps?](#_what_are_the_indexing_rules_when_using_descriptor_heaps)
+[11.10. How are embedded samplers handled on implementations that cannot embed them in shader constant data?](#_how_are_embedded_samplers_handled_on_implementations_that_cannot_embed_them_in_shader_constant_data)
+[11.11. Why is so much state baked in when using VK_EXT_shader_object with bindings?](#_why_is_so_much_state_baked_in_when_using_vk_ext_shader_object_with_bindings)
+[11.12. Why is there a multiple sampler limit for samplers with YCBCR conversion?](#_why_is_there_a_multiple_sampler_limit_for_samplers_with_ycbcr_conversion)
+[11.13. Why do the heaps have reserved ranges?](#_why_do_the_heaps_have_reserved_ranges)
+[11.14. Is it possible to map input attachments without shader bindings?](#_is_it_possible_to_map_input_attachments_without_shader_bindings)
+[11.15. Why does VK_NV_device_generated_commands have a specific token for push data but VK_EXT_device_generated_commands does not?](#_why_does_vk_nv_device_generated_commands_have_a_specific_token_for_push_data_but_vk_ext_device_generated_commands_does_not)
+[11.16. Can different shader stages in the same pipeline/draw use different resource mappings?](#_can_different_shader_stages_in_the_same_pipelinedraw_use_different_resource_mappings)
+[11.17. Why is the `VkResourceDescriptorDataEXT` a union of pointers instead of a flat union?](#_why_is_the_vkresourcedescriptordataext_a_union_of_pointers_instead_of_a_flat_union)
+[11.18. How can I use debug labels with descriptor heaps?](#_how_can_i_use_debug_labels_with_descriptor_heaps)
+[11.19. Why is VK_KHR_shader_untyped_pointers not a dependency, but still required by implementations?](#_why_is_vk_khr_shader_untyped_pointers_not_a_dependency_but_still_required_by_implementations)
+
+[12. Further Work](#_further_work)
+
+[12.1. Embedded Samplers](#_embedded_samplers)
+[12.2. Input Attachments](#_input_attachments)
+[12.3. HLSL Bindless Push Data / Root Constants](#_hlsl_bindless_push_data_root_constants)
+[12.4. HLSL Heap Data Access](#_hlsl_heap_data_access)
+[12.5. Better Debugging](#_better_debugging)
+
+This document outlines a proposal to make the management of descriptor memory more explicit, allowing descriptors to be present in buffer memory, allowing the data and memory to be managed alongside other buffer objects.
+This expands on [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer) to solve a number of identified issues with that extension.
+
+[VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer) simplified descriptor management, but several warts remained with that extension that would be useful to iron out:
+
+* 
+While buffer view creation is no longer required, image view creation is - meaning an additional object must be managed by applications.
+
+Ideally, descriptors could be created directly from images to avoid this.
+
+There are several ways to provide constant data to shaders, and it is unclear which of those should be preferred in a given situation.
+
+* 
+[VK_EXT_inline_uniform_block](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_inline_uniform_block) added one more (embedding constants in descriptor sets), but this method is not necessarily a universal fast path.
+
+* 
+If a consistent fast path can be established, it would greatly simplify the developer experience and allow us to have definitive portable guidelines
+
+Consistency between vendors is low - multiple vendors have dedicated image and sampler heaps, but descriptor buffers were initially advertised as general purpose, and only reined in by usage bits.
+
+* 
+This led to some dispute about how best to implement these - whether descriptor buffers should contain indexes (similar to [GL_ARB_bindless_texture](https://registry.khronos.org/OpenGL/extensions/ARB/ARB_bindless_texture.txt)), or if they should be real descriptors. Subsequently, performance portability is lower than ideal.
+
+Mixing buffers and images (or formatted buffers) in the same descriptor buffer in a flat array can lead to performance issues as these are typically of wildly different sizes.
+
+* 
+For example, reading two buffers from a tightly packed array may come from one cache line, whereas if they are padded to match image sizes, this could require two separate cache lines with significant wastage.
+
+* 
+This is necessary for portability based on the base requirements of that extension.
+
+Push constants are awkward to use, it would be nice to clean up this interface.
+
+Pipeline layouts and descriptor set layouts are still used and are awkward to specify.
+
+Many of the problems above intersect in non-trivial (and non-obvious) ways, but this proposal aims to solve all of these.
+
+Any solution to this problem has to meet the following requirements:
+
+* 
+Be easy to understand and use
+
+* 
+Have clear and consistent performance recommendations that are portable
+
+* 
+Fully replace the functionality of [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer)
+
+* 
+Provide a clean way to support shaders using existing binding-based descriptors as well shaders using data driven and "bindless" models
+
+|  | While this extension makes constant reference to [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer), VK_EXT_descriptor_heap does not depend on it; VK_EXT_descriptor_heap is intended as a full replacement for that extension in newer hardware. |
+| --- | --- |
+
+Also of note is the excellent blog post by Faith Ekstrand on how implementations handle descriptors that you can find on her blog here: [https://www.gfxstrand.net/faith/blog/2022/08/descriptors-are-hard/](https://www.gfxstrand.net/faith/blog/2022/08/descriptors-are-hard/).
+In this post, Faith enumerated the various types of implementation as "Direct", "Heaps", "Buffers" or "Fixed HW bindings".
+This proposal aims to be portable across "Direct", "Heap", and "Buffer" implementations - leaving fixed hardware bindings behind.
+There are several other bits of information in this post that have been used to inform the proposal here.
+
+This proposal assumes, but does not require, an understanding of [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer); it is recommended that you read the background information in its proposal document before reading this.
+
+This extension requires [VK_KHR_buffer_device_address](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_buffer_device_address) or Vulkan 1.2, and [VK_KHR_shader_untyped_pointers](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_shader_untyped_pointers).
+
+This extension provides applications with the ability to [get binary data representing shader resources from the implementation](#_getting_descriptors), and to put those binaries into specifically allocated regions of memory for use as a [Descriptor Heaps](#_descriptor_heaps).
+There are two distinct heaps - the sampler heap for samplers, and the resource heap for other resources.
+Applications can [bind addresses from buffers](#_descriptor_heaps) allocated for descriptor heap usage to a command buffer during recording, for use with any dispatch or draw commands that execute shaders.
+
+Heaps can be accessed directly as arrays of data in the shader, and this is intended to be used to implement [Shader Model 6.6 Resource Heaps in HLSL](#_hlsl_mapping).
+For shaders that access descriptors using static bindings (either DX12-style or Vulkan descriptor set bindings), [mappings are provided](#SetAndBindingDecorations) that enable set and binding decorations to be mapped to offsets in the descriptor heap.
+Both of these access methods can be used simultaneously in the same shaders.
+
+This extension includes a new push interface for data, replacing both push constants and push descriptors.
+The push data interface is a set amount of data (at least 256 bytes) that can be used to pass data to a shader.
+All user pushed data goes through this interface, which includes both constants and data used for mapping resources with static bindings.
+Push descriptors, for example, are supported by putting indices in push data, while having the real descriptor in the bound heap; the mapping API can then be used to have this appear as any other statically bound shader resource.
+
+The following APIs are provided for obtaining descriptors:
+
+typedef struct VkHostAddressRangeEXT {
+    void*               address;
+    size_t              size;
+} VkHostAddressRangeEXT;
+
+typedef struct VkHostAddressRangeConstEXT {
+    const void*         address;
+    size_t              size;
+} VkHostAddressRangeConstEXT;
+
+typedef struct VkDeviceAddressRangeEXT {
+    VkDeviceAddress                 address;
+    VkDeviceSize                    size;
+} VkDeviceAddressRangeEXT;
+
+typedef struct VkTexelBufferDescriptorInfoEXT {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkFormat                        format;
+    VkDeviceAddressRangeEXT         addressRange;
+} VkTexelBufferDescriptorInfoEXT;
+
+typedef struct VkImageDescriptorInfoEXT {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    const VkImageViewCreateInfo*    pView;
+    VkImageLayout                   layout;
+} VkImageDescriptorInfoEXT;
+
+typedef union VkResourceDescriptorDataEXT {
+    const VkImageDescriptorInfoEXT*         pImage;
+    const VkTexelBufferDescriptorInfoEXT*   pTexelBuffer;
+    const VkDeviceAddressRangeEXT*          pAddressRange;
+    const VkTensorViewCreateInfoARM*        pTensorARM;
+} VkResourceDescriptorDataEXT;
+
+typedef struct VkResourceDescriptorInfoEXT {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkDescriptorType                type;
+    VkResourceDescriptorDataEXT     data;
+} VkResourceDescriptorInfoEXT;
+
+VkResult vkWriteSamplerDescriptorsEXT(
+    VkDevice                                device,
+    uint32_t                                samplerCount,
+    const VkSamplerCreateInfo*              pSamplers,
+    const VkHostAddressRangeEXT*            pDescriptors);
+
+VkResult vkWriteResourceDescriptorsEXT(
+    VkDevice                                device,
+    uint32_t                                resourceCount,
+    const VkResourceDescriptorInfoEXT*      pResources,
+    const VkHostAddressRangeEXT*            pDescriptors);
+
+Unlike [vkGetDescriptorEXT](https://docs.vulkan.org/spec/latest/descriptorsets.html#vkGetDescriptorEXT), multiple descriptors can be written at once, allowing for more rapid execution.
+When implementing [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer), Virtual Machine (VM) implementations noted that this was a high frequency call with immediate return needed; which meant significant latency going through the VM to the native driver for each call and waiting for the result.
+Allowing this operation to be arrayed allows this call traffic to be significantly reduced.
+The functions are also renamed to `vkWrite*` to reflect this change, and the expectation is that applications will write descriptors directly into memory used as a local heap.
+
+|  | Applications should aim to batch calls to write many descriptors at once, as unlike other get commands, the results cannot be easily done asynchronously to hide latency on virtual or remote implementations. |
+| --- | --- |
+
+The other most notable change is that sampler objects and image view objects are no longer required - instead their create information is provided directly.
+These objects no longer need to be managed, and applications are free to do with descriptor information whatever they want.
+
+The final glaring difference is that only a subset of descriptor types are supported for each function:
+
+* 
+Sampler descriptors can be written with `vkWriteSamplerDescriptorsEXT`
+
+* 
+Image descriptors can be written by `vkWriteResourceDescriptorsEXT` using `VkResourceDescriptorDataEXT::pImage`, with `VkResourceDescriptorInfoEXT::type` set to:
+
+`VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE`
+
+* 
+`VK_DESCRIPTOR_TYPE_STORAGE_IMAGE`
+
+* 
+`VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT`
+
+* 
+`VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM`
+
+* 
+`VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM`
+
+Texel buffer descriptors can be written by `vkWriteResourceDescriptorsEXT` using `VkResourceDescriptorDataEXT::pTexelBuffer`, with `VkResourceDescriptorInfoEXT::type` set to:
+
+* 
+`VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER`
+
+* 
+`VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER`
+
+Unformatted buffer descriptors can be written by `vkWriteResourceDescriptorsEXT` using `VkResourceDescriptorDataEXT::pAddressRange`, with `VkResourceDescriptorInfoEXT::type` set to:
+
+* 
+`VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER`
+
+* 
+`VK_DESCRIPTOR_TYPE_STORAGE_BUFFER`
+
+Acceleration structure descriptors can be written by `vkWriteResourceDescriptorsEXT` using `VkResourceDescriptorDataEXT::pAddressRange`, with `VkResourceDescriptorInfoEXT::type` set to:
+
+* 
+`VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR`
+
+* 
+NOTE: While the device address range must be valid, the size of the range does not affect the resulting acceleration structure, and can be 0; if a non-zero range is provided, it will be validated, which can be useful for catching unintended errors.
+
+Tensor descriptors can be written by `vkWriteResourceDescriptorsEXT` using `VkResourceDescriptorDataEXT::pTensorARM`, with `VkResourceDescriptorInfoEXT::type` set to:
+
+* 
+`VK_DESCRIPTOR_TYPE_TENSOR_ARM`
+
+As sampler and resource heaps are separated, there is no way to create a combined image and sampler descriptor in this API; however, [mappings for combined shader declarations are available](#DescriptorSet and Binding Decorations).
+Combined image samplers cannot be declared as part of a shader’s interface without `DescriptorSet` and `Binding` decorations.
+
+Writing a descriptor via these functions results in a descriptor that functions identically to descriptors managed by other descriptor management functions using an object created with the create info structure.
+However, the actual bit values and size of a descriptor written with this extension may differ from those obtained by [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer).
+
+Each descriptor is written to the memory at `pDescriptors[i].address`.
+`pDescriptors[i].size` must be greater than or equal to the size of the descriptor being written.
+
+Descriptors created from a fully identical `Vk*DescriptorInfoEXT` structure on the same `VkDevice` will always return the same bit pattern.
+
+When writing image descriptors for formats that can be used with YCBCR conversion, additional constraints apply to writing those descriptors to accommodate the fact that each such resource may require multiple descriptors.
+
+For `vkWriteResourceDescriptorsEXT`, if `pResources[i]` has a `type` of `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE` and `VkSamplerYcbcrConversionInfo` is included in the `pNext` chain of `data.pImage→pView`, `pDescriptors[i]→size` must be greater than or equal to the size of `imageDescriptorSize` multiplied by the value of [VkSamplerYcbcrConversionImageFormatProperties::combinedImageSamplerDescriptorCount](https://docs.vulkan.org/spec/latest/capabilities.html#VkSamplerYcbcrConversionImageFormatProperties) for the format of that image.
+
+YCBCR samplers cannot be written by `vkWriteSamplerDescriptorsEXT`, and instead must be embedded using the mapping APIs.
+
+Render passes using fragment density maps may require that the color attachment images are in a subsampled format, specified by setting the `VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT` bit in `VkImageCreateInfo::flags`.
+When writing image descriptors for such subsampled images, additional constraints apply to writing those descriptors to accommodate the fact that each such resource may require multiple descriptors.
+
+For `vkWriteResourceDescriptorsEXT`, `pDescriptors→size` must be greater than or equal to the size of `imageDescriptorSize` multiplied by the largest value of VkSubsampledImageFormatPropertiesEXT::subsampledImageDescriptorCount for the format of any element of `pImages` which has a `type` of `VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE` and was created with `VK_IMAGE_CREATE_SUBSAMPLED_BIT_EXT` in `VkImageCreateInfo::flags`.
+
+Subsampled images can only be sampled by subsampled samplers, specified by setting the `VK_SAMPLER_CREATE_SUBSAMPLED_BIT_EXT` bit in `VkSamplerCreateInfo::flags`.
+
+Subsampled samplers cannot be written by `vkWriteSamplerDescriptorsEXT`, and instead must be embedded using the mapping APIs.
+
+Descriptors are sourced from heaps, which can be set with the following commands:
+
+typedef struct VkBindHeapInfoEXT {
+    VkStructureType                 sType;
+    const void*                     pNext;
+    VkDeviceAddressRangeEXT         heapRange;
+    VkDeviceSize                    reservedRangeOffset;
+    VkDeviceSize                    reservedRangeSize;
+} VkBindHeapInfoEXT;
+
+void vkCmdBindSamplerHeapEXT(
+    VkCommandBuffer                 commandBuffer,
+    const VkBindHeapInfoEXT*        pBindInfo);
+
+void vkCmdBindResourceHeapEXT(
+    VkCommandBuffer                 commandBuffer,
+    const VkBindHeapInfoEXT*        pBindInfo);
+
+Rather than having "generic" looking descriptor buffers like [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer), there are explicitly two heaps - one for samplers, and one for other resources.
+This approach makes code written against this extension more readily portable, as no querying is involved to figure this out.
+If any applications want descriptor access from generic buffers, the portable method for doing so is to store indices in those generic buffers, leaving real descriptors in the heaps and doing an indirection (e.g. similar to [Traverse’s bindless resource scheme](https://blog.traverseresearch.nl/bindless-rendering-setup-afeb678d77fc)).
+
+|  | There may be a high synchronization cost for binding a new heap on some implementations, or switching between heaps and descriptor sets - applications should generally stick to the same heap throughout the lifetime of the application, only swapping to a new heap if absolutely necessary.
+| --- | --- |
+This mirrors the advice given in [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer) for [vkCmdBindDescriptorBuffersEXT](https://docs.vulkan.org/spec/latest/descriptorsets.html#vkCmdBindDescriptorBuffersEXT), or for heap bindings in DirectX® 12.
+The implementation is wholly responsible for ensuring this synchronization is performed, including any initialization to the implementation reserved range. |
+
+Use of these commands is mutually exclusive with existing descriptor set or descriptor buffer state.
+Calling these commands will invalidate any and all descriptor set, descriptor buffer, and descriptor offset states.
+Similarly, setting descriptor set or descriptor buffer state will immediately invalidate all descriptor heaps.
+All accesses to descriptor heaps from other commands will use the last heap set in the command buffer by these commands.
+If a heap is not set via one of these commands, its address is undefined.
+
+Each of these commands takes a single `VkBindHeapInfoEXT` structure, which has the following parameters:
+
+* 
+`heapRange` is the total range of memory bound as the respective heap.
+
+* 
+`reservedRangeOffset` is an offset to the start of a range of bytes from the start of `heapRange` reserved for the implementation.
+
+* 
+`reservedRangeSize` is the size of a range of bytes from `reservedRangeOffset` reserved for the implementation.
+
+`reservedRangeOffset` must be less than or equal to the `max*HeapSize` limit for the type of heap.
+`reservedRangeOffset` must be less than or equal to `heapRange.size`.
+`reservedRangeSize` must be greater than or equal to the `*HeapReservedRange` limit for the heap.
+`heapRange.size` must be greater than or equal to the sum of `reservedRangeOffset` and `reservedRangeSize`.
+`heapRange.size` must be less than or equal to the `max*HeapSize` limits for the heap.
+`heapRange.address` must be aligned to the `*HeapAlignment` limit for the heap.
+
+In each heap range, bytes from `reservedRangeOffset` up to `reservedRangeSize` must be fully backed by physical memory, and must not be accessed or modified by the application once bound.
+For a sampler heap, if it is going to be used with pipelines or shaders that include embedded samplers, this range must be sized according to `minSamplerHeapReservedRangeWithEmbedded` for the sampler heap instead.
+Applications must not modify the memory or memory bindings for any bound reserved range until all command buffers with that bound range are freed or reset.
+The implementation manages these bytes for internal descriptors needed to ensure correct operation of things like embedded samplers and fixed operations (e.g. [vkCmdBlitImage](https://docs.vulkan.org/spec/latest/copies.html#vkCmdBlitImage)).
+Applications may reuse the same range of reserved bytes in multiple command buffers, but must not use a *partially* overlapping range of reserved bytes in multiple command buffers simultaneously - doing so will result in undefined behavior.
+Binding the sampler and resource heaps to overlapping address ranges is allowed, but the reserved ranges for each heap must not overlap with each other.
+
+Buffers suitable to be used with these commands must be allocated with the following buffer usage flag:
+
+VK_BUFFER_USAGE_DESCRIPTOR_HEAP_BIT_EXT  = 0x08000000
+
+This bit must be specified alongside `VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT`.
+
+There is also an equivalent v2 bit:
+
+VK_BUFFER_USAGE_2_DESCRIPTOR_HEAP_BIT_EXT  = 0x08000000
+
+Implementations should make sure that the resulting device address for the buffer is aligned to the maximum of `samplerHeapAlignment` and `resourceHeapAlignment`.
+
+To use descriptor heaps with a pipeline, a new flag is added:
+
+static const VkPipelineCreateFlagBits2KHR VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT = 0x1000000000ULL;
+
+When a pipeline is created with this flag, the pipeline layout must be `NULL`, and resources used by its shaders will be sourced from a descriptor heap.
+Shaders using heaps can access resources without `Binding` and `DescriptorSet` decorations, instead accessing the heaps directly as memory via new built-in pointers to the base of each heap - see [SPIR-V Changes](#_spir_v_changes) for more information.
+
+When [VK_EXT_shader_object](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_shader_object) is supported, a shader create flag is similarly provided:
+
+typedef enum VkShaderCreateFlagBitsEXT {
+    ...
+    VK_SHADER_CREATE_DESCRIPTOR_HEAP_BIT_EXT = 0x00000400,
+} VkShaderCreateFlagBitsEXT;
+
+This has the same effect as the pipeline flag - the pipeline layout must be `NULL` and shader resources will be sourced from a descriptor heap.
+
+Push constants can also now be used "bindlessly" via a new function:
+
+typedef struct VkPushDataInfoEXT {
+    VkStructureType             sType;
+    const void*                 pNext;
+    uint32_t                    offset;
+    VkHostAddressRangeConstEXT  data;
+} VkPushDataInfoEXT;
+
+void vkCmdPushDataEXT(
+    VkCommandBuffer             commandBuffer,
+    const VkPushDataInfoEXT*    pPushDataInfo);
+
+This command does not distinguish between data types, instead storing them all as a single blob of data.
+`offset` and `size` are both counted in bytes; their sum must be less than `maxPushDataSize`.
+
+Push constants in this data can be accessed in the same way as before via the `PushConstant` storage class, it is now simply unnecessary to construct a pipeline layout to do that.
+
+`vkCmdPushDataEXT` will invalidate, and be invalidated by, any state set by [vkCmdPushConstants](https://docs.vulkan.org/spec/latest/descriptorsets.html#vkCmdPushConstants), [vkCmdPushDescriptorSetKHR](https://docs.vulkan.org/spec/latest/descriptorsets.html#vkCmdPushDescriptorSetKHR), or [vkCmdPushDescriptorSetWithTemplateKHR](https://docs.vulkan.org/spec/latest/descriptorsets.html#vkCmdPushDescriptorSetWithTemplateKHR).
+
+Applications are advised to put device addresses into push data for larger amounts of data; implementations with pre-fetch paths will be able to pre-fetch these if they are statically referenced in the shader, providing an optimal path for larger data sets.
+
+|  | Device addresses in push data are intended as the replacement fast path for `VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC` and `VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC`.
+| --- | --- |
+Note however that as they are not buffer descriptors and no size is provided, robust buffer access does not apply; out of bounds accesses are invalid.
+These addresses can also be mapped to an existing buffer declaration in the shader using [`DescriptorSet` and `Binding` Decorations](#SetAndBindingDecorations), which will be the preferred path for some implementations initially, though such implementations are expected to lean less on this mechanism over time. |
+
+Unlike [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer), this extension does not add direct support for descriptor set layouts, and instead includes functionality to allow mapping descriptors with `DescriptorSet` and `Binding` decorations to heap resources.
+
+There are also several advantages to the mapping API that were not possible with descriptor set layouts:
+
+* 
+Each shader stage can have an entirely independent set of mappings
+
+* 
+Descriptor set and binding decorations are no longer limited, and instead can be used as arbitrary identifiers by an application
+
+* 
+Direct mapping to HLSL’s pre-SM6.6 binding model is now possible, as illustrated in [HLSL Mapping](#_hlsl_mapping) later in the proposal
+
+|  | Applications can fully ignore the mappings; bindless interfaces are provided for all resource types. These mappings are primarily intended as an interface for mapping existing shader codebases which use bindings. The only exceptions to this are for embedded samplers and input attachments, which still require a binding in this extension. |
+| --- | --- |
+
+|  | Shaders compiled using this mapping can use both bindless resource access and static bindings. |
+| --- | --- |
+
+typedef enum VkDescriptorMappingSourceEXT {
+    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_OFFSET_EXT          = 0,
+    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT               = 1,
+    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT           = 2,
+    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_ARRAY_EXT     = 3,
+    VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT                 = 4,
+    VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT                          = 5,
+    VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT                       = 6,
+    VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT                   = 7,
+    VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_SHADER_RECORD_INDEX_EXT      = 8,
+    VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_DATA_EXT                 = 9,
+    VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_ADDRESS_EXT              = 10,
+} VkDescriptorMappingSourceEXT;
+
+typedef VkSpirvResourceTypeFlagBitsEXT {
+    VK_SPIRV_RESOURCE_TYPE_SAMPLER_BIT_EXT                              = 0x00000001,
+    VK_SPIRV_RESOURCE_TYPE_SAMPLED_IMAGE_BIT_EXT                        = 0x00000002,
+    VK_SPIRV_RESOURCE_TYPE_READ_ONLY_IMAGE_BIT_EXT                      = 0x00000004,
+    VK_SPIRV_RESOURCE_TYPE_READ_WRITE_IMAGE_BIT_EXT                     = 0x00000008,
+    VK_SPIRV_RESOURCE_TYPE_COMBINED_SAMPLED_IMAGE_BIT_EXT               = 0x00000010,
+    VK_SPIRV_RESOURCE_TYPE_UNIFORM_BUFFER_BIT_EXT                       = 0x00000020,
+    VK_SPIRV_RESOURCE_TYPE_READ_ONLY_STORAGE_BUFFER_BIT_EXT             = 0x00000040,
+    VK_SPIRV_RESOURCE_TYPE_READ_WRITE_STORAGE_BUFFER_BIT_EXT            = 0x00000080,
+    VK_SPIRV_RESOURCE_TYPE_ACCELERATION_STRUCTURE_BIT_EXT               = 0x00000100,
+    VK_SPIRV_RESOURCE_TYPE_TENSOR_BIT_ARM                               = 0x00000200,
+    VK_SPIRV_RESOURCE_TYPE_ALL_EXT                                      = 0x7FFFFFFF,
+} VkSpirvResourceTypeFlagBitsEXT;
+
+typedef struct VkDescriptorMappingSourceConstantOffsetEXT {
+    uint32_t                                            heapOffset;
+    uint32_t                                            heapArrayStride;
+    const VkSamplerCreateInfo*                          pEmbeddedSampler;
+    uint32_t                                            samplerHeapOffset;
+    uint32_t                                            samplerHeapArrayStride;
+} VkDescriptorMappingSourceConstantOffsetEXT;
+
+typedef struct VkDescriptorMappingSourcePushIndexEXT {
+    uint32_t                                            heapOffset;
+    uint32_t                                            pushOffset;
+    uint32_t                                            heapIndexStride;
+    uint32_t                                            heapArrayStride;
+    const VkSamplerCreateInfo*                          pEmbeddedSampler;
+    VkBool32                                            useCombinedImageSamplerIndex;
+    uint32_t                                            samplerHeapOffset;
+    uint32_t                                            samplerPushOffset;
+    uint32_t                                            samplerHeapIndexStride;
+    uint32_t                                            samplerHeapArrayStride;
+} VkDescriptorMappingSourcePushIndexEXT;
+
+typedef struct VkDescriptorMappingSourceIndirectIndexEXT {
+    uint32_t                                            heapOffset;
+    uint32_t                                            pushOffset;
+    uint32_t                                            addressOffset;
+    uint32_t                                            heapIndexStride;
+    uint32_t                                            heapArrayStride;
+    const VkSamplerCreateInfo*                          pEmbeddedSampler;
+    VkBool32                                            useCombinedImageSamplerIndex;
+    uint32_t                                            samplerHeapOffset;
+    uint32_t                                            samplerPushOffset;
+    uint32_t                                            samplerAddressOffset;
+    uint32_t                                            samplerHeapIndexStride;
+    uint32_t                                            samplerHeapArrayStride;
+} VkDescriptorMappingSourceIndirectIndexEXT;
+
+typedef struct VkDescriptorMappingSourceIndirectIndexArrayEXT {
+    uint32_t                                            heapOffset;
+    uint32_t                                            pushOffset;
+    uint32_t                                            addressOffset;
+    uint32_t                                            heapIndexStride;
+    const VkSamplerCreateInfo*                          pEmbeddedSampler;
+    VkBool32                                            useCombinedImageSamplerIndex;
+    uint32_t                                            samplerHeapOffset;
+    uint32_t                                            samplerPushOffset;
+    uint32_t                                            samplerAddressOffset;
+    uint32_t                                            samplerHeapIndexStride;
+} VkDescriptorMappingSourceIndirectIndexArrayEXT;
+
+typedef struct VkDescriptorMappingSourceHeapDataEXT {
+    uint32_t                                            heapOffset;
+    uint32_t                                            pushOffset;
+} VkDescriptorMappingSourceHeapDataEXT;
+
+typedef struct VkDescriptorMappingSourceShaderRecordIndexEXT {
+    uint32_t                                            heapOffset;
+    uint32_t                                            shaderRecordOffset;
+    uint32_t                                            heapIndexStride;
+    uint32_t                                            heapArrayStride;
+    const VkSamplerCreateInfo*                          pEmbeddedSampler;
+    VkBool32                                            useCombinedImageSamplerIndex;
+    uint32_t                                            samplerHeapOffset;
+    uint32_t                                            samplerShaderRecordOffset;
+    uint32_t                                            samplerHeapIndexStride;
+    uint32_t                                            samplerHeapArrayStride;
+} VkDescriptorMappingSourceShaderRecordIndexEXT;
+
+typedef struct VkDescriptorMappingSourceIndirectAddressEXT {
+    uint32_t                                            pushOffset;
+    uint32_t                                            addressOffset;
+} VkDescriptorMappingSourceIndirectAddressEXT;
+
+typedef union VkDescriptorMappingSourceDataEXT {
+    VkDescriptorMappingSourceConstantOffsetEXT          constantOffset;
+    VkDescriptorMappingSourcePushIndexEXT               pushIndex;
+    VkDescriptorMappingSourceIndirectIndexEXT           indirectIndex;
+    VkDescriptorMappingSourceIndirectIndexArrayEXT      indirectIndexArray;
+    VkDescriptorMappingSourceHeapDataEXT                heapData;
+    uint32_t                                            pushDataOffset;
+    uint32_t                                            pushAddressOffset;
+    VkDescriptorMappingSourceIndirectAddressEXT         indirectAddress;
+    VkDescriptorMappingSourceShaderRecordIndexEXT       shaderRecordIndex;
+    uint32_t                                            shaderRecordDataOffset;
+    uint32_t                                            shaderRecordAddressOffset;
+} VkDescriptorMappingSourceDataEXT;
+
+typedef struct VkDescriptorSetAndBindingMappingEXT {
+    VkStructureType                                     sType;
+    const void*                                         pNext;
+    uint32_t                                            descriptorSet;
+    uint32_t                                            firstBinding;
+    uint32_t                                            bindingCount;
+    VkSpirvResourceTypeFlagsEXT                         resourceMask;
+    VkDescriptorMappingSourceEXT                        source;
+    VkDescriptorMappingSourceDataEXT                    sourceData;
+} VkDescriptorSetAndBindingMappingEXT;
+
+typedef struct VkShaderDescriptorSetAndBindingMappingInfoEXT {
+    VkStructureType                                     sType;
+    const void*                                         pNext;
+    uint32_t                                            mappingCount;
+    const VkDescriptorSetAndBindingMappingEXT*          pMappings;
+} VkShaderDescriptorSetAndBindingMappingInfoEXT;
+
+`VkShaderDescriptorSetAndBindingMappingInfoEXT` can be chained to the `pNext` chain of [VkPipelineShaderStageCreateInfo](https://docs.vulkan.org/spec/latest/pipelines.html#VkPipelineShaderStageCreateInfo) or [VkShaderCreateInfoEXT](https://docs.vulkan.org/spec/latest/shaders.html#VkShaderCreateInfoEXT) to indicate where resources with `DescriptorSet` and `Binding` decorations should be sourced from for that shader.
+If the shader declares any resource variables with set and binding values, this structure must specify mappings for them.
+
+Elements of `pMappings` define for a single `DescriptorSet` value and a range of `Binding` values where the resources at those bindings are sourced from.
+Each element of `pMappings` must specify a unique set of bindings.
+Each entry specifies the following values:
+
+* 
+`descriptorSet` identifies the `DescriptorSet` identifier that it refers to.
+
+* 
+`firstBinding` and `bindingCount` define the range of `Binding` values that the mapping refers to.
+
+* 
+`resourceMask` identifies the SPIR-V resource declarations that are mapped by this binding.
+
+* 
+`source` identifies how each resource is backed.
+
+* 
+`sourceData` is a union of values used to determine how each resource is backed, according to `source`.
+
+|  | The actual declarations present in the shader being mapped do not affect the
+| --- | --- |
+mappings here.
+If a binding is present here but missing in the shader, that is fine, and
+deliberately allowed as it enables applications to reuse the same mappings
+across multiple shaders.
+Additionally, array declarations in the shader do not affect the way multiple
+bindings are mapped; each binding always calculates its own offsets from the
+base.
+This means that for instance, a shader declaring
+
+layout(binding = 0) uniform sampler2D foo[8];
+layout(binding = 2) uniform sampler2D bar;
+
+with a mapping declared with `firstBinding` equal to 0 and `bindingCount`
+equal to 3, would result in `foo[2]` and `bar` being mapped to the same
+source. |
+
+The types of shader resource declarations mapped by a binding are determined by the flags set in `resourceMask`, defined as follows:
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_ALL_EXT` indicates that all resource declarations are included.
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_SAMPLER_BIT_EXT` specifies samplers.
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_SAMPLED_IMAGE_BIT_EXT` specifies sampled images
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_READ_ONLY_IMAGE_BIT_EXT` specifies read-only storage images.
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_READ_WRITE_IMAGE_BIT_EXT` specifies writable storage images.
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_COMBINED_SAMPLED_IMAGE_BIT_EXT` specifies combined sampled image variables
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_UNIFORM_BUFFER_BIT_EXT` specifies uniform buffer blocks
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_READ_ONLY_STORAGE_BUFFER_BIT_EXT` specifies read-only storage buffer blocks
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_READ_WRITE_STORAGE_BUFFER_BIT_EXT` specifies writable storage buffer blocks
+
+* 
+`VK_SPIRV_RESOURCE_TYPE_ACCELERATION_STRUCTURE_BIT_EXT` specifies acceleration structures
+
+All resource types specified in the mask and present in the binding range will be mapped.
+
+The various mapping types are described below.
+Details of the exact nature of the mappings are provided in the specification, including equations for how to work out the actual descriptor offset for a mapping.
+
+|  | With the exception of embedded samplers and input attachments, most mappings can be performed equivalently by transforming the supplied SPIR-V outside of the API. If a desired mapping is not present in the API, it can be mapped outside of Vulkan using a custom SPIR-V tools pass. |
+| --- | --- |
+
+`VkShaderDescriptorSetAndBindingMappingInfoEXT` is ignored if the shader or pipeline is created with a pipeline layout or descriptor layouts.
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_OFFSET_EXT`
+
+This is the simplest mapping available, it indicates that a resource is available in its appropriate descriptor heap at a supplied constant byte offset (`heapOffset`).
+If an array of bindings are specified, each subsequent binding is offset by `heapArrayStride`.
+If a binding is itself an array, each subsequent shader index is offset by `heapArrayStride`.
+`heapOffset` and `heapArrayStride` must both be aligned to the descriptor sizes used by each binding.
+
+Accessing a resource binding in the shader with a shader binding equal to that specified here is equivalent to accessing a resource in its respective heap at the calculated offset directly.
+
+|  | Care should be taken when applying this to a range of bindings; how mappings are applied does not change based on whether any of the shader’s bindings are declared as arrays.
+| --- | --- |
+If a mapping range includes a binding X and X+1, and binding X is specified in the shader as an array, the second element of binding X’s array will alias with binding X+1.
+This lack of variance is deliberate, such that the same mappings can be used consistently across a range of different shaders, without depending on what was declared in the shader. |
+
+The heap which is accessed by these mappings will depend on the type of resource accessed; samplers will come from the sampler heap, resources from the resource heap.
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT`
+
+This mapping functions similarly to the constant index, except that an index in push data is also provided to calculate the final offset.
+A constant `heapOffset` is still supplied, but the `pushOffset` value indicates an offset into push data where an additional index will be sourced at shader execution time.
+The index in push data is multiplied by `heapIndexStride` and added to `heapOffset` and the calculated shader offset to calculate the final location of the descriptor.
+
+|  | This mapping can be used to emulate the descriptor set interface; by mapping all bindings for a `DescriptorSet` to the same push index, but differing the `heapOffset` for each `Binding`, the push index becomes the descriptor set offset. See [Example: Simple Resource Bindings](#_example_simple_resource_bindings) for an illustration of this. |
+| --- | --- |
+
+|  | This mapping can also be used to emulate push descriptors, by instead using a different push index for every push descriptor slot, and pushing the heap index corresponding to the push resource into push data.
+| --- | --- |
+See [Example: Push Descriptors](#_example_push_descriptors) for an illustration of how to do this. |
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT`
+
+This mapping is another indirection beyond `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT`, specifying the location of a heap index in device memory, rather than from push data.
+A device address is sourced from push data, indicating a base address for the memory location.
+`addressOffset` is a static offset added to the device address in push data, at which a single additional index is read from for all bindings in this specific mapping.
+Applications can use `addressOffset` to use a single address in push data for multiple mapping structures, as each can have independently set constant offsets.
+
+|  | This mapping can be used as a way to spill additional resource’s push data if not enough push data is available for the application’s use case, and is otherwise used similarly to `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT`. |
+| --- | --- |
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_ARRAY_EXT`
+
+This is similar to `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT`, but a descriptor array at the specified binding is mapped to an array of indices in device memory, rather than bound as offsets from a single index.
+For an array size of 1, there is no difference in behavior.
+
+This can be particularly useful for managing samplers as push descriptors, where the number of samplers in the heap is tightly limited; it sacrifices space in the indirect memory to allow more flexible/compact use of heap memory.
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT`
+
+This mapping enables an application to map data in the heap to a uniform buffer binding in the shader.
+`heapOffset` indicates the base offset into the resource heap where the constant data is sourced from, with `pushOffset` indicating the location of an additional offset sourced from push data added to that at the point the shader is executed.
+Any shader resource mapped in this way will access memory directly in the heap instead of via a descriptor.
+There are no robust access guarantees to resources specified in this way; applications must not access these resources at out of bounds locations.
+Other resources cannot be mapped with this mapping.
+
+|  | This mapping is similar in use to inline uniform blocks. |
+| --- | --- |
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT`
+
+Similar to `VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT`, but this allows mapping to push data.
+`pushOffset` indicates the offset into push data where the start of the resource is mapped.
+The shader resource declaration must not extend beyond `maxPushDataSize - pushOffset`.
+There are no robust access guarantees to resources specified in this way; applications must not access these resources at out of bounds locations.
+
+|  | This maps well to HLSL’s constant buffer interface when used with root constants, mapping constants in push data to a constant buffer declaration in the shader. |
+| --- | --- |
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT`
+
+Again similar to `VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT`, this allows mapping a buffer or acceleration structure to an address sourced from push data.
+`pushAddressOffset` indicates an offset into push data where an address is located.
+Accessing the shader resource will instead access memory via this address.
+There are no robust access guarantees to resources specified in this way; applications must not access these resources at out of bounds locations.
+Images and samplers cannot be mapped with this mapping.
+
+|  | Using a push address (mapped or handled explicitly) can be a good way to pass additional constant data to a shader if the available push data space is insufficient. |
+| --- | --- |
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_SHADER_RECORD_INDEX_EXT`
+
+This is identical to `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT`, except that the offset into push data is replaced with an offset into shader record data.
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_DATA_EXT`
+
+This is identical to `VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT`, except that the offset into push data is replaced with an offset into shader record data.
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_ADDRESS_EXT`
+
+This is identical to `VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT`, except that the offset into push data is replaced with an offset into shader record data.
+
+`VK_DESCRIPTOR_MAPPING_SOURCE_INDIRECT_ADDRESS_EXT`
+
+Similar to `VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT`, but using the indirection mechanism of `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_INDIRECT_INDEX_EXT`, this allows mapping a buffer or acceleration structure to an address in memory, with the address to the indirect memory in push data, alongside a constant offset.
+
+|  | This can be used as a further indirection from push addresses, which enables applications to update the mapped addresses by in device memory after the command is recorded. |
+| --- | --- |
+
+If a binding identifies a combined image sampler, applicable mappings have additional data to specify how those are mapped.
+The base parameters described in the mappings above apply to the image resource, whereas the sampler will be sourced using the `sampler*` equivalents only when mapping to a combined image sampler.
+A mapped independent sampler will always use the base parameters.
+
+In addition, if a dynamic heap index would be supplied, applications can request the heap index be interpreted as a single combined image/sampler index by setting `useCombinedImageSamplerIndex` to `VK_TRUE` when mapping a combined image sampler.
+This parameter indicates that the image and sampler index will be provided within a single 32-bit index value, with the sampler index in the 12 most significant bits, and the image index in the 20 least significant bits.
+Some implementations employ this strategy for descriptor set mappings to keep the number of bits down when using push descriptors, and this enables descriptor heaps to achieve parity when using combined image samplers.
+The extracted indices will be used in the same manner as if the indices were provided separately; no additional sampler heap indices will be read.
+
+An application can embed samplers into a shader by specifying `pEmbeddedSampler` for a sampler or combined sampler resource binding.
+`pEmbeddedSampler` takes a `VkSamplerCreateInfo` structure specifying the parameters of the sampler to embed, overriding any other mapping parameters set for the sampler, and using that sampler directly.
+There must be no more than `maxDescriptorHeapEmbeddedSamplers` unique samplers across all live shaders.
+When a shader uses any embedded samplers, the required implementation reservation for sampler heaps may be higher, according to the `minSamplerHeapReservedRangeWithEmbedded` limit.
+
+New access flag bits are added for synchronizing access to descriptor heaps:
+
+VK_ACCESS_2_SAMPLER_HEAP_READ_BIT_EXT = 0x0200000000000000ULL
+VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT = 0x0400000000000000ULL
+
+* 
+VK_ACCESS_2_SAMPLER_HEAP_READ_BIT_EXT specifies access to a sampler heap by shaders when accessing samplers.
+
+* 
+VK_ACCESS_2_RESOURCE_HEAP_READ_BIT_EXT specifies access to a resource heap by shaders when accessing resources.
+
+These access flags specifies accesses to memory in each respective descriptor heap by shaders, and should be used to synchronize and updates to descriptor heap memory performed on a device.
+These flags are valid in all shader stages, and invalid in any other pipeline stage.
+
+A new structure is provided when using secondary command buffers to indicate
+that the descriptor heap is unchanged between primary and secondary:
+
+typedef struct VkCommandBufferInheritanceDescriptorHeapInfoEXT {
+    VkStructureType          sType;
+    const void*              pNext;
+    const VkBindHeapInfoEXT* pSamplerHeapBindInfo;
+    const VkBindHeapInfoEXT* pResourceHeapBindInfo;
+} VkCommandBufferInheritanceDescriptorHeapInfoEXT;
+
+When this structure is provided, the values of each heap bind info must match
+those bound in the primary command buffer, and `vkCmdBind*HeapEXT` commands
+must not be called within the secondary command buffer.
+Commands recorded inside the secondary will inherit the heap bindings
+specified, and the heap bindings in the primary will remain intact after
+`vkCmdExecuteCommands` if all executed secondaries included this info.
+
+If this inheritance info is not provided, heap bindings must be specified
+inside secondaries.
+Bindings must be respecified in the primary command buffer after
+`vkCmdExecuteCommands` if any executed secondary did not include this info.
+
+When the `nullDescriptor` feature added by [VK_EXT_robustness2](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_robustness2) is supported, null descriptors can be written by setting the corresponding element of `VkResourceDescriptorDataEXT` to `NULL` when writing a resource descriptor.
+
+When the `customBorderColors` feature added by [VK_EXT_custom_border_color](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_custom_border_color) is used, applications using samplers with custom border colors must explicitly register and unregister border colors with the device:
+
+VkResult vkRegisterCustomBorderColorEXT(
+    VkDevice                                        device,
+    const VkSamplerCustomBorderColorCreateInfoEXT*  pBorderColor,
+    VkBool32                                        requestIndex,
+    uint32_t*                                       pIndex);
+
+void vkUnregisterCustomBorderColorEXT(
+    VkDevice                                        device,
+    uint32_t                                        index);
+
+Up to [`VkPhysicalDeviceCustomBorderColorPropertiesEXT::maxCustomBorderColorSamplers`](https://docs.vulkan.org/spec/latest/limits.html#VkPhysicalDeviceCustomBorderColorPropertiesEXT) border colors can be registered; if too many are already registered, `vkRegisterCustomBorderColorEXT` will return `VK_ERROR_TOO_MANY_OBJECTS`.
+`vkUnregisterCustomBorderColorEXT` will remove one registration, freeing it up for a new registration.
+`vkRegisterCustomBorderColorEXT` is not subject to fragmentation - these functions will always correctly update the number of registrations, and `vkRegisterCustomBorderColorEXT` will always succeed if there are free slots.
+`vkRegisterCustomBorderColorEXT` will not automatically de-duplicate identical custom border colors, but an application is free to use the same index for multiple samplers with the same border color.
+
+If `requestIndex` is `VK_TRUE`, the value of `pIndex` passed to `vkRegisterCustomBorderColorEXT` will be checked; if it is free, `VK_SUCCESS` will be returned and the requested index will be registered, otherwise `VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS` will be returned.
+In either case, if `requestIndex` is `VK_TRUE`, the value of `pIndex` will be unmodified.
+For implementations where no registration is necessary, the same index can be registered multiple times without raising an error.
+This functionality is primarily for capture/replay to ensure the same values are used, but can also be used as a way to check if an index is still registered if the border color is known.
+
+If registration is successful, the value of `pIndex` can be passed along with an identical `VkSamplerCustomBorderColorCreateInfoEXT` structure in the `pNext` chain of `VkSamplerCreateInfo` when creating a sampler object or writing a sampler descriptor:
+
+typedef struct VkSamplerCustomBorderColorIndexCreateInfoEXT {
+    VkStructureType         sType;
+    const void*             pNext;
+    uint32_t                index;
+} VkSamplerCustomBorderColorIndexCreateInfoEXT;
+
+Sampler objects created with a custom border color but without such an index implicitly register a border color when created, and unregister one when destroyed.
+When creating a sampler descriptor, `VkSamplerCustomBorderColorCreateInfoEXT` must be present in the `pNext` chain of `VkSamplerCreateInfo` if a custom border color is used, with the index registered to an identical `borderColor` by the time a command using that sampler descriptor is recorded.
+Custom border colors must not be used with embedded samplers.
+
+When the `descriptorHeapCaptureReplay` feature is enabled, it is possible to recreate the same descriptors during replay by using data captured during the initial run.
+There are no absolute guarantees that replay will succeed, as system updates, memory pressure, and other unforeseen circumstances may cause it to fail.
+Implementations are expected to provide a best effort to ensure captured descriptors can be replayed, but are not expected to work around exceptional circumstances, or across driver versions or devices.
+
+For the best chance of success, applications should replay in a separate process, using the same system, driver, and device, without any updates since the replay.
+Additionally, tools must capture some data from the implementation during capture to give the implementation the information to recreate identical descriptors during replay, should use an identically created [VkDevice]({repage}VkDevice.html) and [VkInstance]({repage}VkInstance.html), and should create all captured descriptors before creating any others for use in the tool.
+
+For sampler descriptors, an identical `VkSamplerCreateInfo` structure is all that a capture replay tool needs to provide to try to create the same sampler descriptor.
+If the sampler is using custom border colors however, this means the index must be the same; the index registered during capture can be be passed to `vkRegisterCustomBorderColorEXT` with `requestIndex` set to `VK_TRUE` when replaying to try to get the same index.
+
+For descriptors requiring a device address, again an identical `VkDeviceAddressRangeEXT` or `VkTexelBufferDescriptorInfoEXT` is required to try to create the same descriptor.
+To try to get the same device address range for a buffer allocation, tools can use the [VkPhysicalDeviceBufferDeviceAddressFeatures::bufferDeviceAddressCaptureReplay](https://docs.vulkan.org/spec/latest/features.html#VkPhysicalDeviceBufferDeviceAddressFeatures) feature to recreate the buffer and any memory it is bound to with opaque capture data.
+[VkPhysicalDeviceBufferDeviceAddressFeatures::bufferDeviceAddressCaptureReplay](https://docs.vulkan.org/spec/latest/features.html#VkPhysicalDeviceBufferDeviceAddressFeatures) must be supported if `descriptorHeapCaptureReplay` is supported.
+
+For image descriptors created using a `VkImage` an identical `VkImageDescriptorInfoEXT`, other than the image itself, is required to try to create the same descriptor.
+For replay, the image must be recreated using the same creation parameters, but with additional opaque data captured in the first run, similar to how buffers must recreated with opaque data to try to obtain the same device address.
+Memory bound to the image during replay must match the memory bound during capture, with memory objects recreated with identical parameters other than including the opaque capture data in [VkDeviceMemoryOpaqueCaptureAddressInfo](https://docs.vulkan.org/spec/latest/memory.html#VkDeviceMemoryOpaqueCaptureAddressInfo) which was initially captured with [vkGetDeviceMemoryOpaqueCaptureAddress](https://docs.vulkan.org/spec/latest/memory.html#vkGetDeviceMemoryOpaqueCaptureAddress).
+This opaque data can be captured for multiple images with:
+
+VkResult vkGetImageOpaqueCaptureDataEXT(
+    VkDevice                device,
+    uint32_t                imageCount,
+    const VkImage*          pImages,
+    VkHostAddressRangeEXT*  pDatas);
+
+Where the `size` of each element of `pDatas` must be equal to `imageCaptureReplayOpaqueDataSize`, and the opaque capture data to be stored for replay is written to the `address` of each element of `pDatas`.
+In order for this function to be valid, each image must be created with the following creation flag:
+
+VK_IMAGE_CREATE_DESCRIPTOR_HEAP_CAPTURE_REPLAY_BIT_EXT                  = 0x00010000
+
+An image with this flag can be recreated from a previously captured image by passing `data` back into image creation by chaining the following structure to [VkImageCreateInfo](https://docs.vulkan.org/spec/latest/resources.html#VkImageCreateInfo), with all other creation parameters matching:
+
+typedef struct VkOpaqueCaptureDataCreateInfoEXT {
+    VkStructureType                     sType;
+    const void*                         pNext;
+    const VkHostAddressRangeConstEXT*   pData;
+} VkOpaqueCaptureDataCreateInfoEXT;
+
+If the implementation is unable to recreate an identical image from this opaque data that would result in the same descriptors, [vkCreateImage](https://docs.vulkan.org/spec/latest/resources.html#vkCreateImage) must return `VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS`.
+Implementations may return `VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS` when writing an image descriptor if the image was created with `VkOpaqueCaptureDataCreateInfoEXT` and the implementation cannot recreate the same descriptor.
+
+If `pData` is `NULL`, or if this structure is not present, image creation will proceed without matching previously captured data.
+
+If an implementation recreates all the resources necessary for replaying a descriptor without error, the descriptor bits must be an exact match for those created during capture.
+
+Tensors can be captured and replayed similarly to images.
+
+For tensor descriptors created using a `VkTensorARM` an identical `VkTensorViewCreateInfoARM`, other than the tensor itself, is required to try to create the same descriptor.
+For replay, the tensor must be recreated using the same creation parameters, but with additional opaque data captured in the first run in the same way as for images.
+Memory bound to the tensor during replay must match the memory bound during capture, with memory objects recreated with identical parameters other than including the opaque capture data in [VkDeviceMemoryOpaqueCaptureAddressInfo](https://docs.vulkan.org/spec/latest/memory.html#VkDeviceMemoryOpaqueCaptureAddressInfo) which was initially captured with [vkGetDeviceMemoryOpaqueCaptureAddress](https://docs.vulkan.org/spec/latest/memory.html#vkGetDeviceMemoryOpaqueCaptureAddress).
+This opaque data can be captured for multiple tensors with:
+
+VkResult vkGetTensorOpaqueCaptureDataARM(
+    VkDevice                device,
+    uint32_t                tensorCount,
+    const VkTensorARM*      pTensors,
+    VkHostAddressRangeEXT*  pDatas);
+
+Where the `size` of each element of `pDatas` must be equal to `tensorCaptureReplayOpaqueDataSize`, and the opaque capture data to be stored for replay is written to the `address` of each element of `pDatas`.
+In order for this function to be valid, each tensor must be created with the following creation flag:
+
+VK_TENSOR_CREATE_DESCRIPTOR_HEAP_CAPTURE_REPLAY_BIT_ARM                 = 0x00000004
+
+A tensor with this flag can be recreated from a previously captured tensor by passing `data` back into tensor creation by chaining `VkOpaqueCaptureDataCreateInfoEXT` to [VkTensorCreateInfo](https://docs.vulkan.org/spec/latest/resources.html#VkTensorCreateInfo), with all other creation parameters matching.
+
+If the implementation is unable to recreate an identical tensor from this opaque data that would result in the same descriptors, [vkCreateTensorARM](https://docs.vulkan.org/spec/latest/resources.html#vkCreateTensorARM) must return `VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS`.
+Implementations may return `VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS` when writing an tensor descriptor if the tensor was created with `VkOpaqueCaptureDataCreateInfoEXT` and the implementation cannot recreate the same descriptor.
+
+If `pData` is `NULL`, or if this structure is not present, tensor creation will proceed without matching previously captured data.
+
+If an implementation recreates all the resources necessary for replaying a descriptor without error, the descriptor bits must be an exact match for those created during capture.
+
+The following additional command tokens are added when VK_EXT_device_generated_commands is supported:
+
+typedef enum VkIndirectCommandsTokenTypeEXT {
+    /* ... */
+    VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_DATA_EXT = 1000135000,
+    VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_DATA_SEQUENCE_INDEX_EXT = 1000135001,
+} VkIndirectCommandsTokenTypeEXT;
+
+These new tokens function similarly to the push constant and sequence index tokens, using the same token data structure, but the pipeline layout must be `NULL`, and the shader stage flags must be ALL_STAGES, enabling layout-free indirect push data.
+
+The following additional command token is added when VK_NV_device_generated_commands is supported:
+
+typedef enum VkIndirectCommandsTokenTypeNV {
+    /* ... */
+    VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_DATA_NV = 1000135000,
+} VkIndirectCommandsTokenTypeNV;
+
+typedef struct VkIndirectCommandsLayoutPushDataTokenNV {
+    VkStructureType                  sType;
+    const void*                      pNext;
+    uint32_t                         pushDataOffset;
+    uint32_t                         pushDataSize;
+} VkIndirectCommandsLayoutPushDataTokenNV;
+
+This new token functions similarly to the push constant token, but does not require a pipeline layout or shader stage flags, both of which are similarly absent from `vkCmdPushDataEXT`.
+`VkIndirectCommandsLayoutPushDataTokenNV` can be included in the `pNext` chain of [VkIndirectCommandsLayoutTokenNV](https://docs.vulkan.org/spec/latest/device_generated_commands/generatedcommands.html#VkIndirectCommandsLayoutTokenNV) when the `VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_DATA_NV` token type is specified to enable the use of this token.
+
+The following structure is added when VK_EXT_fragment_density_map is supported:
+
+typedef struct VkSubsampledImageFormatPropertiesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           subsampledImageDescriptorCount;
+} VkSubsampledImageFormatPropertiesEXT;
+
+This structure can be included in the `pNext` chain of [VkImageFormatProperties2](https://docs.vulkan.org/spec/latest/capabilities.html#VkImageFormatProperties2) to query the number of image descriptors required for subsampled images.
+
+The following features are exposed:
+
+typedef struct VkPhysicalDeviceDescriptorHeapFeaturesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           descriptorHeap;
+    VkBool32           descriptorHeapCaptureReplay;
+} VkPhysicalDeviceDescriptorHeapFeaturesEXT;
+
+If the `descriptorHeap` feature is enabled, [VK_AMD_shader_fragment_mask](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_AMD_shader_fragment_mask) must not be enabled.
+The `descriptorHeapCaptureReplay` feature is primarily for capture replay tools, and allows opaque image data to be captured and replayed, allowing the same descriptor handles to be used on replay.
+Supporting `descriptorHeapCaptureReplay` is *strongly* recommended.
+
+The following properties are exposed:
+
+typedef struct VkPhysicalDeviceDescriptorHeapPropertiesEXT {
+    VkStructureType         sType;
+    void*                   pNext;
+    VkDeviceSize            samplerHeapAlignment;
+    VkDeviceSize            resourceHeapAlignment;
+    VkDeviceSize            maxSamplerHeapSize;
+    VkDeviceSize            maxResourceHeapSize;
+    VkDeviceSize            minSamplerHeapReservedRange;
+    VkDeviceSize            minSamplerHeapReservedRangeWithEmbedded;
+    VkDeviceSize            minResourceHeapReservedRange;
+    VkDeviceSize            samplerDescriptorSize;
+    VkDeviceSize            imageDescriptorSize;
+    VkDeviceSize            bufferDescriptorSize;
+    VkDeviceSize            samplerDescriptorAlignment;
+    VkDeviceSize            imageDescriptorAlignment;
+    VkDeviceSize            bufferDescriptorAlignment;
+    VkDeviceSize            maxPushDataSize;
+    size_t                  imageCaptureReplayOpaqueDataSize;
+    uint32_t                maxDescriptorHeapEmbeddedSamplers;
+    uint32_t                samplerYcbcrConversionCount;
+    VkBool32                sparseDescriptorHeaps;
+    VkBool32                protectedDescriptorHeaps;
+} VkPhysicalDeviceDescriptorHeapPropertiesEXT;
+
+* 
+`samplerHeapAlignment` specifies the required alignment of the `address` member of `VkDeviceAddressRangeEXT` for binding sampler heaps. It must be a power-of-two value.
+
+* 
+`resourceHeapAlignment` specifies the required alignment of the `address` member of `VkDeviceAddressRangeEXT` for binding resource heaps. It must be a power-of-two value.
+
+* 
+`maxSamplerHeapSize` specifies the maximum value of the `size` member of `VkDeviceAddressRangeEXT` for binding sampler heaps, including the reservation.
+
+* 
+`maxResourceHeapSize` specifies the maximum value of the `size` member of `VkDeviceAddressRangeEXT` for binding resource heaps, including the reservation.
+
+* 
+`minSamplerHeapReservedRange` specifies the minimum amount of data that the implementation needs reserved in the sampler heap when embedded samplers are not used.
+
+* 
+`minSamplerHeapReservedRangeWithEmbedded` specifies the minimum amount of data that the implementation needs reserved in the sampler heap when embedded samplers are used.
+
+* 
+`minResourceHeapReservedRange` specifies the minimum amount of data that the implementation needs reserved in the resource heap.
+
+* 
+`samplerDescriptorSize` specifies the size of descriptors returned by `vkWriteSamplerDescriptorsEXT`. Must be a power-of-two value.
+
+* 
+`imageDescriptorSize` specifies the maximum size of descriptors for an image or texel buffer written by `vkWriteResourceDescriptorsEXT`. Must be a power-of-two value.
+
+* 
+`bufferDescriptorSize` specifies the maximum size of descriptors for an address range written by `vkWriteResourceDescriptorsEXT`. Must be a power-of-two value.
+
+* 
+`samplerDescriptorAlignment` indicates the required alignment of sampler descriptors within a sampler heap. It must be a power-of-two value, and less than or equal to `samplerDescriptorSize`.
+
+* 
+`imageDescriptorAlignment` indicates the required alignment of image and texel buffer descriptors within a resource heap. It must be a power-of-two value, and less than or equal to `imageDescriptorSize`.
+
+* 
+`bufferDescriptorAlignment` indicates the required alignment of unformatted buffers and acceleration structure descriptors within a resource heap. It must be a power-of-two value, and less than or equal to `bufferDescriptorSize`.
+
+* 
+`maxPushDataSize` indicates the absolute maximum total size of all push data that the implementation can support.
+
+* 
+`imageCaptureReplayOpaqueDataSize` indicates the size of the opaque capture/replay data for an image.
+
+* 
+`maxDescriptorHeapEmbeddedSamplers` indicates the maximum number of unique embedded samplers across all pipelines.
+
+* 
+`samplerYcbcrConversionCount` indicates the number of sampler descriptors required for any sampler using YCBCR conversion.
+
+* 
+`sparseDescriptorHeaps` specifies whether descriptor heaps can be backed by sparse memory or not.
+If this value is `VK_FALSE`, buffers cannot be specified as both sparse and having descriptor heap usage.
+
+* 
+`protectedDescriptorHeaps` specifies whether descriptor heaps can be backed by protected memory or not.
+If this value is `VK_FALSE`, buffers cannot be specified as both protected and having both descriptor heap usage.
+
+These properties have the following required values:
+
+| Limit | Requirement | Type | Derived from |
+| --- | --- | --- | --- |
+| samplerHeapAlignment | 65536 | max | Implementor request |
+| resourceHeapAlignment | 65536 | max | Implementor request |
+| maxSamplerHeapSize | max(
+
+                                          4000 × samplerDescriptorSize + minSamplerHeapReservedRange,
+                                         
+
+                                          2048 × samplerDescriptorSize
+                                          + minSamplerHeapReservedRangeWithEmbedded) | min | DirectX 12 sampler heap limits + reserved ranges |
+| maxResourceHeapSize | (220 - 2^15) × max(imageDescriptorSize,
+                                          bufferDescriptorSize) + minResourceHeapReservedRange | min | DirectX 12 resource heap limit + wiggle room + reserved range |
+| minSamplerHeapReservedRange | 96 × samplerDescriptorSize | max | Rounds heap size to power-of-two |
+| minSamplerHeapReservedRangeWithEmbedded | 2048 × samplerDescriptorSize | max | DirectX 12 static sampler count + reserved range |
+| minResourceHeapReservedRange | 215 × max(imageDescriptorSize,bufferDescriptorSize) | max | Rounds heap size to power-of-two |
+| samplerDescriptorSize | 32 | max | Implementor request |
+| imageDescriptorSize | 64 | max | Implementor request |
+| bufferDescriptorSize | 128 | max | Implementor request |
+| samplerDescriptorAlignment | 32 | max | samplerDescriptorSize |
+| imageDescriptorAlignment | 64 | max | imageDescriptorSize |
+| bufferDescriptorAlignment | 128 | max | bufferDescriptorSize |
+| maxPushDataSize | 256 | min | Matches DirectX 12 requirements for root parameters |
+| maxDescriptorHeapEmbeddedSamplers | 2032 | min | DirectX 12 static sampler limit |
+| samplerYcbcrConversionCount | 3 | max | [combinedImageSamplerDescriptorCount](https://docs.vulkan.org/spec/latest/capabilities.html#VkSamplerYcbcrConversionImageFormatProperties) |
+
+|  | Several tools will need to consume additional descriptors in a way that is opaque to the application - implementations are strongly encouraged to provide larger usable sampler heap sizes, keeping minimum reserved ranges lower if necessary, such that tools and layers have headroom to reserve their own descriptors beyond the baseline requirements as presented to the application.
+| --- | --- |
+Reserving no more than 214 resources and 16 samplers is recommended, giving layers and tools space to add their own within the remaining limit.
+
+Similarly, `maxPushDataSize` should be at least 512 to accommodate tooling data, which may be required by tools for debugging purposes (e.g. Validation layers will use additional push data for per-draw validation info).
+This is similar to DirectX 12, which requires 128 DWORDS of root data for similar reasons, but only exposes 64 DWORDS to applications: [https://microsoft.github.io/DirectX-Specs/d3d/ResourceBinding.html#root-argument-limits](https://microsoft.github.io/DirectX-Specs/d3d/ResourceBinding.html#root-argument-limits). |
+
+If the `VK_ARM_tensors` extension is supported, the following additional properties are advertised for tensors:
+
+typedef struct VkPhysicalDeviceDescriptorHeapTensorPropertiesARM {
+    VkStructureType    sType;
+    const void*        pNext;
+    size_t             tensorDescriptorSize;
+    size_t             tensorDescriptorAlignment;
+    size_t             tensorCaptureReplayOpaqueDataSize;
+} VkPhysicalDeviceDescriptorHeapTensorPropertiesARM;
+
+* 
+`tensorDescriptorSize` specifies the maximum size of descriptors for a tensor written by `vkWriteResourceDescriptorsEXT`.
+
+* 
+`tensorDescriptorAlignment` indicates the required alignment of tensor descriptors within a resource heap. It must be a power-of-two value, and less than or equal to `tensorDescriptorSize`.
+
+* 
+`tensorCaptureReplayOpaqueDataSize` indicates the size of the opaque capture/replay data for a tensor.
+
+While the properties of this extension provide base sizes for each of the descriptor types (`imageDescriptorSize`, `samplerDescriptorSize`, and `bufferDescriptorSize`), specific descriptor types may require less data than generally required for each heap.
+`vkGetPhysicalDeviceDescriptorSizeEXT` provides the size in bytes of the specified descriptor type:
+
+VkDeviceSize vkGetPhysicalDeviceDescriptorSizeEXT (
+    VkPhysicalDevice        physicalDevice,
+    VkDescriptorType        descriptorType);
+
+Where the size of a descriptor type differs from the base size for that descriptor type, the additional bytes are effectively unused - and can be freely set however an application pleases.
+This can be particularly useful in emulation or for tooling, where packing multiple bits of data side-by-side can be used to emulate more complex features or add debugging information.
+
+For example, when using the [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer) extension, vkd3d-proton packs storage buffers and texel buffers together where possible to emulate atomic counters in HLSL, which can specify their counter payload in a separate address.
+This function allows vkd3d-proton to do the same here, while providing applications with a much simpler set of base properties suitable for the majority of use cases.
+
+No guarantees are made that any particular descriptor type will be smaller than the base descriptor sizes for the heap they are in, so this information is provided opportunistically for users of this extension that wish to take advantage of it.
+Descriptor sizes returned by this function must never be larger than the base descriptor size for the heap they can be used in.
+
+|  | Applications can already pack data side-by-side with descriptors by extending the effective stride to accommodate the extra data, either using strides provided in mappings, or user specified strides when directly accessing the heap.
+| --- | --- |
+`vkGetPhysicalDeviceDescriptorSizeEXT` is primarily useful in situations where an applications can do something better with a *specific* type of descriptor, such as the vkd3d-proton use case mentioned above, rather than wanting to do something with all of them.
+In general, applications can ignore this function and just use the base sizes provided by `VkPhysicalDeviceDescriptorHeapPropertiesEXT`. |
+
+As this extension allows the creation of descriptors without ever creating a sampler, image view, or buffer view object, in order to allow naming the resulting descriptors, [VkDebugUtilsObjectNameInfoEXT](https://docs.vulkan.org/spec/latest/debugging.html#VkDebugUtilsObjectNameInfoEXT) can now be included in the `pNext` chain of `VkSamplerCreateInfo` and `VkResourceDescriptorInfoEXT` when either writing a descriptor or creating an embedded sampler, which associates a static name with the written descriptor.
+Note however that this is not necessarily a precise association - implementations may choose to simply associate the descriptor’s bit patterns with the provided name, which can result in multiple descriptors taking the same name if those descriptors' bits match.
+For example, in some operations, whether an image uses an sRGB or linear encoding will not change the operation, so implementations may generate the same descriptor bits for image views with the format being the only difference.
+Tools may choose to free labels if the underlying data becomes invalid (e.g. the address range or image is freed).
+
+When linking multiple pipelines, all pipelines must either have all been compiled with `VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT` specified, or all without it.
+Intermediate linked pipelines do not need to be additionally created with this flag if they are only linking other pipelines which have it.
+
+When linking graphics pipeline libraries, if all pipelines were compiled with `VK_PIPELINE_CREATE_2_DESCRIPTOR_HEAP_BIT_EXT`, a pipeline layout must not be specified.
+There is also no need for matching of any of the descriptor mappings between different libraries; the application is responsible for packing data into push constants and heaps, so the implementation does not need to, and cannot, optimize that packing.
+
+Specifying a descriptor set layout is how, prior to this extension, applications were able to specify how to bind resources between the API and shader code.
+Everything that was previously possible with descriptor set layouts is possible with the new `VkShaderDescriptorSetAndBindingMappingInfoEXT` structure, but it becomes the application’s responsibility to layout descriptors in the heaps, rather than relying on the implementation to do it.
+The below examples illustrate mapping descriptor set layout and pipeline layout creation to the new structure.
+
+The following descriptor set layout specifies three resources, one of which uses a number of the descriptor binding flags with a variable descriptor count:
+
+const uint32_t UniformBufferArrayCount = 12;
+const uint32_t InlineBlockDescriptorSize = 256;
+VkDescriptorSetLayoutBinding bindings[4];
+VkDescriptorBindingFlags bindingFlags[4];
+
+// 12 uniform buffers available only to the vertex shader
+bindings[0].binding             = 0;
+bindings[0].descriptorType      = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+bindings[0].descriptorCount     = UniformBufferArrayCount;
+bindings[0].stageFlags          = VK_SHADER_STAGE_VERTEX_BIT;
+bindings[0].pImmutableSampler   = NULL;
+bindingFlags[0]                 = 0;
+
+// A combined image sampler
+bindings[1].binding             = 1;
+bindings[1].descriptorType      = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+bindings[1].descriptorCount     = 1;
+bindings[1].stageFlags          = VK_SHADER_STAGE_ALL;
+bindings[1].pImmutableSampler   = NULL;
+bindingFlags[1]                 = 0;
+
+// An inline uniform block
+bindings[2].binding             = 2;
+bindings[2].descriptorType      = VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK;
+bindings[2].descriptorCount     = InlineBlockSize;
+bindings[2].stageFlags          = VK_SHADER_STAGE_ALL;
+bindings[2].pImmutableSampler   = NULL;
+bindingFlags[2]                 = 0;
+
+// A storage buffer array with variable descriptor count and all the descriptor flags
+bindings[3].binding             = 3;
+bindings[3].descriptorType      = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+bindings[3].descriptorCount     = UINT32_MAX;
+bindings[3].stageFlags          = VK_SHADER_STAGE_ALL;
+bindings[3].pImmutableSampler   = NULL;
+bindingFlags[3]                 = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT |
+                                  VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
+                                  VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT |
+                                  VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+VkDescriptorSetLayoutBindingFlagsCreateInfo dslFlagsInfo = {
+    .sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO,
+    .pNext                      = NULL,
+    .bindingCount               = 4,
+    .pBindings                  = bindingFlags};
+
+VkDescriptorSetLayoutCreateInfo dslInfo = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+    .pNext = dslFlagsInfo,
+    .bindingCount = 4,
+    .pBindings = bindings};
+
+This would map straightforwardly to a `VkShaderDescriptorSetAndBindingMappingInfoEXT` as follows:
+
+const uint32_t UniformBufferArraySize = 12 * bufferDescriptorSize;                  // Size in bytes
+const uint32_t InlineBlockDescriptorSize = 256;                                     // Size in bytes
+VkDescriptorSetAndBindingMappingEXT mappings[4];
+
+// Setup values used by all mappings
+VkDescriptorSetAndBindingMappingEXT descriptorSet0Mapping = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+    .pNext = NULL,
+
+    // Descriptor set value in the shader
+    .descriptorSet = 0,
+
+    // Binding count is always one for the legacy descriptor model - it counts the number of distinct bindings;
+    // the array size is something only the application needs to consider when laying out the buffer
+    .bindingCount = 1,
+
+    // All resources are mapped for simplicity
+    .resourceMask = VK_SPIRV_RESOURCE_TYPE_ALL_EXT;
+
+    // Source used by all but inline uniform blocks
+    .source = VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT};
+
+// The push offset allows swapping descriptor sets by setting a push constant.
+// Without this, the heap would need to be switched to achieve the same, which can be expensive on some hardware.
+// The offset chosen here (128) is semi-arbitrary, but is chosen to avoid actual push constant data.
+const uint32 DescriptorSetPushOffset = 128;
+
+// Copy the base data to all three mappings
+mappings[0] = descriptorSet0Mapping;
+mappings[1] = descriptorSet0Mapping;
+mappings[2] = descriptorSet0Mapping;
+mappings[3] = descriptorSet0Mapping;
+
+// 12 uniform buffers available only to the vertex shader
+mappings[0].firstBinding = 0;
+mappings[0].sourceData.pushIndex = {0};
+mappings[0].sourceData.pushIndex.heapOffset = 0;
+mappings[0].sourceData.pushIndex.heapIndexStride = 1;      // Interpret push data as byte offset
+mappings[0].sourceData.pushIndex.heapArrayStride = bufferDescriptorSize;
+mappings[0].sourceData.pushIndex.pushOffset = DescriptorSetPushOffset;
+
+// A combined image sampler
+// Combined image samplers source image descriptors at `heapOffset` and sampler descriptors at `samplerHeapOffset`
+// Image is packed after the uniform buffers, sampler at an offset of 0 in the sampler heap
+mappings[1].firstBinding = 1;
+mappings[1].sourceData.pushIndex = {0};
+mappings[1].sourceData.pushIndex.heapOffset = UniformBufferArraySize;
+mappings[1].sourceData.pushIndex.heapIndexStride = 1;
+mappings[1].sourceData.pushIndex.samplerHeapOffset = 0;
+mappings[1].sourceData.pushIndex.samplerHeapIndexStride = 1;
+mappings[1].sourceData.pushIndex.pushOffset = DescriptorSetPushOffset;
+
+// An inline uniform block
+// Packed after the uniform buffers and image.
+mappings[2].firstBinding = 2;
+mappings[2].source = VK_DESCRIPTOR_MAPPING_SOURCE_RESOURCE_HEAP_DATA_EXT; // Switch to heap data source
+mappings[2].sourceData.heapData = {0};
+mappings[2].sourceData.heapData.heapOffset = UniformBufferArraySize + imageDescriptorSize;
+mappings[2].sourceData.heapData.pushOffset = DescriptorSetPushOffset;
+
+// A storage buffer array with variable descriptor count and all the descriptor flags
+// Packed after the other resources
+mappings[3].firstBinding = 3;
+mappings[3].sourceData.pushIndex = {0};
+mappings[3].sourceData.pushIndex.heapOffset = UniformBufferArraySize + imageDescriptorSize + InlineBlockDescriptorSize;
+mappings[3].sourceData.pushIndex.heapIndexStride = 1;
+mappings[3].sourceData.pushIndex.heapArrayStride = bufferDescriptorSize;
+mappings[3].sourceData.pushIndex.pushOffset = DescriptorSetPushOffset;
+
+VkShaderDescriptorSetAndBindingMappingInfoEXT vertexShaderMappings = {
+    .sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT,
+    .pNext = NULL,
+    .mappingCount = 4,
+    .pMappings = mappings};
+
+// It is not necessary to omit mappings from specific shaders, but for the sake of comparison,
+// as the uniform buffer array was only visible to the vertex shader before,
+// this can be done in the same way by omitting a particular mapping from a given shader.
+// Generally though, applications should feel free to use the same mappings for all shaders if they wish to.
+VkShaderDescriptorSetAndBindingMappingInfoEXT nonVertexMappings = {
+    .sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT,
+    .pNext = NULL,
+    .mappingCount = 3,
+    .pMappings = &(mappings[1])};
+
+With the existing descriptor set layout interface, applications need to specify the push constants they are using in each shader stage with [VkPipelineLayoutCreateInfo](https://docs.vulkan.org/spec/latest/descriptorsets.html#VkPipelineLayoutCreateInfo).
+However, there is no need for any specific matching here; the push data state in the command buffer is treated as an opaque blob of data, and the shader simply interprets that data as it describes.
+As such, this example is empty - applications can simply delete any code related to pipeline layouts and just use the data as-is.
+
+Emulating push descriptors is a little different with this extension, as the application is now responsible for ensuring that descriptors are initially populated into the descriptor heap, and cannot be simply pushed as descriptors, unlike in [VK_EXT_descriptor_buffer](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_buffer).
+Many implementations would hide this detail from applications when a `VkImageView` was created; in order to remove the need to create an image view object, applications now take on this responsibility instead.
+The simplest way to port from the prior API to this one then is to simply modify code where image views were created and destroyed to instead add and remove descriptors from the heap.
+The value being pushed will then be an offset into the heap where that descriptor is stored.
+By giving this responsibility to the application, more dynamic schemes can be used without the need to create and destroy image objects over and over again; applications can simply keep the descriptor around and copy its data into the heap as necessary.
+
+In the [simple resource binding example](#_example_simple_resource_bindings), if the descriptors were instead specified as push descriptors originally, the following changes would be made to make this work:
+
+Source the descriptors using a push constant as the index into the heap which can be set per-draw
+
+// Instead of updating the heap indices, each mapping uses a separate push index
+mappings[0].sourceData.pushIndex.pushOffset = 128;
+mappings[1].sourceData.pushIndex.pushOffset = 132;
+mappings[1].sourceData.pushIndex.samplerPushOffset = 132;
+mappings[2].sourceData.pushIndex.pushOffset = 136;
+
+Push heap indexes into push data
+
+uint32_t heapIndices[3] = {...};
+
+VkPushDataInfoEXT pushDataInfo = {
+    .sType = VK_STRUCTURE_TYPE_PUSH_DATA_INFO_EXT,
+    .pNext = NULL,
+    .offset = 128,
+    .size = 12,
+    .pData = heapIndices};
+
+vkCmdPushDataEXT(commandBuffer, pushDataInfo);
+
+This example specifies an embedded sampler for use with a YCBCR image, specified in the shader with `DescriptorSet` of 1 and a `Binding` of 15, using shader objects.
+
+Embedding in the shader
+
+// Index for the image
+const uint32_t ImageOffset = ...;
+
+VkDescriptorSetAndBindingMappingEXT mapping = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+    .pNext = NULL,
+    .descriptorSet = 1,
+    .bindingCount = 1,
+    .firstBinding = 15,
+    .resourceMask = VK_SPIRV_RESOURCE_TYPE_COMBINED_SAMPLED_IMAGE_BIT_EXT;
+    .source = VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_CONSTANT_INDEX_EXT };
+
+mapping.sourceData.constantOffset.heapOffset = ImageOffset;
+mapping.sourceData.constantOffset.pEmbeddedSampler = &ycbcrSamplerCreateInfo;
+
+VkShaderDescriptorSetAndBindingMappingInfoEXT setAndBindingMappingInfo = {
+    .sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT,
+    .pNext = NULL,
+    .mappingCount = 1,
+    .pMappings = &mapping};
+
+VkShaderCreateInfoEXT shaderCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT,
+    .pNext = &setAndBindingMappingInfo,
+    ...};
+
+This proposal adds new extension, `SPV_EXT_descriptor_heap`, that adds new Built-In variables which identify the heap pointers for each heap, and the size of each descriptor in bytes.
+The details of that extension are documented in the extension specification here: [SPV_EXT_descriptor_heap](https://github.khronos.org/SPIRV-Registry/extensions/EXT/SPV_EXT_descriptor_heap.html).
+
+One interaction with the API is that resource types now have a defined size equal to the maximum of the generic alignment and size limits that apply to descriptor sizes, as follows:
+
+| SPIR-V Type | Size | Aligned to |
+| --- | --- | --- |
+| `OpTypeSampler` | `samplerDescriptorSize` | `samplerDescriptorAlignment` |
+| `OpTypeImage` | `imageDescriptorSize` | `imageDescriptorAlignment` |
+| `OpTypeBuffer` | `bufferDescriptorSize` | `bufferDescriptorAlignment` |
+| `OpTypeAccelerationStructureKHR` | `bufferDescriptorSize` | `bufferDescriptorAlignment` |
+| `OpTypeTensorARM` | `tensorDescriptorSize` | `tensorDescriptorAlignment` |
+
+As these types do not have a fixed size in SPIR-V, **OpConstantSizeOfEXT** will return these sizes when queried.
+
+|  | Although images and buffers come from the same heap, they may have different sizes. |
+| --- | --- |
+
+When the `DescriptorHeapEXT` capability is declared in a shader, resource access is assumed to be non-uniform by default; this applies both to the `SamplerHeapEXT` and `ResourceHeapEXT` built-ins and any resources declared with bindings. They no longer need to be decorated with `NonUniform` to indicate how they are accessed. Resource accesses can be decorated with `Uniform` or `UniformId` to indicate uniform access to improve performance in some cases.
+
+|  | Even though the heap built-ins can be accessed non-uniformly with no decoration in SPIR-V, high level languages are unchanged by this - it is only the mapping that differs.
+| --- | --- |
+For example, the HLSL qualifier `NonUniformResourceIndex` is still required to indicate non-uniform access; and a HLSL-to-SPIR-V compiler would be expected to decorate any access without this with the `UniformId` or `Uniform` decoration.
+The choice to effectively deprecate `NonUniform` in SPIR-V is provided as a simplification.
+Applications should still follow implementation performance guidelines regarding non-uniform resource access, but implementations are encouraged to ensure that non-uniform access is as fast as possible. |
+
+GLSL does not readily support pointers or type casting resources, and while `set` and `binding` qualified resources will continue to work with the mappings, it would be useful to provide a way to access the heaps directly.
+
+A simple addition to the language will be made in an extension to allow the declaration of resources in unsized arrays with the `descriptor_heap` layout instead of set and binding values.
+Multiple of these arrays can be declared for different types, with each array routed to its respective heap (textures/images/texel buffers to the image heap, uniform and storage buffer blocks to the buffer heap, and samplers to the sampler heap).
+
+Details can be found in the GLSL_EXT_descriptor_heap extension, but an example is provided below:
+
+// Sampler array aliased to the sampler heap
+layout(descriptor_heap) uniform sampler heapSampler[];
+
+// Different image arrays aliased to the image heap
+layout(descriptor_heap) uniform texture2D heapTexture2D[];
+layout(descriptor_heap) uniform texture3D heapTexture3D[];
+
+// Different buffer arrays aliased to the buffer heap
+layout(descriptor_heap) buffer StorageBufferA {
+    vec4 a;
+} heapStorageBufferA[];
+layout(descriptor_heap) buffer StorageBufferB {
+    vec4 b;
+} heapStorageBufferB[];
+layout(descriptor_heap) uniform UniformBuffer {
+    vec4 colorOffset;
+} heapUniformBuffer[];
+
+layout (location = 0) in vec2 uvs;
+layout (location = 1) flat in uint index;
+
+layout (location = 0) out vec4 fragColor;
+
+void main()
+{
+    fragColor = texture(sampler2D(heapTexture2D[27], heapSampler[0]), uvs);
+    fragColor += heapUniformBuffer[nonuniformEXT(index)].colorOffset;
+}
+
+Unlike core Vulkan, register declarations can now be mapped directly to `DescriptorSet` and `Binding` decorations in SPIR-V, as they not longer have a strict meaning, and are only used as identifiers.
+The value of the `space` identifier can be used as the `DescriptorSet`, and the numerical register value as the `Binding` decoration.
+Mapping these in the API can be done with the new `VkShaderDescriptorSetAndBindingMappingInfoEXT` structure and use of push constants.
+The register type (t/s/u/b) can be mapped via the `resourceMask`, with the following masks for each type:
+
+* 
+`t` - `VK_SPIRV_RESOURCE_TYPE_SAMPLED_IMAGE_BIT_EXT |
+VK_SPIRV_RESOURCE_TYPE_READ_ONLY_STORAGE_BUFFER_BIT_EXT |
+VK_SPIRV_RESOURCE_TYPE_ACCELERATION_STRUCTURE_BIT_EXT`
+
+* 
+`s` - `VK_SPIRV_RESOURCE_TYPE_SAMPLER_BIT_EXT`
+
+* 
+`u` - `VK_SPIRV_RESOURCE_TYPE_READ_WRITE_IMAGE_BIT_EXT |
+VK_SPIRV_RESOURCE_TYPE_READ_ONLY_IMAGE_BIT_EXT |
+VK_SPIRV_RESOURCE_TYPE_READ_WRITE_STORAGE_BUFFER_BIT_EXT`
+
+* 
+`b` - `VK_SPIRV_RESOURCE_TYPE_UNIFORM_BUFFER_BIT_EXT`
+
+|  | This is based on current DXC compiler behavior, which may change in future. |
+| --- | --- |
+
+As an illustration, the following indicates roughly how an application would specify the same mappings in both DirectX 12 and Vulkan.
+
+DirectX 12 has two major parts of specifying a descriptor mapping; the root signature specifying static mappings, and descriptor tables which set a dynamic offset for those mappings during command buffer recording.
+`VkShaderDescriptorSetAndBindingMappingInfoEXT` specifies the same information as a root signature, but without the need to bake an object ahead of time.
+The following code used to specify a root signature in DirectX 12:
+
+D3D12_ROOT_PARAMETER parameters[5];
+
+D3D12_DESCRIPTOR_RANGE descriptorRanges[3] = {
+    {
+        D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+        5,  // NumDescriptors
+        3,  // BaseShaderRegister
+        1,  // RegisterSpace
+        0   // OffsetInDescriptorsFromTableStart
+    },
+    {
+        D3D12_DESCRIPTOR_RANGE_TYPE_UAV,
+        6,  // NumDescriptors
+        19, // BaseShaderRegister
+        0,  // RegisterSpace
+        200 // OffsetInDescriptorsFromTableStart
+    },
+    {
+        D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+        1,  // NumDescriptors
+        0,  // BaseShaderRegister
+        3,  // RegisterSpace
+        50  // OffsetInDescriptorsFromTableStart
+    }
+};
+
+// Descriptor Table 0
+parameters[0].ParameterType                         = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+parameters[0].DescriptorTable.NumDescriptorRanges   = 1;
+parameters[0].DescriptorTable.pDescriptorRanges     = &(descriptorRanges[0]);
+parameters[0].ShaderVisibility                      = D3D12_SHADER_VISIBILITY_ALL;
+
+// Descriptor Table 1
+parameters[1].ParameterType                         = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+parameters[1].DescriptorTable.NumDescriptorRanges   = 2;
+parameters[1].DescriptorTable.pDescriptorRanges     = &(descriptorRanges[1]);
+parameters[1].ShaderVisibility                      = D3D12_SHADER_VISIBILITY_ALL;
+
+// Root Constants
+parameters[2].ParameterType                         = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+parameters[2].Constants.ShaderRegister              = 100;
+parameters[2].Constants.RegisterSpace               = 2;
+parameters[2].Num32BitValues                        = 12;
+
+// Root UAV descriptor
+parameters[3].ParameterType                         = D3D12_ROOT_PARAMETER_TYPE_UAV;
+parameters[3].Descriptor.ShaderRegister             = 101;
+parameters[3].Descriptor.RegisterSpace              = 2;
+
+// Root CBV descriptor
+parameters[4].ParameterType                         = D3D12_ROOT_PARAMETER_TYPE_CBV;
+parameters[4].Descriptor.ShaderRegister             = 102;
+parameters[4].Descriptor.RegisterSpace              = 2;
+
+D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {
+    5,                  // NumParameters
+    &parameters,        // pParameters
+    0,                  // NumStaticSamplers
+    NULL,               // pStaticSamplers
+    0                   // Flags
+};
+
+could translate to the following code in Vulkan:
+
+const VkSpirvResourceTypeFlagsEXT srvMask = VK_SPIRV_RESOURCE_TYPE_SAMPLED_IMAGE_BIT_EXT |
+                                            VK_SPIRV_RESOURCE_TYPE_READ_ONLY_IMAGE_BIT_EXT |
+                                            VK_SPIRV_RESOURCE_TYPE_READ_ONLY_STORAGE_BUFFER_BIT_EXT |
+                                            VK_SPIRV_RESOURCE_TYPE_ACCELERATION_STRUCTURE_BIT_EXT;
+const VkSpirvResourceTypeFlagsEXT samplerMask = VK_SPIRV_RESOURCE_TYPE_SAMPLER_BIT_EXT;
+const VkSpirvResourceTypeFlagsEXT uavMask = VK_SPIRV_RESOURCE_TYPE_READ_WRITE_IMAGE_BIT_EXT |
+                                            VK_SPIRV_RESOURCE_TYPE_READ_WRITE_STORAGE_BUFFER_BIT_EXT;
+const VkSpirvResourceTypeFlagsEXT cbvMask = VK_SPIRV_RESOURCE_TYPE_UNIFORM_BUFFER_BIT_EXT;
+
+VkDescriptorSetAndBindingMappingEXT mappings[6];
+
+// Descriptor Table 0
+mappings[0].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+mappings[0].descriptorSet = 1;                          // Equivalent to RegisterSpace
+mappings[0].bindingCount = 5;                           // Equivalent to NumDescriptors
+mappings[0].firstBinding = 3;                           // Equivalent to BaseShaderRegister
+mappings[0].resourceMask = srvMask;
+mappings[0].source = VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT;
+mappings[0].sourceData.pushIndex.heapOffset = 0;        // Equivalent to OffsetInDescriptorsFromTableStart
+mappings[0].sourceData.pushIndex.heapIndexStride = 1;   // Push data is a byte offset
+mappings[0].sourceData.pushIndex.pushOffset = 128;      // No grouping of descriptor tables, so entries for the same table map to the same push constant offset.
+
+// Descriptor Table 1
+mappings[1].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+mappings[1].descriptorSet = 0;                          // Equivalent to RegisterSpace
+mappings[1].bindingCount = 6;                           // Equivalent to NumDescriptors
+mappings[1].firstBinding = 19;                          // Equivalent to BaseShaderRegister
+mappings[1].resourceMask = uavMask;
+mappings[1].source = VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT;
+mappings[1].sourceData.pushIndex.heapOffset = 200 * imageDescriptorSize;   // Equivalent to OffsetInDescriptorsFromTableStart
+mappings[1].sourceData.pushIndex.heapIndexStride = 1;   // Push data is a byte offset
+mappings[1].sourceData.pushIndex.pushOffset = 132;      // No grouping of descriptor tables, so entries for the same table map to the same push constant offset.
+
+mappings[2].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+mappings[2].descriptorSet = 3;                          // Equivalent to RegisterSpace
+mappings[2].bindingCount = 1;                           // Equivalent to NumDescriptors
+mappings[2].firstBinding = 3;                           // Equivalent to BaseShaderRegister
+mappings[2].resourceMask = srvMask;
+mappings[2].source = VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT;
+mappings[2].sourceData.pushIndex.heapOffset = 50 * imageDescriptorSize;    // Equivalent to OffsetInDescriptorsFromTableStart
+mappings[2].sourceData.pushIndex.heapIndexStride = 1;   // Push data is a byte offset
+mappings[2].sourceData.pushIndex.pushOffset = 132;  // No grouping of descriptor tables, so entries for the same table map to the same push constant offset.
+
+// Root Constants
+mappings[3].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+mappings[3].descriptorSet = 2;                      // Equivalent to RegisterSpace
+mappings[3].bindingCount = 1;                       // Always maps to a single CBV declaration in HLSL
+mappings[3].firstBinding = 100;                     // Equivalent to ShaderRegister
+mappings[3].resourceMask = cbvMask;
+mappings[3].source = VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT;
+mappings[3].sourceData.pushDataOffset = 0;          // Set to a user-specified offset. No need to say how many there are here.
+
+// Root UAV descriptor
+mappings[4].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+mappings[4].descriptorSet = 2;                      // Equivalent to RegisterSpace
+mappings[4].bindingCount = 1;                       // Always maps to a single resource declaration in HLSL
+mappings[4].firstBinding = 101;                     // Equivalent to ShaderRegister
+mappings[4].resourceMask = uavMask;
+mappings[4].source = VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT;
+mappings[4].sourceData.pushAddressOffset = 8;       // Set to a user-specified offset.
+
+// Root CBV descriptor
+mappings[5].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+mappings[5].descriptorSet = 2;                      // Equivalent to RegisterSpace
+mappings[5].bindingCount = 1;                       // Always maps to a single resource declaration in HLSL
+mappings[5].firstBinding = 102;                     // Equivalent to ShaderRegister
+mappings[5].resourceMask = vbvMask;
+mappings[5].source = VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT;
+mappings[5].sourceData.pushAddressOffset = 16;       // Set to a user-specified offset.
+
+VkShaderDescriptorSetAndBindingMappingInfoEXT rootSignatureDesc = {
+    .sType = VK_STRUCTURE_TYPE_SHADER_DESCRIPTOR_SET_AND_BINDING_MAPPING_INFO_EXT,
+    .pNext = NULL,
+    .mappingCount = 6,
+    .pMappings = mappings};
+
+This should be a substantially cleaner mapping than what was previously possible with core Vulkan.
+
+Local root signatures can be emulated in the exact same way as the global root signatures, but using the `SHADER_RESOURCE` mappings instead of `PUSH` mappings.
+
+Taking the same example as [Example: Root Signature to Vulkan Mappings](#_example_root_signature_to_vulkan_mappings) above, but assuming the DirectX portion defines a local heap, the code for mapping that in Vulkan will be identical other than the `SHADER_RESOURCE` mapping enums.
+Uses of `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_PUSH_INDEX_EXT`, `VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT`, or `VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_ADDRESS_EXT` would instead become `VK_DESCRIPTOR_MAPPING_SOURCE_HEAP_WITH_SHADER_RECORD_INDEX_EXT`, `VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_DATA_EXT`, or `VK_DESCRIPTOR_MAPPING_SOURCE_SHADER_RECORD_ADDRESS_EXT`, respectively.
+
+To map this functionality to [HLSL Shader Model 6.6’s resource and sampler heaps](https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_DynamicResources.html) efficiently, the [heap declarations in the earlier example](#Example: Heap declarations) are used.
+
+The correct underlying heap in the API will be selected by the implementation at the point of access, based on the resource that is accessed.
+For example, the following hlsl code:
+
+Texture2D myTexture = ResourceDescriptorHeap[texIdx];
+
+will become this in SPIR-V:
+
+                                  OpDecorateId %placeholder_image_array_type ArrayStrideIdEXT %resource_size
+
+                     %void_type = OpTypeVoid
+                     %size_type = OpTypeInt 32 0
+        %placeholder_image_type = OpTypeImage %void_type 2D 2 0 0 0 Unknown
+       %placeholder_buffer_type = OpTypeBufferEXT Uniform
+  %placeholder_image_array_type = OpTypeRuntimeArray %placeholder_image_type
+                    %image_size = OpConstantSizeOfEXT %size_type %placeholder_image_type
+                   %buffer_size = OpConstantSizeOfEXT %size_type %placeholder_buffer_type
+               %image_is_bigger = OpSpecConstantOp OpUGreaterThan %boolean_type %image_size %buffer_size
+                 %resource_size = OpSpecConstantOp OpSelect %size_type %image_is_bigger %image_size %buffer_size
+      %uniformconstant_ptr_type = OpTypeUntypedPointerKHR UniformConstant
+
+                 %myTexture_ptr = OpUntypedAccessChainKHR %uniformconstant_ptr_type %placeholder_image_array_type %image_heap %texIdx
+
+         %texture2D_float4_type = OpTypeImage %float4_type 1 2 0 0 0 1 Unknown
+                     %myTexture = OpLoad %texture2D_float4_type %myTexture_ptr
+
+Similarly, the following hlsl code retrieving a constant buffer:
+
+struct MyStruct {
+    uint placeholder;
+    uint value;
+};
+
+ConstantBuffer myCBuffer = ResourceDescriptorHeap[bufIdx];
+
+int myValue = myCBuffer.value;
+
+will become this in SPIR-V:
+
+                                  OpDecorateId %placeholder_buffer_array_type ArrayStrideIdEXT %resource_size
+
+                     %void_type = OpTypeVoid
+                     %size_type = OpTypeInt 32 0
+        %placeholder_image_type = OpTypeImage %void_type 2D 2 0 0 0 Unknown
+       %placeholder_buffer_type = OpTypeBufferEXT Uniform
+ %placeholder_buffer_array_type = OpTypeRuntimeArray %placeholder_buffer_type
+                    %image_size = OpConstantSizeOfEXT %size_type %placeholder_image_type
+                   %buffer_size = OpConstantSizeOfEXT %size_type %placeholder_buffer_type
+               %image_is_bigger = OpSpecConstantOp OpUGreaterThan %boolean_type %image_size %buffer_size
+                 %resource_size = OpSpecConstantOp OpSelect %size_type %image_is_bigger %image_size %buffer_size
+         %cbuffer_data_ptr_type = OpTypeUntypedPointerKHR Uniform
+      %uniformconstant_ptr_type = OpTypeUntypedPointerKHR UniformConstant
+
+                 %myCBuffer_ptr = OpUntypedAccessChainKHR %uniformconstant_ptr_type %placeholder_buffer_array_type %resource_heap %bufIdx
+              %cbuffer_data_ptr = OpBufferPointerEXT %cbuffer_data_ptr_type %myCBuffer_ptr
+
+                 %mystruct_type = OpTypeStruct %uint32_type %uint32_type
+            %mystruct_value_ptr = OpUntypedAccessChainKHR %cbuffer_data_ptr_type %mystruct_type %cbuffer_data_ptr 1
+                       %myValue = OpLoad %uint32_type %mystruct_value_ptr
+
+|  | This matches native DirectX 12’s handling of descriptors, where all resource types are the same size. For implementations where these descriptors are not the same size, this wastes significant space in the heap and may increase cache pressure unnecessarily.
+| --- | --- |
+
+HLSL and existing HLSL compilers do not currently have a method to alter this indexing, and one should be considered, but that will be handled as a separate proposal. |
+
+[DirectX 12 also features something called descriptor heaps](https://learn.microsoft.com/en-us/windows/win32/direct3d12/descriptor-heaps-overview).
+The "descriptor heap" name is not an accident – it was deliberately chosen to capture this similarity and indicate architectural compatibility.
+However, while you can drive Vulkan’s descriptor heaps in the same way as you would drive DirectX 12’s descriptor heaps ([which was something we explicitly designed them for](#_hlsl_mapping)), Vulkan’s are also significantly more flexible.
+
+DirectX 12’s heaps are an object — a thing that you create descriptors inside of, with the nitty-gritty details of what goes on under the hood hidden behind the runtime and the driver.
+To do things like copy descriptors between or within heaps, you need to call a function.
+If you want to stage descriptors on the host, you need a specially created heap to do so.
+For any action you want to perform with a descriptor, a purpose-built API is required.
+
+Vulkan’s descriptor heaps, on the other hand, are just a specially identified region of memory, and descriptors are just bags of bits.
+If you want to copy descriptors around, call memcpy; or do it on the GPU.
+To stage descriptors on the host, just stow them in host memory anywhere you want and copy them the same way you would copy any other plain old data.
+
+You are also free to use the heap’s memory to store whatever else you want.
+For example, you can store constant data next to your descriptors for a material, rather than using a separate allocation, which can be more cache efficient on a number of implementations.
+You can even use that same memory as a storage buffer with read/write access if you want.
+Just be aware that you need to issue an API barrier between writing to the heap on the device and reading from the heap in a shader.
+
+There are some restrictions simply because not all implementations can handle descriptors coming from arbitrary memory.
+Descriptors used in shaders must come from a heap; they cannot be stored in arbitrary buffers.
+The application should also expect a high cost to switch between heaps on some implementations, [just as in DirectX 12](https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12graphicscommandlist-setdescriptorheaps#remarks).
+
+Nope!
+
+This extension has been carefully and deliberately designed to work with your existing SPIR-V shaders, but also includes adaptations to improve compatibility with existing shading languages if/when you do wish to recompile your shaders.
+There are other benefits to recompiling your shaders to use the new SPIR-V extension, but this is not necessary to start using the API features.
+
+Descriptor heaps can be interacted with in two ways: By direct access to heaps and push data or through a flexible mapping system in the API that maps shader bindings to heap entries, push data, or device addresses.
+
+For shaders using bindings, the extension introduces a [flexible mapping system](#SetAndBindingDecorations) that enables existing SPIR-V shaders to be used as-is, without requiring recompilation or shader edits.
+However, as part of the design work, we made sure that the mapping system was not just 1:1 with descriptor set layouts, but instead catered to a wide variety of API and shader binding models, both for porting and for emulation of other APIs.
+For instance, the [HLSL binding model now works without needing any Vulkan-specific workarounds](#_hlsl_mapping), which has been a longstanding developer pain point with using HLSL on Vulkan.
+
+The direct access approach requires applications to recompile their shaders, making use of the new `SPV_EXT_descriptor_heap` extension.
+This extension provides a pointer for each heap, allowing simple access to each, and notably matching 1:1 with HLSL’s Dynamic Resources.
+There is also a GLSL extension to allow declared arrays of descriptors to access the descriptor heap without shader bindings.
+
+While it is not possible to mix and match legacy descriptor set layouts and anything based on them with heaps, mixing and matching the use of bindings and direct heap access in your shaders works just fine with the mapping API.
+So you can gradually start introducing heap access to shaders with bindings, rather than having to rewrite all of your shaders to make use of this new extension.
+
+The ultimate aim here is that you should be able to take a shader, compiled from any shading language, and use it without worrying about how to make it work with Vulkan.
+The interface between the API and your shaders is now yours to define.
+
+With GPU copies, control over where in memory a descriptor is being accessed, and responsibility for actually putting the bits in memory, there are more ways than ever to end up in a situation with an invalid descriptor.
+The good news is that none of this really makes debugging worse than it already is - validating a descriptor has been at point of use since we introduced dynamic indexing.
+The work that validation layers already do for descriptor indexing will be being reworked for this extension, which should provide a seamless debugging experience.
+
+Work to [improve debugging for descriptors](#_better_debugging) is ongoing.
+
+For now it still requires set and binding, mapping to shader combined image samplers.
+A number of image descriptors will be consumed for each such resource, according to [VkSamplerYcbcrConversionImageFormatProperties::combinedImageSamplerDescriptorCount](https://docs.vulkan.org/spec/latest/capabilities.html#VkSamplerYcbcrConversionImageFormatProperties).
+
+For now it still requires set and binding, mapping to shader combined image samplers.
+A number of image descriptors will be consumed for each such resource, according to `VkSubsampledImageFormatPropertiesEXT::subsampledImageDescriptorCount`.
+
+No.
+
+Part of the reason for embedded samplers being passed to shader/pipeline create info is to allow for them to be baked into shaders where viable; for things like YCBCR sampling, this might include information that is not directly in the sampler descriptor.
+
+Some implementations maintain a table of border colors rather than embedding them directly in the sampler.
+When sampler objects are created prior to this extension, registration happens under the covers when a sampler object is created or destroyed; without sampler objects, this needs to be exposed.
+
+No, on the basis that it is currently necessary in order to use YCBCR sampling and input attachments.
+It is also expected that a significant portion of existing content (particularly via emulation layers) will make use of it.
+
+They are largely the same as [VK_EXT_descriptor_indexing](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_EXT_descriptor_indexing) with all features enabled - indexing may be non-uniform, but does not need the expression to be tagged as non-uniform.
+
+For implementations that need to store samplers in a sampler heap of some form, the reserved range of each sampler heap will need to accommodate any embedded samplers created by the application.
+As the total number of unique embedded samplers that can exist is limited, implementations can store these statically, but will need to de-duplicate any samplers with the same create info across multiple pipelines.
+
+Shader object largely did away with the idea of static state, but in the case of descriptor layouts this "state" is really a set of constant shader offsets baked into the shader; which is why the pipeline layout was included in shader object creation in the base extension.
+While all of these offsets could probably be made fully dynamic, doing so would come at a significant and unexpected performance penalty compared to using a pipeline layout.
+If an application really wants fully dynamic offsets then they can do so by not using the mappings, and instead using the heaps directly.
+
+Implementations can currently hide if they use multiple samplers behind multiple combined image samplers. This extension does not allow for that, so a separate limit has been added.
+
+Implementations need descriptors for various operations that may not be directly apparent - for instance, blit operations implemented as a shader need access to descriptors for the images involved and a sampler descriptor to sample the source image.
+Some operations may also require additional pointers to data, such as the shader resource buffers for ray tracing or scratch memory for acceleration structure builds; if an implementation has limited push data space then this space is available to manage buffer descriptors for this purpose.
+
+No - right now they need to be mapped as they always have been and shader bindings used to set them up.
+It would be possible to just add a heap offset as a constant to make this work, but that is not strictly an improvement.
+Future extensions could consider how to make this interaction cleaner.
+
+It largely just boils down to the fact that the two extensions expressed tokens differently.
+As a result, the EXT just reuses the push constant token, whereas the NV extension gets a new token.
+The NV extension smooshed all tokens into a monolithic structure, so having push constants sometimes being push data would add significant complexity to validation; so having a separate token along the lines of other extensions made sense.
+With the EXT, the tokens are isolated structures in a union, so the valid usage was much simpler to spell out, and so the token would have just been an alias anyway.
+
+Yes! There is no cross stage validation for the mappings set by a user; as long as an application ensures that the descriptors they use are where they expect them to be for each shader, the mappings can be set however the developer wishes.
+
+So that each pointer can be set to `NULL` to define a "null descriptor" when interacting with `VK_EXT_robustness2`.
+
+Labels can be associated with patterns of descriptor bits when they are written, or with embedded samplers during pipeline creation, by chaining [VkDebugUtilsObjectNameInfoEXT](https://docs.vulkan.org/spec/latest/debugging.html#VkDebugUtilsObjectNameInfoEXT) structures into `VkResourceDescriptorInfoEXT` or `VkSamplerCreateInfo`.
+
+See [[Interaction with VK_EXT_debug_utils]](#Interaction with VK_EXT_debug_utils) for further information.
+
+Untyped pointers are only necessary when accessing the heap directly from the shader; for applications using shader mappings, they are not needed, so the extension can be omitted in this case.
+
+Embedded samplers are both a feature of HLSL and necessary for YCBCR support.
+Not having a bindless interface for these is unfortunate, and it would be good to replace this in the future.
+A possible avenue for exploration would be to add shader-defined samplers, rather than having them defined in the API.
+
+Input attachments need some additional work in order to allow the use of both bindless descriptors and attachment indices that is not covered in this extension.
+Figuring out how to make this work cleanly would be a useful addition in a future extension.
+
+Push data in HLSL can currently only be accessed by mapping to a constant buffer with bindings.
+It would be useful to be able to do this bindlessly in a similar manner to GLSL, without bindings, and ideally in a way that maps correctly for DX12 as well.
+A proposal that includes this is currently in review for HLSL here: [https://github.com/microsoft/hlsl-specs/pull/461](https://github.com/microsoft/hlsl-specs/pull/461).
+
+It would be useful to be able to express different data types coming from a resource heap, including POD types. This would allow more flexibility in access of these heaps, and allow the size of descriptors to vary, reducing unnecessary padding when accessing smaller descriptor types.
+
+Debugging descriptors has been a pain since dynamic indexing was introduced, requiring point-of-access validation.
+The current approach to this in debug tools requires looking up descriptors in a table to see if they are valid, which requires shader instrumentation, and is too slow to be on by default.
+Traverse Research did some excellent work on this topic in their bindless setup, where they restricted their descriptor indices to 31 bits and used the last bit as a sentinel value to check for validity, which you can read about [here](https://blog.traverseresearch.nl/bindless-rendering-setup-afeb678d77fc).
+Finding spare bits in real descriptors was considered, but could not be guaranteed reliably by all vendors.
+However, by exposing descriptor sizes precisely and allowing arbitrary data to be read from the heaps, a similar approach should be possible, potentially expanding beyond single descriptors.
+This extension provides a lot of tools, the next step is to find ways to use them.

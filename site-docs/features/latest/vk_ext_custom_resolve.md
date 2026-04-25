@@ -1,0 +1,229 @@
+# VK_EXT_custom_resolve
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_EXT_custom_resolve.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Features](#_features)
+- [3.2. Functionality](#_functionality)
+- [3.2.1. Legacy Render Passes](#_legacy_render_passes)
+- [3.2.1._Legacy_Render_Passes](#_legacy_render_passes)
+- [3.2.2. Dynamic Rendering shader resolves](#_dynamic_rendering_shader_resolves)
+- [3.2.2._Dynamic_Rendering_shader_resolves](#_dynamic_rendering_shader_resolves)
+- [4. Issues](#_issues)
+- [4.1. Should the functionality from VK_QCOM_render_pass_shader_resolve that allows applications to resolve multisample attachments to other multisample attachments be preserved and extended to dynamic rendering?](#_should_the_functionality_from_vk_qcom_render_pass_shader_resolve_that_allows_applications_to_resolve_multisample_attachments_to_other_multisample_attachments_be_preserved_and_extended_to_dynamic_rendering)
+- [4.1._Should_the_functionality_from_VK_QCOM_render_pass_shader_resolve_that_allows_applications_to_resolve_multisample_attachments_to_other_multisample_attachments_be_preserved_and_extended_to_dynamic_rendering?](#_should_the_functionality_from_vk_qcom_render_pass_shader_resolve_that_allows_applications_to_resolve_multisample_attachments_to_other_multisample_attachments_be_preserved_and_extended_to_dynamic_rendering)
+- [4.2. How does this interact with VK_EXT_fragment_density_map?](#_how_does_this_interact_with_vk_ext_fragment_density_map)
+- [4.2._How_does_this_interact_with_VK_EXT_fragment_density_map?](#_how_does_this_interact_with_vk_ext_fragment_density_map)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Features](#_features)
+[3.2. Functionality](#_functionality)
+
+[4. Issues](#_issues)
+
+[4.1. Should the functionality from VK_QCOM_render_pass_shader_resolve that allows applications to resolve multisample attachments to other multisample attachments be preserved and extended to dynamic rendering?](#_should_the_functionality_from_vk_qcom_render_pass_shader_resolve_that_allows_applications_to_resolve_multisample_attachments_to_other_multisample_attachments_be_preserved_and_extended_to_dynamic_rendering)
+[4.2. How does this interact with VK_EXT_fragment_density_map?](#_how_does_this_interact_with_vk_ext_fragment_density_map)
+
+This extension builds upon
+[VK_QCOM_render_pass_shader_resolve](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_render_pass_shader_resolve) to
+allow for replacing fixed-function resolve with shader-based resolves inside render pass instances.
+It additionally adds support for [dynamic rendering](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering).
+
+Fixed-function resolves do not provide the flexibility needed to handle custom
+filtering of a multisample buffer. While users may use a render pass or compute
+shader to implement custom resolves, this requires writing the multisampled
+buffer to memory which is inefficient for implementations using tiled rendering
+techniques which could otherwise avoid this.
+
+Additionally, fixed-function resolves do not allow resolving to a different format,
+which is highly desirable in some cases.
+
+With legacy render passes, subpasses within a render pass are allowed to have
+different sample counts. This allows users to implement a tiler-efficient
+custom resolve by adding a subpass at the end of the render pass that draws a
+single quad while reading from the image to resolve as an input attachment.
+However this is still not as efficient as fixed-function resolves because tile
+space must be reserved for the resolve attachments, and on some implementations
+it is possible to avoid this inefficiency by having the last subpass write
+directly to memory, providing better performance when drawing a single quad
+with no overdraw at the very end of the render pass instance.
+
+With dynamic rendering, there is no equivalent functionality allowing
+shader-based resolves.
+
+This extension adds functionality to trigger shader-based resolves inside existing
+render pass instances.
+
+It also provides a bit for enlarging a sample region dependency to a fragment region dependency
+so that a framebuffer-region dependency can replace a framebuffer-global dependency.
+
+In addition to existing functionality from
+[VK_QCOM_render_pass_shader_resolve](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_render_pass_shader_resolve),
+new flags are added along with a new command to enable the same functionality with dynamic rendering.
+
+The ability to resolve to a different format from the original image is also added.
+
+There is a single new feature:
+
+typedef struct VkPhysicalDeviceCustomResolveFeaturesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           customResolve;
+} VkPhysicalDeviceCustomResolveFeaturesEXT;
+
+#define VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_EXT  ((VkSubpassDescriptionFlagBits)0x00000004)
+#define VK_SUBPASS_DESCRIPTION_CUSTOM_RESOLVE_BIT_EXT  ((VkSubpassDescriptionFlagBits)0x00000008)
+
+This functions the same as the original `VK_QCOM_render_pass_shader_resolve` extension. Specifying
+a `VK_SUBPASS_DESCRIPTION_CUSTOM_RESOLVE_BIT_EXT` in the last subpass and providing a single sample
+attachment indicates to the implementation that this subpass will be used for a
+shader-based resolve and it will be more efficient to write directly to the
+color attachments.
+
+Dynamic rendering support has been added since the original
+[VK_QCOM_render_pass_shader_resolve](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_render_pass_shader_resolve)
+extension was released. Different mechanics are used for this type of render pass.
+
+Unlike legacy render passes, the setups for dynamic rendering shader-based
+resolves are identical to fixed function resolves, which is to say that the
+same assignments are used for color, depth, and resolve attachments. These
+attachments all behave normally during regular rendering passes. Upon switching
+to the shader resolve part of the rendering pass, however, the following
+changes occur:
+
+* 
+Reads from any resolving fragment shader input attachment will still read from the multisampled color or depth attachment
+
+* 
+Writes to any resolving fragment shader output will write to the associated single sampled resolve attachment
+
+It is expected that users will draw a single quad with no overdraw and use
+[VK_KHR_dynamic_rendering_local_read](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_KHR_dynamic_rendering_local_read)
+to read from the multisampled color or depth attachments in the shader. Overdraw will produce undefined behavior.
+
+#define VK_RENDERING_FRAGMENT_REGION_BIT_EXT  ((VkRenderingFlagBits)0x00000040)
+#define VK_RENDERING_CUSTOM_RESOLVE_BIT_EXT  ((VkRenderingFlagBits)0x00000080)
+#define VK_RESOLVE_MODE_CUSTOM_BIT_EXT  ((VkResolveModeFlagBits)0x00000020)
+
+To use shader resolves in a dynamic render pass instance, the render pass must be started using
+`VK_RENDERING_CUSTOM_RESOLVE_BIT_EXT`. Attachments which will be resolved by shader must
+set `resolveMode` to `VK_RESOLVE_MODE_CUSTOM_BIT_EXT`.
+
+Pipelines and secondary command buffers which will be used at any point in dynamic render passes which perform custom resolves
+must chain the following struct into their creation:
+
+* 
+For pipelines this is included in the fragment output stage
+
+* 
+For secondary command buffers it is chained using `VkCommandBufferInheritanceInfo`
+
+* 
+For shader objects (only when using fragment density map attachments), it is chained to the `VkShaderCreateInfoEXT` of the fragment stage,
+and only `customResolve` is used
+
+typedef struct VkCustomResolveCreateInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkBool32           customResolve;
+    uint32_t           colorAttachmentCount;
+    const VkFormat*    pColorAttachmentFormats;
+    VkFormat           depthAttachmentFormat;
+    VkFormat           stencilAttachmentFormat;
+} VkCustomResolveCreateInfoEXT;
+
+* 
+`customResolve` indicates whether this pipeline will be used for a resolve operation.
+
+* 
+`colorAttachmentCount` is the number of entries in pColorAttachmentFormats.
+
+* 
+`pColorAttachmentFormats` is a pointer to an array of values defining the format of color resolve attachments used in custom resolves in the same render pass.
+
+* 
+`depthAttachmentFormat` is a value defining the format of the depth resolve attachment used in custom resolves in the same render pass.
+
+* 
+`stencilAttachmentFormat` is a value defining the format of the stencil resolve attachment used in custom resolves in the same render pass.
+
+In addition to a pipeline barrier which synchronizes the multisample attachment for reading,
+the following function must be called in order to begin output to the resolve image:
+
+VKAPI_ATTR void VKAPI_CALL vkCmdBeginCustomResolveEXT(
+    VkCommandBuffer                             commandBuffer,
+    const VkBeginCustomResolveInfoEXT*          pBeginCustomResolveInfo);
+
+* 
+`commandBuffer` is the command buffer into which the command is recorded.
+
+* 
+`pBeginCustomResolveInfo` is an optional pointer to a `VkBeginCustomResolveInfoEXT` struct which can utilize a `pNext` chain to provide additional info.
+
+typedef struct VkBeginCustomResolveInfoEXT {
+    VkStructureType    sType;
+    const void*        pNext;
+} VkBeginCustomResolveInfoEXT;
+
+* 
+`sType` is `VK_STRUCTURE_TYPE_BEGIN_CUSTOM_RESOLVE_INFO_EXT`.
+
+* 
+`pNext` can be used to chain a pointer to extend the struct.
+
+The `customResolve` member of `VkCustomResolveCreateInfoEXT` must be `VK_FALSE` for all secondary command buffers and pipelines used prior to `vkCmdBeginCustomResolveEXT`
+in a given rendering pass, and it must be `VK_TRUE` for all secondary command buffers and pipelines used afterwards.
+
+All rendering commands recorded from the time that `vkCmdBeginCustomResolveEXT` is called until the
+end of the rendering pass will output to the resolve attachments. The contents of all resolve attachments become
+undefined upon recording this command.
+
+`VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_EXT` is also promoted from
+[VK_QCOM_render_pass_shader_resolve](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_render_pass_shader_resolve),
+and support is added for dynamic rendering too.
+
+#define VK_SUBPASS_DESCRIPTION_FRAGMENT_REGION_BIT_EXT  ((VkSubpassDescriptionFlagBits)0x00000004)
+#define VK_RENDERING_FRAGMENT_REGION_BIT_EXT  ((VkRenderingFlagBits)0x00000040)
+
+Specifying either flag expands the framebuffer region used for dependencies with
+`VK_DEPENDENCY_BY_REGION_BIT` to always cover the entire fragment. This allows
+for multisample input attachments that contain the same sample count as
+`rasterizationSamples` to read from any sample of the fragment being rendered.
+This is not necessary for custom resolve operations, because the framebuffer
+region already equals the whole fragment when sample count is mismatched, but
+e.g. can be used to implement a custom resolve in an alternate way by drawing a
+fullscreen quad with `pSampleMask` to 1 to overwrite sample zero with the
+resolve result and then using `VK_RESOLVE_MODE_SAMPLE_ZERO_BIT`.
+
+No. There is no known use case for this functionality, and adding it to the specification would introduce considerable complexity.
+
+On some implementations, in particular when using non-subsampled images, it may
+not be possible to have a fragment area larger than (1,1) while also
+writing directly to memory. In
+[VK_QCOM_render_pass_shader_resolve](https://docs.vulkan.org/spec/latest/appendices/extensions.html#VK_QCOM_render_pass_shader_resolve),
+when this occurred it was expected for the implementation to pretend that it was
+rendering multiple samples within the original fragment area during the custom
+resolve operation. However this meant that trying to compute per-pixel
+derivative values by dividing by **FragSizeEXT** would give an incorrect result,
+and there were several unhandled interactions elsewhere with conservative
+rasterization and sample locations. Instead, this extension adds the ability
+for the implementation to reduce the fragment area in a custom resolve
+operation. When this happens **FragSizeEXT** must also be reduced. This is
+optional, and not expected to happen when using subsampled images.

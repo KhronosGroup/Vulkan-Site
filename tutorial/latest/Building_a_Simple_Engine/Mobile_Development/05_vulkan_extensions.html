@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Mobile Development: Vulkan Extensions :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="tutorial" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../01_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../02_Development_environment.html">Development environment</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Drawing a triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Setup</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/00_Base_code.html">Base Code</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/01_Instance.html">Instance</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/02_Validation_layers.html">Validation layers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/03_Physical_devices_and_queue_families.html">Physical devices and queue families</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html">Logical device and queues</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Presentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/00_Window_surface.html">Window surface</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/01_Swap_chain.html">Swap chain</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/01_Presentation/02_Image_views.html">Image views</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Graphics pipeline basics</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/01_Shader_modules.html">Shader modules</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/02_Fixed_functions.html">Fixed functions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/03_Render_passes.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/04_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Drawing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/00_Framebuffers.html">Framebuffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html">Command buffers</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/02_Rendering_and_presentation.html">Rendering and presentation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/03_Drawing/03_Frames_in_flight.html">Frames in flight</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../03_Drawing_a_triangle/04_Swap_chain_recreation.html">Swap chain recreation</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/00_Vertex_input_description.html">Vertex input description</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/01_Vertex_buffer_creation.html">Vertex buffer creation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/02_Staging_buffer.html">Staging buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../04_Vertex_buffers/03_Index_buffer.html">Index buffer</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html">Descriptor layout and buffer</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../05_Uniform_buffers/01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Texture mapping</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/00_Images.html">Images</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/01_Image_view_and_sampler.html">Image view and sampler</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../06_Texture_mapping/02_Combined_image_sampler.html">Combined image sampler</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../07_Depth_buffering.html">Depth buffering</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../08_Loading_models.html">Loading models</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../09_Generating_Mipmaps.html">Generating Mipmaps</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../10_Multisampling.html">Multisampling</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../11_Compute_Shader.html">Compute Shader</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../13_Vulkan_Profiles.html">Vulkan Profiles</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../14_Android.html">Android</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../15_GLTF_KTX2_Migration.html">Migrating to Modern Asset Formats: glTF and KTX2</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../16_Multiple_Objects.html">Rendering Multiple Objects</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../17_Multithreading.html">Multithreading</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Ray Tracing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/00_Overview.html">Overview</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/01_Dynamic_rendering.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/02_Acceleration_structures.html">Acceleration structures</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/03_Ray_query_shadows.html">Ray query shadows</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/04_TLAS_animation.html">TLAS animation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/05_Shadow_transparency.html">Shadow transparency</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/06_Reflections.html">Reflections</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../courses/18_Ray_tracing/07_Conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../90_FAQ.html">FAQ</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Tutorial" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Building a Simple Engine</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Engine Architecture</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/02_architectural_patterns.html">Architectural patterns</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/03_component_systems.html">Component systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/04_resource_management.html">Resource management</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/05_rendering_pipeline.html">Rendering pipeline</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/06_event_systems.html">Event systems</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Engine_Architecture/conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Camera Transformations</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/02_math_foundations.html">Math foundations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/03_transformation_matrices.html">Transformation matrices</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/04_camera_implementation.html">Camera implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Camera_Transformations/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Lighting &amp; Materials</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/02_lighting_models.html">Lighting models</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/03_push_constants.html">Push constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/04_lighting_implementation.html">Lighting implementation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/07_shadows.html">Shadows</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Lighting_Materials/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">GUI</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/02_imgui_setup.html">ImGui setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/03_input_handling.html">Input handling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/04_ui_elements.html">UI elements</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/05_vulkan_integration.html">Vulkan integration</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../GUI/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Loading Models</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/02_project_setup.html">Project setup</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/03_model_system.html">Model system</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/04_loading_gltf.html">Loading glTF</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/05_pbr_rendering.html">PBR rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/06_multiple_objects.html">Multiple objects</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/07_scene_rendering.html">Scene rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/08_animations.html">Animations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Loading_Models/09_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Subsystems</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/02_audio_basics.html">Audio basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/03_vulkan_audio.html">Vulkan audio</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/04_physics_basics.html">Physics basics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/05_vulkan_physics.html">Vulkan physics</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Subsystems/06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Tooling</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/02_cicd.html">CI/CD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/03_debugging_and_renderdoc.html">Debugging &amp; RenderDoc</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/04_crash_minidump.html">Crash minidumps</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/05_extensions.html">Extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/06_packaging_and_distribution.html">Packaging &amp; distribution</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Tooling/07_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Mobile Development</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="02_platform_considerations.html">Platform considerations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="03_performance_optimizations.html">Performance optimizations</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="04_rendering_approaches.html">Rendering approaches</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="05_vulkan_extensions.html">Vulkan extensions</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="06_conclusion.html">Conclusion</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Advanced Topics</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/01_introduction.html">Introduction</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Rendering_Pipeline_Overview.html">Rendering pipeline overview</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Forward_ForwardPlus_Deferred.html">Forward vs Forward+ vs Deferred</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/ForwardPlus_Rendering.html">Forward+ rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Culling.html">Culling</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Mipmaps_and_LOD.html">Mipmaps &amp; LOD</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Push_Constants_Per_Object.html">Push constants per object</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_and_Streaming.html">Synchronization &amp; streaming</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Synchronization_2_Frame_Pacing.html">Synchronization2 &amp; frame pacing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Descriptor_Indexing_UpdateAfterBind.html">Descriptor indexing (UpdateAfterBind)</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Separate_Image_Sampler_Descriptors.html">Separate image/sampler descriptors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Shader_Tile_Image.html">Shader tile image</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/GLTF_Animation.html">glTF animation</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Planar_Reflections.html">Planar reflections</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Rendering.html">Ray query rendering</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Ray_Query_Reflections_and_Transparency.html">Ray query: reflections &amp; transparency</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Dynamic_Rendering_Local_Read.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Advanced_Topics/Robustness2.html">Robustness2</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <span class="nav-text">Appendix</span>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../Appendix/appendix.html">Appendix</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Khronos Vulkan Tutorial</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component is-current">
+      <div class="title"><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../samples/latest/README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../samples/latest/README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Mobile Development</li>
+    <li><a href="05_vulkan_extensions.html">Vulkan extensions</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Mobile Development: Vulkan Extensions</h1>
+<div class="sect1">
+<h2 id="_vulkan_extensions_for_mobile"><a class="anchor" href="#_vulkan_extensions_for_mobile"></a>Vulkan Extensions for Mobile</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan&#8217;s extensibility is one of its greatest strengths, allowing hardware vendors to expose specialized features that can significantly improve performance. For mobile development, several extensions are particularly valuable as they can help optimize for the unique characteristics of mobile GPUs. In this section, we&#8217;ll explore key Vulkan extensions that can enhance performance on mobile devices.</p>
+</div>
+<div class="sect2">
+<h3 id="_vk_khr_dynamic_rendering"><a class="anchor" href="#_vk_khr_dynamic_rendering"></a>VK_KHR_dynamic_rendering</h3>
+<div class="paragraph">
+<p>Dynamic rendering is a game-changing extension that simplifies the Vulkan rendering workflow by eliminating the need for explicit render pass and framebuffer objects.</p>
+</div>
+<div class="sect3">
+<h4 id="_overview"><a class="anchor" href="#_overview"></a>Overview</h4>
+<div class="paragraph">
+<p>The <code>VK_KHR_dynamic_rendering</code> extension (now part of Vulkan 1.3 core) allows you to begin and end rendering operations directly within a command buffer, without creating render pass and framebuffer objects. This benefits a wide range of platforms (desktop and mobile) because it:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Simplifies Code</strong>: Reduces the complexity of managing render passes and framebuffers.</p>
+</li>
+<li>
+<p><strong>Enables More Flexible Rendering</strong>: Makes it easier to implement techniques that don&#8217;t fit well into the traditional render pass model.</p>
+</li>
+<li>
+<p><strong>Potentially Lowers API Overhead</strong>: Fewer objects to create and manage can simplify setup; any CPU savings are usually small and workload-dependent.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_implementation_step_by_step"><a class="anchor" href="#_implementation_step_by_step"></a>Implementation (Step-by-step)</h4>
+<div class="paragraph">
+<p>Let&#8217;s break the setup into a few small, focused steps.</p>
+</div>
+<div class="sect4">
+<h5 id="_enable_the_extension_and_load_entry_points"><a class="anchor" href="#_enable_the_extension_and_load_entry_points"></a>Enable the extension and load entry points</h5>
+<div class="paragraph">
+<p>We first enable the device extension and, if you&#8217;re not on Vulkan 1.3 core, load the function pointers.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Enable the extension when creating the device
+std::vector&lt;const char*&gt; device_extensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
+};
+
+// Get function pointers (if not using Vulkan 1.3)
+PFN_vkCmdBeginRenderingKHR vkCmdBeginRenderingKHR =
+    reinterpret_cast&lt;PFN_vkCmdBeginRenderingKHR&gt;(
+        vkGetDeviceProcAddr(device, "vkCmdBeginRenderingKHR"));
+PFN_vkCmdEndRenderingKHR vkCmdEndRenderingKHR =
+    reinterpret_cast&lt;PFN_vkCmdEndRenderingKHR&gt;(
+        vkGetDeviceProcAddr(device, "vkCmdEndRenderingKHR"));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This prepares your device to use dynamic rendering and gives access to the commands needed to begin/end a rendering scope without a traditional render pass.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_describe_attachments_for_this_rendering_scope"><a class="anchor" href="#_describe_attachments_for_this_rendering_scope"></a>Describe attachments for this rendering scope</h5>
+<div class="paragraph">
+<p>We define the color and depth attachments and package them into a VkRenderingInfoKHR. Think of this as an inline, one-off description of what would normally be baked into render pass/framebuffer objects.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">VkRenderingAttachmentInfoKHR color_attachment{};
+color_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+color_attachment.imageView = color_image_view;
+color_attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+color_attachment.clearValue = clear_value;
+
+VkRenderingAttachmentInfoKHR depth_attachment{};
+depth_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+depth_attachment.imageView = depth_image_view;
+depth_attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+depth_attachment.clearValue = depth_clear_value;
+
+VkRenderingInfoKHR rendering_info{};
+rendering_info.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR;
+rendering_info.renderArea = render_area;
+rendering_info.layerCount = 1;
+rendering_info.colorAttachmentCount = 1;
+rendering_info.pColorAttachments = &amp;color_attachment;
+rendering_info.pDepthAttachment = &amp;depth_attachment;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each frame (or subpass-equivalent), you can tweak these descriptors directly (e.g., swapchain views after resize), avoiding pipeline-wide re-creation.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_begin_rendering_draw_end_rendering"><a class="anchor" href="#_begin_rendering_draw_end_rendering"></a>Begin rendering, draw, end rendering</h5>
+<div class="paragraph">
+<p>With the attachments described, we open the rendering scope, record draws, then close the scope.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">vkCmdBeginRenderingKHR(command_buffer, &amp;rendering_info);
+
+// Record drawing commands
+vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+vkCmdDraw(command_buffer, vertex_count, 1, 0, 0);
+
+// End rendering
+vkCmdEndRenderingKHR(command_buffer);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The begin/end pair replaces vkCmdBeginRenderPass/vkCmdEndRenderPass while providing more flexibility for modern rendering flows.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_c_bindings_vulkan_hpp_variant"><a class="anchor" href="#_c_bindings_vulkan_hpp_variant"></a>C++ bindings (vulkan.hpp) variant</h5>
+<div class="paragraph">
+<p>If you&#8217;re using vulkan.hpp (vk::), the structure population is more ergonomic but follows the same steps.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Using vulkan.hpp
+vk::RenderingAttachmentInfoKHR color_attachment;
+color_attachment.setImageView(color_image_view);
+color_attachment.setImageLayout(vk::ImageLayout::eColorAttachmentOptimal);
+color_attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
+color_attachment.setStoreOp(vk::AttachmentStoreOp::eStore);
+color_attachment.setClearValue(clear_value);
+
+vk::RenderingAttachmentInfoKHR depth_attachment;
+depth_attachment.setImageView(depth_image_view);
+depth_attachment.setImageLayout(vk::ImageLayout::eDepthAttachmentOptimal);
+depth_attachment.setLoadOp(vk::AttachmentLoadOp::eClear);
+depth_attachment.setStoreOp(vk::AttachmentStoreOp::eDontCare);
+depth_attachment.setClearValue(depth_clear_value);
+
+vk::RenderingInfoKHR rendering_info;
+rendering_info.setRenderArea(render_area);
+rendering_info.setLayerCount(1);
+rendering_info.setColorAttachments(color_attachment);
+rendering_info.setPDepthAttachment(&amp;depth_attachment);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once the description is assembled, begin the rendering scope, submit draws, and end the scope.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">command_buffer.beginRenderingKHR(rendering_info);
+
+// Record drawing commands
+command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+command_buffer.draw(vertex_count, 1, 0, 0);
+
+// End rendering
+command_buffer.endRenderingKHR();</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vk_khr_dynamic_rendering_local_read"><a class="anchor" href="#_vk_khr_dynamic_rendering_local_read"></a>VK_KHR_dynamic_rendering_local_read</h3>
+<div class="paragraph">
+<p>The <code>VK_KHR_dynamic_rendering_local_read</code> extension is particularly valuable for tile-based renderers as it allows shaders to read from attachments without forcing a tile to main memory and back.</p>
+</div>
+<div class="sect3">
+<h4 id="_overview_2"><a class="anchor" href="#_overview_2"></a>Overview</h4>
+<div class="paragraph">
+<p>This extension enhances dynamic rendering by allowing fragment shaders to read from color and depth/stencil attachments within the same rendering scope. On tile-based renderers, this means the reads can happen directly from tile memory, avoiding expensive round trips to main memory.</p>
+</div>
+<div class="paragraph">
+<p>Key benefits include:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Reduced Memory Bandwidth</strong>: Reads happen from on-chip memory rather than main memory, reducing bandwidth usage for bandwidth-intensive operations.</p>
+</li>
+<li>
+<p><strong>Improved Performance</strong>: Particularly for algorithms that need to read from previously written attachments.</p>
+</li>
+<li>
+<p><strong>Power Efficiency</strong>: Lower memory bandwidth means lower power consumption.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_how_it_reduces_memory_bandwidth"><a class="anchor" href="#_how_it_reduces_memory_bandwidth"></a>How It Reduces Memory Bandwidth</h4>
+<div class="paragraph">
+<p>The <code>VK_KHR_dynamic_rendering_local_read</code> extension is particularly effective at reducing memory bandwidth because:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Eliminates Tile Flush Operations</strong>: Without this extension, when a shader needs to read from a previously written attachment, the GPU must flush the entire tile to main memory and then read it back. This extension allows the shader to read directly from the tile memory, eliminating these costly flush operations.</p>
+</li>
+<li>
+<p><strong>Supports Per-Pixel Local Reads</strong>: It enables fragment shaders to read the value written at the same pixel from attachments within the current rendering scope/tile. This suits per-pixel operations (e.g., tone mapping or reading depth/previous color).</p>
+</li>
+<li>
+<p><strong>Bandwidth Reduction Measurements</strong>: In real-world applications, this extension has been shown to reduce memory bandwidth for workloads that benefit from per-pixel local reads. The benefit is workload- and GPU-dependent.</p>
+</li>
+<li>
+<p><strong>Practical Example</strong>: Consider a deferred rendering pipeline that needs to read G-buffer data at the same pixel for lighting. Without this extension, the G-buffer would need to be written to main memory and then read back for the lighting pass. With this extension, the lighting pass can read directly from the G-buffer in tile memory, saving bandwidth.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_implementation"><a class="anchor" href="#_implementation"></a>Implementation</h4>
+<div class="paragraph">
+<p>To use this extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Enable the extension when creating the device
+std::vector&lt;const char*&gt; device_extensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+    VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME
+};
+
+// Create a pipeline that reads from attachments
+vk::PipelineRenderingCreateInfoKHR rendering_create_info;
+rendering_create_info.setColorAttachmentCount(1);
+rendering_create_info.setColorAttachmentFormats(color_format);
+rendering_create_info.setDepthAttachmentFormat(depth_format);
+
+// Set up the attachment local read info
+vk::AttachmentSampleCountInfoAMD sample_count_info;
+sample_count_info.setColorAttachmentSamples(vk::SampleCountFlagBits::e1);
+sample_count_info.setDepthStencilAttachmentSamples(vk::SampleCountFlagBits::e1);
+
+vk::RenderingAttachmentLocationInfoKHR location_info;
+location_info.setColorAttachmentLocations(0);  // Location 0 for the color attachment
+
+vk::RenderingInputAttachmentIndexInfoKHR input_index_info;
+input_index_info.setColorInputAttachmentIndices(0);  // Index 0 for the color attachment
+
+// Create the graphics pipeline
+vk::GraphicsPipelineCreateInfo pipeline_info;
+pipeline_info.setPNext(&amp;rendering_create_info);
+// ... set other pipeline creation parameters
+
+// In your fragment shader, you can now read from the attachment
+// using subpassLoad() or texture sampling with the appropriate extension
+// Fragment shader example (GLSL):
+// #extension GL_EXT_shader_tile_image : require
+// layout(location = 0) out vec4 outColor;
+// layout(input_attachment_index = 0, set = 0, binding = 0) uniform subpassInput inputColor;
+// void main() {
+//     vec4 color = subpassLoad(inputColor);
+//     outColor = color * 2.0;  // Double the brightness
+// }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vk_ext_shader_tile_image"><a class="anchor" href="#_vk_ext_shader_tile_image"></a>VK_EXT_shader_tile_image</h3>
+<div class="paragraph">
+<p>The <code>VK_EXT_shader_tile_image</code> extension provides direct access to tile memory in shaders, which can significantly improve performance on tile-based renderers.</p>
+</div>
+<div class="sect3">
+<h4 id="_overview_3"><a class="anchor" href="#_overview_3"></a>Overview</h4>
+<div class="paragraph">
+<p>This extension allows shaders to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Access Tile Memory Directly</strong>: Read and write to the current tile&#8217;s memory without going through main memory.</p>
+</li>
+<li>
+<p><strong>Perform Tile-Local Operations</strong>: Execute operations that stay entirely within the tile memory.</p>
+</li>
+<li>
+<p><strong>Optimize Bandwidth-Intensive Algorithms</strong>: Particularly beneficial for post-processing effects.</p>
+</li>
+<li>
+<p><strong>Reduce Memory Bandwidth</strong>: Helps lower memory bandwidth by keeping data in tile-local memory during multi-pass workloads.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_how_it_reduces_memory_bandwidth_2"><a class="anchor" href="#_how_it_reduces_memory_bandwidth_2"></a>How It Reduces Memory Bandwidth</h4>
+<div class="paragraph">
+<p>The <code>VK_EXT_shader_tile_image</code> extension is particularly effective at reducing memory bandwidth for these reasons:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Tile-Based Architecture Optimization</strong>: Mobile GPUs typically use tile-based rendering, where the screen is divided into small tiles that are processed independently. This extension takes full advantage of this architecture by allowing shaders to work directly with the tile data in fast on-chip memory.</p>
+</li>
+<li>
+<p><strong>Eliminates Intermediate Memory Transfers</strong>: Without this extension, multi-pass rendering requires writing results to main memory after each pass and reading them back for the next pass. With <code>VK_EXT_shader_tile_image</code>, these intermediate results can stay in tile memory, eliminating these costly transfers.</p>
+</li>
+<li>
+<p><strong>Bandwidth Savings Measurements</strong>: Testing on various mobile GPUs has shown meaningful bandwidth reductions for complex multi-pass pipelines; actual gains are workload- and GPU-dependent.</p>
+</li>
+<li>
+<p><strong>Practical Applications</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Image Processing Filters</strong>: Applying multiple filters (blur, sharpen, color correction) can be done without leaving tile memory.</p>
+</li>
+<li>
+<p><strong>Deferred Rendering</strong>: G-buffer data can be kept in tile memory for the lighting pass.</p>
+</li>
+<li>
+<p><strong>Shadow Mapping</strong>: Shadow calculations can be performed more efficiently by keeping depth information in tile memory.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Power Efficiency</strong>: The reduction in memory bandwidth directly translates to lower power consumption, which is critical for mobile devices. Tests have shown up to 20% power savings for graphics-intensive applications.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_implementation_2"><a class="anchor" href="#_implementation_2"></a>Implementation</h4>
+<div class="paragraph">
+<p>To use this extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Enable the extension when creating the device
+std::vector&lt;const char*&gt; device_extensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_EXT_SHADER_TILE_IMAGE_EXTENSION_NAME
+};
+
+// When creating your shader module, make sure your shader uses the extension
+// GLSL example:
+// #extension GL_EXT_shader_tile_image : require
+//
+// layout(tile_image, set = 0, binding = 0) uniform tileImageColor { vec4 color; } tileColor;
+//
+// void main() {
+//     // Read from tile memory
+//     vec4 current_color = tileColor.color;
+//
+//     // Process the color
+//     vec4 new_color = process(current_color);
+//
+//     // Write back to tile memory
+//     tileColor.color = new_color;
+// }</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_combining_extensions_for_maximum_performance"><a class="anchor" href="#_combining_extensions_for_maximum_performance"></a>Combining Extensions for Maximum Performance</h3>
+<div class="paragraph">
+<p>For the best mobile performance, consider using these extensions together:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Enable all relevant extensions
+std::vector&lt;const char*&gt; device_extensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+    VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME,
+    VK_EXT_SHADER_TILE_IMAGE_EXTENSION_NAME
+};
+
+// Check which extensions are supported
+auto available_extensions = physical_device.enumerateDeviceExtensionProperties();
+std::vector&lt;const char*&gt; supported_extensions;
+
+for (const auto&amp; requested_ext : device_extensions) {
+    for (const auto&amp; available_ext : available_extensions) {
+        if (strcmp(requested_ext, available_ext.extensionName) == 0) {
+            supported_extensions.push_back(requested_ext);
+            break;
+        }
+    }
+}
+
+// Create device with supported extensions
+vk::DeviceCreateInfo device_create_info;
+device_create_info.setPEnabledExtensionNames(supported_extensions);
+// ... set other device creation parameters
+vk::Device device = physical_device.createDevice(device_create_info);
+
+// Now you can use the supported extensions in your rendering code
+// ...</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_device_extension_support"><a class="anchor" href="#_device_extension_support"></a>Device Extension Support</h3>
+<div class="paragraph">
+<p>Different mobile vendors and devices vary in which Vulkan extensions they expose. Understanding per-device support helps you pick features safely at runtime.</p>
+</div>
+<div class="sect3">
+<h4 id="_device_extension_support_details"><a class="anchor" href="#_device_extension_support_details"></a>Device Extension Support Details</h4>
+<div class="paragraph">
+<p>Different mobile GPU vendors have varying levels of support for Vulkan extensions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Dynamic Rendering Support</strong>: Many mobile GPUs support <code>VK_KHR_dynamic_rendering</code>. This simplifies the API surface, but can be slower than using traditional render passes when multiple sub passes are involved, unless one of the following tile-based optimizations is supported.</p>
+</li>
+<li>
+<p><strong>Tile-Based Optimizations</strong>: On tile-based GPUs (e.g., Mali, PowerVR), <code>VK_EXT_shader_tile_image</code> and <code>VK_KHR_dynamic_rendering_local_read</code> are effective because they keep reads and writes in tile memory. See the extension sections above for details; benefits are workload- and GPU-dependent.</p>
+</li>
+<li>
+<p><strong>Checking for Extension Support (EXT/KHR) on the current device</strong>:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Common vendor IDs (used here only for labeling/logging output)
+const uint32_t VENDOR_ID_QUALCOMM = 0x5143; // Adreno
+const uint32_t VENDOR_ID_ARM = 0x13B5;      // Mali
+const uint32_t VENDOR_ID_IMAGINATION = 0x1010; // PowerVR
+const uint32_t VENDOR_ID_HUAWEI = 0x19E5;   // Kirin
+const uint32_t VENDOR_ID_APPLE = 0x106B;    // Apple
+
+bool log_device_extension_support(vk::PhysicalDevice physical_device) {
+    vk::PhysicalDeviceProperties props = physical_device.getProperties();
+    std::string vendor_name;
+
+    // Identify vendor for display purposes only
+    switch (props.vendorID) {
+        case VENDOR_ID_QUALCOMM: vendor_name = "Qualcomm"; break;
+        case VENDOR_ID_ARM: vendor_name = "ARM Mali"; break;
+        case VENDOR_ID_IMAGINATION: vendor_name = "PowerVR"; break;
+        case VENDOR_ID_HUAWEI: vendor_name = "Huawei"; break;
+        case VENDOR_ID_APPLE: vendor_name = "Apple"; break;
+        default: vendor_name = "Unknown"; break;
+    }
+
+    // Check for widely useful EXT/KHR extensions on this device
+    auto available_extensions = physical_device.enumerateDeviceExtensionProperties();
+    bool has_dynamic_rendering = false;
+    bool has_dynamic_rendering_local_read = false;
+    bool has_shader_tile_image = false;
+
+    for (const auto&amp; ext : available_extensions) {
+        std::string ext_name = ext.extensionName;
+        if (ext_name == VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME) {
+            has_dynamic_rendering = true;
+        } else if (ext_name == VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME) {
+            has_dynamic_rendering_local_read = true;
+        } else if (ext_name == VK_EXT_SHADER_TILE_IMAGE_EXTENSION_NAME) {
+            has_shader_tile_image = true;
+        }
+    }
+
+    // Log the extension support
+    std::cout &lt;&lt; vendor_name &lt;&lt; " device detected with extension support:" &lt;&lt; std::endl;
+    std::cout &lt;&lt; "  Dynamic Rendering: " &lt;&lt; (has_dynamic_rendering ? "Yes" : "No") &lt;&lt; std::endl;
+    std::cout &lt;&lt; "  Dynamic Rendering Local Read: " &lt;&lt; (has_dynamic_rendering_local_read ? "Yes" : "No") &lt;&lt; std::endl;
+    std::cout &lt;&lt; "  Shader Tile Image: " &lt;&lt; (has_shader_tile_image ? "Yes" : "No") &lt;&lt; std::endl;
+
+    return has_dynamic_rendering || has_dynamic_rendering_local_read || has_shader_tile_image;
+}</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Platform-Specific Optimizations</strong>: When developing for mobile devices,
+consider these optimizations:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Prioritize the use of dynamic rendering over traditional render passes on tile-based renderers</p>
+</li>
+<li>
+<p>Use tile-based extensions whenever available</p>
+</li>
+<li>
+<p>Test different configurations to find the optimal settings for various device models</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_best_practices_for_using_extensions"><a class="anchor" href="#_best_practices_for_using_extensions"></a>Best Practices for Using Extensions</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Check for Support</strong>: Always check if an extension is supported before using it.</p>
+</li>
+<li>
+<p><strong>Fallback Paths</strong>: Implement fallback paths for when extensions aren&#8217;t available.</p>
+</li>
+<li>
+<p><strong>Test on Real Devices</strong>: Extensions may behave differently across vendors and devices. Test on a variety of hardware from different manufacturers.</p>
+</li>
+<li>
+<p><strong>Stay Updated</strong>: Keep track of new extensions that could benefit mobile performance, as mobile GPU vendors continue to enhance their Vulkan support.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll conclude our exploration of mobile development with a summary of key takeaways and best practices.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_rendering_approaches.html" class="xref page">Previous: Rendering Approaches</a> | <a href="06_conclusion.html" class="xref page">Next: Conclusion</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>
