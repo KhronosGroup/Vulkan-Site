@@ -103,7 +103,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
       # access it
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.event.pull_request.head.sha || github.ref }}
@@ -117,14 +117,14 @@ jobs:
 
       - name: "Cache UI bundle"
         id: cache-ui
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build/ui-bundle.zip
           key: ${{ runner.os }}-ui-${{ hashFiles('src/**', 'package-lock.json', 'gulpfile.js') }}
 
       - name: "checkout GLSL"
         if: ${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/GLSL
           path: ./GLSL
@@ -132,7 +132,7 @@ jobs:
 
       - name: "checkout Vulkan Guide"
         if: ${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Guide
           path: ./Vulkan-Guide
@@ -140,7 +140,7 @@ jobs:
 
       - name: "Checkout Vulkan Docs"
         if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Docs
           path: ./Vulkan-Docs
@@ -148,7 +148,7 @@ jobs:
 
       - name: "Checkout Vulkan Samples"
         if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Samples
           path: ./Vulkan-Samples
@@ -156,16 +156,16 @@ jobs:
 
       - name: "Checkout Vulkan Tutorial"
         if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
           ref: ${{ inputs.Tutorial_Commit_Hash > '' && inputs.Tutorial_Commit_Hash || 'main' }}
 
       - name: "setup npm"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20.12.2'
+          node-version: '24.15.0'
           cache: 'npm'
           cache-dependency-path: |
             docs-site/package-lock.json
@@ -193,7 +193,7 @@ jobs:
           ./node_modules/gulp/bin/gulp.js bundle
 
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ui-bundle.zip
           path: build/ui-bundle.zip
@@ -232,7 +232,7 @@ jobs:
             --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
 
       - name: "Cache Antora content"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: docs-site/.antora-cache
           key: ${{ runner.os }}-antora-${{ github.run_id }}
@@ -248,7 +248,7 @@ jobs:
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fullSite
           path: docs-site/build
@@ -256,7 +256,7 @@ jobs:
 
       - name: "Checkout gh-pages for staging"
         if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: gh-pages
           path: public-site
@@ -358,7 +358,7 @@ jobs:
 
       - name: "Remove stale pages artifact (re-run safety)"
         if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
