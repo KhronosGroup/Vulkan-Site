@@ -88,7 +88,7 @@ def main():
     # We use exactly the URLs from the original playbook file.
     all_sources = [
         {'url': '../Vulkan-Guide', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Guide'},
-        {'url': '../GLSL', 'branches': 'HEAD', 'start_path': 'antora, antora/glslext', 'name': 'GLSL'},
+        {'url': '../GLSL', 'branches': 'HEAD', 'start_paths': 'antora, antora/glslext', 'name': 'GLSL'},
         {'url': '../Vulkan-Docs', 'branches': 'HEAD', 'start_paths': 'antora/spec, antora/features, antora/refpages', 'name': 'Vulkan-Docs'},
         {'url': '../Vulkan-Samples', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Samples'},
         {'url': '../Vulkan-Tutorial', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Tutorial'}
