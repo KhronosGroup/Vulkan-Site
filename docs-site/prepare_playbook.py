@@ -13,7 +13,7 @@ def clean_attachments(attachments_arg):
     for attachments_dir in ['Vulkan-Tutorial/attachments', 'Vulkan-Tutorial/antora/modules/ROOT/attachments']:
         if not os.path.exists(attachments_dir):
             continue
-        
+
         if attachments_arg.lower() == 'false':
             # Remove attachments directory if tutorial is included
             print(f"Removing attachments: {attachments_dir}")
@@ -24,11 +24,11 @@ def clean_attachments(attachments_arg):
             # Remove known large directories
             for d in ['venv', 'node_modules', 'third_party', 'cmake-build-debug', 'build', 'lib', 'ort_gpu', 'build_integration_test', '__pycache__']:
                 subprocess.run(['find', attachments_dir, '-type', 'd', '-name', d, '-prune', '-exec', 'rm', '-rf', '{}', '+'])
-            
+
             # Specifically remove Assets and assets directories which are not needed for the published tutorial site
             # as requested by the user.
             subprocess.run(['find', attachments_dir, '-type', 'd', '(', '-name', 'Assets', '-o', '-name', 'assets', ')', '-exec', 'rm', '-rf', '{}', '+'])
-            
+
             # Remove any large files that shouldn't be published as attachments
             subprocess.run(['find', attachments_dir, '-type', 'f', '(',
                             '-name', '*.zip', '-o',
@@ -88,7 +88,7 @@ def main():
     # We use exactly the URLs from the original playbook file.
     all_sources = [
         {'url': '../Vulkan-Guide', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Guide'},
-        {'url': '../GLSL', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'GLSL'},
+        {'url': '../GLSL', 'branches': 'HEAD', 'start_path': 'antora, antora/glslext', 'name': 'GLSL'},
         {'url': '../Vulkan-Docs', 'branches': 'HEAD', 'start_paths': 'antora/spec, antora/features, antora/refpages', 'name': 'Vulkan-Docs'},
         {'url': '../Vulkan-Samples', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Samples'},
         {'url': '../Vulkan-Tutorial', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Tutorial'}
