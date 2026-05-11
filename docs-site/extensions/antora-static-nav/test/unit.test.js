@@ -5,7 +5,16 @@
 const { describe, it } = require('node:test')
 const assert = require('node:assert/strict')
 
-const { findNavBlock, cleanNav, buildNavJs, buildReplacement, MARKER, SHARED_NAV_NAME } = require('../lib/index.js')
+const {
+  findNavBlock,
+  cleanNav,
+  rebaseNav,
+  rebaseUrl,
+  buildNavJs,
+  buildReplacement,
+  MARKER,
+  SHARED_NAV_NAME,
+} = require('../lib/index.js')
 
 // ---------------------------------------------------------------------------
 // findNavBlock
@@ -98,14 +107,87 @@ describe('cleanNav', () => {
 })
 
 // ---------------------------------------------------------------------------
+// rebaseUrl
+// ---------------------------------------------------------------------------
+
+describe('rebaseUrl', () => {
+  it('returns absolute URLs unchanged', () => {
+    assert.equal(rebaseUrl('https://example.com/x', 'source'), 'https://example.com/x')
+    assert.equal(rebaseUrl('//cdn/x', 'source'), '//cdn/x')
+    assert.equal(rebaseUrl('/already/absolute.html', 'source'), '/already/absolute.html')
+    assert.equal(rebaseUrl('mailto:a@b.c', 'source'), 'mailto:a@b.c')
+    assert.equal(rebaseUrl('data:image/png;base64,xx', 'source'), 'data:image/png;base64,xx')
+  })
+
+  it('returns fragment-only URLs unchanged', () => {
+    assert.equal(rebaseUrl('#section', 'source'), '#section')
+  })
+
+  it('returns the value unchanged when sample is at the component root', () => {
+    assert.equal(rebaseUrl('source/foo.html', ''), 'source/foo.html')
+    assert.equal(rebaseUrl('source/foo.html', '.'), 'source/foo.html')
+  })
+
+  it('prefixes a sibling-relative href with the sample directory', () => {
+    // Sample lives in source/, href is sibling — rebased value points into source/.
+    assert.equal(rebaseUrl('VK_AMDX_dense_geometry_format.html', 'source'),
+      'source/VK_AMDX_dense_geometry_format.html')
+  })
+
+  it('resolves leading ../ against the sample directory', () => {
+    assert.equal(rebaseUrl('../proposals/foo.html', 'source'), 'proposals/foo.html')
+  })
+
+  it('handles deeper sample directories', () => {
+    assert.equal(rebaseUrl('foo.html', 'module/sub'), 'module/sub/foo.html')
+    assert.equal(rebaseUrl('../bar.html', 'module/sub'), 'module/bar.html')
+    assert.equal(rebaseUrl('../../top.html', 'module/sub'), 'top.html')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// rebaseNav
+// ---------------------------------------------------------------------------
+
+describe('rebaseNav', () => {
+  it('rewrites href values to be component-root-relative', () => {
+    const nav = '<a href="VK_AMDX_dense_geometry_format.html">x</a>'
+    const out = rebaseNav(nav, 'source')
+    assert.ok(out.includes('href="source/VK_AMDX_dense_geometry_format.html"'))
+  })
+
+  it('rewrites src values too', () => {
+    const nav = '<img src="icon.png">'
+    assert.ok(rebaseNav(nav, 'source').includes('src="source/icon.png"'))
+  })
+
+  it('leaves nav unchanged when sample is at the component root', () => {
+    const nav = '<a href="source/foo.html">f</a><a href="bar.html">b</a>'
+    assert.equal(rebaseNav(nav, ''), nav)
+  })
+
+  it('preserves absolute and fragment URLs', () => {
+    const nav = '<a href="https://x/y">x</a><a href="#anchor">y</a><a href="/abs.html">z</a>'
+    assert.equal(rebaseNav(nav, 'source'), nav)
+  })
+
+  it('handles multiple links in one nav', () => {
+    const nav = '<a href="a.html">A</a><a href="b.html">B</a>'
+    const out = rebaseNav(nav, 'source')
+    assert.ok(out.includes('href="source/a.html"'))
+    assert.ok(out.includes('href="source/b.html"'))
+  })
+})
+
+// ---------------------------------------------------------------------------
 // buildNavJs
 // ---------------------------------------------------------------------------
 
 describe('buildNavJs', () => {
-  it('produces a self-invoking function string', () => {
+  it('exposes a global function instead of running immediately', () => {
     const js = buildNavJs('<div id="split-0">nav</div>')
-    assert.ok(js.startsWith('(function(){'))
-    assert.ok(js.endsWith('})();\n'))
+    assert.ok(js.startsWith('window.__antoraStaticNav=function(prefix){'))
+    assert.ok(js.endsWith('};\n'))
   })
 
   it('JSON-encodes the nav HTML inside the JS', () => {
@@ -119,6 +201,13 @@ describe('buildNavJs', () => {
     assert.ok(js.includes('insertBefore'))
     assert.ok(!js.includes('document.write'))
   })
+
+  it('contains runtime href-prefix logic', () => {
+    const js = buildNavJs('<div></div>')
+    assert.ok(js.includes('prefix'))
+    // The runtime regex should match the same attributes the build-time one does.
+    assert.ok(js.includes('href|src'))
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -127,23 +216,34 @@ describe('buildNavJs', () => {
 
 describe('buildReplacement', () => {
   it('starts with the marker comment', () => {
-    const r = buildReplacement('../_static_nav.js', 'vkFoo.html')
+    const r = buildReplacement('../_static_nav.js', 'vkFoo.html', '../')
     assert.ok(r.startsWith(MARKER))
   })
 
   it('includes a script tag loading the shared nav JS', () => {
-    const r = buildReplacement('../_static_nav.js', 'vkFoo.html')
+    const r = buildReplacement('../_static_nav.js', 'vkFoo.html', '../')
     assert.ok(r.includes('<script src="../_static_nav.js">'))
   })
 
+  it('invokes the static-nav global with the per-page prefix', () => {
+    const r = buildReplacement('../_static_nav.js', 'vkFoo.html', '../')
+    assert.ok(r.includes('window.__antoraStaticNav'))
+    assert.ok(r.includes('"../"'))
+  })
+
+  it('passes an empty prefix for pages at the component root', () => {
+    const r = buildReplacement('_static_nav.js', 'index.html', '')
+    assert.ok(r.includes('window.__antoraStaticNav&&window.__antoraStaticNav("")'))
+  })
+
   it('includes an inline script referencing the page filename', () => {
-    const r = buildReplacement('../_static_nav.js', 'vkFoo.html')
+    const r = buildReplacement('../_static_nav.js', 'vkFoo.html', '../')
     assert.ok(r.includes('"vkFoo.html"'))
     assert.ok(r.includes('is-current-page'))
   })
 
   it('uses the navRel path verbatim in the src attribute', () => {
-    const r = buildReplacement('../../spec/latest/_static_nav.js', 'index.html')
+    const r = buildReplacement('../../spec/latest/_static_nav.js', 'index.html', '../../')
     assert.ok(r.includes('src="../../spec/latest/_static_nav.js"'))
   })
 })

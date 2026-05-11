@@ -88,25 +88,71 @@ function cleanNav (nav) {
 }
 
 // ---------------------------------------------------------------------------
+// Href/src rebasing
+// ---------------------------------------------------------------------------
+
+const URL_REBASE_RX = /(\s(?:href|src)=)(["'])([^"']*)\2/g
+const ABSOLUTE_OR_FRAGMENT_RX = /^(?:[a-z][a-z0-9+.-]*:|\/\/|\/|#|data:|mailto:)/i
+
+/**
+ * Rewrite a single href/src value so it is relative to the component@version
+ * root rather than to the sample page's directory.
+ *
+ * Antora emits nav URLs as page-relative paths. When the captured nav is
+ * reused on pages at a different depth, these page-relative paths break.
+ * Normalising to component-root-relative makes the URLs portable; the loader
+ * then prepends each page's own back-to-root prefix at injection time.
+ */
+function rebaseUrl (value, sampleDirRelToRoot) {
+  if (!value) return value
+  if (ABSOLUTE_OR_FRAGMENT_RX.test(value)) return value
+  const base = sampleDirRelToRoot ? '/' + sampleDirRelToRoot + '/' : '/'
+  const resolved = path.posix.normalize(base + value)
+  return resolved.replace(/^\/+/, '')
+}
+
+/**
+ * Rebase every href/src in the nav HTML to be component-root-relative.
+ * `sampleDirRelToRoot` is the sample page's directory expressed relative to
+ * the component@version output root (e.g. "" for a root-level page,
+ * "source" for source/foo.html, "module/sub" for nested pages).
+ */
+function rebaseNav (navHtml, sampleDirRelToRoot) {
+  const norm = sampleDirRelToRoot && sampleDirRelToRoot !== '.' ? sampleDirRelToRoot : ''
+  return navHtml.replace(URL_REBASE_RX, (m, attr, q, val) => {
+    const next = rebaseUrl(val, norm)
+    return next === val ? m : `${attr}${q}${next}${q}`
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Output builders
 // ---------------------------------------------------------------------------
 
 /**
  * Build the content of _static_nav.js.
  *
- * Injects the nav synchronously via currentScript.parentNode.insertBefore —
- * no document.write(), no fetch(). JSON.stringify handles all HTML escaping.
+ * Exposes window.__antoraStaticNav(prefix). The per-page inline script calls
+ * it with the page's relative path back to the component@version root, so a
+ * single shared nav can serve pages at any depth. The injected nav is placed
+ * just before the calling script, where the original nav block lived.
  */
 function buildNavJs (navHtml) {
   const navJson = JSON.stringify(navHtml)
   return (
-    '(function(){' +
-    'var s=document.currentScript||document.scripts[document.scripts.length-1];' +
+    'window.__antoraStaticNav=function(prefix){' +
+    'var s=document.currentScript;' +
+    'if(!s){var ss=document.scripts;s=ss[ss.length-1];}' +
+    'if(!s)return;' +
+    `var html=${navJson};` +
+    'if(prefix){html=html.replace(/(\\s(?:href|src)=)(["\'])([^"\']*)\\2/g,function(m,a,q,v){' +
+    'if(/^(?:[a-z][a-z0-9+.-]*:|\\/\\/|\\/|#|data:|mailto:)/i.test(v))return m;' +
+    'return a+q+prefix+v+q;});}' +
     'var t=document.createElement("div");' +
-    `t.innerHTML=${navJson};` +
+    't.innerHTML=html;' +
     'var n=t.firstChild;' +
     'if(n)s.parentNode.insertBefore(n,s);' +
-    '})();\n'
+    '};\n'
   )
 }
 
@@ -114,12 +160,15 @@ function buildNavJs (navHtml) {
  * Build the HTML fragment that replaces a page's embedded nav block.
  *
  * Two <script> elements:
- *   1. Synchronous loader — injects _static_nav.js before site.js runs
- *   2. Tiny inline — re-applies is-current-page to this page's nav entry
+ *   1. Synchronous loader — fetches _static_nav.js (defines the global)
+ *   2. Tiny inline — invokes the global with this page's back-to-root prefix
+ *      and re-applies is-current-page to this page's nav entry
  */
-function buildReplacement (navRel, pageBasename) {
+function buildReplacement (navRel, pageBasename, prefix) {
   const fileJson = JSON.stringify(pageBasename)
+  const prefixJson = JSON.stringify(prefix || '')
   const currentPageJs =
+    `window.__antoraStaticNav&&window.__antoraStaticNav(${prefixJson});` +
     `!function(){var f=${fileJson},` +
     "ls=document.querySelectorAll('.nav-link[href]');" +
     'for(var i=0;i<ls.length;i++){' +
@@ -134,7 +183,16 @@ function buildReplacement (navRel, pageBasename) {
 // Extension entry point
 // ---------------------------------------------------------------------------
 
-module.exports = { findNavBlock, cleanNav, buildNavJs, buildReplacement, MARKER, SHARED_NAV_NAME }
+module.exports = {
+  findNavBlock,
+  cleanNav,
+  rebaseNav,
+  rebaseUrl,
+  buildNavJs,
+  buildReplacement,
+  MARKER,
+  SHARED_NAV_NAME,
+}
 
 module.exports.register = function register ({ config = {} }) {
   const threshold = config.threshold ?? 50_000
@@ -160,13 +218,20 @@ module.exports.register = function register ({ config = {} }) {
     let totalSaved = 0
 
     for (const [key, pages] of groups) {
+      const { component, version } = pages[0].src
+      const componentRoot = path.posix.join(component, version)
+
       // Sample up to 10 pages to find the first one with a large-enough nav.
+      // Capture the sample's directory so we can rebase nav URLs to be
+      // relative to the component@version root.
       let navHtml = null
       for (const page of pages.slice(0, 10)) {
         const html = page.contents.toString('utf8')
         const block = findNavBlock(html)
         if (block && block.text.length >= threshold) {
-          navHtml = cleanNav(block.text)
+          const sampleDir = page.out.dirname.replace(/\\/g, '/')
+          const sampleDirRelToRoot = path.posix.relative(componentRoot, sampleDir)
+          navHtml = rebaseNav(cleanNav(block.text), sampleDirRelToRoot)
           break
         }
       }
@@ -179,8 +244,7 @@ module.exports.register = function register ({ config = {} }) {
         'static-nav: extracting shared nav'
       )
 
-      const { component, version } = pages[0].src
-      const navJsOutPath = path.join(component, version, SHARED_NAV_NAME).replace(/\\/g, '/')
+      const navJsOutPath = path.posix.join(componentRoot, SHARED_NAV_NAME)
 
       const navJsContent = buildNavJs(navHtml)
       siteCatalog.addFile({
@@ -208,11 +272,15 @@ module.exports.register = function register ({ config = {} }) {
           continue
         }
 
-        const navRel = path
-          .relative(page.out.dirname, navJsOutPath)
-          .replace(/\\/g, '/')
+        const pageDir = page.out.dirname.replace(/\\/g, '/')
+        const navRel = path.posix.relative(pageDir, navJsOutPath)
+        // Per-page prefix taking nav URLs from component-root-relative back
+        // to the URL space of this page (e.g. "" for root pages, "../" for
+        // pages one level deep, "../../" for two levels, etc.).
+        const backToRoot = path.posix.relative(pageDir, componentRoot)
+        const prefix = backToRoot === '' ? '' : backToRoot + '/'
 
-        const replacement = buildReplacement(navRel, page.out.basename)
+        const replacement = buildReplacement(navRel, page.out.basename, prefix)
         const newHtml = html.slice(0, block.start) + replacement + html.slice(block.end)
         page.contents = Buffer.from(newHtml, 'utf8')
 

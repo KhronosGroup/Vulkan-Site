@@ -166,4 +166,93 @@ describe('register integration', () => {
     const rewritten = page.contents.toString('utf8')
     assert.ok(rewritten.includes('"vkSpecialFn.html"'), 'page filename in inline script')
   })
+
+  // Regression for the /source/source/ duplication bug. When the nav is
+  // sampled from one page and reused on pages at a different depth, the
+  // shared nav HTML must use component-root-relative URLs and each page's
+  // loader call must pass the right back-to-root prefix so the browser
+  // resolves the link against the page correctly.
+  it('serves correct links across pages at different depths', () => {
+    // Build a realistic nav with hrefs pointing into source/.
+    const navWithRealLinks =
+      '<div id="split-0"><ul class="nav-list">' +
+      '<li class="nav-item"><a class="nav-link" href="source/VK_AMDX_dense_geometry_format.html">Ext</a></li>' +
+      '<li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>' +
+      '<li>' + 'x'.repeat(60_000) + '</li>' +
+      '</ul></div>'
+
+    // Two pages: one at component root, one nested under source/.
+    const rootPage = makePage('spec', 'latest', 'ROOT', 'index.html', navWithRealLinks)
+    const sourcePage = makePage('spec', 'latest', 'ROOT', 'VK_AMDX_other.html', navWithRealLinks)
+    // Hack: rewrite the source page's out path so it lives in source/.
+    sourcePage.out.dirname = 'spec/latest/source'
+    sourcePage.out.path = 'spec/latest/source/VK_AMDX_other.html'
+
+    const ctx = makeContext([rootPage, sourcePage])
+    ctx.fire('pagesComposed')
+
+    const navFile = ctx._addedFiles[0]
+    const navJs = navFile.contents.toString('utf8')
+
+    // The root page samples first (Map iteration is insertion order). Sample
+    // dir is "" so the nav HTML is preserved; the link to source/ext stays
+    // "source/VK_AMDX_dense_geometry_format.html" in the shared nav.
+    assert.ok(
+      navJs.includes('source/VK_AMDX_dense_geometry_format.html'),
+      'shared nav contains the component-root-relative link'
+    )
+
+    // The root page should call the global with an empty prefix; resolving
+    // "source/foo.html" from spec/latest/index.html yields the correct URL.
+    const rootHtml = rootPage.contents.toString('utf8')
+    assert.ok(
+      rootHtml.includes('window.__antoraStaticNav&&window.__antoraStaticNav("")'),
+      `root page expected empty prefix, got: ${rootHtml.match(/__antoraStaticNav\([^)]*\)/g)}`
+    )
+
+    // The source page must call with prefix "../" so the browser resolves
+    // "../source/VK_AMDX_dense_geometry_format.html" relative to
+    // spec/latest/source/ → spec/latest/source/VK_AMDX_dense_geometry_format.html
+    // — NOT spec/latest/source/source/VK_AMDX_dense_geometry_format.html.
+    const sourceHtml = sourcePage.contents.toString('utf8')
+    assert.ok(
+      sourceHtml.includes('window.__antoraStaticNav&&window.__antoraStaticNav("../")'),
+      `source page expected "../" prefix, got: ${sourceHtml.match(/__antoraStaticNav\([^)]*\)/g)}`
+    )
+  })
+
+  // Same scenario, but the sample is taken from a nested page first. The
+  // captured nav has page-relative hrefs; rebasing must promote them to
+  // component-root-relative so the empty-prefix root page still works.
+  it('rebases captured nav when the sample page is nested', () => {
+    const navWithRealLinks =
+      '<div id="split-0"><ul class="nav-list">' +
+      // From a page in source/, a sibling extension is just a basename.
+      '<li class="nav-item"><a class="nav-link" href="VK_AMDX_dense_geometry_format.html">Ext</a></li>' +
+      // From a page in source/, the component root index is "../index.html".
+      '<li class="nav-item"><a class="nav-link" href="../index.html">Home</a></li>' +
+      '<li>' + 'x'.repeat(60_000) + '</li>' +
+      '</ul></div>'
+
+    const sourcePage = makePage('spec', 'latest', 'ROOT', 'VK_AMDX_other.html', navWithRealLinks)
+    sourcePage.out.dirname = 'spec/latest/source'
+    sourcePage.out.path = 'spec/latest/source/VK_AMDX_other.html'
+    const rootPage = makePage('spec', 'latest', 'ROOT', 'index.html', navWithRealLinks)
+
+    // Insert source page first so it's the sample.
+    const ctx = makeContext([sourcePage, rootPage])
+    ctx.fire('pagesComposed')
+
+    const navJs = ctx._addedFiles[0].contents.toString('utf8')
+    // After rebasing from sample dir "source": the basename href becomes
+    // "source/VK_AMDX_..." and "../index.html" becomes "index.html".
+    // Hrefs live inside a JSON-encoded HTML string, so the surrounding
+    // quotes are escaped (\").
+    assert.ok(navJs.includes('source/VK_AMDX_dense_geometry_format.html'),
+      'sibling href was rebased into source/')
+    assert.ok(navJs.includes('href=\\"index.html\\"'),
+      'parent-relative href was collapsed to component-root index.html')
+    assert.ok(!navJs.includes('href=\\"../index.html\\"'),
+      'rebased nav must not retain the original ../index.html')
+  })
 })
