@@ -1,0 +1,192 @@
+# Logical device and queues
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/03_Drawing_a_triangle/00_Setup/04_Logical_device_and_queues.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Specifying the queues to be created](#_specifying_the_queues_to_be_created)
+- [Specifying_the_queues_to_be_created](#_specifying_the_queues_to_be_created)
+- [Specifying used device features](#_specifying_used_device_features)
+- [Specifying_used_device_features](#_specifying_used_device_features)
+- [Enabling additional device features](#_enabling_additional_device_features)
+- [Enabling_additional_device_features](#_enabling_additional_device_features)
+- [Specifying device extensions](#_specifying_device_extensions)
+- [Specifying_device_extensions](#_specifying_device_extensions)
+- [Creating the logical device](#_creating_the_logical_device)
+- [Creating_the_logical_device](#_creating_the_logical_device)
+- [Retrieving queue handles](#_retrieving_queue_handles)
+- [Retrieving_queue_handles](#_retrieving_queue_handles)
+
+## Content
+
+After selecting a physical device to use, we need to set up a **logical device** to
+interface with it. The logical device creation process is similar to the
+instance creation process and describes the features we want to use. We also
+need to specify which queues to create now that we’ve queried which queue
+families are available. You can even create multiple logical devices from the
+same physical device if you have varying requirements.
+
+Start by adding a new class member to store the logical device handle in.
+
+vk::raii::Device device = nullptr;
+
+Next, add a `createLogicalDevice` function that is called from `initVulkan`.
+
+void initVulkan() {
+    createInstance();
+    setupDebugMessenger();
+    pickPhysicalDevice();
+    createLogicalDevice();
+}
+
+void createLogicalDevice() {
+
+}
+
+The creation of a logical device involves specifying a bunch of details in
+structs again, of which the first one will be `vk::DeviceQueueCreateInfo`. This
+structure describes the number of queues we want for a single queue family.
+Right now we’re only interested in a queue with graphics capabilities.
+
+std::vector queueFamilyProperties = physicalDevice.getQueueFamilyProperties();
+auto graphicsQueueFamilyProperty = std::ranges::find_if(queueFamilyProperties, [](auto const &qfp) { return (qfp.queueFlags & vk::QueueFlagBits::eGraphics) != static_cast(0); });
+auto graphicsIndex = static_cast(std::distance(queueFamilyProperties.begin(), graphicsQueueFamilyProperty));
+vk::DeviceQueueCreateInfo deviceQueueCreateInfo { .queueFamilyIndex = graphicsIndex };
+
+The currently available drivers will only allow you to create a small number of
+queues for each queue family, and you don’t really need more than one. That’s
+because you can create all the command buffers on multiple threads and then
+submit them all at once on the main thread with a single low-overhead call.
+
+Vulkan lets you assign priorities to queues to influence the scheduling of
+command buffer execution using floating point numbers between `0.0` and `1.0`.
+This is required even if there is only a single queue:
+
+float queuePriority = 0.5f;
+vk::DeviceQueueCreateInfo deviceQueueCreateInfo { .queueFamilyIndex = graphicsIndex, .queueCount = 1, .pQueuePriorities = &queuePriority };
+
+The next information to specify is the set of device features that we’ll be
+using. These are the features that we queried support for with
+`vk::raii::PhysicalDevice::getFeatures` in the previous chapter, like geometry shaders.
+Right now we don’t need anything special, so we can simply define it and leave
+everything to `vk::False`. We’ll come back to this structure once we’re about to
+start doing more interesting things with Vulkan.
+
+vk::PhysicalDeviceFeatures deviceFeatures;
+
+Vulkan is designed to be backwards compatible, which means that by default, you only get access to the basic features that were available in Vulkan 1.0. To use newer features, you need to explicitly request them during device creation.
+
+In Vulkan, features are organized into different structures based on when they were introduced or what functionality they relate to. For example:
+- Basic features are in `vk::PhysicalDeviceFeatures`
+- Vulkan 1.3 features are in `vk::PhysicalDeviceVulkan13Features`
+- Extension-specific features are in their own structures (like `vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT`)
+
+To enable multiple sets of features, Vulkan uses a concept called "structure chaining." Each feature structure has a `pNext` field that can point to another structure, creating a chain of feature requests.
+
+The C++ Vulkan API provides a helper template called `vk::StructureChain` that makes this process easier. Let’s see how to use it:
+
+// Create a chain of feature structures
+vk::StructureChain featureChain = {
+    {},                               // vk::PhysicalDeviceFeatures2 (empty for now)
+    {.dynamicRendering = true },      // Enable dynamic rendering from Vulkan 1.3
+    {.extendedDynamicState = true }   // Enable extended dynamic state from the extension
+};
+
+Here’s what’s happening in this code:
+
+We create a `vk::StructureChain` with three different feature structures.
+
+For each structure in the chain, we provide an initializer:
+
+* 
+The first structure (`vk::PhysicalDeviceFeatures2`) is left empty with `{}`
+
+* 
+In the second structure, we enable the `dynamicRendering` feature from Vulkan 1.3
+
+* 
+In the third structure, we enable the `extendedDynamicState` feature from an extension
+
+The `vk::StructureChain` template automatically connects these structures together by setting up the `pNext` pointers between them. This saves us from having to manually link each structure to the next one.
+
+When we create the logical device later, we’ll pass a pointer to the first structure in this chain, which will allow Vulkan to see all the features we want to enable.
+
+For our application to work properly, we need to enable certain device extensions. These extensions provide additional functionality that we’ll need later in the tutorial.
+
+std::vector requiredDeviceExtension = {
+    vk::KHRSwapchainExtensionName};
+
+The `VK_KHR_swapchain` extension is required for presenting rendered images to the window. Other extensions provide additional functionality that we’ll use in later parts of the tutorial.
+
+With all the necessary information prepared, we can now create the logical device. We need to fill in the `vk::DeviceCreateInfo` structure and connect our feature chain to it:
+
+vk::DeviceCreateInfo deviceCreateInfo{
+    .pNext = &featureChain.get(),
+    .queueCreateInfoCount = 1,
+    .pQueueCreateInfos = &deviceQueueCreateInfo,
+    .enabledExtensionCount = static_cast(requiredDeviceExtension.size()),
+    .ppEnabledExtensionNames = requiredDeviceExtension.data()
+};
+
+Reviewing how we connect our feature chain to the device creation process:
+
+The `featureChain.get()` method retrieves a reference to the first structure in our chain (the `vk::PhysicalDeviceFeatures2` structure).
+
+We assign this reference to the `pNext` field of the `deviceCreateInfo` structure.
+
+Since all the structures in our feature chain are already connected (thanks to `vk::StructureChain`), Vulkan will be able to see all the features we want to enable by following the chain of `pNext` pointers.
+
+This approach allows us to request multiple sets of features in a clean and organized way. Vulkan will process each structure in the chain and enable the requested features during device creation.
+
+The remainder of the information bears a resemblance to the `vk::InstanceCreateInfo` struct and requires you to specify extensions. The difference is that these are device-specific this time.
+
+An example of a device-specific extension is `VK_KHR_swapchain`, which allows
+you to present rendered images from that device to windows. It is possible that
+there are Vulkan devices in the system that lack this ability, for example,
+because they only support compute operations. We will come back to this
+extension in the swap chain chapter.
+
+Previous implementations of Vulkan made a distinction between instance and
+device-specific validation layers, but this is
+[no longer the case](https://docs.vulkan.org/spec/latest/chapters/raytracing.html#extendingvulkan-layers-devicelayerdeprecation).
+That means that the `enabledLayerCount` and `ppEnabledLayerNames` fields of
+`vk::DeviceCreateInfo` are ignored by up-to-date implementations.
+
+As mentioned earlier, we need several device-specific extensions for our application to work properly.
+
+device = vk::raii::Device( physicalDevice, deviceCreateInfo );
+
+The parameters are the physical device to interface with, and the usage
+info we just specified. Similarly to the instance creation function, this
+call can throw errors based on enabling non-existent extensions or specifying
+the desired usage of unsupported features.
+
+Logical devices don’t interact directly with instances, which is why it’s not
+included as a parameter.
+
+The queues are automatically created along with the logical device, but we don’t have a handle to interface with them yet.
+First, add a class member to store a handle to the graphics queue:
+
+vk::raii::Queue graphicsQueue;
+
+Device queues are implicitly cleaned up when the device is destroyed, so we
+don’t need to do anything in `cleanup`.
+
+We can use the `vk::raii::Queue` constructor to retrieve a queue handle for one
+queue family. The parameters are the logical device, queue family index, and queue
+index. Because we’re only creating a single queue from this family, we’ll simply
+use queue index `0`.
+
+graphicsQueue = vk::raii::Queue( device, graphicsIndex, 0 );
+
+With the logical device and queue handles, we can now actually start using the
+graphics card to do things! In the
+[next few chapters](../01_Presentation/00_Window_surface.html), we’ll set
+ up the resources to present results to the window system.
+
+[C++ code](../../_attachments/04_logical_device.cpp)

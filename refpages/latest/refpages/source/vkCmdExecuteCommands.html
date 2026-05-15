@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>vkCmdExecuteCommands(3) :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:refpages" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="vkCmdExecuteCommands.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href').split('/').pop()===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan API Reference Pages</a></li>
+    <li>Commands</li>
+    <li>C</li>
+    <li><a href="vkCmdExecuteCommands.html">vkCmdExecuteCommands</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">vkCmdExecuteCommands(3)</h1>
+<div class="sect1">
+<h2 id="_name"><a class="anchor" href="#_name"></a>Name</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>vkCmdExecuteCommands - Execute a secondary command buffer from a primary command buffer</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_c_specification"><a class="anchor" href="#_c_specification"></a>C Specification</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Secondary command buffers <strong>must</strong> not be directly submitted to a queue.
+To record a secondary command buffer to execute as part of a primary command
+buffer, call:</p>
+</div>
+<div id="vkCmdExecuteCommands" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Provided by VK_VERSION_1_0
+void vkCmdExecuteCommands(
+    VkCommandBuffer                             commandBuffer,
+    uint32_t                                    commandBufferCount,
+    const VkCommandBuffer*                      pCommandBuffers);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_parameters"><a class="anchor" href="#_parameters"></a>Parameters</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is a handle to a primary command buffer that the
+secondary command buffers are executed in.</p>
+</li>
+<li>
+<p><code>commandBufferCount</code> is the length of the <code>pCommandBuffers</code>
+array.</p>
+</li>
+<li>
+<p><code>pCommandBuffers</code> is a pointer to an array of
+<code>commandBufferCount</code> secondary command buffer handles, which are
+recorded to execute in the primary command buffer in the order they are
+listed in the array.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_description"><a class="anchor" href="#_description"></a>Description</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If any element of <code>pCommandBuffers</code> was not recorded with the
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</a> flag, and it was recorded
+into any other primary command buffer which is currently in the
+<a href="../../../../spec/latest/chapters/cmdbuffers.html#commandbuffers-lifecycle" class="xref page">executable or recording state</a>, that primary
+command buffer becomes <a href="../../../../spec/latest/chapters/cmdbuffers.html#commandbuffers-lifecycle" class="xref page">invalid</a>.</p>
+</div>
+<div class="paragraph">
+<p>If the <a href="../../../../spec/latest/chapters/features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a> feature
+is enabled it is valid usage for <code>vkCmdExecuteCommands</code> to also be
+recorded to a <a href="../../../../spec/latest/appendices/glossary.html#glossary" class="xref page">secondary command buffer</a>.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00088" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00088"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00088</span><br>
+
+Each element of <code>pCommandBuffers</code> <strong>must</strong> have been allocated with a
+<code>level</code> of <a href="VkCommandBufferLevel.html" class="xref page">VK_COMMAND_BUFFER_LEVEL_SECONDARY</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00089" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00089"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00089</span><br>
+
+Each element of <code>pCommandBuffers</code> <strong>must</strong> be in the
+<a href="../../../../spec/latest/chapters/cmdbuffers.html#commandbuffers-lifecycle" class="xref page">pending or executable state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00091" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00091"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00091</span><br>
+
+If any element of <code>pCommandBuffers</code> was not recorded with the
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</a> flag, it <strong>must</strong> not be
+in the <a href="../../../../spec/latest/chapters/cmdbuffers.html#commandbuffers-lifecycle" class="xref page">pending state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00092" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00092"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00092</span><br>
+
+If any element of <code>pCommandBuffers</code> was not recorded with the
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</a> flag, it <strong>must</strong> not
+have already been recorded to <code>commandBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00093" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00093"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00093</span><br>
+
+If any element of <code>pCommandBuffers</code> was not recorded with the
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</a> flag, it <strong>must</strong> not
+appear more than once in <code>pCommandBuffers</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00094" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00094"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00094</span><br>
+
+Each element of <code>pCommandBuffers</code> <strong>must</strong> have been allocated from a
+<code>VkCommandPool</code> that was created for the same queue family as the
+<code>VkCommandPool</code> from which <code>commandBuffer</code> was allocated</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00096" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00096"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00096</span><br>
+
+If this command is called within a render pass instance, each element of
+<code>pCommandBuffers</code> <strong>must</strong> have been recorded with the
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00099" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00099"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00099</span><br>
+
+If this command is called within a render pass instance, and any element
+of <code>pCommandBuffers</code> was recorded with
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a>::<code>framebuffer</code> not equal to
+<a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, that <code>VkFramebuffer</code> <strong>must</strong> match the
+<code>VkFramebuffer</code> used in the current render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-contents-09680" href="#VUID-vkCmdExecuteCommands-contents-09680"></a> <span class="vuid">VUID-vkCmdExecuteCommands-contents-09680</span><br>
+
+    If this command is called within a render pass instance begun with
+    <a href="vkCmdBeginRenderPass.html" class="xref page">vkCmdBeginRenderPass</a>, and <a href="vkCmdNextSubpass.html" class="xref page">vkCmdNextSubpass</a> has not been
+    called in the current render pass instance, the <code>contents</code> parameter
+    of <a href="vkCmdBeginRenderPass.html" class="xref page">vkCmdBeginRenderPass</a> <strong>must</strong> have been
+    <a href="VkSubpassContents.html" class="xref page">VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS</a>
+, or <a href="VkSubpassContents.html" class="xref page">VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_EXT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-None-09681" href="#VUID-vkCmdExecuteCommands-None-09681"></a> <span class="vuid">VUID-vkCmdExecuteCommands-None-09681</span><br>
+
+    If this command is called within a render pass instance begun with
+    <a href="vkCmdBeginRenderPass.html" class="xref page">vkCmdBeginRenderPass</a>, and <a href="vkCmdNextSubpass.html" class="xref page">vkCmdNextSubpass</a> has been called
+    in the current render pass instance, the <code>contents</code> parameter of the
+    last call to <a href="vkCmdNextSubpass.html" class="xref page">vkCmdNextSubpass</a> <strong>must</strong> have been
+    <a href="VkSubpassContents.html" class="xref page">VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS</a>
+, or <a href="VkSubpassContents.html" class="xref page">VK_SUBPASS_CONTENTS_INLINE_AND_SECONDARY_COMMAND_BUFFERS_KHR</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06019" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06019"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06019</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRenderPass.html" class="xref page">vkCmdBeginRenderPass</a>, each element of <code>pCommandBuffers</code> <strong>must</strong>
+have been recorded with
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a>::<code>subpass</code> set to the index of
+the subpass which the given command buffer will be executed in</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pBeginInfo-06020" href="#VUID-vkCmdExecuteCommands-pBeginInfo-06020"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pBeginInfo-06020</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRenderPass.html" class="xref page">vkCmdBeginRenderPass</a>, the render passes specified in the
+<code>pBeginInfo-&gt;pInheritanceInfo&#8594;renderPass</code> members of the
+<a href="vkBeginCommandBuffer.html" class="xref page">vkBeginCommandBuffer</a> commands used to begin recording each element
+of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="../../../../spec/latest/chapters/renderpass.html#renderpass-compatibility" class="xref page">compatible</a> with the current render pass</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-02865" href="#VUID-vkCmdExecuteCommands-pNext-02865"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-02865</span><br>
+
+If this command is called within a render pass instance that included
+<a href="VkRenderPassTransformBeginInfoQCOM.html" class="xref page">VkRenderPassTransformBeginInfoQCOM</a> in the <code>pNext</code> chain of
+<a href="VkRenderPassBeginInfo.html" class="xref page">VkRenderPassBeginInfo</a>, then each element of <code>pCommandBuffers</code>
+<strong>must</strong> have been recorded with
+<a href="VkCommandBufferInheritanceRenderPassTransformInfoQCOM.html" class="xref page">VkCommandBufferInheritanceRenderPassTransformInfoQCOM</a> in the
+<code>pNext</code> chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-02866" href="#VUID-vkCmdExecuteCommands-pNext-02866"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-02866</span><br>
+
+If this command is called within a render pass instance that included
+<a href="VkRenderPassTransformBeginInfoQCOM.html" class="xref page">VkRenderPassTransformBeginInfoQCOM</a> in the <code>pNext</code> chain of
+<a href="VkRenderPassBeginInfo.html" class="xref page">VkRenderPassBeginInfo</a>, then each element of <code>pCommandBuffers</code>
+<strong>must</strong> have been recorded with
+<a href="VkCommandBufferInheritanceRenderPassTransformInfoQCOM.html" class="xref page">VkCommandBufferInheritanceRenderPassTransformInfoQCOM</a>::<code>transform</code>
+identical to <a href="VkRenderPassTransformBeginInfoQCOM.html" class="xref page">VkRenderPassTransformBeginInfoQCOM</a>::<code>transform</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-02867" href="#VUID-vkCmdExecuteCommands-pNext-02867"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-02867</span><br>
+
+If this command is called within a render pass instance that included
+<a href="VkRenderPassTransformBeginInfoQCOM.html" class="xref page">VkRenderPassTransformBeginInfoQCOM</a> in the <code>pNext</code> chain of
+<a href="VkRenderPassBeginInfo.html" class="xref page">VkRenderPassBeginInfo</a>, then each element of <code>pCommandBuffers</code>
+<strong>must</strong> have been recorded with
+<a href="VkCommandBufferInheritanceRenderPassTransformInfoQCOM.html" class="xref page">VkCommandBufferInheritanceRenderPassTransformInfoQCOM</a>::<code>renderArea</code>
+identical to <a href="VkRenderPassBeginInfo.html" class="xref page">VkRenderPassBeginInfo</a>::<code>renderArea</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00100" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00100"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00100</span><br>
+
+If <code>vkCmdExecuteCommands</code> is not being called within a render pass
+instance, each element of <code>pCommandBuffers</code> <strong>must</strong> not have been
+recorded with the <a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-00101" href="#VUID-vkCmdExecuteCommands-commandBuffer-00101"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-00101</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-inheritedQueries" class="xref page"><code>inheritedQueries</code></a> feature is
+not enabled, <code>commandBuffer</code> <strong>must</strong> not have any queries
+<a href="../../../../spec/latest/chapters/queries.html#queries-operation-active" class="xref page">active</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-00102" href="#VUID-vkCmdExecuteCommands-commandBuffer-00102"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-00102</span><br>
+
+If <code>commandBuffer</code> has a <a href="VkQueryType.html" class="xref page">VK_QUERY_TYPE_OCCLUSION</a> query
+<a href="../../../../spec/latest/chapters/queries.html#queries-operation-active" class="xref page">active</a>, then each element of
+<code>pCommandBuffers</code> <strong>must</strong> have been recorded with
+<code>VkCommandBufferInheritanceInfo</code>::<code>occlusionQueryEnable</code> set to
+<a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-00103" href="#VUID-vkCmdExecuteCommands-commandBuffer-00103"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-00103</span><br>
+
+If <code>commandBuffer</code> has a <a href="VkQueryType.html" class="xref page">VK_QUERY_TYPE_OCCLUSION</a> query
+<a href="../../../../spec/latest/chapters/queries.html#queries-operation-active" class="xref page">active</a>, then each element of
+<code>pCommandBuffers</code> <strong>must</strong> have been recorded with
+<code>VkCommandBufferInheritanceInfo</code>::<code>queryFlags</code> having all bits
+set that are set for the query</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-00104" href="#VUID-vkCmdExecuteCommands-commandBuffer-00104"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-00104</span><br>
+
+If <code>commandBuffer</code> has a <a href="VkQueryType.html" class="xref page">VK_QUERY_TYPE_PIPELINE_STATISTICS</a>
+query <a href="../../../../spec/latest/chapters/queries.html#queries-operation-active" class="xref page">active</a>, then each element of
+<code>pCommandBuffers</code> <strong>must</strong> have been recorded with
+<code>VkCommandBufferInheritanceInfo</code>::<code>pipelineStatistics</code> having
+all bits set that are set in the <code>VkQueryPool</code> the query uses</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-00105" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-00105"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-00105</span><br>
+
+Each element of <code>pCommandBuffers</code> <strong>must</strong> not begin any query types
+that are <a href="../../../../spec/latest/chapters/queries.html#queries-operation-active" class="xref page">active</a> in <code>commandBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-07594" href="#VUID-vkCmdExecuteCommands-commandBuffer-07594"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-07594</span><br>
+
+<code>commandBuffer</code> <strong>must</strong> not have any queries other than
+<a href="VkQueryType.html" class="xref page">VK_QUERY_TYPE_OCCLUSION</a> and
+<a href="VkQueryType.html" class="xref page">VK_QUERY_TYPE_PIPELINE_STATISTICS</a>
+<a href="../../../../spec/latest/chapters/queries.html#queries-operation-active" class="xref page">active</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-01820" href="#VUID-vkCmdExecuteCommands-commandBuffer-01820"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-01820</span><br>
+
+If <code>commandBuffer</code> is a protected command buffer and
+<a href="../../../../spec/latest/chapters/devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+each element of <code>pCommandBuffers</code> <strong>must</strong> be a protected command
+buffer</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-01821" href="#VUID-vkCmdExecuteCommands-commandBuffer-01821"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-01821</span><br>
+
+If <code>commandBuffer</code> is an unprotected command buffer and
+<a href="../../../../spec/latest/chapters/devsandqueues.html#limits-protectedNoFault" class="xref page"><code>protectedNoFault</code></a> is not supported,
+each element of <code>pCommandBuffers</code> <strong>must</strong> be an unprotected command
+buffer</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-None-02286" href="#VUID-vkCmdExecuteCommands-None-02286"></a> <span class="vuid">VUID-vkCmdExecuteCommands-None-02286</span><br>
+
+This command <strong>must</strong> not be recorded when transform feedback is active</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-06533" href="#VUID-vkCmdExecuteCommands-commandBuffer-06533"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-06533</span><br>
+
+If this command is called within a render pass instance and any recorded
+command in <code>commandBuffer</code> in the current subpass will write to an
+image subresource as an attachment, commands recorded in elements of
+<code>pCommandBuffers</code> <strong>must</strong> not read from the memory backing that image
+subresource in any other way</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-06534" href="#VUID-vkCmdExecuteCommands-commandBuffer-06534"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-06534</span><br>
+
+If this command is called within a render pass instance and any recorded
+command in <code>commandBuffer</code> in the current subpass will read from an
+image subresource used as an attachment in any way other than as an
+attachment, commands recorded in elements of <code>pCommandBuffers</code> <strong>must</strong>
+not write to that image subresource as an attachment</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06535" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06535"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06535</span><br>
+
+If this command is called within a render pass instance and any recorded
+command in a given element of <code>pCommandBuffers</code> will write to an
+image subresource as an attachment, commands recorded in elements of
+<code>pCommandBuffers</code> at a higher index <strong>must</strong> not read from the memory
+backing that image subresource in any other way</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06536" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06536"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06536</span><br>
+
+If this command is called within a render pass instance and any recorded
+command in a given element of <code>pCommandBuffers</code> will read from an
+image subresource used as an attachment in any way other than as an
+attachment, commands recorded in elements of <code>pCommandBuffers</code> at a
+higher index <strong>must</strong> not write to that image subresource as an attachment</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06021" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06021"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06021</span><br>
+
+If <code>pCommandBuffers</code> contains any <a href="../../../../spec/latest/chapters/renderpass.html#renderpass-suspension" class="xref page">suspended    render pass instances</a>, there <strong>must</strong> be no action or synchronization
+commands between that render pass instance and any render pass instance
+that resumes it</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-06022" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-06022"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-06022</span><br>
+
+If <code>pCommandBuffers</code> contains any <a href="../../../../spec/latest/chapters/renderpass.html#renderpass-suspension" class="xref page">suspended    render pass instances</a>, there <strong>must</strong> be no render pass instances between
+that render pass instance and any render pass instance that resumes it</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-variableSampleLocations-06023" href="#VUID-vkCmdExecuteCommands-variableSampleLocations-06023"></a> <span class="vuid">VUID-vkCmdExecuteCommands-variableSampleLocations-06023</span><br>
+
+If the <a href="../../../../spec/latest/chapters/limits.html#limits-variableSampleLocations" class="xref page"><code>variableSampleLocations</code></a>
+limit is not supported, and any element of <code>pCommandBuffers</code>
+contains any <a href="../../../../spec/latest/chapters/renderpass.html#renderpass-suspension" class="xref page">suspended render pass instances</a>,
+where a graphics pipeline has been bound, any pipelines bound in the
+render pass instance that resumes it, or any subsequent render pass
+instances that resume from that one and so on, <strong>must</strong> use the same sample
+locations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-flags-06024" href="#VUID-vkCmdExecuteCommands-flags-06024"></a> <span class="vuid">VUID-vkCmdExecuteCommands-flags-06024</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, its <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>flags</code>
+parameter <strong>must</strong> have included
+<a href="VkRenderingFlagBits.html" class="xref page">VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pBeginInfo-06025" href="#VUID-vkCmdExecuteCommands-pBeginInfo-06025"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pBeginInfo-06025</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, the render passes specified in the
+<code>pBeginInfo-&gt;pInheritanceInfo&#8594;renderPass</code> members of the
+<a href="vkBeginCommandBuffer.html" class="xref page">vkBeginCommandBuffer</a> commands used to begin recording each element
+of <code>pCommandBuffers</code> <strong>must</strong> be <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-flags-06026" href="#VUID-vkCmdExecuteCommands-flags-06026"></a> <span class="vuid">VUID-vkCmdExecuteCommands-flags-06026</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, the <code>flags</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>flags</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, excluding
+<a href="VkRenderingFlagBits.html" class="xref page">VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-colorAttachmentCount-06027" href="#VUID-vkCmdExecuteCommands-colorAttachmentCount-06027"></a> <span class="vuid">VUID-vkCmdExecuteCommands-colorAttachmentCount-06027</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, the <code>colorAttachmentCount</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>colorAttachmentCount</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-imageView-06028" href="#VUID-vkCmdExecuteCommands-imageView-06028"></a> <span class="vuid">VUID-vkCmdExecuteCommands-imageView-06028</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, if the <code>imageView</code> member of an element
+of the <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the corresponding
+element of the <code>pColorAttachmentFormats</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+format used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-imageView-07606" href="#VUID-vkCmdExecuteCommands-imageView-07606"></a> <span class="vuid">VUID-vkCmdExecuteCommands-imageView-07606</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, if the <code>imageView</code> member of an element
+of the <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the corresponding
+element of the <code>pColorAttachmentFormats</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="VkFormat.html" class="xref page">VK_FORMAT_UNDEFINED</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pDepthAttachment-06029" href="#VUID-vkCmdExecuteCommands-pDepthAttachment-06029"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pDepthAttachment-06029</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, if the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>depthAttachmentFormat</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+format used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pStencilAttachment-06030" href="#VUID-vkCmdExecuteCommands-pStencilAttachment-06030"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pStencilAttachment-06030</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, if the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>stencilAttachmentFormat</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+format used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pDepthAttachment-06774" href="#VUID-vkCmdExecuteCommands-pDepthAttachment-06774"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pDepthAttachment-06774</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> was <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>depthAttachmentFormat</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="VkFormat.html" class="xref page">VK_FORMAT_UNDEFINED</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pStencilAttachment-06775" href="#VUID-vkCmdExecuteCommands-pStencilAttachment-06775"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pStencilAttachment-06775</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> was <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>stencilAttachmentFormat</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="VkFormat.html" class="xref page">VK_FORMAT_UNDEFINED</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-11500" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-11500"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-11500</span><br>
+
+If the current render pass instance was begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and contains a custom resolve, then each
+element of <code>pCommandBuffers</code> <strong>must</strong> have been recorded with a
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> struct chained to its
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-11501" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-11501"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-11501</span><br>
+
+If the current render pass instance was begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and does not contain a custom resolve, then
+each element of <code>pCommandBuffers</code> <strong>must</strong> not have been recorded with
+a <a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> struct chained to its
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-11502" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-11502"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-11502</span><br>
+
+If the current render pass instance was begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and <a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has been
+recorded in the render pass instance, then each element of
+<code>pCommandBuffers</code> <strong>must</strong> have been recorded with
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a>::<code>customResolve</code> as <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-11503" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-11503"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-11503</span><br>
+
+If the current render pass instance was begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and contains a custom resolve, and
+<a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has not been recorded in the render
+pass instance, then each element of <code>pCommandBuffers</code> <strong>must</strong> have
+been recorded with
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a>::<code>customResolve</code> as
+<a href="VK_FALSE.html" class="xref page">VK_FALSE</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-colorAttachmentCount-11532" href="#VUID-vkCmdExecuteCommands-colorAttachmentCount-11532"></a> <span class="vuid">VUID-vkCmdExecuteCommands-colorAttachmentCount-11532</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> that contains a custom resolve, the
+<code>colorAttachmentCount</code> member of the
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> structure included in the <code>pNext</code>
+chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to
+the <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>colorAttachmentCount</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-resolveImageView-11533" href="#VUID-vkCmdExecuteCommands-resolveImageView-11533"></a> <span class="vuid">VUID-vkCmdExecuteCommands-resolveImageView-11533</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> that contains a custom resolve, if the
+<code>resolveImageView</code> member of an element of the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the corresponding
+element of the <code>pColorAttachmentFormats</code> member of the
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> structure included in the <code>pNext</code>
+chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to
+the format used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-resolveImageView-11534" href="#VUID-vkCmdExecuteCommands-resolveImageView-11534"></a> <span class="vuid">VUID-vkCmdExecuteCommands-resolveImageView-11534</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> that contains a custom resolve, if the
+<code>resolveImageView</code> member of an element of the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the corresponding
+element of the <code>pColorAttachmentFormats</code> member of the
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> structure included in the <code>pNext</code>
+chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="VkFormat.html" class="xref page">VK_FORMAT_UNDEFINED</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pDepthAttachment-11535" href="#VUID-vkCmdExecuteCommands-pDepthAttachment-11535"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pDepthAttachment-11535</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, if the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>depthAttachmentFormat</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+format used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pStencilAttachment-11536" href="#VUID-vkCmdExecuteCommands-pStencilAttachment-11536"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pStencilAttachment-11536</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> that contains a custom resolve, if the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;resolveImageView</code>
+parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+value of the <code>stencilAttachmentFormat</code> member of the
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> structure included in the <code>pNext</code>
+chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to
+the format used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pDepthAttachment-11537" href="#VUID-vkCmdExecuteCommands-pDepthAttachment-11537"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pDepthAttachment-11537</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> that contains a custom resolve and the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;resolveImageView</code>
+parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> was <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+value of the <code>depthAttachmentFormat</code> member of the
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> structure included in the <code>pNext</code>
+chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="VkFormat.html" class="xref page">VK_FORMAT_UNDEFINED</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pStencilAttachment-11538" href="#VUID-vkCmdExecuteCommands-pStencilAttachment-11538"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pStencilAttachment-11538</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> that contains a custom resolve and the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;resolveImageView</code>
+parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> was <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+value of the <code>stencilAttachmentFormat</code> member of the
+<a href="VkCustomResolveCreateInfoEXT.html" class="xref page">VkCustomResolveCreateInfoEXT</a> structure included in the <code>pNext</code>
+chain of <a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to
+begin recording each element of <code>pCommandBuffers</code> <strong>must</strong> be
+<a href="VkFormat.html" class="xref page">VK_FORMAT_UNDEFINED</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-resolveImageView-11526" href="#VUID-vkCmdExecuteCommands-resolveImageView-11526"></a> <span class="vuid">VUID-vkCmdExecuteCommands-resolveImageView-11526</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, <a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has been
+recorded in the render pass instance, and the <code>resolveImageView</code>
+member of an element of the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+<strong>must</strong> be equal to the sample count used to create that
+<code>resolveImageView</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pDepthAttachment-11527" href="#VUID-vkCmdExecuteCommands-pDepthAttachment-11527"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pDepthAttachment-11527</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, <a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has been
+recorded in the render pass instance, and the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;resolveImageView</code>
+parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+value of
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+<strong>must</strong> be equal to the sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pStencilAttachment-11528" href="#VUID-vkCmdExecuteCommands-pStencilAttachment-11528"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pStencilAttachment-11528</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, <a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has been
+recorded in the render pass instance, and the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;resolveImageView</code>
+parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+value of
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+<strong>must</strong> be equal to the sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-viewMask-06031" href="#VUID-vkCmdExecuteCommands-viewMask-06031"></a> <span class="vuid">VUID-vkCmdExecuteCommands-viewMask-06031</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, the <code>viewMask</code> member of the
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>viewMask</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-06032" href="#VUID-vkCmdExecuteCommands-pNext-06032"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-06032</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the <code>pNext</code> chain of
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> includes a
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure, if the <code>imageView</code>
+member of an element of the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the corresponding
+element of the <code>pColorAttachmentSamples</code> member of the
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-06033" href="#VUID-vkCmdExecuteCommands-pNext-06033"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-06033</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the <code>pNext</code> chain of
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> includes a
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure, if the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>depthStencilAttachmentSamples</code> member of the
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-06034" href="#VUID-vkCmdExecuteCommands-pNext-06034"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-06034</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the <code>pNext</code> chain of
+<a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> includes a
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure, if the
+<a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;imageView</code> parameter to
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of the
+<code>depthStencilAttachmentSamples</code> member of the
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure included in the
+<code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-06035" href="#VUID-vkCmdExecuteCommands-pNext-06035"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-06035</span><br>
+
+    If this command is called within a render pass instance begun with
+    <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, and the <code>pNext</code> chain of
+    <a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> does not include a
+    <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+    <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure,
+<a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has not yet been recorded in the render pass instance, and
+    if the <code>imageView</code> member of an element of the
+    <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pColorAttachments</code> parameter to
+    <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the value of
+    <a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+    <strong>must</strong> be equal to the sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-06036" href="#VUID-vkCmdExecuteCommands-pNext-06036"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-06036</span><br>
+
+    If this command is called within a render pass instance begun with
+    <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the <code>pNext</code> chain of
+    <a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> does not include a
+    <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+    <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure,
+<a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has not yet been recorded in the render pass instance, and
+    if the <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pDepthAttachment-&gt;imageView</code>
+    parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+    value of
+    <a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+    <strong>must</strong> be equal to the sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-06037" href="#VUID-vkCmdExecuteCommands-pNext-06037"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-06037</span><br>
+
+    If this command is called within a render pass instance begun with
+    <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> and the <code>pNext</code> chain of
+    <a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> does not include a
+    <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+    <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure,
+<a href="vkCmdBeginCustomResolveEXT.html" class="xref page">vkCmdBeginCustomResolveEXT</a> has not yet been recorded in the render pass instance, and
+    if the <a href="VkRenderingInfo.html" class="xref page">VkRenderingInfo</a>::<code>pStencilAttachment-&gt;imageView</code>
+    parameter to <a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a>, the
+    value of
+    <a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+    <strong>must</strong> be equal to the sample count used to create that image view</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-09299" href="#VUID-vkCmdExecuteCommands-pNext-09299"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-09299</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, with any color attachment using a resolve
+mode of <a href="VkResolveModeFlagBits.html" class="xref page">VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_BIT_ANDROID</a>,
+the <code>pNext</code> chain of <a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> used to
+create each element of <code>pCommandBuffers</code> <strong>must</strong> include a
+<a href="VkExternalFormatANDROID.html" class="xref page">VkExternalFormatANDROID</a> structure with an <code>externalFormat</code>
+matching that used to create the resolve attachment in the render pass</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pNext-09300" href="#VUID-vkCmdExecuteCommands-pNext-09300"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pNext-09300</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a> with any color attachment using a resolve mode
+of <a href="VkResolveModeFlagBits.html" class="xref page">VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_BIT_ANDROID</a>, and the
+<code>pNext</code> chain of <a href="VkCommandBufferInheritanceInfo.html" class="xref page">VkCommandBufferInheritanceInfo</a> does not
+include a <a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoAMD</a> or
+<a href="VkAttachmentSampleCountInfoAMD.html" class="xref page">VkAttachmentSampleCountInfoNV</a> structure, the value of
+<a href="VkCommandBufferInheritanceRenderingInfo.html" class="xref page">VkCommandBufferInheritanceRenderingInfo</a>::<code>rasterizationSamples</code>
+<strong>must</strong> be <a href="VkSampleCountFlagBits.html" class="xref page">VK_SAMPLE_COUNT_1_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-09375" href="#VUID-vkCmdExecuteCommands-commandBuffer-09375"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-09375</span><br>
+
+<code>commandBuffer</code> <strong>must</strong> not be a <a href="../../../../spec/latest/appendices/glossary.html#glossary" class="xref page">secondary command    buffer</a>
+unless the <a href="../../../../spec/latest/chapters/features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a>
+feature is enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-nestedCommandBuffer-09376" href="#VUID-vkCmdExecuteCommands-nestedCommandBuffer-09376"></a> <span class="vuid">VUID-vkCmdExecuteCommands-nestedCommandBuffer-09376</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-nestedCommandBuffer" class="xref page"><code>nestedCommandBuffer</code></a>
+feature is enabled, and <code>commandBuffer</code> is a <a href="../../../../spec/latest/appendices/glossary.html#glossary" class="xref page">secondary    command buffer</a>, the <a href="../../../../spec/latest/appendices/glossary.html#glossary" class="xref page">command buffer nesting level</a> of each
+element of <code>pCommandBuffers</code> <strong>must</strong> be less than
+<a href="../../../../spec/latest/chapters/limits.html#limits-maxCommandBufferNestingLevel" class="xref page">    <code>maxCommandBufferNestingLevel</code></a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-nestedCommandBufferRendering-09377" href="#VUID-vkCmdExecuteCommands-nestedCommandBufferRendering-09377"></a> <span class="vuid">VUID-vkCmdExecuteCommands-nestedCommandBufferRendering-09377</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-nestedCommandBufferRendering" class="xref page">    <code>nestedCommandBufferRendering</code></a> feature is not enabled, and
+<code>commandBuffer</code> is a <a href="../../../../spec/latest/appendices/glossary.html#glossary" class="xref page">secondary command buffer</a>,
+<code>commandBuffer</code> <strong>must</strong> not have been recorded with
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-nestedCommandBufferSimultaneousUse-09378" href="#VUID-vkCmdExecuteCommands-nestedCommandBufferSimultaneousUse-09378"></a> <span class="vuid">VUID-vkCmdExecuteCommands-nestedCommandBufferSimultaneousUse-09378</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-nestedCommandBufferSimultaneousUse" class="xref page">    <code>nestedCommandBufferSimultaneousUse</code></a> feature is not enabled, and
+<code>commandBuffer</code> is a <a href="../../../../spec/latest/appendices/glossary.html#glossary" class="xref page">secondary command buffer</a>, each
+element of <code>pCommandBuffers</code> <strong>must</strong> not have been recorded with
+<a href="VkCommandBufferUsageFlagBits.html" class="xref page">VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-09504" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-09504"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-09504</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, the color attachment mapping state specified
+by <a href="VkRenderingAttachmentLocationInfo.html" class="xref page">VkRenderingAttachmentLocationInfo</a> in the inheritance info of
+each element of <code>pCommandBuffers</code> and in the current state of
+<code>commandBuffer</code> <strong>must</strong> match</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-09505" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-09505"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-09505</span><br>
+
+If this command is called within a render pass instance begun with
+<a href="vkCmdBeginRendering.html" class="xref page">vkCmdBeginRendering</a>, the input attachment mapping state specified
+by <a href="VkRenderingInputAttachmentIndexInfo.html" class="xref page">VkRenderingInputAttachmentIndexInfo</a> in the inheritance info of
+each element of <code>pCommandBuffers</code> and in the current state of
+<code>commandBuffer</code> <strong>must</strong> match</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-memory-10724" href="#VUID-vkCmdExecuteCommands-memory-10724"></a> <span class="vuid">VUID-vkCmdExecuteCommands-memory-10724</span><br>
+
+If this command is called within a render pass instance, the size of
+<code>memory</code> member of the <a href="VkTileMemoryBindInfoQCOM.html" class="xref page">VkTileMemoryBindInfoQCOM</a> structure
+included in the <code>pNext</code> chain of
+<a href="VkCommandBufferBeginInfo.html" class="xref page">VkCommandBufferBeginInfo</a>::<code>pInheritanceInfo</code> used to begin
+recording each element of <code>pCommandBuffers</code> <strong>must</strong> be equal to the
+active bound <a href="../../../../spec/latest/chapters/memory.html#memory-bind-tile-memory" class="xref page">bound tile memory object</a> in
+<code>commandBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-10620" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-10620"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-10620</span><br>
+
+If this command is being recorded within a render pass instance with
+<a href="../../../../spec/latest/chapters/renderpass.html#renderpass-tile-shading" class="xref page">tile shading</a> enabled, all elements of
+<code>pCommandBuffers</code> <strong>must</strong> have been recorded with
+<a href="VkTileShadingRenderPassFlagBitsQCOM.html" class="xref page">VK_TILE_SHADING_RENDER_PASS_ENABLE_BIT_QCOM</a> included in
+<a href="VkRenderPassTileShadingCreateInfoQCOM.html" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>flags</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-10621" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-10621"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-10621</span><br>
+
+If the <a href="../../../../spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a>
+is enabled, all elements of <code>pCommandBuffers</code> <strong>must</strong> have been
+recorded with
+<a href="VkTileShadingRenderPassFlagBitsQCOM.html" class="xref page">VK_TILE_SHADING_RENDER_PASS_PER_TILE_EXECUTION_BIT_QCOM</a> included
+in <a href="VkRenderPassTileShadingCreateInfoQCOM.html" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>flags</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-tileApronSize-10622" href="#VUID-vkCmdExecuteCommands-tileApronSize-10622"></a> <span class="vuid">VUID-vkCmdExecuteCommands-tileApronSize-10622</span><br>
+
+If this command is being recorded within a render pass instance, the
+<code>tileApronSize</code> used to create the render pass instance <strong>must</strong> equal
+the <a href="VkRenderPassTileShadingCreateInfoQCOM.html" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>tileApronSize</code>
+used to record all elements of <code>pCommandBuffers</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-10623" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-10623"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-10623</span><br>
+
+If any element of <code>pCommandBuffers</code> was recorded with
+<a href="VkTileShadingRenderPassFlagBitsQCOM.html" class="xref page">VK_TILE_SHADING_RENDER_PASS_ENABLE_BIT_QCOM</a> included in
+<a href="VkRenderPassTileShadingCreateInfoQCOM.html" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>flags</code>, this command
+<strong>must</strong> be recorded in a render pass that has tile shading enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-10624" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-10624"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-10624</span><br>
+
+If any element of <code>pCommandBuffers</code> was recorded with
+<a href="VkTileShadingRenderPassFlagBitsQCOM.html" class="xref page">VK_TILE_SHADING_RENDER_PASS_PER_TILE_EXECUTION_BIT_QCOM</a> included
+in <a href="VkRenderPassTileShadingCreateInfoQCOM.html" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>flags</code>,
+<a href="../../../../spec/latest/chapters/renderpass.html#renderpass-per-tile-execution-model" class="xref page">per-tile execution model</a> <strong>must</strong>
+be enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-tileApronSize-10625" href="#VUID-vkCmdExecuteCommands-tileApronSize-10625"></a> <span class="vuid">VUID-vkCmdExecuteCommands-tileApronSize-10625</span><br>
+
+If this command is not being recorded into a render pass instance, the
+<a href="VkRenderPassTileShadingCreateInfoQCOM.html" class="xref page">VkRenderPassTileShadingCreateInfoQCOM</a>::<code>tileApronSize</code> that
+was recorded into all elements of <code>pCommandBuffers</code> <strong>must</strong> equal
+<code>(0,0)</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-11351" href="#VUID-vkCmdExecuteCommands-commandBuffer-11351"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-11351</span><br>
+
+If there is a sampler descriptor heap bound to <code>commandBuffer</code>, each
+element of <code>pCommandBuffers</code> <strong>must</strong> have been recorded with a value
+of
+<a href="VkCommandBufferInheritanceDescriptorHeapInfoEXT.html" class="xref page">VkCommandBufferInheritanceDescriptorHeapInfoEXT</a>::<code>pSamplerHeapBindInfo</code>
+that is either <code>NULL</code> or a pointer to a bind info that is identical to
+that set via the last call to <a href="vkCmdBindSamplerHeapEXT.html" class="xref page">vkCmdBindSamplerHeapEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-11352" href="#VUID-vkCmdExecuteCommands-commandBuffer-11352"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-11352</span><br>
+
+If there is a resource descriptor heap bound to <code>commandBuffer</code>,
+each element of <code>pCommandBuffers</code> <strong>must</strong> have been recorded with a
+value of
+<a href="VkCommandBufferInheritanceDescriptorHeapInfoEXT.html" class="xref page">VkCommandBufferInheritanceDescriptorHeapInfoEXT</a>::<code>pResourceHeapBindInfo</code>
+that is either <code>NULL</code> or a pointer to a bind info that is identical to
+that set via the last call to <a href="vkCmdBindResourceHeapEXT.html" class="xref page">vkCmdBindResourceHeapEXT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-11473" href="#VUID-vkCmdExecuteCommands-commandBuffer-11473"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-11473</span><br>
+
+If there is no sampler descriptor heap bound to <code>commandBuffer</code>,
+each element of <code>pCommandBuffers</code> <strong>must</strong> have been recorded with a
+value of
+<a href="VkCommandBufferInheritanceDescriptorHeapInfoEXT.html" class="xref page">VkCommandBufferInheritanceDescriptorHeapInfoEXT</a>::<code>pSamplerHeapBindInfo</code>
+set to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-11474" href="#VUID-vkCmdExecuteCommands-commandBuffer-11474"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-11474</span><br>
+
+If there is no resource descriptor heap bound to <code>commandBuffer</code>,
+each element of <code>pCommandBuffers</code> <strong>must</strong> have been recorded with a
+value of
+<a href="VkCommandBufferInheritanceDescriptorHeapInfoEXT.html" class="xref page">VkCommandBufferInheritanceDescriptorHeapInfoEXT</a>::<code>pResourceHeapBindInfo</code>
+set to <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-12373" href="#VUID-vkCmdExecuteCommands-commandBuffer-12373"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-12373</span><br>
+
+<code>commandBuffer</code> <strong>must</strong> not have any shader instrumentation
+<a href="../../../../spec/latest/chapters/shaders.html#shaders-instrumentation-active" class="xref page">active</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-parameter" href="#VUID-vkCmdExecuteCommands-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="VkCommandBuffer.html" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-pCommandBuffers-parameter" href="#VUID-vkCmdExecuteCommands-pCommandBuffers-parameter"></a> <span class="vuid">VUID-vkCmdExecuteCommands-pCommandBuffers-parameter</span><br>
+ <code>pCommandBuffers</code> <strong>must</strong> be a valid pointer to an array of <code>commandBufferCount</code> valid <a href="VkCommandBuffer.html" class="xref page">VkCommandBuffer</a> handles</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-recording" href="#VUID-vkCmdExecuteCommands-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../../../../spec/latest/chapters/cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBuffer-cmdpool" href="#VUID-vkCmdExecuteCommands-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_COMPUTE_BIT</a>, <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_GRAPHICS_BIT</a>, or <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_TRANSFER_BIT</a> operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-videocoding" href="#VUID-vkCmdExecuteCommands-videocoding"></a> <span class="vuid">VUID-vkCmdExecuteCommands-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commandBufferCount-arraylength" href="#VUID-vkCmdExecuteCommands-commandBufferCount-arraylength"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commandBufferCount-arraylength</span><br>
+ <code>commandBufferCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdExecuteCommands-commonparent" href="#VUID-vkCmdExecuteCommands-commonparent"></a> <span class="vuid">VUID-vkCmdExecuteCommands-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and the elements of <code>pCommandBuffers</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="VkDevice.html" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VK_QUEUE_COMPUTE_BIT<br>
+VK_QUEUE_GRAPHICS_BIT<br>
+VK_QUEUE_TRANSFER_BIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Indirection</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Conditional Rendering</div>
+<div class="paragraph">
+<p>vkCmdExecuteCommands is not affected by <a href="../../../../spec/latest/chapters/drawing.html#drawing-conditional-rendering" class="xref page">conditional rendering</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_see_also"><a class="anchor" href="#_see_also"></a>See Also</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="VK_VERSION_1_0.html" class="xref page">VK_VERSION_1_0</a>, <a href="VkCommandBuffer.html" class="xref page">VkCommandBuffer</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_document_notes"><a class="anchor" href="#_document_notes"></a>Document Notes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For more information, see the <a href="../../../../spec/latest/chapters/cmdbuffers.html#vkCmdExecuteCommands" class="xref page">Vulkan Specification</a>.</p>
+</div>
+<div class="paragraph">
+<p>This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

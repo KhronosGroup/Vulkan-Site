@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VkDynamicState(3) :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:refpages" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="VkDynamicState.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href').split('/').pop()===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan API Reference Pages</a></li>
+    <li>Enumerations</li>
+    <li>D</li>
+    <li><a href="VkDynamicState.html">VkDynamicState</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VkDynamicState(3)</h1>
+<div class="sect1">
+<h2 id="_name"><a class="anchor" href="#_name"></a>Name</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>VkDynamicState - Indicate which dynamic state is taken from dynamic state commands</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_c_specification"><a class="anchor" href="#_c_specification"></a>C Specification</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The source of different pieces of dynamic state is specified by the
+<a href="VkPipelineDynamicStateCreateInfo.html" class="xref page">VkPipelineDynamicStateCreateInfo</a>::<code>pDynamicStates</code> property of the
+currently active pipeline, each of whose elements <strong>must</strong> be one of the
+values:</p>
+</div>
+<div id="VkDynamicState" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Provided by VK_VERSION_1_0
+typedef enum VkDynamicState {
+    VK_DYNAMIC_STATE_VIEWPORT = 0,
+    VK_DYNAMIC_STATE_SCISSOR = 1,
+    VK_DYNAMIC_STATE_LINE_WIDTH = 2,
+    VK_DYNAMIC_STATE_DEPTH_BIAS = 3,
+    VK_DYNAMIC_STATE_BLEND_CONSTANTS = 4,
+    VK_DYNAMIC_STATE_DEPTH_BOUNDS = 5,
+    VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK = 6,
+    VK_DYNAMIC_STATE_STENCIL_WRITE_MASK = 7,
+    VK_DYNAMIC_STATE_STENCIL_REFERENCE = 8,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_CULL_MODE = 1000267000,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_FRONT_FACE = 1000267001,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY = 1000267002,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT = 1000267003,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT = 1000267004,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE = 1000267005,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE = 1000267006,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE = 1000267007,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_DEPTH_COMPARE_OP = 1000267008,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE = 1000267009,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE = 1000267010,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_STENCIL_OP = 1000267011,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE = 1000377001,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE = 1000377002,
+  // Provided by VK_VERSION_1_3
+    VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE = 1000377004,
+  // Provided by VK_VERSION_1_4
+    VK_DYNAMIC_STATE_LINE_STIPPLE = 1000259000,
+  // Provided by VK_NV_clip_space_w_scaling
+    VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_NV = 1000087000,
+  // Provided by VK_EXT_discard_rectangles
+    VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT = 1000099000,
+  // Provided by VK_EXT_discard_rectangles
+    VK_DYNAMIC_STATE_DISCARD_RECTANGLE_ENABLE_EXT = 1000099001,
+  // Provided by VK_EXT_discard_rectangles
+    VK_DYNAMIC_STATE_DISCARD_RECTANGLE_MODE_EXT = 1000099002,
+  // Provided by VK_EXT_sample_locations
+    VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT = 1000143000,
+  // Provided by VK_KHR_ray_tracing_pipeline
+    VK_DYNAMIC_STATE_RAY_TRACING_PIPELINE_STACK_SIZE_KHR = 1000347000,
+  // Provided by VK_NV_shading_rate_image
+    VK_DYNAMIC_STATE_VIEWPORT_SHADING_RATE_PALETTE_NV = 1000164004,
+  // Provided by VK_NV_shading_rate_image
+    VK_DYNAMIC_STATE_VIEWPORT_COARSE_SAMPLE_ORDER_NV = 1000164006,
+  // Provided by VK_NV_scissor_exclusive
+    VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_ENABLE_NV = 1000205000,
+  // Provided by VK_NV_scissor_exclusive
+    VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_NV = 1000205001,
+  // Provided by VK_KHR_fragment_shading_rate
+    VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR = 1000226000,
+  // Provided by VK_EXT_vertex_input_dynamic_state
+    VK_DYNAMIC_STATE_VERTEX_INPUT_EXT = 1000352000,
+  // Provided by VK_EXT_extended_dynamic_state2
+    VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT = 1000377000,
+  // Provided by VK_EXT_extended_dynamic_state2
+    VK_DYNAMIC_STATE_LOGIC_OP_EXT = 1000377003,
+  // Provided by VK_EXT_color_write_enable
+    VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT = 1000381000,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT = 1000455003,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_POLYGON_MODE_EXT = 1000455004,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT = 1000455005,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_SAMPLE_MASK_EXT = 1000455006,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT = 1000455007,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_ALPHA_TO_ONE_ENABLE_EXT = 1000455008,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_LOGIC_OP_ENABLE_EXT = 1000455009,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT = 1000455010,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT = 1000455011,
+  // Provided by VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT = 1000455012,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_KHR_maintenance2 or VK_VERSION_1_1
+    VK_DYNAMIC_STATE_TESSELLATION_DOMAIN_ORIGIN_EXT = 1000455002,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_EXT_transform_feedback
+    VK_DYNAMIC_STATE_RASTERIZATION_STREAM_EXT = 1000455013,
+  // Provided by VK_EXT_conservative_rasterization with VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_CONSERVATIVE_RASTERIZATION_MODE_EXT = 1000455014,
+  // Provided by VK_EXT_conservative_rasterization with VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_EXTRA_PRIMITIVE_OVERESTIMATION_SIZE_EXT = 1000455015,
+  // Provided by VK_EXT_depth_clip_enable with VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_DEPTH_CLIP_ENABLE_EXT = 1000455016,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_EXT_sample_locations
+    VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_ENABLE_EXT = 1000455017,
+  // Provided by VK_EXT_blend_operation_advanced with VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_COLOR_BLEND_ADVANCED_EXT = 1000455018,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_EXT_provoking_vertex
+    VK_DYNAMIC_STATE_PROVOKING_VERTEX_MODE_EXT = 1000455019,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_EXT_line_rasterization
+    VK_DYNAMIC_STATE_LINE_RASTERIZATION_MODE_EXT = 1000455020,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_EXT_line_rasterization
+    VK_DYNAMIC_STATE_LINE_STIPPLE_ENABLE_EXT = 1000455021,
+  // Provided by VK_EXT_depth_clip_control with VK_EXT_extended_dynamic_state3
+    VK_DYNAMIC_STATE_DEPTH_CLIP_NEGATIVE_ONE_TO_ONE_EXT = 1000455022,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_clip_space_w_scaling
+    VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_ENABLE_NV = 1000455023,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_viewport_swizzle
+    VK_DYNAMIC_STATE_VIEWPORT_SWIZZLE_NV = 1000455024,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_fragment_coverage_to_color
+    VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_ENABLE_NV = 1000455025,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_fragment_coverage_to_color
+    VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_LOCATION_NV = 1000455026,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_framebuffer_mixed_samples
+    VK_DYNAMIC_STATE_COVERAGE_MODULATION_MODE_NV = 1000455027,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_framebuffer_mixed_samples
+    VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_ENABLE_NV = 1000455028,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_framebuffer_mixed_samples
+    VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_NV = 1000455029,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_shading_rate_image
+    VK_DYNAMIC_STATE_SHADING_RATE_IMAGE_ENABLE_NV = 1000455030,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_representative_fragment_test
+    VK_DYNAMIC_STATE_REPRESENTATIVE_FRAGMENT_TEST_ENABLE_NV = 1000455031,
+  // Provided by VK_EXT_extended_dynamic_state3 with VK_NV_coverage_reduction_mode
+    VK_DYNAMIC_STATE_COVERAGE_REDUCTION_MODE_NV = 1000455032,
+  // Provided by VK_EXT_attachment_feedback_loop_dynamic_state
+    VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT = 1000524000,
+  // Provided by VK_EXT_depth_clamp_control
+    VK_DYNAMIC_STATE_DEPTH_CLAMP_RANGE_EXT = 1000582000,
+  // Provided by VK_EXT_line_rasterization
+    VK_DYNAMIC_STATE_LINE_STIPPLE_EXT = VK_DYNAMIC_STATE_LINE_STIPPLE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_CULL_MODE_EXT = VK_DYNAMIC_STATE_CULL_MODE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_FRONT_FACE_EXT = VK_DYNAMIC_STATE_FRONT_FACE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT = VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT = VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT = VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT = VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT = VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT = VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT = VK_DYNAMIC_STATE_DEPTH_COMPARE_OP,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT = VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT = VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE,
+  // Provided by VK_EXT_extended_dynamic_state
+    VK_DYNAMIC_STATE_STENCIL_OP_EXT = VK_DYNAMIC_STATE_STENCIL_OP,
+  // Provided by VK_EXT_extended_dynamic_state2
+    VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT = VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE,
+  // Provided by VK_EXT_extended_dynamic_state2
+    VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE_EXT = VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE,
+  // Provided by VK_EXT_extended_dynamic_state2
+    VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE_EXT = VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE,
+  // Provided by VK_KHR_line_rasterization
+    VK_DYNAMIC_STATE_LINE_STIPPLE_KHR = VK_DYNAMIC_STATE_LINE_STIPPLE,
+} VkDynamicState;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_description"><a class="anchor" href="#_description"></a>Description</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT</a> specifies that the <code>pViewports</code>
+state in <a href="VkPipelineViewportStateCreateInfo.html" class="xref page">VkPipelineViewportStateCreateInfo</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetViewport.html" class="xref page">vkCmdSetViewport</a> before any drawing
+commands.
+The number of viewports used by a pipeline is still specified by the
+<code>viewportCount</code> member of <a href="VkPipelineViewportStateCreateInfo.html" class="xref page">VkPipelineViewportStateCreateInfo</a>.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_SCISSOR</a> specifies that the <code>pScissors</code> state
+in <a href="VkPipelineViewportStateCreateInfo.html" class="xref page">VkPipelineViewportStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetScissor.html" class="xref page">vkCmdSetScissor</a> before any drawing commands.
+The number of scissor rectangles used by a pipeline is still specified
+by the <code>scissorCount</code> member of
+<a href="VkPipelineViewportStateCreateInfo.html" class="xref page">VkPipelineViewportStateCreateInfo</a>.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_LINE_WIDTH</a> specifies that the <code>lineWidth</code>
+state in <a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored
+and <strong>must</strong> be set dynamically with <a href="vkCmdSetLineWidth.html" class="xref page">vkCmdSetLineWidth</a> before any
+drawing commands that generate line primitives for the rasterizer.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_BIAS</a> specifies that
+    any instance of <a href="VkDepthBiasRepresentationInfoEXT.html" class="xref page">VkDepthBiasRepresentationInfoEXT</a> included in the
+    <code>pNext</code> chain of <a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> as
+    well as
+    the <code>depthBiasConstantFactor</code>, <code>depthBiasClamp</code> and
+    <code>depthBiasSlopeFactor</code> states in
+    <a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored and <strong>must</strong>
+    be set dynamically with <a href="vkCmdSetDepthBias.html" class="xref page">vkCmdSetDepthBias</a>
+or <a href="vkCmdSetDepthBias2EXT.html" class="xref page">vkCmdSetDepthBias2EXT</a>
+    before any draws are performed with <a href="../../../../spec/latest/chapters/primsrast.html#primsrast-depthbias-enable" class="xref page">depth    bias enabled</a>.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_BLEND_CONSTANTS</a> specifies that the
+<code>blendConstants</code> state in <a href="VkPipelineColorBlendStateCreateInfo.html" class="xref page">VkPipelineColorBlendStateCreateInfo</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetBlendConstants.html" class="xref page">vkCmdSetBlendConstants</a> before any draws are performed with a
+pipeline state with <code>VkPipelineColorBlendAttachmentState</code> member
+<code>blendEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a> and any of the blend functions
+using a constant blend color.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_BOUNDS</a> specifies that the
+<code>minDepthBounds</code> and <code>maxDepthBounds</code> states of
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetDepthBounds.html" class="xref page">vkCmdSetDepthBounds</a> before any draws are
+performed with a pipeline state with
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> member
+<code>depthBoundsTestEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a>.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK</a> specifies that the
+<code>compareMask</code> state in <a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a>
+for both <code>front</code> and <code>back</code> will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetStencilCompareMask.html" class="xref page">vkCmdSetStencilCompareMask</a> before any draws are
+performed with a pipeline state with
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> member
+<code>stencilTestEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_STENCIL_WRITE_MASK</a> specifies that the
+<code>writeMask</code> state in <a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> for
+both <code>front</code> and <code>back</code> will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetStencilWriteMask.html" class="xref page">vkCmdSetStencilWriteMask</a> before any draws are
+performed with a pipeline state with
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> member
+<code>stencilTestEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_STENCIL_REFERENCE</a> specifies that the
+<code>reference</code> state in <a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> for
+both <code>front</code> and <code>back</code> will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetStencilReference.html" class="xref page">vkCmdSetStencilReference</a> before any draws are
+performed with a pipeline state with
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> member
+<code>stencilTestEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_NV</a> specifies that the
+<code>pViewportWScalings</code> state in
+<a href="VkPipelineViewportWScalingStateCreateInfoNV.html" class="xref page">VkPipelineViewportWScalingStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetViewportWScalingNV.html" class="xref page">vkCmdSetViewportWScalingNV</a> before
+any draws are performed with a pipeline state with
+<a href="VkPipelineViewportWScalingStateCreateInfoNV.html" class="xref page">VkPipelineViewportWScalingStateCreateInfoNV</a> member
+<code>viewportScalingEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</a> specifies that the
+<code>pDiscardRectangles</code> state in
+<a href="VkPipelineDiscardRectangleStateCreateInfoEXT.html" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetDiscardRectangleEXT.html" class="xref page">vkCmdSetDiscardRectangleEXT</a> before
+any draw or clear commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DISCARD_RECTANGLE_ENABLE_EXT</a> specifies that the
+presence of the <a href="VkPipelineDiscardRectangleStateCreateInfoEXT.html" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a>
+structure in the <a href="VkGraphicsPipelineCreateInfo.html" class="xref page">VkGraphicsPipelineCreateInfo</a> chain with a
+<code>discardRectangleCount</code> greater than zero does not implicitly enable
+discard rectangles and they <strong>must</strong> be enabled dynamically with
+<a href="vkCmdSetDiscardRectangleEnableEXT.html" class="xref page">vkCmdSetDiscardRectangleEnableEXT</a> before any draw commands.
+This is available on implementations that support at least
+<code>specVersion</code> <code>2</code> of the <code><a href="VK_EXT_discard_rectangles.html" class="xref page">VK_EXT_discard_rectangles</a></code>
+extension.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DISCARD_RECTANGLE_MODE_EXT</a> specifies that the
+<code>discardRectangleMode</code> state in
+<a href="VkPipelineDiscardRectangleStateCreateInfoEXT.html" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetDiscardRectangleModeEXT.html" class="xref page">vkCmdSetDiscardRectangleModeEXT</a>
+before any draw commands.
+This is available on implementations that support at least
+<code>specVersion</code> <code>2</code> of the <code><a href="VK_EXT_discard_rectangles.html" class="xref page">VK_EXT_discard_rectangles</a></code>
+extension.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT</a> specifies that the
+<code>sampleLocationsInfo</code> state in
+<a href="VkPipelineSampleLocationsStateCreateInfoEXT.html" class="xref page">VkPipelineSampleLocationsStateCreateInfoEXT</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetSampleLocationsEXT.html" class="xref page">vkCmdSetSampleLocationsEXT</a> before
+any draw or clear commands.
+Enabling custom sample locations is still indicated by the
+<code>sampleLocationsEnable</code> member of
+<a href="VkPipelineSampleLocationsStateCreateInfoEXT.html" class="xref page">VkPipelineSampleLocationsStateCreateInfoEXT</a>.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_NV</a> specifies that the
+<code>pExclusiveScissors</code> state in
+<a href="VkPipelineViewportExclusiveScissorStateCreateInfoNV.html" class="xref page">VkPipelineViewportExclusiveScissorStateCreateInfoNV</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetExclusiveScissorNV.html" class="xref page">vkCmdSetExclusiveScissorNV</a> before any drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_EXCLUSIVE_SCISSOR_ENABLE_NV</a> specifies that the
+exclusive scissors <strong>must</strong> be explicitly enabled with
+<a href="vkCmdSetExclusiveScissorEnableNV.html" class="xref page">vkCmdSetExclusiveScissorEnableNV</a> and the
+<code>exclusiveScissorCount</code> value in
+<a href="VkPipelineViewportExclusiveScissorStateCreateInfoNV.html" class="xref page">VkPipelineViewportExclusiveScissorStateCreateInfoNV</a> will not
+implicitly enable them.
+This is available on implementations that support at least
+<code>specVersion</code> <code>2</code> of the <code><a href="VK_NV_scissor_exclusive.html" class="xref page">VK_NV_scissor_exclusive</a></code> extension.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT_SHADING_RATE_PALETTE_NV</a> specifies that
+the <code>pShadingRatePalettes</code> state in
+<a href="VkPipelineViewportShadingRateImageStateCreateInfoNV.html" class="xref page">VkPipelineViewportShadingRateImageStateCreateInfoNV</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetViewportShadingRatePaletteNV.html" class="xref page">vkCmdSetViewportShadingRatePaletteNV</a> before any drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT_COARSE_SAMPLE_ORDER_NV</a> specifies that
+the coarse sample order state in
+<a href="VkPipelineViewportCoarseSampleOrderStateCreateInfoNV.html" class="xref page">VkPipelineViewportCoarseSampleOrderStateCreateInfoNV</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetCoarseSampleOrderNV.html" class="xref page">vkCmdSetCoarseSampleOrderNV</a> before any drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_LINE_STIPPLE</a> specifies that the
+<code>lineStippleFactor</code> and <code>lineStipplePattern</code> state in
+<a href="VkPipelineRasterizationLineStateCreateInfo.html" class="xref page">VkPipelineRasterizationLineStateCreateInfo</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetLineStipple.html" class="xref page">vkCmdSetLineStipple</a> before any draws
+are performed with a pipeline state with
+<a href="VkPipelineRasterizationLineStateCreateInfo.html" class="xref page">VkPipelineRasterizationLineStateCreateInfo</a> member
+<code>stippledLineEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a>.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_CULL_MODE</a> specifies that the <code>cullMode</code> state
+in <a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetCullMode.html" class="xref page">vkCmdSetCullMode</a> before any drawing
+commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_FRONT_FACE</a> specifies that the <code>frontFace</code>
+state in <a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored
+and <strong>must</strong> be set dynamically with <a href="vkCmdSetFrontFace.html" class="xref page">vkCmdSetFrontFace</a> before any
+drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY</a> specifies that the
+<code>topology</code> state in <a href="VkPipelineInputAssemblyStateCreateInfo.html" class="xref page">VkPipelineInputAssemblyStateCreateInfo</a>
+only specifies the <a href="../../../../spec/latest/chapters/drawing.html#drawing-primitive-topology-class" class="xref page">topology class</a>,
+and the specific topology order and adjacency <strong>must</strong> be set dynamically
+with <a href="vkCmdSetPrimitiveTopology.html" class="xref page">vkCmdSetPrimitiveTopology</a> before any drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT</a> specifies that the
+<code>viewportCount</code> and <code>pViewports</code> state in
+<a href="VkPipelineViewportStateCreateInfo.html" class="xref page">VkPipelineViewportStateCreateInfo</a> will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetViewportWithCount.html" class="xref page">vkCmdSetViewportWithCount</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT</a> specifies that the
+<code>scissorCount</code> and <code>pScissors</code> state in
+<a href="VkPipelineViewportStateCreateInfo.html" class="xref page">VkPipelineViewportStateCreateInfo</a> will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetScissorWithCount.html" class="xref page">vkCmdSetScissorWithCount</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE</a> specifies that the
+<code>stride</code> state in <a href="VkVertexInputBindingDescription.html" class="xref page">VkVertexInputBindingDescription</a> will be
+ignored and <strong>must</strong> be set dynamically with <a href="vkCmdBindVertexBuffers2.html" class="xref page">vkCmdBindVertexBuffers2</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE</a> specifies that the
+<code>depthTestEnable</code> state in
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetDepthTestEnable.html" class="xref page">vkCmdSetDepthTestEnable</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE</a> specifies that the
+<code>depthWriteEnable</code> state in
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetDepthWriteEnable.html" class="xref page">vkCmdSetDepthWriteEnable</a> before any draw
+call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_COMPARE_OP</a> specifies that the
+<code>depthCompareOp</code> state in
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetDepthCompareOp.html" class="xref page">vkCmdSetDepthCompareOp</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE</a> specifies that the
+<code>depthBoundsTestEnable</code> state in
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetDepthBoundsTestEnable.html" class="xref page">vkCmdSetDepthBoundsTestEnable</a> before any draw
+call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE</a> specifies that the
+<code>stencilTestEnable</code> state in
+<a href="VkPipelineDepthStencilStateCreateInfo.html" class="xref page">VkPipelineDepthStencilStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetStencilTestEnable.html" class="xref page">vkCmdSetStencilTestEnable</a> before any draw
+call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_STENCIL_OP</a> specifies that the <code>failOp</code>,
+<code>passOp</code>, <code>depthFailOp</code>, and <code>compareOp</code> states in
+<code>VkPipelineDepthStencilStateCreateInfo</code> for both <code>front</code> and
+<code>back</code> will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetStencilOp.html" class="xref page">vkCmdSetStencilOp</a> before any draws are performed with a pipeline
+state with <code>VkPipelineDepthStencilStateCreateInfo</code> member
+<code>stencilTestEnable</code> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_PATCH_CONTROL_POINTS_EXT</a> specifies that the
+<code>patchControlPoints</code> state in
+<a href="VkPipelineTessellationStateCreateInfo.html" class="xref page">VkPipelineTessellationStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetPatchControlPointsEXT.html" class="xref page">vkCmdSetPatchControlPointsEXT</a> before any
+drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE</a> specifies that the
+<code>rasterizerDiscardEnable</code> state in
+<a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored and <strong>must</strong>
+be set dynamically with <a href="vkCmdSetRasterizerDiscardEnable.html" class="xref page">vkCmdSetRasterizerDiscardEnable</a> before any
+drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE</a> specifies that the
+<code>depthBiasEnable</code> state in
+<a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored and <strong>must</strong>
+be set dynamically with <a href="vkCmdSetDepthBiasEnable.html" class="xref page">vkCmdSetDepthBiasEnable</a> before any drawing
+commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_LOGIC_OP_EXT</a> specifies that the <code>logicOp</code>
+state in <a href="VkPipelineColorBlendStateCreateInfo.html" class="xref page">VkPipelineColorBlendStateCreateInfo</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetLogicOpEXT.html" class="xref page">vkCmdSetLogicOpEXT</a> before any
+drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE</a> specifies that the
+<code>primitiveRestartEnable</code> state in
+<a href="VkPipelineInputAssemblyStateCreateInfo.html" class="xref page">VkPipelineInputAssemblyStateCreateInfo</a> will be ignored and <strong>must</strong>
+be set dynamically with <a href="vkCmdSetPrimitiveRestartEnable.html" class="xref page">vkCmdSetPrimitiveRestartEnable</a> before any
+drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR</a> specifies that state in
+<a href="VkPipelineFragmentShadingRateStateCreateInfoKHR.html" class="xref page">VkPipelineFragmentShadingRateStateCreateInfoKHR</a>
+and <a href="VkPipelineFragmentShadingRateEnumStateCreateInfoNV.html" class="xref page">VkPipelineFragmentShadingRateEnumStateCreateInfoNV</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetFragmentShadingRateKHR.html" class="xref page">vkCmdSetFragmentShadingRateKHR</a>
+or <a href="vkCmdSetFragmentShadingRateEnumNV.html" class="xref page">vkCmdSetFragmentShadingRateEnumNV</a>
+before any drawing commands.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_RAY_TRACING_PIPELINE_STACK_SIZE_KHR</a> specifies
+that the default stack size computation for the pipeline will be ignored
+and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetRayTracingPipelineStackSizeKHR.html" class="xref page">vkCmdSetRayTracingPipelineStackSizeKHR</a> before any ray tracing
+calls are performed.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VERTEX_INPUT_EXT</a> specifies that the
+<code>pVertexInputState</code> state will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetVertexInputEXT.html" class="xref page">vkCmdSetVertexInputEXT</a> before any drawing
+commands</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COLOR_WRITE_ENABLE_EXT</a> specifies that the
+<code>pColorWriteEnables</code> state in
+<a href="VkPipelineColorWriteCreateInfoEXT.html" class="xref page">VkPipelineColorWriteCreateInfoEXT</a> will be ignored and <strong>must</strong> be set
+dynamically with <a href="vkCmdSetColorWriteEnableEXT.html" class="xref page">vkCmdSetColorWriteEnableEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_TESSELLATION_DOMAIN_ORIGIN_EXT</a> specifies that the
+<code>domainOrigin</code> state in
+<a href="VkPipelineTessellationDomainOriginStateCreateInfo.html" class="xref page">VkPipelineTessellationDomainOriginStateCreateInfo</a> will be ignored
+and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetTessellationDomainOriginEXT.html" class="xref page">vkCmdSetTessellationDomainOriginEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_CLAMP_ENABLE_EXT</a> specifies that the
+<code>depthClampEnable</code> state in
+<a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a> will be ignored and <strong>must</strong>
+be set dynamically with <a href="vkCmdSetDepthClampEnableEXT.html" class="xref page">vkCmdSetDepthClampEnableEXT</a> before any
+draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_POLYGON_MODE_EXT</a> specifies that the
+<code>polygonMode</code> state in <a href="VkPipelineRasterizationStateCreateInfo.html" class="xref page">VkPipelineRasterizationStateCreateInfo</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetPolygonModeEXT.html" class="xref page">vkCmdSetPolygonModeEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT</a> specifies that the
+<code>rasterizationSamples</code> state in
+<a href="VkPipelineMultisampleStateCreateInfo.html" class="xref page">VkPipelineMultisampleStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetRasterizationSamplesEXT.html" class="xref page">vkCmdSetRasterizationSamplesEXT</a> before any
+draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_SAMPLE_MASK_EXT</a> specifies that the
+<code>pSampleMask</code> state in <a href="VkPipelineMultisampleStateCreateInfo.html" class="xref page">VkPipelineMultisampleStateCreateInfo</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetSampleMaskEXT.html" class="xref page">vkCmdSetSampleMaskEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT</a> specifies that the
+<code>alphaToCoverageEnable</code> state in
+<a href="VkPipelineMultisampleStateCreateInfo.html" class="xref page">VkPipelineMultisampleStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetAlphaToCoverageEnableEXT.html" class="xref page">vkCmdSetAlphaToCoverageEnableEXT</a> before any
+draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_ALPHA_TO_ONE_ENABLE_EXT</a> specifies that the
+<code>alphaToOneEnable</code> state in
+<a href="VkPipelineMultisampleStateCreateInfo.html" class="xref page">VkPipelineMultisampleStateCreateInfo</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetAlphaToOneEnableEXT.html" class="xref page">vkCmdSetAlphaToOneEnableEXT</a> before any draw
+call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_LOGIC_OP_ENABLE_EXT</a> specifies that the
+<code>logicOpEnable</code> state in <a href="VkPipelineColorBlendStateCreateInfo.html" class="xref page">VkPipelineColorBlendStateCreateInfo</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetLogicOpEnableEXT.html" class="xref page">vkCmdSetLogicOpEnableEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT</a> specifies that the
+<code>blendEnable</code> state in <a href="VkPipelineColorBlendAttachmentState.html" class="xref page">VkPipelineColorBlendAttachmentState</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetColorBlendEnableEXT.html" class="xref page">vkCmdSetColorBlendEnableEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT</a> specifies that the
+<code>srcColorBlendFactor</code>, <code>dstColorBlendFactor</code>,
+<code>colorBlendOp</code>, <code>srcAlphaBlendFactor</code>,
+<code>dstAlphaBlendFactor</code>, and <code>alphaBlendOp</code> states in
+<a href="VkPipelineColorBlendAttachmentState.html" class="xref page">VkPipelineColorBlendAttachmentState</a> will be ignored and <strong>must</strong> be
+set dynamically with <a href="vkCmdSetColorBlendEquationEXT.html" class="xref page">vkCmdSetColorBlendEquationEXT</a> before any draw
+call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT</a> specifies that the
+<code>colorWriteMask</code> state in <a href="VkPipelineColorBlendAttachmentState.html" class="xref page">VkPipelineColorBlendAttachmentState</a>
+will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetColorWriteMaskEXT.html" class="xref page">vkCmdSetColorWriteMaskEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_RASTERIZATION_STREAM_EXT</a> specifies that the
+<code>rasterizationStream</code> state in
+<a href="VkPipelineRasterizationStateStreamCreateInfoEXT.html" class="xref page">VkPipelineRasterizationStateStreamCreateInfoEXT</a> will be ignored
+and <strong>must</strong> be set dynamically with <a href="vkCmdSetRasterizationStreamEXT.html" class="xref page">vkCmdSetRasterizationStreamEXT</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_CONSERVATIVE_RASTERIZATION_MODE_EXT</a> specifies
+that the <code>conservativeRasterizationMode</code> state in
+<a href="VkPipelineRasterizationConservativeStateCreateInfoEXT.html" class="xref page">VkPipelineRasterizationConservativeStateCreateInfoEXT</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetConservativeRasterizationModeEXT.html" class="xref page">vkCmdSetConservativeRasterizationModeEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_EXTRA_PRIMITIVE_OVERESTIMATION_SIZE_EXT</a> specifies
+that the <code>extraPrimitiveOverestimationSize</code> state in
+<a href="VkPipelineRasterizationConservativeStateCreateInfoEXT.html" class="xref page">VkPipelineRasterizationConservativeStateCreateInfoEXT</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetExtraPrimitiveOverestimationSizeEXT.html" class="xref page">vkCmdSetExtraPrimitiveOverestimationSizeEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_CLIP_ENABLE_EXT</a> specifies that the
+<code>depthClipEnable</code> state in
+<a href="VkPipelineRasterizationDepthClipStateCreateInfoEXT.html" class="xref page">VkPipelineRasterizationDepthClipStateCreateInfoEXT</a> will be ignored
+and <strong>must</strong> be set dynamically with <a href="vkCmdSetDepthClipEnableEXT.html" class="xref page">vkCmdSetDepthClipEnableEXT</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_ENABLE_EXT</a> specifies that the
+<code>sampleLocationsEnable</code> state in
+<a href="VkPipelineSampleLocationsStateCreateInfoEXT.html" class="xref page">VkPipelineSampleLocationsStateCreateInfoEXT</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetSampleLocationsEnableEXT.html" class="xref page">vkCmdSetSampleLocationsEnableEXT</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COLOR_BLEND_ADVANCED_EXT</a> specifies that the
+<code>colorBlendOp</code> state in <a href="VkPipelineColorBlendAttachmentState.html" class="xref page">VkPipelineColorBlendAttachmentState</a>,
+and <code>srcPremultiplied</code>, <code>dstPremultiplied</code>, and
+<code>blendOverlap</code> states in
+<a href="VkPipelineColorBlendAdvancedStateCreateInfoEXT.html" class="xref page">VkPipelineColorBlendAdvancedStateCreateInfoEXT</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetColorBlendAdvancedEXT.html" class="xref page">vkCmdSetColorBlendAdvancedEXT</a> before
+any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_PROVOKING_VERTEX_MODE_EXT</a> specifies that the
+<code>provokingVertexMode</code> state in
+<a href="VkPipelineRasterizationProvokingVertexStateCreateInfoEXT.html" class="xref page">VkPipelineRasterizationProvokingVertexStateCreateInfoEXT</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetProvokingVertexModeEXT.html" class="xref page">vkCmdSetProvokingVertexModeEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_LINE_RASTERIZATION_MODE_EXT</a> specifies that the
+<code>lineRasterizationMode</code> state in
+<a href="VkPipelineRasterizationLineStateCreateInfo.html" class="xref page">VkPipelineRasterizationLineStateCreateInfo</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetLineRasterizationModeEXT.html" class="xref page">vkCmdSetLineRasterizationModeEXT</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_LINE_STIPPLE_ENABLE_EXT</a> specifies that the
+<code>stippledLineEnable</code> state in
+<a href="VkPipelineRasterizationLineStateCreateInfo.html" class="xref page">VkPipelineRasterizationLineStateCreateInfo</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetLineStippleEnableEXT.html" class="xref page">vkCmdSetLineStippleEnableEXT</a> before
+any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_CLIP_NEGATIVE_ONE_TO_ONE_EXT</a> specifies that
+the <code>negativeOneToOne</code> state in
+<a href="VkPipelineViewportDepthClipControlCreateInfoEXT.html" class="xref page">VkPipelineViewportDepthClipControlCreateInfoEXT</a> will be ignored
+and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetDepthClipNegativeOneToOneEXT.html" class="xref page">vkCmdSetDepthClipNegativeOneToOneEXT</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_DEPTH_CLAMP_RANGE_EXT</a> specifies that the
+<code>depthClampMode</code> and <code>pDepthClampRange</code> state in
+<a href="VkPipelineViewportDepthClampControlCreateInfoEXT.html" class="xref page">VkPipelineViewportDepthClampControlCreateInfoEXT</a> will be ignored
+and <strong>must</strong> be set dynamically with <a href="vkCmdSetDepthClampRangeEXT.html" class="xref page">vkCmdSetDepthClampRangeEXT</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT_W_SCALING_ENABLE_NV</a> specifies that the
+<code>viewportWScalingEnable</code> state in
+<a href="VkPipelineViewportWScalingStateCreateInfoNV.html" class="xref page">VkPipelineViewportWScalingStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetViewportWScalingEnableNV.html" class="xref page">vkCmdSetViewportWScalingEnableNV</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_VIEWPORT_SWIZZLE_NV</a> specifies that the
+<code>viewportCount</code>, and <code>pViewportSwizzles</code> states in
+<a href="VkPipelineViewportSwizzleStateCreateInfoNV.html" class="xref page">VkPipelineViewportSwizzleStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetViewportSwizzleNV.html" class="xref page">vkCmdSetViewportSwizzleNV</a> before any
+draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_ENABLE_NV</a> specifies that the
+<code>coverageToColorEnable</code> state in
+<a href="VkPipelineCoverageToColorStateCreateInfoNV.html" class="xref page">VkPipelineCoverageToColorStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetCoverageToColorEnableNV.html" class="xref page">vkCmdSetCoverageToColorEnableNV</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COVERAGE_TO_COLOR_LOCATION_NV</a> specifies that the
+<code>coverageToColorLocation</code> state in
+<a href="VkPipelineCoverageToColorStateCreateInfoNV.html" class="xref page">VkPipelineCoverageToColorStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetCoverageToColorLocationNV.html" class="xref page">vkCmdSetCoverageToColorLocationNV</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COVERAGE_MODULATION_MODE_NV</a> specifies that the
+<code>coverageModulationMode</code> state in
+<a href="VkPipelineCoverageModulationStateCreateInfoNV.html" class="xref page">VkPipelineCoverageModulationStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetCoverageModulationModeNV.html" class="xref page">vkCmdSetCoverageModulationModeNV</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_ENABLE_NV</a> specifies
+that the <code>coverageModulationTableEnable</code> state in
+<a href="VkPipelineCoverageModulationStateCreateInfoNV.html" class="xref page">VkPipelineCoverageModulationStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with
+<a href="vkCmdSetCoverageModulationTableEnableNV.html" class="xref page">vkCmdSetCoverageModulationTableEnableNV</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COVERAGE_MODULATION_TABLE_NV</a> specifies that the
+<code>coverageModulationTableCount</code>, and <code>pCoverageModulationTable</code>
+states in <a href="VkPipelineCoverageModulationStateCreateInfoNV.html" class="xref page">VkPipelineCoverageModulationStateCreateInfoNV</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetCoverageModulationTableNV.html" class="xref page">vkCmdSetCoverageModulationTableNV</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_SHADING_RATE_IMAGE_ENABLE_NV</a> specifies that the
+<code>shadingRateImageEnable</code> state in
+<a href="VkPipelineViewportShadingRateImageStateCreateInfoNV.html" class="xref page">VkPipelineViewportShadingRateImageStateCreateInfoNV</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetShadingRateImageEnableNV.html" class="xref page">vkCmdSetShadingRateImageEnableNV</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_REPRESENTATIVE_FRAGMENT_TEST_ENABLE_NV</a> specifies
+that the <code>representativeFragmentTestEnable</code> state in
+<a href="VkPipelineRepresentativeFragmentTestStateCreateInfoNV.html" class="xref page">VkPipelineRepresentativeFragmentTestStateCreateInfoNV</a> will be
+ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetRepresentativeFragmentTestEnableNV.html" class="xref page">vkCmdSetRepresentativeFragmentTestEnableNV</a> before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_COVERAGE_REDUCTION_MODE_NV</a> specifies that the
+<code>coverageReductionMode</code> state in
+<a href="VkPipelineCoverageReductionStateCreateInfoNV.html" class="xref page">VkPipelineCoverageReductionStateCreateInfoNV</a> will be ignored and
+<strong>must</strong> be set dynamically with <a href="vkCmdSetCoverageReductionModeNV.html" class="xref page">vkCmdSetCoverageReductionModeNV</a>
+before any draw call.</p>
+</li>
+<li>
+<p><a href="#">VK_DYNAMIC_STATE_ATTACHMENT_FEEDBACK_LOOP_ENABLE_EXT</a> specifies
+that the <a href="VkPipelineCreateFlagBits.html" class="xref page">VK_PIPELINE_CREATE_COLOR_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT</a>
+and
+<a href="VkPipelineCreateFlagBits.html" class="xref page">VK_PIPELINE_CREATE_DEPTH_STENCIL_ATTACHMENT_FEEDBACK_LOOP_BIT_EXT</a>
+flags will be ignored and <strong>must</strong> be set dynamically with
+<a href="vkCmdSetAttachmentFeedbackLoopEnableEXT.html" class="xref page">vkCmdSetAttachmentFeedbackLoopEnableEXT</a> before any draw call.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_see_also"><a class="anchor" href="#_see_also"></a>See Also</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="VK_VERSION_1_0.html" class="xref page">VK_VERSION_1_0</a>, <a href="VkPipelineDynamicStateCreateInfo.html" class="xref page">VkPipelineDynamicStateCreateInfo</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_document_notes"><a class="anchor" href="#_document_notes"></a>Document Notes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For more information, see the <a href="../../../../spec/latest/chapters/pipelines.html#VkDynamicState" class="xref page">Vulkan Specification</a>.</p>
+</div>
+<div class="paragraph">
+<p>This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

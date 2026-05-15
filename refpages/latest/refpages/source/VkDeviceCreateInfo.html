@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>VkDeviceCreateInfo(3) :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:refpages" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="VkDeviceCreateInfo.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href').split('/').pop()===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan API Reference Pages</a></li>
+    <li>Structures</li>
+    <li>D</li>
+    <li><a href="VkDeviceCreateInfo.html">VkDeviceCreateInfo</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">VkDeviceCreateInfo(3)</h1>
+<div class="sect1">
+<h2 id="_name"><a class="anchor" href="#_name"></a>Name</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>VkDeviceCreateInfo - Structure specifying parameters of a newly created device</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_c_specification"><a class="anchor" href="#_c_specification"></a>C Specification</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VkDeviceCreateInfo</code> structure is defined as:</p>
+</div>
+<div id="VkDeviceCreateInfo" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Provided by VK_VERSION_1_0
+typedef struct VkDeviceCreateInfo {
+    VkStructureType                    sType;
+    const void*                        pNext;
+    VkDeviceCreateFlags                flags;
+    uint32_t                           queueCreateInfoCount;
+    const VkDeviceQueueCreateInfo*     pQueueCreateInfos;
+    // enabledLayerCount is legacy and not used
+    uint32_t                           enabledLayerCount;
+    // ppEnabledLayerNames is legacy and not used
+    const char* const*                 ppEnabledLayerNames;
+    uint32_t                           enabledExtensionCount;
+    const char* const*                 ppEnabledExtensionNames;
+    const VkPhysicalDeviceFeatures*    pEnabledFeatures;
+} VkDeviceCreateInfo;</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_members"><a class="anchor" href="#_members"></a>Members</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>sType</code> is a <a href="VkStructureType.html" class="xref page">VkStructureType</a> value identifying this structure.</p>
+</li>
+<li>
+<p><code>pNext</code> is <code>NULL</code> or a pointer to a structure extending this
+structure.</p>
+</li>
+<li>
+<p><code>flags</code> is reserved for future use.</p>
+</li>
+<li>
+<p><code>queueCreateInfoCount</code> is the unsigned integer size of the
+<code>pQueueCreateInfos</code> array.
+Refer to the <a href="../../../../spec/latest/chapters/devsandqueues.html#devsandqueues-queue-creation" class="xref page">Queue Creation</a> section
+below for further details.</p>
+</li>
+<li>
+<p><code>pQueueCreateInfos</code> is a pointer to an array of
+<a href="VkDeviceQueueCreateInfo.html" class="xref page">VkDeviceQueueCreateInfo</a> structures describing the queues that are
+requested to be created along with the logical device.
+Refer to the <a href="../../../../spec/latest/chapters/devsandqueues.html#devsandqueues-queue-creation" class="xref page">Queue Creation</a> section
+below for further details.</p>
+</li>
+<li>
+<p><code>enabledLayerCount</code> is legacy and not used.
+Implementations <strong>must</strong> not access this parameter.
+It <strong>must</strong> be 0.
+See <a href="../../../../spec/latest/appendices/legacy.html#legacy-devicelayers" class="xref page">Device Layers: Superseded via instance layers</a>.</p>
+</li>
+<li>
+<p><code>ppEnabledLayerNames</code> is legacy and not used.
+Implementations <strong>must</strong> not access this parameter.
+It <strong>must</strong> be <code>NULL</code>.
+See <a href="../../../../spec/latest/appendices/legacy.html#legacy-devicelayers" class="xref page">Device Layers: Superseded via instance layers</a>.</p>
+</li>
+<li>
+<p><code>enabledExtensionCount</code> is the number of device extensions to
+enable.</p>
+</li>
+<li>
+<p><code>ppEnabledExtensionNames</code> is a pointer to an array of
+<code>enabledExtensionCount</code> null-terminated UTF-8 strings containing the
+names of extensions to enable for the created device.
+See the <a href="../../../../spec/latest/chapters/extensions.html#extendingvulkan-extensions" class="xref page">Extensions</a> section for further details.</p>
+</li>
+<li>
+<p><code>pEnabledFeatures</code> is <code>NULL</code> or a pointer to a
+<a href="VkPhysicalDeviceFeatures.html" class="xref page">VkPhysicalDeviceFeatures</a> structure containing boolean indicators
+of all the features to be enabled.
+Refer to the <a href="../../../../spec/latest/chapters/features.html#features" class="xref page">Features</a> section for further details.
+This field is legacy.
+See <a href="../../../../spec/latest/appendices/legacy.html#legacy-gpdp2" class="xref page">Physical Device Queries: Superseded via version 2</a>.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_description"><a class="anchor" href="#_description"></a>Description</h2>
+<div class="sectionbody">
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-queueFamilyIndex-02802" href="#VUID-VkDeviceCreateInfo-queueFamilyIndex-02802"></a> <span class="vuid">VUID-VkDeviceCreateInfo-queueFamilyIndex-02802</span><br>
+
+The combination of the values in the <code>queueFamilyIndex</code> and
+<code>flags</code> members of each element of <code>pQueueCreateInfos</code> <strong>must</strong> be
+unique within <code>pQueueCreateInfos</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pQueueCreateInfos-06755" href="#VUID-VkDeviceCreateInfo-pQueueCreateInfos-06755"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pQueueCreateInfos-06755</span><br>
+
+If multiple elements of <code>pQueueCreateInfos</code> share the same
+<code>queueFamilyIndex</code>, the sum of their <code>queueCount</code> members <strong>must</strong>
+be less than or equal to the <code>queueCount</code> member of the
+<code>VkQueueFamilyProperties</code> structure, as returned by
+<code>vkGetPhysicalDeviceQueueFamilyProperties</code> in the
+<code>pQueueFamilyProperties</code>[queueFamilyIndex]</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pQueueCreateInfos-06654" href="#VUID-VkDeviceCreateInfo-pQueueCreateInfos-06654"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pQueueCreateInfos-06654</span><br>
+
+If multiple elements of <code>pQueueCreateInfos</code> share the same
+<code>queueFamilyIndex</code>, then all of such elements <strong>must</strong> have the same
+global priority level, which <strong>can</strong> be specified explicitly by the
+including a <a href="VkDeviceQueueGlobalPriorityCreateInfo.html" class="xref page">VkDeviceQueueGlobalPriorityCreateInfo</a> structure in the
+<code>pNext</code> chain, or by the implicit default value</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-00373" href="#VUID-VkDeviceCreateInfo-pNext-00373"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-00373</span><br>
+
+If the <code>pNext</code> chain includes a <a href="VkPhysicalDeviceFeatures2.html" class="xref page">VkPhysicalDeviceFeatures2</a>
+structure, then <code>pEnabledFeatures</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-01840" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-01840"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-01840</span><br>
+
+If <a href="VkPhysicalDeviceProperties.html" class="xref page">VkPhysicalDeviceProperties</a>::<code>apiVersion</code> advertises Vulkan
+1.1 or later, <code>ppEnabledExtensionNames</code> <strong>must</strong> not contain
+<code><a href="VK_AMD_negative_viewport_height.html" class="xref page">VK_AMD_negative_viewport_height</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-00374" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-00374"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-00374</span><br>
+
+<code>ppEnabledExtensionNames</code> <strong>must</strong> not contain both
+<code><a href="VK_KHR_maintenance1.html" class="xref page">VK_KHR_maintenance1</a></code> and
+<code><a href="VK_AMD_negative_viewport_height.html" class="xref page">VK_AMD_negative_viewport_height</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-03328" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-03328"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-03328</span><br>
+
+<code>ppEnabledExtensionNames</code> <strong>must</strong> not contain both
+<code><a href="VK_KHR_buffer_device_address.html" class="xref page">VK_KHR_buffer_device_address</a></code> and
+<code><a href="VK_EXT_buffer_device_address.html" class="xref page">VK_EXT_buffer_device_address</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-04748" href="#VUID-VkDeviceCreateInfo-pNext-04748"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-04748</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure and
+<a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a>::<code>bufferDeviceAddress</code> is
+<a href="VK_TRUE.html" class="xref page">VK_TRUE</a>, <code>ppEnabledExtensionNames</code> <strong>must</strong> not contain
+<code><a href="VK_EXT_buffer_device_address.html" class="xref page">VK_EXT_buffer_device_address</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-02829" href="#VUID-VkDeviceCreateInfo-pNext-02829"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-02829</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan11Features.html" class="xref page">VkPhysicalDeviceVulkan11Features</a> structure, then it <strong>must</strong> not
+include a <a href="VkPhysicalDevice16BitStorageFeatures.html" class="xref page">VkPhysicalDevice16BitStorageFeatures</a>,
+<a href="VkPhysicalDeviceMultiviewFeatures.html" class="xref page">VkPhysicalDeviceMultiviewFeatures</a>,
+<a href="VkPhysicalDeviceVariablePointersFeatures.html" class="xref page">VkPhysicalDeviceVariablePointersFeatures</a>,
+<a href="VkPhysicalDeviceProtectedMemoryFeatures.html" class="xref page">VkPhysicalDeviceProtectedMemoryFeatures</a>,
+<a href="VkPhysicalDeviceSamplerYcbcrConversionFeatures.html" class="xref page">VkPhysicalDeviceSamplerYcbcrConversionFeatures</a>, or
+<a href="VkPhysicalDeviceShaderDrawParametersFeatures.html" class="xref page">VkPhysicalDeviceShaderDrawParametersFeatures</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-02830" href="#VUID-VkDeviceCreateInfo-pNext-02830"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-02830</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure, then it <strong>must</strong> not
+include a <a href="VkPhysicalDevice8BitStorageFeatures.html" class="xref page">VkPhysicalDevice8BitStorageFeatures</a>,
+<a href="VkPhysicalDeviceShaderAtomicInt64Features.html" class="xref page">VkPhysicalDeviceShaderAtomicInt64Features</a>,
+<a href="VkPhysicalDeviceShaderFloat16Int8Features.html" class="xref page">VkPhysicalDeviceShaderFloat16Int8Features</a>,
+<a href="VkPhysicalDeviceDescriptorIndexingFeatures.html" class="xref page">VkPhysicalDeviceDescriptorIndexingFeatures</a>,
+<a href="VkPhysicalDeviceScalarBlockLayoutFeatures.html" class="xref page">VkPhysicalDeviceScalarBlockLayoutFeatures</a>,
+<a href="VkPhysicalDeviceImagelessFramebufferFeatures.html" class="xref page">VkPhysicalDeviceImagelessFramebufferFeatures</a>,
+<a href="VkPhysicalDeviceUniformBufferStandardLayoutFeatures.html" class="xref page">VkPhysicalDeviceUniformBufferStandardLayoutFeatures</a>,
+<a href="VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures.html" class="xref page">VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures</a>,
+<a href="VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures.html" class="xref page">VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures</a>,
+<a href="VkPhysicalDeviceHostQueryResetFeatures.html" class="xref page">VkPhysicalDeviceHostQueryResetFeatures</a>,
+<a href="VkPhysicalDeviceTimelineSemaphoreFeatures.html" class="xref page">VkPhysicalDeviceTimelineSemaphoreFeatures</a>,
+<a href="VkPhysicalDeviceBufferDeviceAddressFeatures.html" class="xref page">VkPhysicalDeviceBufferDeviceAddressFeatures</a>, or
+<a href="VkPhysicalDeviceVulkanMemoryModelFeatures.html" class="xref page">VkPhysicalDeviceVulkanMemoryModelFeatures</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-04476" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-04476"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-04476</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains
+<code>"VK_KHR_shader_draw_parameters"</code> and the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan11Features.html" class="xref page">VkPhysicalDeviceVulkan11Features</a> structure, then
+<code>VkPhysicalDeviceVulkan11Features</code>::<code>shaderDrawParameters</code> <strong>must</strong>
+be <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02831" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02831"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02831</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains <code>"VK_KHR_draw_indirect_count"</code>
+and the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure, then
+<code>VkPhysicalDeviceVulkan12Features</code>::<code>drawIndirectCount</code> <strong>must</strong> be
+<a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02832" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02832"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02832</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains
+<code>"VK_KHR_sampler_mirror_clamp_to_edge"</code> and the <code>pNext</code> chain
+includes a <a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure, then
+<code>VkPhysicalDeviceVulkan12Features</code>::<code>samplerMirrorClampToEdge</code>
+<strong>must</strong> be <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02833" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02833"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02833</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains <code>"VK_EXT_descriptor_indexing"</code>
+and the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure, then
+<code>VkPhysicalDeviceVulkan12Features</code>::<code>descriptorIndexing</code> <strong>must</strong>
+be <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02834" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02834"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02834</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains
+<code>"VK_EXT_sampler_filter_minmax"</code> and the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure, then
+<code>VkPhysicalDeviceVulkan12Features</code>::<code>samplerFilterMinmax</code> <strong>must</strong>
+be <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02835" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02835"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-02835</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains
+<code>"VK_EXT_shader_viewport_index_layer"</code> and the <code>pNext</code> chain
+includes a <a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a> structure, then
+<code>VkPhysicalDeviceVulkan12Features</code>::<code>shaderOutputViewportIndex</code>
+and <code>VkPhysicalDeviceVulkan12Features</code>::<code>shaderOutputLayer</code>
+<strong>must</strong> both be <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-06532" href="#VUID-VkDeviceCreateInfo-pNext-06532"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-06532</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan13Features.html" class="xref page">VkPhysicalDeviceVulkan13Features</a> structure, then it <strong>must</strong> not
+include a <a href="VkPhysicalDeviceDynamicRenderingFeatures.html" class="xref page">VkPhysicalDeviceDynamicRenderingFeatures</a>,
+<a href="VkPhysicalDeviceImageRobustnessFeatures.html" class="xref page">VkPhysicalDeviceImageRobustnessFeatures</a>,
+<a href="VkPhysicalDeviceInlineUniformBlockFeatures.html" class="xref page">VkPhysicalDeviceInlineUniformBlockFeatures</a>,
+<a href="VkPhysicalDeviceMaintenance4Features.html" class="xref page">VkPhysicalDeviceMaintenance4Features</a>,
+<a href="VkPhysicalDevicePipelineCreationCacheControlFeatures.html" class="xref page">VkPhysicalDevicePipelineCreationCacheControlFeatures</a>,
+<a href="VkPhysicalDevicePrivateDataFeatures.html" class="xref page">VkPhysicalDevicePrivateDataFeatures</a>,
+<a href="VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures.html" class="xref page">VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures</a>,
+<a href="VkPhysicalDeviceShaderIntegerDotProductFeatures.html" class="xref page">VkPhysicalDeviceShaderIntegerDotProductFeatures</a>,
+<a href="VkPhysicalDeviceShaderTerminateInvocationFeatures.html" class="xref page">VkPhysicalDeviceShaderTerminateInvocationFeatures</a>,
+<a href="VkPhysicalDeviceSubgroupSizeControlFeatures.html" class="xref page">VkPhysicalDeviceSubgroupSizeControlFeatures</a>,
+<a href="VkPhysicalDeviceSynchronization2Features.html" class="xref page">VkPhysicalDeviceSynchronization2Features</a>,
+<a href="VkPhysicalDeviceTextureCompressionASTCHDRFeatures.html" class="xref page">VkPhysicalDeviceTextureCompressionASTCHDRFeatures</a>, or
+<a href="VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures.html" class="xref page">VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-10360" href="#VUID-VkDeviceCreateInfo-pNext-10360"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-10360</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkPhysicalDeviceVulkan14Features.html" class="xref page">VkPhysicalDeviceVulkan14Features</a> structure, then it <strong>must</strong> not
+include a <a href="VkPhysicalDeviceGlobalPriorityQueryFeatures.html" class="xref page">VkPhysicalDeviceGlobalPriorityQueryFeatures</a>,
+<a href="VkPhysicalDeviceShaderSubgroupRotateFeatures.html" class="xref page">VkPhysicalDeviceShaderSubgroupRotateFeatures</a>,
+<a href="VkPhysicalDeviceShaderFloatControls2Features.html" class="xref page">VkPhysicalDeviceShaderFloatControls2Features</a>,
+<a href="VkPhysicalDeviceShaderExpectAssumeFeatures.html" class="xref page">VkPhysicalDeviceShaderExpectAssumeFeatures</a>,
+<a href="VkPhysicalDeviceLineRasterizationFeatures.html" class="xref page">VkPhysicalDeviceLineRasterizationFeatures</a>,
+<a href="VkPhysicalDeviceVertexAttributeDivisorFeatures.html" class="xref page">VkPhysicalDeviceVertexAttributeDivisorFeatures</a>,
+<a href="VkPhysicalDeviceIndexTypeUint8Features.html" class="xref page">VkPhysicalDeviceIndexTypeUint8Features</a>,
+<a href="VkPhysicalDeviceDynamicRenderingLocalReadFeatures.html" class="xref page">VkPhysicalDeviceDynamicRenderingLocalReadFeatures</a>,
+<a href="VkPhysicalDeviceMaintenance5Features.html" class="xref page">VkPhysicalDeviceMaintenance5Features</a>,
+<a href="VkPhysicalDeviceMaintenance6Features.html" class="xref page">VkPhysicalDeviceMaintenance6Features</a>,
+<a href="VkPhysicalDevicePipelineProtectedAccessFeatures.html" class="xref page">VkPhysicalDevicePipelineProtectedAccessFeatures</a>,
+<a href="VkPhysicalDevicePipelineRobustnessFeatures.html" class="xref page">VkPhysicalDevicePipelineRobustnessFeatures</a>, or
+<a href="VkPhysicalDeviceHostImageCopyFeatures.html" class="xref page">VkPhysicalDeviceHostImageCopyFeatures</a> structure</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-10858" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-10858"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-10858</span><br>
+
+If <code>ppEnabledExtensionNames</code> contains <code>"VK_KHR_push_descriptor"</code> and
+the <code>pNext</code> chain includes a <a href="VkPhysicalDeviceVulkan14Features.html" class="xref page">VkPhysicalDeviceVulkan14Features</a>
+structure, then
+<code>VkPhysicalDeviceVulkan14Features</code>::<code>pushDescriptor</code> <strong>must</strong> be
+<a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pProperties-04451" href="#VUID-VkDeviceCreateInfo-pProperties-04451"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pProperties-04451</span><br>
+
+If the <code><a href="VK_KHR_portability_subset.html" class="xref page">VK_KHR_portability_subset</a></code> extension is included in
+<code>pProperties</code> of <a href="vkEnumerateDeviceExtensionProperties.html" class="xref page">vkEnumerateDeviceExtensionProperties</a>,
+<code>ppEnabledExtensionNames</code> <strong>must</strong> include
+<code>"VK_KHR_portability_subset"</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-shadingRateImage-04478" href="#VUID-VkDeviceCreateInfo-shadingRateImage-04478"></a> <span class="vuid">VUID-VkDeviceCreateInfo-shadingRateImage-04478</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-shadingRateImage" class="xref page"><code>shadingRateImage</code></a> feature is
+enabled, the <a href="../../../../spec/latest/chapters/features.html#features-pipelineFragmentShadingRate" class="xref page">    <code>pipelineFragmentShadingRate</code></a> feature <strong>must</strong> not be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-shadingRateImage-04479" href="#VUID-VkDeviceCreateInfo-shadingRateImage-04479"></a> <span class="vuid">VUID-VkDeviceCreateInfo-shadingRateImage-04479</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-shadingRateImage" class="xref page"><code>shadingRateImage</code></a> feature is
+enabled, the <a href="../../../../spec/latest/chapters/features.html#features-primitiveFragmentShadingRate" class="xref page">    <code>primitiveFragmentShadingRate</code></a> feature <strong>must</strong> not be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-shadingRateImage-04480" href="#VUID-VkDeviceCreateInfo-shadingRateImage-04480"></a> <span class="vuid">VUID-VkDeviceCreateInfo-shadingRateImage-04480</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-shadingRateImage" class="xref page"><code>shadingRateImage</code></a> feature is
+enabled, the <a href="../../../../spec/latest/chapters/features.html#features-attachmentFragmentShadingRate" class="xref page">    <code>attachmentFragmentShadingRate</code></a> feature <strong>must</strong> not be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-fragmentDensityMap-04481" href="#VUID-VkDeviceCreateInfo-fragmentDensityMap-04481"></a> <span class="vuid">VUID-VkDeviceCreateInfo-fragmentDensityMap-04481</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-fragmentDensityMap" class="xref page"><code>fragmentDensityMap</code></a> feature
+is enabled, the <a href="../../../../spec/latest/chapters/features.html#features-pipelineFragmentShadingRate" class="xref page">    <code>pipelineFragmentShadingRate</code></a> feature <strong>must</strong> not be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-fragmentDensityMap-04482" href="#VUID-VkDeviceCreateInfo-fragmentDensityMap-04482"></a> <span class="vuid">VUID-VkDeviceCreateInfo-fragmentDensityMap-04482</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-fragmentDensityMap" class="xref page"><code>fragmentDensityMap</code></a> feature
+is enabled, the <a href="../../../../spec/latest/chapters/features.html#features-primitiveFragmentShadingRate" class="xref page">    <code>primitiveFragmentShadingRate</code></a> feature <strong>must</strong> not be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-fragmentDensityMap-04483" href="#VUID-VkDeviceCreateInfo-fragmentDensityMap-04483"></a> <span class="vuid">VUID-VkDeviceCreateInfo-fragmentDensityMap-04483</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-fragmentDensityMap" class="xref page"><code>fragmentDensityMap</code></a> feature
+is enabled, the <a href="../../../../spec/latest/chapters/features.html#features-attachmentFragmentShadingRate" class="xref page">    <code>attachmentFragmentShadingRate</code></a> feature <strong>must</strong> not be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-None-04896" href="#VUID-VkDeviceCreateInfo-None-04896"></a> <span class="vuid">VUID-VkDeviceCreateInfo-None-04896</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-sparseImageInt64Atomics" class="xref page">    <code>sparseImageInt64Atomics</code></a> feature is enabled,
+<a href="../../../../spec/latest/chapters/features.html#features-shaderImageInt64Atomics" class="xref page"><code>shaderImageInt64Atomics</code></a>
+<strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-None-04897" href="#VUID-VkDeviceCreateInfo-None-04897"></a> <span class="vuid">VUID-VkDeviceCreateInfo-None-04897</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-sparseImageFloat32Atomics" class="xref page">    <code>sparseImageFloat32Atomics</code></a> feature is enabled,
+<a href="../../../../spec/latest/chapters/features.html#features-shaderImageFloat32Atomics" class="xref page"><code>shaderImageFloat32Atomics</code></a>
+<strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-None-04898" href="#VUID-VkDeviceCreateInfo-None-04898"></a> <span class="vuid">VUID-VkDeviceCreateInfo-None-04898</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-sparseImageFloat32AtomicAdd" class="xref page">    <code>sparseImageFloat32AtomicAdd</code></a> feature is enabled,
+<a href="../../../../spec/latest/chapters/features.html#features-shaderImageFloat32AtomicAdd" class="xref page">    <code>shaderImageFloat32AtomicAdd</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-sparseImageFloat32AtomicMinMax-04975" href="#VUID-VkDeviceCreateInfo-sparseImageFloat32AtomicMinMax-04975"></a> <span class="vuid">VUID-VkDeviceCreateInfo-sparseImageFloat32AtomicMinMax-04975</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-sparseImageFloat32AtomicMinMax" class="xref page">    <code>sparseImageFloat32AtomicMinMax</code></a> feature is enabled,
+<a href="../../../../spec/latest/chapters/features.html#features-shaderImageFloat32AtomicMinMax" class="xref page">    <code>shaderImageFloat32AtomicMinMax</code></a> <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-robustBufferAccess-10247" href="#VUID-VkDeviceCreateInfo-robustBufferAccess-10247"></a> <span class="vuid">VUID-VkDeviceCreateInfo-robustBufferAccess-10247</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-robustBufferAccess" class="xref page"><code>robustBufferAccess</code></a> feature
+is enabled, and <a href="../../../../spec/latest/chapters/devsandqueues.html#limits-robustBufferAccessUpdateAfterBind" class="xref page">    <code>robustBufferAccessUpdateAfterBind</code></a> is <a href="VK_FALSE.html" class="xref page">VK_FALSE</a>, then
+<a href="../../../../spec/latest/chapters/features.html#features-descriptorBindingUniformBufferUpdateAfterBind" class="xref page">    <code>descriptorBindingUniformBufferUpdateAfterBind</code></a>,
+<a href="../../../../spec/latest/chapters/features.html#features-descriptorBindingStorageBufferUpdateAfterBind" class="xref page">    <code>descriptorBindingStorageBufferUpdateAfterBind</code></a>,
+<a href="../../../../spec/latest/chapters/features.html#features-descriptorBindingUniformTexelBufferUpdateAfterBind" class="xref page">    <code>descriptorBindingUniformTexelBufferUpdateAfterBind</code></a>, and
+<a href="../../../../spec/latest/chapters/features.html#features-descriptorBindingStorageTexelBufferUpdateAfterBind" class="xref page">    <code>descriptorBindingStorageTexelBufferUpdateAfterBind</code></a> <strong>must</strong> not be
+enabled</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-None-08095" href="#VUID-VkDeviceCreateInfo-None-08095"></a> <span class="vuid">VUID-VkDeviceCreateInfo-None-08095</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-descriptorBuffer" class="xref page"><code>descriptorBuffer</code></a> feature is
+enabled, <code>ppEnabledExtensionNames</code> <strong>must</strong> not contain
+<code><a href="VK_AMD_shader_fragment_mask.html" class="xref page">VK_AMD_shader_fragment_mask</a></code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-09396" href="#VUID-VkDeviceCreateInfo-pNext-09396"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-09396</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkDeviceQueueShaderCoreControlCreateInfoARM.html" class="xref page">VkDeviceQueueShaderCoreControlCreateInfoARM</a> structure, then it
+<strong>must</strong> not be included in the <code>pNext</code> chain of any of the
+<a href="VkDeviceQueueCreateInfo.html" class="xref page">VkDeviceQueueCreateInfo</a> structures in <code>pQueueCreateInfos</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-09397" href="#VUID-VkDeviceCreateInfo-pNext-09397"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-09397</span><br>
+
+If the <code>pNext</code> chain includes a
+<a href="VkDeviceQueueShaderCoreControlCreateInfoARM.html" class="xref page">VkDeviceQueueShaderCoreControlCreateInfoARM</a> structure then
+<a href="VkPhysicalDeviceSchedulingControlsPropertiesARM.html" class="xref page">VkPhysicalDeviceSchedulingControlsPropertiesARM</a>::<code>schedulingControlsFlags</code>
+<strong>must</strong> contain
+<a href="VkPhysicalDeviceSchedulingControlsFlagBitsARM.html" class="xref page">VK_PHYSICAL_DEVICE_SCHEDULING_CONTROLS_SHADER_CORE_COUNT_ARM</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-None-10778" href="#VUID-VkDeviceCreateInfo-None-10778"></a> <span class="vuid">VUID-VkDeviceCreateInfo-None-10778</span><br>
+
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-maintenance9" class="xref page">maintenance9</a> feature is not supported,
+<code>queueCreateInfoCount</code> <strong>must</strong> be greater than <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-queueFamilyIndex-11831" href="#VUID-VkDeviceCreateInfo-queueFamilyIndex-11831"></a> <span class="vuid">VUID-VkDeviceCreateInfo-queueFamilyIndex-11831</span><br>
+
+If any element of pQueueCreateInfos specifies a <code>queueFamilyIndex</code>
+that supports <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_DATA_GRAPH_BIT_ARM</a> and that
+<code>queueFamilyIndex</code> enumerates an engine through
+<a href="vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM.html" class="xref page">vkGetPhysicalDeviceQueueFamilyDataGraphPropertiesARM</a> with
+<code>type</code>
+<a href="VkPhysicalDeviceDataGraphProcessingEngineTypeARM.html" class="xref page">VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_NEURAL_QCOM</a>
+or
+<a href="VkPhysicalDeviceDataGraphProcessingEngineTypeARM.html" class="xref page">VK_PHYSICAL_DEVICE_DATA_GRAPH_PROCESSING_ENGINE_TYPE_COMPUTE_QCOM</a>,
+a <a href="VkPhysicalDeviceDataGraphModelFeaturesQCOM.html" class="xref page">VkPhysicalDeviceDataGraphModelFeaturesQCOM</a> structure <strong>must</strong> be
+included in <code>pNext</code> with <a href="../../../../spec/latest/chapters/features.html#features-dataGraphModelQCOM" class="xref page">    dataGraphModel</a> set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-enabledLayerCount-12384" href="#VUID-VkDeviceCreateInfo-enabledLayerCount-12384"></a> <span class="vuid">VUID-VkDeviceCreateInfo-enabledLayerCount-12384</span><br>
+
+<code>enabledLayerCount</code> <strong>must</strong> be 0</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledLayerNames-12385" href="#VUID-VkDeviceCreateInfo-ppEnabledLayerNames-12385"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledLayerNames-12385</span><br>
+
+<code>ppEnabledLayerNames</code> <strong>must</strong> be <code>NULL</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-sType-sType" href="#VUID-VkDeviceCreateInfo-sType-sType"></a> <span class="vuid">VUID-VkDeviceCreateInfo-sType-sType</span><br>
+ <code>sType</code> <strong>must</strong> be <a href="VkStructureType.html" class="xref page">VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pNext-pNext" href="#VUID-VkDeviceCreateInfo-pNext-pNext"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pNext-pNext</span><br>
+ Each <code>pNext</code> member of any structure (including this one) in the <code>pNext</code> chain <strong>must</strong> be either <code>NULL</code> or a pointer to a valid instance of <a href="VkDeviceDeviceMemoryReportCreateInfoEXT.html" class="xref page">VkDeviceDeviceMemoryReportCreateInfoEXT</a>, <a href="VkDeviceDiagnosticsConfigCreateInfoNV.html" class="xref page">VkDeviceDiagnosticsConfigCreateInfoNV</a>, <a href="VkDeviceGroupDeviceCreateInfo.html" class="xref page">VkDeviceGroupDeviceCreateInfo</a>, <a href="VkDeviceMemoryOverallocationCreateInfoAMD.html" class="xref page">VkDeviceMemoryOverallocationCreateInfoAMD</a>, <a href="VkDevicePipelineBinaryInternalCacheControlKHR.html" class="xref page">VkDevicePipelineBinaryInternalCacheControlKHR</a>, <a href="VkDevicePrivateDataCreateInfo.html" class="xref page">VkDevicePrivateDataCreateInfo</a>, <a href="VkDeviceQueueShaderCoreControlCreateInfoARM.html" class="xref page">VkDeviceQueueShaderCoreControlCreateInfoARM</a>, <a href="VkExternalComputeQueueDeviceCreateInfoNV.html" class="xref page">VkExternalComputeQueueDeviceCreateInfoNV</a>, <a href="VkPhysicalDevice16BitStorageFeatures.html" class="xref page">VkPhysicalDevice16BitStorageFeatures</a>, <a href="VkPhysicalDevice4444FormatsFeaturesEXT.html" class="xref page">VkPhysicalDevice4444FormatsFeaturesEXT</a>, <a href="VkPhysicalDevice8BitStorageFeatures.html" class="xref page">VkPhysicalDevice8BitStorageFeatures</a>, <a href="VkPhysicalDeviceASTCDecodeFeaturesEXT.html" class="xref page">VkPhysicalDeviceASTCDecodeFeaturesEXT</a>, <a href="VkPhysicalDeviceAccelerationStructureFeaturesKHR.html" class="xref page">VkPhysicalDeviceAccelerationStructureFeaturesKHR</a>, <a href="VkPhysicalDeviceAddressBindingReportFeaturesEXT.html" class="xref page">VkPhysicalDeviceAddressBindingReportFeaturesEXT</a>, <a href="VkPhysicalDeviceAmigoProfilingFeaturesSEC.html" class="xref page">VkPhysicalDeviceAmigoProfilingFeaturesSEC</a>, <a href="VkPhysicalDeviceAntiLagFeaturesAMD.html" class="xref page">VkPhysicalDeviceAntiLagFeaturesAMD</a>, <a href="VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT.html" class="xref page">VkPhysicalDeviceAttachmentFeedbackLoopDynamicStateFeaturesEXT</a>, <a href="VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT.html" class="xref page">VkPhysicalDeviceAttachmentFeedbackLoopLayoutFeaturesEXT</a>, <a href="VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT.html" class="xref page">VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT</a>, <a href="VkPhysicalDeviceBorderColorSwizzleFeaturesEXT.html" class="xref page">VkPhysicalDeviceBorderColorSwizzleFeaturesEXT</a>, <a href="VkPhysicalDeviceBufferDeviceAddressFeatures.html" class="xref page">VkPhysicalDeviceBufferDeviceAddressFeatures</a>, <a href="VkPhysicalDeviceBufferDeviceAddressFeaturesEXT.html" class="xref page">VkPhysicalDeviceBufferDeviceAddressFeaturesEXT</a>, <a href="VkPhysicalDeviceClusterAccelerationStructureFeaturesNV.html" class="xref page">VkPhysicalDeviceClusterAccelerationStructureFeaturesNV</a>, <a href="VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI.html" class="xref page">VkPhysicalDeviceClusterCullingShaderFeaturesHUAWEI</a>, <a href="VkPhysicalDeviceCoherentMemoryFeaturesAMD.html" class="xref page">VkPhysicalDeviceCoherentMemoryFeaturesAMD</a>, <a href="VkPhysicalDeviceColorWriteEnableFeaturesEXT.html" class="xref page">VkPhysicalDeviceColorWriteEnableFeaturesEXT</a>, <a href="VkPhysicalDeviceCommandBufferInheritanceFeaturesNV.html" class="xref page">VkPhysicalDeviceCommandBufferInheritanceFeaturesNV</a>, <a href="VkPhysicalDeviceComputeOccupancyPriorityFeaturesNV.html" class="xref page">VkPhysicalDeviceComputeOccupancyPriorityFeaturesNV</a>, <a href="VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR.html" class="xref page">VkPhysicalDeviceComputeShaderDerivativesFeaturesKHR</a>, <a href="VkPhysicalDeviceConditionalRenderingFeaturesEXT.html" class="xref page">VkPhysicalDeviceConditionalRenderingFeaturesEXT</a>, <a href="VkPhysicalDeviceCooperativeMatrix2FeaturesNV.html" class="xref page">VkPhysicalDeviceCooperativeMatrix2FeaturesNV</a>, <a href="VkPhysicalDeviceCooperativeMatrixConversionFeaturesQCOM.html" class="xref page">VkPhysicalDeviceCooperativeMatrixConversionFeaturesQCOM</a>, <a href="VkPhysicalDeviceCooperativeMatrixDecodeVectorFeaturesNV.html" class="xref page">VkPhysicalDeviceCooperativeMatrixDecodeVectorFeaturesNV</a>, <a href="VkPhysicalDeviceCooperativeMatrixFeaturesKHR.html" class="xref page">VkPhysicalDeviceCooperativeMatrixFeaturesKHR</a>, <a href="VkPhysicalDeviceCooperativeMatrixFeaturesNV.html" class="xref page">VkPhysicalDeviceCooperativeMatrixFeaturesNV</a>, <a href="VkPhysicalDeviceCooperativeVectorFeaturesNV.html" class="xref page">VkPhysicalDeviceCooperativeVectorFeaturesNV</a>, <a href="VkPhysicalDeviceCopyMemoryIndirectFeaturesKHR.html" class="xref page">VkPhysicalDeviceCopyMemoryIndirectFeaturesKHR</a>, <a href="VkPhysicalDeviceCopyMemoryIndirectFeaturesNV.html" class="xref page">VkPhysicalDeviceCopyMemoryIndirectFeaturesNV</a>, <a href="VkPhysicalDeviceCornerSampledImageFeaturesNV.html" class="xref page">VkPhysicalDeviceCornerSampledImageFeaturesNV</a>, <a href="VkPhysicalDeviceCoverageReductionModeFeaturesNV.html" class="xref page">VkPhysicalDeviceCoverageReductionModeFeaturesNV</a>, <a href="VkPhysicalDeviceCubicClampFeaturesQCOM.html" class="xref page">VkPhysicalDeviceCubicClampFeaturesQCOM</a>, <a href="VkPhysicalDeviceCubicWeightsFeaturesQCOM.html" class="xref page">VkPhysicalDeviceCubicWeightsFeaturesQCOM</a>, <a href="VkPhysicalDeviceCudaKernelLaunchFeaturesNV.html" class="xref page">VkPhysicalDeviceCudaKernelLaunchFeaturesNV</a>, <a href="VkPhysicalDeviceCustomBorderColorFeaturesEXT.html" class="xref page">VkPhysicalDeviceCustomBorderColorFeaturesEXT</a>, <a href="VkPhysicalDeviceCustomResolveFeaturesEXT.html" class="xref page">VkPhysicalDeviceCustomResolveFeaturesEXT</a>, <a href="VkPhysicalDeviceDataGraphFeaturesARM.html" class="xref page">VkPhysicalDeviceDataGraphFeaturesARM</a>, <a href="VkPhysicalDeviceDataGraphModelFeaturesQCOM.html" class="xref page">VkPhysicalDeviceDataGraphModelFeaturesQCOM</a>, <a href="VkPhysicalDeviceDataGraphNeuralAcceleratorStatisticsFeaturesARM.html" class="xref page">VkPhysicalDeviceDataGraphNeuralAcceleratorStatisticsFeaturesARM</a>, <a href="VkPhysicalDeviceDataGraphOpticalFlowFeaturesARM.html" class="xref page">VkPhysicalDeviceDataGraphOpticalFlowFeaturesARM</a>, <a href="VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV.html" class="xref page">VkPhysicalDeviceDedicatedAllocationImageAliasingFeaturesNV</a>, <a href="VkPhysicalDeviceDenseGeometryFormatFeaturesAMDX.html" class="xref page">VkPhysicalDeviceDenseGeometryFormatFeaturesAMDX</a>, <a href="VkPhysicalDeviceDepthBiasControlFeaturesEXT.html" class="xref page">VkPhysicalDeviceDepthBiasControlFeaturesEXT</a>, <a href="VkPhysicalDeviceDepthClampControlFeaturesEXT.html" class="xref page">VkPhysicalDeviceDepthClampControlFeaturesEXT</a>, <a href="VkPhysicalDeviceDepthClampZeroOneFeaturesKHR.html" class="xref page">VkPhysicalDeviceDepthClampZeroOneFeaturesKHR</a>, <a href="VkPhysicalDeviceDepthClipControlFeaturesEXT.html" class="xref page">VkPhysicalDeviceDepthClipControlFeaturesEXT</a>, <a href="VkPhysicalDeviceDepthClipEnableFeaturesEXT.html" class="xref page">VkPhysicalDeviceDepthClipEnableFeaturesEXT</a>, <a href="VkPhysicalDeviceDescriptorBufferFeaturesEXT.html" class="xref page">VkPhysicalDeviceDescriptorBufferFeaturesEXT</a>, <a href="VkPhysicalDeviceDescriptorBufferTensorFeaturesARM.html" class="xref page">VkPhysicalDeviceDescriptorBufferTensorFeaturesARM</a>, <a href="VkPhysicalDeviceDescriptorHeapFeaturesEXT.html" class="xref page">VkPhysicalDeviceDescriptorHeapFeaturesEXT</a>, <a href="VkPhysicalDeviceDescriptorIndexingFeatures.html" class="xref page">VkPhysicalDeviceDescriptorIndexingFeatures</a>, <a href="VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV.html" class="xref page">VkPhysicalDeviceDescriptorPoolOverallocationFeaturesNV</a>, <a href="VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE.html" class="xref page">VkPhysicalDeviceDescriptorSetHostMappingFeaturesVALVE</a>, <a href="VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR.html" class="xref page">VkPhysicalDeviceDeviceAddressCommandsFeaturesKHR</a>, <a href="VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV.html" class="xref page">VkPhysicalDeviceDeviceGeneratedCommandsComputeFeaturesNV</a>, <a href="VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT.html" class="xref page">VkPhysicalDeviceDeviceGeneratedCommandsFeaturesEXT</a>, <a href="VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV.html" class="xref page">VkPhysicalDeviceDeviceGeneratedCommandsFeaturesNV</a>, <a href="VkPhysicalDeviceDeviceMemoryReportFeaturesEXT.html" class="xref page">VkPhysicalDeviceDeviceMemoryReportFeaturesEXT</a>, <a href="VkPhysicalDeviceDiagnosticsConfigFeaturesNV.html" class="xref page">VkPhysicalDeviceDiagnosticsConfigFeaturesNV</a>, <a href="VkPhysicalDeviceDisplacementMicromapFeaturesNV.html" class="xref page">VkPhysicalDeviceDisplacementMicromapFeaturesNV</a>, <a href="VkPhysicalDeviceDynamicRenderingFeatures.html" class="xref page">VkPhysicalDeviceDynamicRenderingFeatures</a>, <a href="VkPhysicalDeviceDynamicRenderingLocalReadFeatures.html" class="xref page">VkPhysicalDeviceDynamicRenderingLocalReadFeatures</a>, <a href="VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT.html" class="xref page">VkPhysicalDeviceDynamicRenderingUnusedAttachmentsFeaturesEXT</a>, <a href="VkPhysicalDeviceElapsedTimerQueryFeaturesQCOM.html" class="xref page">VkPhysicalDeviceElapsedTimerQueryFeaturesQCOM</a>, <a href="VkPhysicalDeviceExclusiveScissorFeaturesNV.html" class="xref page">VkPhysicalDeviceExclusiveScissorFeaturesNV</a>, <a href="VkPhysicalDeviceExtendedDynamicState2FeaturesEXT.html" class="xref page">VkPhysicalDeviceExtendedDynamicState2FeaturesEXT</a>, <a href="VkPhysicalDeviceExtendedDynamicState3FeaturesEXT.html" class="xref page">VkPhysicalDeviceExtendedDynamicState3FeaturesEXT</a>, <a href="VkPhysicalDeviceExtendedDynamicStateFeaturesEXT.html" class="xref page">VkPhysicalDeviceExtendedDynamicStateFeaturesEXT</a>, <a href="VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV.html" class="xref page">VkPhysicalDeviceExtendedSparseAddressSpaceFeaturesNV</a>, <a href="VkPhysicalDeviceExternalFormatResolveFeaturesANDROID.html" class="xref page">VkPhysicalDeviceExternalFormatResolveFeaturesANDROID</a>, <a href="VkPhysicalDeviceExternalMemoryRDMAFeaturesNV.html" class="xref page">VkPhysicalDeviceExternalMemoryRDMAFeaturesNV</a>, <a href="VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX.html" class="xref page">VkPhysicalDeviceExternalMemoryScreenBufferFeaturesQNX</a>, <a href="VkPhysicalDeviceFaultFeaturesEXT.html" class="xref page">VkPhysicalDeviceFaultFeaturesEXT</a>, <a href="VkPhysicalDeviceFaultFeaturesKHR.html" class="xref page">VkPhysicalDeviceFaultFeaturesKHR</a>, <a href="VkPhysicalDeviceFeatures2.html" class="xref page">VkPhysicalDeviceFeatures2</a>, <a href="VkPhysicalDeviceFormatPackFeaturesARM.html" class="xref page">VkPhysicalDeviceFormatPackFeaturesARM</a>, <a href="VkPhysicalDeviceFragmentDensityMap2FeaturesEXT.html" class="xref page">VkPhysicalDeviceFragmentDensityMap2FeaturesEXT</a>, <a href="VkPhysicalDeviceFragmentDensityMapFeaturesEXT.html" class="xref page">VkPhysicalDeviceFragmentDensityMapFeaturesEXT</a>, <a href="VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE.html" class="xref page">VkPhysicalDeviceFragmentDensityMapLayeredFeaturesVALVE</a>, <a href="VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT.html" class="xref page">VkPhysicalDeviceFragmentDensityMapOffsetFeaturesEXT</a>, <a href="VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR.html" class="xref page">VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR</a>, <a href="VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT.html" class="xref page">VkPhysicalDeviceFragmentShaderInterlockFeaturesEXT</a>, <a href="VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV.html" class="xref page">VkPhysicalDeviceFragmentShadingRateEnumsFeaturesNV</a>, <a href="VkPhysicalDeviceFragmentShadingRateFeaturesKHR.html" class="xref page">VkPhysicalDeviceFragmentShadingRateFeaturesKHR</a>, <a href="VkPhysicalDeviceFrameBoundaryFeaturesEXT.html" class="xref page">VkPhysicalDeviceFrameBoundaryFeaturesEXT</a>, <a href="VkPhysicalDeviceGlobalPriorityQueryFeatures.html" class="xref page">VkPhysicalDeviceGlobalPriorityQueryFeatures</a>, <a href="VkPhysicalDeviceGpaFeaturesAMD.html" class="xref page">VkPhysicalDeviceGpaFeaturesAMD</a>, <a href="VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT.html" class="xref page">VkPhysicalDeviceGraphicsPipelineLibraryFeaturesEXT</a>, <a href="VkPhysicalDeviceHdrVividFeaturesHUAWEI.html" class="xref page">VkPhysicalDeviceHdrVividFeaturesHUAWEI</a>, <a href="VkPhysicalDeviceHostImageCopyFeatures.html" class="xref page">VkPhysicalDeviceHostImageCopyFeatures</a>, <a href="VkPhysicalDeviceHostQueryResetFeatures.html" class="xref page">VkPhysicalDeviceHostQueryResetFeatures</a>, <a href="VkPhysicalDeviceImage2DViewOf3DFeaturesEXT.html" class="xref page">VkPhysicalDeviceImage2DViewOf3DFeaturesEXT</a>, <a href="VkPhysicalDeviceImageAlignmentControlFeaturesMESA.html" class="xref page">VkPhysicalDeviceImageAlignmentControlFeaturesMESA</a>, <a href="VkPhysicalDeviceImageCompressionControlFeaturesEXT.html" class="xref page">VkPhysicalDeviceImageCompressionControlFeaturesEXT</a>, <a href="VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT.html" class="xref page">VkPhysicalDeviceImageCompressionControlSwapchainFeaturesEXT</a>, <a href="VkPhysicalDeviceImageProcessing2FeaturesQCOM.html" class="xref page">VkPhysicalDeviceImageProcessing2FeaturesQCOM</a>, <a href="VkPhysicalDeviceImageProcessing3FeaturesQCOM.html" class="xref page">VkPhysicalDeviceImageProcessing3FeaturesQCOM</a>, <a href="VkPhysicalDeviceImageProcessingFeaturesQCOM.html" class="xref page">VkPhysicalDeviceImageProcessingFeaturesQCOM</a>, <a href="VkPhysicalDeviceImageRobustnessFeatures.html" class="xref page">VkPhysicalDeviceImageRobustnessFeatures</a>, <a href="VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT.html" class="xref page">VkPhysicalDeviceImageSlicedViewOf3DFeaturesEXT</a>, <a href="VkPhysicalDeviceImageViewMinLodFeaturesEXT.html" class="xref page">VkPhysicalDeviceImageViewMinLodFeaturesEXT</a>, <a href="VkPhysicalDeviceImagelessFramebufferFeatures.html" class="xref page">VkPhysicalDeviceImagelessFramebufferFeatures</a>, <a href="VkPhysicalDeviceIndexTypeUint8Features.html" class="xref page">VkPhysicalDeviceIndexTypeUint8Features</a>, <a href="VkPhysicalDeviceInheritedViewportScissorFeaturesNV.html" class="xref page">VkPhysicalDeviceInheritedViewportScissorFeaturesNV</a>, <a href="VkPhysicalDeviceInlineUniformBlockFeatures.html" class="xref page">VkPhysicalDeviceInlineUniformBlockFeatures</a>, <a href="VkPhysicalDeviceInternallySynchronizedQueuesFeaturesKHR.html" class="xref page">VkPhysicalDeviceInternallySynchronizedQueuesFeaturesKHR</a>, <a href="VkPhysicalDeviceInvocationMaskFeaturesHUAWEI.html" class="xref page">VkPhysicalDeviceInvocationMaskFeaturesHUAWEI</a>, <a href="VkPhysicalDeviceLegacyDitheringFeaturesEXT.html" class="xref page">VkPhysicalDeviceLegacyDitheringFeaturesEXT</a>, <a href="VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT.html" class="xref page">VkPhysicalDeviceLegacyVertexAttributesFeaturesEXT</a>, <a href="VkPhysicalDeviceLineRasterizationFeatures.html" class="xref page">VkPhysicalDeviceLineRasterizationFeatures</a>, <a href="VkPhysicalDeviceLinearColorAttachmentFeaturesNV.html" class="xref page">VkPhysicalDeviceLinearColorAttachmentFeaturesNV</a>, <a href="VkPhysicalDeviceMaintenance10FeaturesKHR.html" class="xref page">VkPhysicalDeviceMaintenance10FeaturesKHR</a>, <a href="VkPhysicalDeviceMaintenance11FeaturesKHR.html" class="xref page">VkPhysicalDeviceMaintenance11FeaturesKHR</a>, <a href="VkPhysicalDeviceMaintenance4Features.html" class="xref page">VkPhysicalDeviceMaintenance4Features</a>, <a href="VkPhysicalDeviceMaintenance5Features.html" class="xref page">VkPhysicalDeviceMaintenance5Features</a>, <a href="VkPhysicalDeviceMaintenance6Features.html" class="xref page">VkPhysicalDeviceMaintenance6Features</a>, <a href="VkPhysicalDeviceMaintenance7FeaturesKHR.html" class="xref page">VkPhysicalDeviceMaintenance7FeaturesKHR</a>, <a href="VkPhysicalDeviceMaintenance8FeaturesKHR.html" class="xref page">VkPhysicalDeviceMaintenance8FeaturesKHR</a>, <a href="VkPhysicalDeviceMaintenance9FeaturesKHR.html" class="xref page">VkPhysicalDeviceMaintenance9FeaturesKHR</a>, <a href="VkPhysicalDeviceMapMemoryPlacedFeaturesEXT.html" class="xref page">VkPhysicalDeviceMapMemoryPlacedFeaturesEXT</a>, <a href="VkPhysicalDeviceMemoryDecompressionFeaturesEXT.html" class="xref page">VkPhysicalDeviceMemoryDecompressionFeaturesEXT</a>, <a href="VkPhysicalDeviceMemoryPriorityFeaturesEXT.html" class="xref page">VkPhysicalDeviceMemoryPriorityFeaturesEXT</a>, <a href="VkPhysicalDeviceMeshShaderFeaturesEXT.html" class="xref page">VkPhysicalDeviceMeshShaderFeaturesEXT</a>, <a href="VkPhysicalDeviceMeshShaderFeaturesNV.html" class="xref page">VkPhysicalDeviceMeshShaderFeaturesNV</a>, <a href="VkPhysicalDeviceMultiDrawFeaturesEXT.html" class="xref page">VkPhysicalDeviceMultiDrawFeaturesEXT</a>, <a href="VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT.html" class="xref page">VkPhysicalDeviceMultisampledRenderToSingleSampledFeaturesEXT</a>, <a href="VkPhysicalDeviceMultiviewFeatures.html" class="xref page">VkPhysicalDeviceMultiviewFeatures</a>, <a href="VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM.html" class="xref page">VkPhysicalDeviceMultiviewPerViewRenderAreasFeaturesQCOM</a>, <a href="VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM.html" class="xref page">VkPhysicalDeviceMultiviewPerViewViewportsFeaturesQCOM</a>, <a href="VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT.html" class="xref page">VkPhysicalDeviceMutableDescriptorTypeFeaturesEXT</a>, <a href="VkPhysicalDeviceNestedCommandBufferFeaturesEXT.html" class="xref page">VkPhysicalDeviceNestedCommandBufferFeaturesEXT</a>, <a href="VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT.html" class="xref page">VkPhysicalDeviceNonSeamlessCubeMapFeaturesEXT</a>, <a href="VkPhysicalDeviceOpacityMicromapFeaturesEXT.html" class="xref page">VkPhysicalDeviceOpacityMicromapFeaturesEXT</a>, <a href="VkPhysicalDeviceOpacityMicromapFeaturesKHR.html" class="xref page">VkPhysicalDeviceOpacityMicromapFeaturesKHR</a>, <a href="VkPhysicalDeviceOpticalFlowFeaturesNV.html" class="xref page">VkPhysicalDeviceOpticalFlowFeaturesNV</a>, <a href="VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT.html" class="xref page">VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT</a>, <a href="VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV.html" class="xref page">VkPhysicalDevicePartitionedAccelerationStructureFeaturesNV</a>, <a href="VkPhysicalDevicePerStageDescriptorSetFeaturesNV.html" class="xref page">VkPhysicalDevicePerStageDescriptorSetFeaturesNV</a>, <a href="VkPhysicalDevicePerformanceCountersByRegionFeaturesARM.html" class="xref page">VkPhysicalDevicePerformanceCountersByRegionFeaturesARM</a>, <a href="VkPhysicalDevicePerformanceQueryFeaturesKHR.html" class="xref page">VkPhysicalDevicePerformanceQueryFeaturesKHR</a>, <a href="VkPhysicalDevicePipelineBinaryFeaturesKHR.html" class="xref page">VkPhysicalDevicePipelineBinaryFeaturesKHR</a>, <a href="VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC.html" class="xref page">VkPhysicalDevicePipelineCacheIncrementalModeFeaturesSEC</a>, <a href="VkPhysicalDevicePipelineCreationCacheControlFeatures.html" class="xref page">VkPhysicalDevicePipelineCreationCacheControlFeatures</a>, <a href="VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR.html" class="xref page">VkPhysicalDevicePipelineExecutablePropertiesFeaturesKHR</a>, <a href="VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT.html" class="xref page">VkPhysicalDevicePipelineLibraryGroupHandlesFeaturesEXT</a>, <a href="VkPhysicalDevicePipelineOpacityMicromapFeaturesARM.html" class="xref page">VkPhysicalDevicePipelineOpacityMicromapFeaturesARM</a>, <a href="VkPhysicalDevicePipelinePropertiesFeaturesEXT.html" class="xref page">VkPhysicalDevicePipelinePropertiesFeaturesEXT</a>, <a href="VkPhysicalDevicePipelineProtectedAccessFeatures.html" class="xref page">VkPhysicalDevicePipelineProtectedAccessFeatures</a>, <a href="VkPhysicalDevicePipelineRobustnessFeatures.html" class="xref page">VkPhysicalDevicePipelineRobustnessFeatures</a>, <a href="VkPhysicalDevicePortabilitySubsetFeaturesKHR.html" class="xref page">VkPhysicalDevicePortabilitySubsetFeaturesKHR</a>, <a href="VkPhysicalDevicePresentBarrierFeaturesNV.html" class="xref page">VkPhysicalDevicePresentBarrierFeaturesNV</a>, <a href="VkPhysicalDevicePresentId2FeaturesKHR.html" class="xref page">VkPhysicalDevicePresentId2FeaturesKHR</a>, <a href="VkPhysicalDevicePresentIdFeaturesKHR.html" class="xref page">VkPhysicalDevicePresentIdFeaturesKHR</a>, <a href="VkPhysicalDevicePresentMeteringFeaturesNV.html" class="xref page">VkPhysicalDevicePresentMeteringFeaturesNV</a>, <a href="VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR.html" class="xref page">VkPhysicalDevicePresentModeFifoLatestReadyFeaturesKHR</a>, <a href="VkPhysicalDevicePresentTimingFeaturesEXT.html" class="xref page">VkPhysicalDevicePresentTimingFeaturesEXT</a>, <a href="VkPhysicalDevicePresentWait2FeaturesKHR.html" class="xref page">VkPhysicalDevicePresentWait2FeaturesKHR</a>, <a href="VkPhysicalDevicePresentWaitFeaturesKHR.html" class="xref page">VkPhysicalDevicePresentWaitFeaturesKHR</a>, <a href="VkPhysicalDevicePrimitiveRestartIndexFeaturesEXT.html" class="xref page">VkPhysicalDevicePrimitiveRestartIndexFeaturesEXT</a>, <a href="VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT.html" class="xref page">VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT</a>, <a href="VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT.html" class="xref page">VkPhysicalDevicePrimitivesGeneratedQueryFeaturesEXT</a>, <a href="VkPhysicalDevicePrivateDataFeatures.html" class="xref page">VkPhysicalDevicePrivateDataFeatures</a>, <a href="VkPhysicalDeviceProtectedMemoryFeatures.html" class="xref page">VkPhysicalDeviceProtectedMemoryFeatures</a>, <a href="VkPhysicalDeviceProvokingVertexFeaturesEXT.html" class="xref page">VkPhysicalDeviceProvokingVertexFeaturesEXT</a>, <a href="VkPhysicalDevicePushConstantBankFeaturesNV.html" class="xref page">VkPhysicalDevicePushConstantBankFeaturesNV</a>, <a href="VkPhysicalDeviceQueuePerfHintFeaturesQCOM.html" class="xref page">VkPhysicalDeviceQueuePerfHintFeaturesQCOM</a>, <a href="VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT.html" class="xref page">VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT</a>, <a href="VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT.html" class="xref page">VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT</a>, <a href="VkPhysicalDeviceRawAccessChainsFeaturesNV.html" class="xref page">VkPhysicalDeviceRawAccessChainsFeaturesNV</a>, <a href="VkPhysicalDeviceRayQueryFeaturesKHR.html" class="xref page">VkPhysicalDeviceRayQueryFeaturesKHR</a>, <a href="VkPhysicalDeviceRayTracingInvocationReorderFeaturesEXT.html" class="xref page">VkPhysicalDeviceRayTracingInvocationReorderFeaturesEXT</a>, <a href="VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV.html" class="xref page">VkPhysicalDeviceRayTracingInvocationReorderFeaturesNV</a>, <a href="VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV.html" class="xref page">VkPhysicalDeviceRayTracingLinearSweptSpheresFeaturesNV</a>, <a href="VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR.html" class="xref page">VkPhysicalDeviceRayTracingMaintenance1FeaturesKHR</a>, <a href="VkPhysicalDeviceRayTracingMotionBlurFeaturesNV.html" class="xref page">VkPhysicalDeviceRayTracingMotionBlurFeaturesNV</a>, <a href="VkPhysicalDeviceRayTracingPipelineFeaturesKHR.html" class="xref page">VkPhysicalDeviceRayTracingPipelineFeaturesKHR</a>, <a href="VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR.html" class="xref page">VkPhysicalDeviceRayTracingPositionFetchFeaturesKHR</a>, <a href="VkPhysicalDeviceRayTracingValidationFeaturesNV.html" class="xref page">VkPhysicalDeviceRayTracingValidationFeaturesNV</a>, <a href="VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG.html" class="xref page">VkPhysicalDeviceRelaxedLineRasterizationFeaturesIMG</a>, <a href="VkPhysicalDeviceRenderPassStripedFeaturesARM.html" class="xref page">VkPhysicalDeviceRenderPassStripedFeaturesARM</a>, <a href="VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV.html" class="xref page">VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV</a>, <a href="VkPhysicalDeviceRobustness2FeaturesKHR.html" class="xref page">VkPhysicalDeviceRobustness2FeaturesKHR</a>, <a href="VkPhysicalDeviceSamplerYcbcrConversionFeatures.html" class="xref page">VkPhysicalDeviceSamplerYcbcrConversionFeatures</a>, <a href="VkPhysicalDeviceScalarBlockLayoutFeatures.html" class="xref page">VkPhysicalDeviceScalarBlockLayoutFeatures</a>, <a href="VkPhysicalDeviceSchedulingControlsFeaturesARM.html" class="xref page">VkPhysicalDeviceSchedulingControlsFeaturesARM</a>, <a href="VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures.html" class="xref page">VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures</a>, <a href="VkPhysicalDeviceShader64BitIndexingFeaturesEXT.html" class="xref page">VkPhysicalDeviceShader64BitIndexingFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderAbortFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderAbortFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV.html" class="xref page">VkPhysicalDeviceShaderAtomicFloat16VectorFeaturesNV</a>, <a href="VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderAtomicFloat2FeaturesEXT</a>, <a href="VkPhysicalDeviceShaderAtomicFloatFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderAtomicFloatFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderAtomicInt64Features.html" class="xref page">VkPhysicalDeviceShaderAtomicInt64Features</a>, <a href="VkPhysicalDeviceShaderBfloat16FeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderBfloat16FeaturesKHR</a>, <a href="VkPhysicalDeviceShaderClockFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderClockFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderConstantDataFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderConstantDataFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM.html" class="xref page">VkPhysicalDeviceShaderCoreBuiltinsFeaturesARM</a>, <a href="VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures.html" class="xref page">VkPhysicalDeviceShaderDemoteToHelperInvocationFeatures</a>, <a href="VkPhysicalDeviceShaderDrawParametersFeatures.html" class="xref page">VkPhysicalDeviceShaderDrawParametersFeatures</a>, <a href="VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD.html" class="xref page">VkPhysicalDeviceShaderEarlyAndLateFragmentTestsFeaturesAMD</a>, <a href="VkPhysicalDeviceShaderEnqueueFeaturesAMDX.html" class="xref page">VkPhysicalDeviceShaderEnqueueFeaturesAMDX</a>, <a href="VkPhysicalDeviceShaderExpectAssumeFeatures.html" class="xref page">VkPhysicalDeviceShaderExpectAssumeFeatures</a>, <a href="VkPhysicalDeviceShaderFloat16Int8Features.html" class="xref page">VkPhysicalDeviceShaderFloat16Int8Features</a>, <a href="VkPhysicalDeviceShaderFloat8FeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderFloat8FeaturesEXT</a>, <a href="VkPhysicalDeviceShaderFloatControls2Features.html" class="xref page">VkPhysicalDeviceShaderFloatControls2Features</a>, <a href="VkPhysicalDeviceShaderFmaFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderFmaFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderImageAtomicInt64FeaturesEXT</a>, <a href="VkPhysicalDeviceShaderImageFootprintFeaturesNV.html" class="xref page">VkPhysicalDeviceShaderImageFootprintFeaturesNV</a>, <a href="VkPhysicalDeviceShaderInstrumentationFeaturesARM.html" class="xref page">VkPhysicalDeviceShaderInstrumentationFeaturesARM</a>, <a href="VkPhysicalDeviceShaderIntegerDotProductFeatures.html" class="xref page">VkPhysicalDeviceShaderIntegerDotProductFeatures</a>, <a href="VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL.html" class="xref page">VkPhysicalDeviceShaderIntegerFunctions2FeaturesINTEL</a>, <a href="VkPhysicalDeviceShaderLongVectorFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderLongVectorFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderMaximalReconvergenceFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderMixedFloatDotProductFeaturesVALVE.html" class="xref page">VkPhysicalDeviceShaderMixedFloatDotProductFeaturesVALVE</a>, <a href="VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderModuleIdentifierFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderMultipleWaitQueuesFeaturesQCOM.html" class="xref page">VkPhysicalDeviceShaderMultipleWaitQueuesFeaturesQCOM</a>, <a href="VkPhysicalDeviceShaderObjectFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderObjectFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderQuadControlFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderQuadControlFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderRelaxedExtendedInstructionFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderReplicatedCompositesFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderSMBuiltinsFeaturesNV.html" class="xref page">VkPhysicalDeviceShaderSMBuiltinsFeaturesNV</a>, <a href="VkPhysicalDeviceShaderSplitBarrierFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderSplitBarrierFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures.html" class="xref page">VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures</a>, <a href="VkPhysicalDeviceShaderSubgroupPartitionedFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderSubgroupPartitionedFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderSubgroupRotateFeatures.html" class="xref page">VkPhysicalDeviceShaderSubgroupRotateFeatures</a>, <a href="VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderSubgroupUniformControlFlowFeaturesKHR</a>, <a href="VkPhysicalDeviceShaderTerminateInvocationFeatures.html" class="xref page">VkPhysicalDeviceShaderTerminateInvocationFeatures</a>, <a href="VkPhysicalDeviceShaderTileImageFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderTileImageFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderUniformBufferUnsizedArrayFeaturesEXT.html" class="xref page">VkPhysicalDeviceShaderUniformBufferUnsizedArrayFeaturesEXT</a>, <a href="VkPhysicalDeviceShaderUntypedPointersFeaturesKHR.html" class="xref page">VkPhysicalDeviceShaderUntypedPointersFeaturesKHR</a>, <a href="VkPhysicalDeviceShadingRateImageFeaturesNV.html" class="xref page">VkPhysicalDeviceShadingRateImageFeaturesNV</a>, <a href="VkPhysicalDeviceSubgroupSizeControlFeatures.html" class="xref page">VkPhysicalDeviceSubgroupSizeControlFeatures</a>, <a href="VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT.html" class="xref page">VkPhysicalDeviceSubpassMergeFeedbackFeaturesEXT</a>, <a href="VkPhysicalDeviceSubpassShadingFeaturesHUAWEI.html" class="xref page">VkPhysicalDeviceSubpassShadingFeaturesHUAWEI</a>, <a href="VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR.html" class="xref page">VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR</a>, <a href="VkPhysicalDeviceSynchronization2Features.html" class="xref page">VkPhysicalDeviceSynchronization2Features</a>, <a href="VkPhysicalDeviceTensorFeaturesARM.html" class="xref page">VkPhysicalDeviceTensorFeaturesARM</a>, <a href="VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT.html" class="xref page">VkPhysicalDeviceTexelBufferAlignmentFeaturesEXT</a>, <a href="VkPhysicalDeviceTextureCompressionASTC3DFeaturesEXT.html" class="xref page">VkPhysicalDeviceTextureCompressionASTC3DFeaturesEXT</a>, <a href="VkPhysicalDeviceTextureCompressionASTCHDRFeatures.html" class="xref page">VkPhysicalDeviceTextureCompressionASTCHDRFeatures</a>, <a href="VkPhysicalDeviceThrottleHintFeaturesSEC.html" class="xref page">VkPhysicalDeviceThrottleHintFeaturesSEC</a>, <a href="VkPhysicalDeviceTileMemoryHeapFeaturesQCOM.html" class="xref page">VkPhysicalDeviceTileMemoryHeapFeaturesQCOM</a>, <a href="VkPhysicalDeviceTilePropertiesFeaturesQCOM.html" class="xref page">VkPhysicalDeviceTilePropertiesFeaturesQCOM</a>, <a href="VkPhysicalDeviceTileShadingFeaturesQCOM.html" class="xref page">VkPhysicalDeviceTileShadingFeaturesQCOM</a>, <a href="VkPhysicalDeviceTimelineSemaphoreFeatures.html" class="xref page">VkPhysicalDeviceTimelineSemaphoreFeatures</a>, <a href="VkPhysicalDeviceTransformFeedbackFeaturesEXT.html" class="xref page">VkPhysicalDeviceTransformFeedbackFeaturesEXT</a>, <a href="VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR.html" class="xref page">VkPhysicalDeviceUnifiedImageLayoutsFeaturesKHR</a>, <a href="VkPhysicalDeviceUniformBufferStandardLayoutFeatures.html" class="xref page">VkPhysicalDeviceUniformBufferStandardLayoutFeatures</a>, <a href="VkPhysicalDeviceVariablePointersFeatures.html" class="xref page">VkPhysicalDeviceVariablePointersFeatures</a>, <a href="VkPhysicalDeviceVertexAttributeDivisorFeatures.html" class="xref page">VkPhysicalDeviceVertexAttributeDivisorFeatures</a>, <a href="VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT.html" class="xref page">VkPhysicalDeviceVertexAttributeRobustnessFeaturesEXT</a>, <a href="VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT.html" class="xref page">VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT</a>, <a href="VkPhysicalDeviceVideoDecodeVP9FeaturesKHR.html" class="xref page">VkPhysicalDeviceVideoDecodeVP9FeaturesKHR</a>, <a href="VkPhysicalDeviceVideoEncodeAV1FeaturesKHR.html" class="xref page">VkPhysicalDeviceVideoEncodeAV1FeaturesKHR</a>, <a href="VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR.html" class="xref page">VkPhysicalDeviceVideoEncodeIntraRefreshFeaturesKHR</a>, <a href="VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR.html" class="xref page">VkPhysicalDeviceVideoEncodeQuantizationMapFeaturesKHR</a>, <a href="VkPhysicalDeviceVideoEncodeRgbConversionFeaturesVALVE.html" class="xref page">VkPhysicalDeviceVideoEncodeRgbConversionFeaturesVALVE</a>, <a href="VkPhysicalDeviceVideoMaintenance1FeaturesKHR.html" class="xref page">VkPhysicalDeviceVideoMaintenance1FeaturesKHR</a>, <a href="VkPhysicalDeviceVideoMaintenance2FeaturesKHR.html" class="xref page">VkPhysicalDeviceVideoMaintenance2FeaturesKHR</a>, <a href="VkPhysicalDeviceVulkan11Features.html" class="xref page">VkPhysicalDeviceVulkan11Features</a>, <a href="VkPhysicalDeviceVulkan12Features.html" class="xref page">VkPhysicalDeviceVulkan12Features</a>, <a href="VkPhysicalDeviceVulkan13Features.html" class="xref page">VkPhysicalDeviceVulkan13Features</a>, <a href="VkPhysicalDeviceVulkan14Features.html" class="xref page">VkPhysicalDeviceVulkan14Features</a>, <a href="VkPhysicalDeviceVulkanMemoryModelFeatures.html" class="xref page">VkPhysicalDeviceVulkanMemoryModelFeatures</a>, <a href="VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR.html" class="xref page">VkPhysicalDeviceWorkgroupMemoryExplicitLayoutFeaturesKHR</a>, <a href="VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT.html" class="xref page">VkPhysicalDeviceYcbcr2Plane444FormatsFeaturesEXT</a>, <a href="VkPhysicalDeviceYcbcrDegammaFeaturesQCOM.html" class="xref page">VkPhysicalDeviceYcbcrDegammaFeaturesQCOM</a>, <a href="VkPhysicalDeviceYcbcrImageArraysFeaturesEXT.html" class="xref page">VkPhysicalDeviceYcbcrImageArraysFeaturesEXT</a>, <a href="VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT.html" class="xref page">VkPhysicalDeviceZeroInitializeDeviceMemoryFeaturesEXT</a>, or <a href="VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures.html" class="xref page">VkPhysicalDeviceZeroInitializeWorkgroupMemoryFeatures</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-sType-unique" href="#VUID-VkDeviceCreateInfo-sType-unique"></a> <span class="vuid">VUID-VkDeviceCreateInfo-sType-unique</span><br>
+ The <code>sType</code> value of each structure in the <code>pNext</code> chain <strong>must</strong> be unique, with the exception of structures of type <a href="VkDeviceDeviceMemoryReportCreateInfoEXT.html" class="xref page">VkDeviceDeviceMemoryReportCreateInfoEXT</a> or <a href="VkDevicePrivateDataCreateInfo.html" class="xref page">VkDevicePrivateDataCreateInfo</a></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-flags-zerobitmask" href="#VUID-VkDeviceCreateInfo-flags-zerobitmask"></a> <span class="vuid">VUID-VkDeviceCreateInfo-flags-zerobitmask</span><br>
+ <code>flags</code> <strong>must</strong> be <code>0</code></p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pQueueCreateInfos-parameter" href="#VUID-VkDeviceCreateInfo-pQueueCreateInfos-parameter"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pQueueCreateInfos-parameter</span><br>
+ If <code>queueCreateInfoCount</code> is not <code>0</code>, <code>pQueueCreateInfos</code> <strong>must</strong> be a valid pointer to an array of <code>queueCreateInfoCount</code> valid <a href="VkDeviceQueueCreateInfo.html" class="xref page">VkDeviceQueueCreateInfo</a> structures</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-parameter" href="#VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-parameter"></a> <span class="vuid">VUID-VkDeviceCreateInfo-ppEnabledExtensionNames-parameter</span><br>
+ If <code>enabledExtensionCount</code> is not <code>0</code>, <code>ppEnabledExtensionNames</code> <strong>must</strong> be a valid pointer to an array of <code>enabledExtensionCount</code> null-terminated UTF-8 strings</p>
+</li>
+<li>
+<p><a id="VUID-VkDeviceCreateInfo-pEnabledFeatures-parameter" href="#VUID-VkDeviceCreateInfo-pEnabledFeatures-parameter"></a> <span class="vuid">VUID-VkDeviceCreateInfo-pEnabledFeatures-parameter</span><br>
+ If <code>pEnabledFeatures</code> is not <code>NULL</code>, <code>pEnabledFeatures</code> <strong>must</strong> be a valid pointer to a valid <a href="VkPhysicalDeviceFeatures.html" class="xref page">VkPhysicalDeviceFeatures</a> structure</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_see_also"><a class="anchor" href="#_see_also"></a>See Also</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="VK_VERSION_1_0.html" class="xref page">VK_VERSION_1_0</a>, <a href="VkDeviceCreateFlags.html" class="xref page">VkDeviceCreateFlags</a>, <a href="VkDeviceQueueCreateInfo.html" class="xref page">VkDeviceQueueCreateInfo</a>, <a href="VkPhysicalDeviceFeatures.html" class="xref page">VkPhysicalDeviceFeatures</a>, <a href="VkStructureType.html" class="xref page">VkStructureType</a>, <a href="vkCreateDevice.html" class="xref page">vkCreateDevice</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_document_notes"><a class="anchor" href="#_document_notes"></a>Document Notes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For more information, see the <a href="../../../../spec/latest/chapters/devsandqueues.html#VkDeviceCreateInfo" class="xref page">Vulkan Specification</a>.</p>
+</div>
+<div class="paragraph">
+<p>This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

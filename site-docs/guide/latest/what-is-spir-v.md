@@ -1,0 +1,56 @@
+# What is SPIR-V
+
+## Metadata
+
+- **Component**: guide
+- **Version**: latest
+- **URL**: /guide/latest/what_is_spirv.html
+
+## Table of Contents
+
+- [SPIR-V Interface and Capabilities](#_spir_v_interface_and_capabilities)
+- [SPIR-V_Interface_and_Capabilities](#_spir_v_interface_and_capabilities)
+- [Compilers](#_compilers)
+- [glslang](#_glslang)
+- [Shaderc](#_shaderc)
+- [DXC](#_dxc)
+- [Clspv](#_clspv)
+- [Tools and Ecosystem](#_tools_and_ecosystem)
+- [Tools_and_Ecosystem](#_tools_and_ecosystem)
+- [SPIRV-Tools](#_spirv_tools)
+- [SPIRV-Cross](#_spirv_cross)
+- [SPIRV-LLVM](#_spirv_llvm)
+
+## Content
+
+|  | Please read the [SPIRV-Guide](https://github.com/KhronosGroup/SPIRV-Guide) for more in detail information about SPIR-V |
+| --- | --- |
+
+[SPIR-V](https://registry.khronos.org/SPIR-V/) is a binary intermediate representation for graphical-shader stages and compute kernels. With Vulkan, an application can still write their shaders in a high-level shading language such as GLSL or [HLSL](hlsl.html), but a SPIR-V binary is needed when using [vkCreateShaderModule](https://docs.vulkan.org/spec/latest/chapters/shaders.html#vkCreateShaderModule). Khronos has a very nice [white paper](https://registry.khronos.org/SPIR-V/papers/WhitePaper.pdf) about SPIR-V and its advantages, and a high-level description of the representation. There are also two great Khronos presentations from Vulkan DevDay 2016 [here](https://www.khronos.org/assets/uploads/developers/library/2016-vulkan-devday-uk/3-Intro-to-spir-v-shaders.pdf) and [here](https://www.khronos.org/assets/uploads/developers/library/2016-vulkan-devday-uk/4-Using-spir-v-with-spirv-cross.pdf)
+([video of both](https://www.youtube.com/watch?v=XRpVwdduzgU)).
+
+Vulkan has an entire section that defines how [Vulkan interfaces with SPIR-V shaders](https://docs.vulkan.org/spec/latest/chapters/interfaces.html). Most valid usages of interfacing with SPIR-V occur during pipeline creation when shaders are compiled together.
+
+SPIR-V has many capabilities as it has other targets than just Vulkan. To see the supported capabilities Vulkan requires, one can reference the [Appendix](https://docs.vulkan.org/spec/latest/appendices/spirvenv.html#spirvenv-capabilities). Some extensions and features in Vulkan are just designed to check if some SPIR-V capabilities are supported or not.
+
+[glslang](https://github.com/KhronosGroup/glslang) is the Khronos reference front-end for GLSL, HLSL and ESSL, and sample SPIR-V generator. There is a standalone `glslangValidator` tool that is included that can be used to create SPIR-V from GLSL, HLSL and ESSL.
+
+A collection of tools, libraries, and tests for Vulkan shader compilation hosted by Google. It contains `glslc` which wraps around core functionality in [glslang](https://github.com/KhronosGroup/glslang) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools). Shaderc also contains `spvc` which wraps around core functionality in [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross) and [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools).
+
+Shaderc builds both tools as a standalone command line tool ([glslc](https://github.com/google/shaderc/tree/main/glslc)) as well as a library to link to ([libshaderc](https://github.com/google/shaderc/tree/main/libshaderc)).
+
+[DirectXShaderCompiler](https://github.com/microsoft/DirectXShaderCompiler) also supports [translating HLSL into the SPIR-V](https://github.com/Microsoft/DirectXShaderCompiler/wiki/SPIR%E2%80%90V-CodeGen).
+
+![what_is_spirv_dxc.png](_images/what_is_spirv_dxc.png)
+
+[Clspv](https://github.com/google/clspv) is a prototype compiler for a subset of OpenCL C to SPIR-V to be used as Vulkan compute shaders.
+
+There is a rich ecosystem of tools to take advantage of SPIR-V. The [Vulkan SDK gives an overview](https://vulkan.lunarg.com/doc/sdk/latest/windows/spirv_toolchain.html) of all the SPIR-V tools that are built and packaged for developers.
+
+The Khronos [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools) project provides C and C++ APIs and a command line interface to work with SPIR-V modules. More information in the [SPIRV-Guide](https://github.com/KhronosGroup/SPIRV-Guide/blob/master/chapters/khronos_tooling.md#spir-v-tools).
+
+The Khronos [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross) project is a practical tool and library for performing reflection on SPIR-V and disassembling SPIR-V back to a desired high-level shading language. For more details, [Hans Kristian](https://github.com/Themaister), the main developer of SPIR-V Cross, has given two great presentations about what it takes to create a tool such as SPIR-V Cross from [2018 Vulkanised](https://www.khronos.org/assets/uploads/developers/library/2018-vulkanised/04-SPIRVCross_Vulkanised2018.pdf) ([video](https://www.youtube.com/watch?v=T5Va6hSGx44)) and [2019 Vulkanised](https://www.khronos.org/assets/uploads/developers/library/2019-vulkanised/04-SPIRV-Cross-May19.pdf) ([video](https://www.youtube.com/watch?v=lv-fh_oFJUc))
+
+![what_is_spirv_spriv_cross.png](_images/what_is_spirv_spriv_cross.png)
+
+The Khronos [SPIRV-LLVM](https://github.com/KhronosGroup/SPIRV-LLVM) project is a LLVM framework with SPIR-V support. It’s intended to contain a bi-directional converter between LLVM and SPIR-V. It also serves as a foundation for LLVM-based front-end compilers targeting SPIR-V.
