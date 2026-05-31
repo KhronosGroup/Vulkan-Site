@@ -1,0 +1,30 @@
+<script src="{{{uiRootPath}}}/js/vendor/lunr.js" defer></script>
+{{#if env.SITE_SEARCH_LANGUAGES}}
+<script src="{{{uiRootPath}}}/js/vendor/lunr-languages.js" defer></script>
+{{/if}}
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="{{{uiRootPath}}}/js/search-ui.js" id="search-ui-script" data-site-root-path="{{{siteRootPath}}}" data-snippet-length="${snippetLength}" data-stylesheet="{{{uiRootPath}}}/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '{{{siteRootPath}}}/search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
