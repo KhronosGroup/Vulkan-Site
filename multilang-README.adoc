@@ -1,0 +1,107 @@
+= Multi-Language Code Block Feature
+:toc: left
+:toc-title: Contents
+
+== Overview
+
+The Vulkan-Site UI supports _multi-language code blocks_: a single listing block in an AsciiDoc page can contain variants for multiple languages (e.g. C and C++).
+The UI automatically detects the variants, renders a drop-down selector above the code block, and remembers the reader's choice across pages via `localStorage`.
+
+== How It Works
+
+The JavaScript in `src/js/20-multilang.js` scans every `<pre><code>` block on the page.
+If the block's text contains one or more `// START <lang>` markers, the block is treated as multi-language and the selector is injected.
+
+The trigger condition is:
+
+* The code block contains at least one line matching `// START <identifier>` (case-insensitive), **or**
+* The `<code>` element carries the attribute `data-lang="multilang"` (set by Antora when the listing block's language is `multilang`).
+
+== Marker Syntax
+
+Inside a listing block, wrap each language variant with matching `START` / `END` comment markers:
+
+----
+// START <lang>
+... code for <lang> ...
+// END <lang>
+----
+
+* `<lang>` may contain letters, digits, hyphens, and underscores (`[A-Za-z0-9_-]`).
+* Matching is case-insensitive for the `END` marker, but the label shown in the drop-down uses the exact capitalisation from the `START` marker.
+* Variants are displayed in the order their `START` markers appear.
+* Content outside any `START`/`END` pair is silently ignored.
+* An `END` marker is optional — if the file ends while a block is open, the remaining lines are captured (graceful fallback).
+
+== AsciiDoc Example
+
+The following listing block provides both a C and a C++ variant:
+
+[source,asciidoc]
+....
+[source,multilang]
+----
+// START C
+VkInstance instance;
+VkInstanceCreateInfo createInfo = {0};
+createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+vkCreateInstance(&createInfo, NULL, &instance);
+// END C
+
+// START C++
+vk::InstanceCreateInfo createInfo{};
+auto instance = vk::createInstance(createInfo);
+// END C++
+----
+....
+
+The language attribute on the listing block should be set to `multilang` so that Antora passes it through to the rendered `<code>` element.
+The UI will then show a selector labelled **C** and **C++**.
+
+== Controlling Tab Order
+
+By default, tabs appear in the order the `START` markers are encountered.
+If the `<pre>` or `<code>` element carries a `data-languages` attribute (a comma-separated list), that order takes precedence and any parsed languages not in the list are appended afterwards.
+
+In AsciiDoc you can set this via a role or a custom attribute on the block; the exact mechanism depends on your Antora/Asciidoctor version.
+
+== Persisting the Reader's Choice
+
+When a reader selects a language, the choice is stored in `localStorage` under the key `preferredCodeLang`.
+On subsequent page loads, any multi-language block that contains the stored language will default to showing that language.
+
+If no stored preference exists, the UI falls back to the first language in the following priority list that is present in the block:
+
+`javascript`, `js`, `ts`, `typescript`, `python`, `py`, `java`, `c`, `cpp`, `csharp`, `ruby`
+
+If none of those match, the first declared language is shown.
+
+== Syntax Highlighting
+
+After switching languages, the UI calls `hljs.highlightBlock()` on the newly visible `<code>` node (if highlight.js is loaded), so syntax highlighting is applied lazily on first display.
+Each language variant receives the CSS class `language-<lang>` (e.g. `language-C`, `language-C++`), which highlight.js uses to select the grammar.
+
+== Quick Reference
+
+[cols="1,3",options="header"]
+|===
+| Item | Value
+
+| Trigger
+| `// START <lang>` comment inside any listing block, or `data-lang="multilang"` on the `<code>` element
+
+| AsciiDoc language attribute
+| `multilang`
+
+| Marker format
+| `// START <lang>` … `// END <lang>`
+
+| Allowed characters in `<lang>`
+| `A-Z a-z 0-9 _ -`
+
+| `localStorage` key
+| `preferredCodeLang`
+
+| Tab order
+| Declaration order (or `data-languages` attribute if present)
+|===
