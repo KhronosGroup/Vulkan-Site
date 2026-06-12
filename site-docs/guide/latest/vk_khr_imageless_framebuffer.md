@@ -1,0 +1,58 @@
+# VK_KHR_imageless_framebuffer
+
+## Metadata
+
+- **Component**: guide
+- **Version**: latest
+- **URL**: /guide/latest/extensions/VK_KHR_imageless_framebuffer.html
+
+## Content
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+When creating a `VkFramebuffer` you normally need to pass the `VkImageView`s being used in `VkFramebufferCreateInfo::pAttachments`. Needing the `VkImageView` forces an application to make a framebuffer for each swapchain image. With `VK_KHR_imageless_framebuffer` the `VkImageView` information is given at `vkCmdBeginRenderPass` time instead. This means only one `VkFramebuffer` for all the swapchain images. It is important to notice that when the size of the swapchain changes, the `VkFramebuffer` will still need to be recreated to adjust information such as the `height` and `width`.
+
+To use an imageless `VkFramebuffer`
+
+* 
+Make sure the implementation has support for it by querying `VkPhysicalDeviceImagelessFramebufferFeatures::imagelessFramebuffer` or `VkPhysicalDeviceVulkan12Features::imagelessFramebuffer`
+
+* 
+Set the `VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT` in `VkFramebufferCreateInfo::flags`
+
+* 
+Include a `VkFramebufferAttachmentsCreateInfo` struct in the `VkFramebufferCreateInfo::pNext`
+
+* 
+When beginning the render pass, pass in a `VkRenderPassAttachmentBeginInfo` structure into `VkRenderPassBeginInfo::pNext` with the compatible attachments
+
+// Fill information about attachment
+VkFramebufferAttachmentImageInfo attachments_image_info = {};
+// ...
+
+VkFramebufferAttachmentsCreateInfo attachments_create_info = {};
+// ...
+attachments_create_info.attachmentImageInfoCount = 1;
+attachments_create_info.pAttachmentImageInfos = &attachments_image_info;
+
+// Create FrameBuffer as imageless
+VkFramebufferCreateInfo framebuffer_info = {};
+framebuffer_info.pNext = &attachments_create_info;
+framebuffer_info.flags |= VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT;
+// ...
+framebffer_info.pAttachments = NULL; // pAttachments is ignored here now
+
+vkCreateFramebuffer(device, &framebuffer_info, NULL, &framebuffer_object);
+
+// ...
+
+// Start recording a command buffer
+VkRenderPassAttachmentBeginInfo attachment_begin_info = {};
+// attachment_begin_info.pAttachments contains VkImageView objects
+
+VkRenderPassBeginInfo begin_info = {};
+begin_info.pNext = &attachment_begin_info;
+// ...
+
+vkCmdBeginRenderPass(command_buffer, &begin_info, VK_SUBPASS_CONTENTS_INLINE);

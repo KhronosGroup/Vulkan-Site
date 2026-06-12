@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>StandaloneSpirv(3) :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:refpages" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="StandaloneSpirv.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href').split('/').pop()===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan API Reference Pages</a></li>
+    <li>Other SPIR-V</li>
+    <li>S</li>
+    <li><a href="StandaloneSpirv.html">StandaloneSpirv</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">StandaloneSpirv(3)</h1>
+<div class="sect1">
+<h2 id="_name"><a class="anchor" href="#_name"></a>Name</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>StandaloneSpirv - Standalone SPIR-V Validation</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_description"><a class="anchor" href="#_description"></a>Description</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The following rules <strong>can</strong> be validated with only the SPIR-V module itself.
+They do not depend on knowledge of the implementation and its capabilities
+or knowledge of runtime information, such as enabled features.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04633" href="#VUID-StandaloneSpirv-None-04633"></a> <span class="vuid">VUID-StandaloneSpirv-None-04633</span><br>
+
+Every entry point <strong>must</strong> have no return value and accept no arguments</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04634" href="#VUID-StandaloneSpirv-None-04634"></a> <span class="vuid">VUID-StandaloneSpirv-None-04634</span><br>
+
+The static function-call graph for an entry point <strong>must</strong> not contain
+cycles; that is, static recursion is not allowed</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04635" href="#VUID-StandaloneSpirv-None-04635"></a> <span class="vuid">VUID-StandaloneSpirv-None-04635</span><br>
+
+The <code>Logical</code> or <code>PhysicalStorageBuffer64</code> addressing model <strong>must</strong>
+be selected</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04636" href="#VUID-StandaloneSpirv-None-04636"></a> <span class="vuid">VUID-StandaloneSpirv-None-04636</span><br>
+
+<code>Scope</code> for execution <strong>must</strong> be limited to <code>Workgroup</code> or
+<code>Subgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Scope-12243" href="#VUID-StandaloneSpirv-Scope-12243"></a> <span class="vuid">VUID-StandaloneSpirv-Scope-12243</span><br>
+
+The <code>Scope</code> operand of <code>OpTypeCooperativeMatrixKHR</code> <strong>must</strong> be
+limited to <code>Workgroup</code> or <code>Subgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04637" href="#VUID-StandaloneSpirv-None-04637"></a> <span class="vuid">VUID-StandaloneSpirv-None-04637</span><br>
+
+If the <code>Scope</code> for execution is <code>Workgroup</code>, then it <strong>must</strong> only be
+used in the task, mesh, tessellation control, or compute
+<code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04638" href="#VUID-StandaloneSpirv-None-04638"></a> <span class="vuid">VUID-StandaloneSpirv-None-04638</span><br>
+
+<code>Scope</code> for memory <strong>must</strong> be limited to <code>Device</code>, <code>QueueFamily</code>,
+<code>Workgroup</code>, <code>ShaderCallKHR</code>, <code>Subgroup</code>, or <code>Invocation</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-ExecutionModel-07320" href="#VUID-StandaloneSpirv-ExecutionModel-07320"></a> <span class="vuid">VUID-StandaloneSpirv-ExecutionModel-07320</span><br>
+
+If the <code>Execution</code> <code>Model</code> is <code>TessellationControl</code>, and the
+<code>MemoryModel</code> is <code>GLSL450</code>, the <code>Scope</code> for memory <strong>must</strong> not be
+<code>Workgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-07321" href="#VUID-StandaloneSpirv-None-07321"></a> <span class="vuid">VUID-StandaloneSpirv-None-07321</span><br>
+
+If the <code>Scope</code> for memory is <code>Workgroup</code>, then it <strong>must</strong> only be
+used in the task, mesh, tessellation control, or compute
+<code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04640" href="#VUID-StandaloneSpirv-None-04640"></a> <span class="vuid">VUID-StandaloneSpirv-None-04640</span><br>
+
+If the <code>Scope</code> for memory is <code>ShaderCallKHR</code>, then it <strong>must</strong> only
+be used in ray generation, intersection, closest hit, any-hit, miss, and
+callable <code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04641" href="#VUID-StandaloneSpirv-None-04641"></a> <span class="vuid">VUID-StandaloneSpirv-None-04641</span><br>
+
+If the <code>Scope</code> for memory is <code>Invocation</code>, then
+<code>MemorySemantics</code> <strong>must</strong> use <code>Relaxed</code> memory order</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04642" href="#VUID-StandaloneSpirv-None-04642"></a> <span class="vuid">VUID-StandaloneSpirv-None-04642</span><br>
+
+<code>Scope</code> for <a href="../../../../spec/latest/chapters/shaders.html#shaders-group-operations" class="xref page">group operations</a> <strong>must</strong> be
+limited to <code>Subgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-SubgroupVoteKHR-07951" href="#VUID-StandaloneSpirv-SubgroupVoteKHR-07951"></a> <span class="vuid">VUID-StandaloneSpirv-SubgroupVoteKHR-07951</span><br>
+
+If none of the <code>SubgroupVoteKHR</code>, <code>GroupNonUniform</code>, or
+<code>SubgroupBallotKHR</code> capabilities are declared, <code>Scope</code> for memory
+<strong>must</strong> not be <code>Subgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04643" href="#VUID-StandaloneSpirv-None-04643"></a> <span class="vuid">VUID-StandaloneSpirv-None-04643</span><br>
+
+<code>Storage</code> <code>Class</code> <strong>must</strong> be limited to <code>UniformConstant</code>, <code>Input</code>,
+<code>Uniform</code>, <code>Output</code>, <code>Workgroup</code>, <code>Private</code>, <code>Function</code>,
+<code>PushConstant</code>, <code>Image</code>, <code>StorageBuffer</code>, <code>RayPayloadKHR</code>,
+<code>IncomingRayPayloadKHR</code>, <code>HitAttributeKHR</code>, <code>CallableDataKHR</code>,
+<code>IncomingCallableDataKHR</code>, <code>ShaderRecordBufferKHR</code>,
+<code>PhysicalStorageBuffer</code>, or <code>TileImageEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04644" href="#VUID-StandaloneSpirv-None-04644"></a> <span class="vuid">VUID-StandaloneSpirv-None-04644</span><br>
+
+If the <code>Storage</code> <code>Class</code> is <code>Output</code>, then it <strong>must</strong> not be used in the
+<code>GlCompute</code>, <code>RayGenerationKHR</code>, <code>IntersectionKHR</code>,
+<code>AnyHitKHR</code>, <code>ClosestHitKHR</code>, <code>MissKHR</code>, or <code>CallableKHR</code>
+<code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04645" href="#VUID-StandaloneSpirv-None-04645"></a> <span class="vuid">VUID-StandaloneSpirv-None-04645</span><br>
+
+If the <code>Storage</code> <code>Class</code> is <code>Workgroup</code>, then it <strong>must</strong> only be used in
+the task, mesh, or compute <code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-08720" href="#VUID-StandaloneSpirv-None-08720"></a> <span class="vuid">VUID-StandaloneSpirv-None-08720</span><br>
+
+If the <code>Storage</code> <code>Class</code> is <code>TileImageEXT</code>, then it <strong>must</strong> only be used
+in the fragment execution model</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10865" href="#VUID-StandaloneSpirv-MemorySemantics-10865"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10865</span><br>
+
+<code>MemorySemantics</code> <strong>must</strong> have at most one non-relaxed memory order bit
+set (<code>Acquire</code>, <code>Release</code>, or <code>AcquireRelease</code>)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10866" href="#VUID-StandaloneSpirv-MemorySemantics-10866"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10866</span><br>
+
+<code>MemorySemantics</code> with <code>SequentiallyConsistent</code> memory order <strong>must</strong>
+not be used in the Vulkan API</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10867" href="#VUID-StandaloneSpirv-MemorySemantics-10867"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10867</span><br>
+
+<code>MemorySemantics</code> <strong>must</strong> not use <code>Acquire</code> or <code>AcquireRelease</code>
+memory order with <code>OpAtomicStore</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10868" href="#VUID-StandaloneSpirv-MemorySemantics-10868"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10868</span><br>
+
+<code>MemorySemantics</code> <strong>must</strong> not use <code>Release</code> or <code>AcquireRelease</code>
+memory order with <code>OpAtomicLoad</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10869" href="#VUID-StandaloneSpirv-MemorySemantics-10869"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10869</span><br>
+
+<code>MemorySemantics</code> <strong>must</strong> not use <code>Relaxed</code> memory order with
+<code>OpMemoryBarrier</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10870" href="#VUID-StandaloneSpirv-MemorySemantics-10870"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10870</span><br>
+
+<code>MemorySemantics</code> with a non-relaxed memory order (<code>Acquire</code>,
+<code>Release</code>, or <code>AcquireRelease</code>) <strong>must</strong> have at least one
+Vulkan-supported storage class semantics bit set (<code>UniformMemory</code>,
+<code>WorkgroupMemory</code>, <code>ImageMemory</code>, or <code>OutputMemory</code>)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10871" href="#VUID-StandaloneSpirv-MemorySemantics-10871"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10871</span><br>
+
+<code>MemorySemantics</code> with at least one Vulkan-supported storage class
+semantics bit set (<code>UniformMemory</code>, <code>WorkgroupMemory</code>,
+<code>ImageMemory</code>, or <code>OutputMemory</code>) <strong>must</strong> use a non-relaxed memory
+order (<code>Acquire</code>, <code>Release</code>, or <code>AcquireRelease</code>)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10872" href="#VUID-StandaloneSpirv-MemorySemantics-10872"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10872</span><br>
+
+<code>MemorySemantics</code> with <code>MakeAvailable</code> bit set <strong>must</strong> use
+<code>Release</code> or <code>AcquireRelease</code> memory order</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-10873" href="#VUID-StandaloneSpirv-MemorySemantics-10873"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-10873</span><br>
+
+<code>MemorySemantics</code> with <code>MakeVisible</code> bit set <strong>must</strong> use
+<code>Acquire</code> or <code>AcquireRelease</code> memory order</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-13551" href="#VUID-StandaloneSpirv-MemorySemantics-13551"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-13551</span><br>
+
+<code>MemorySemantics</code> with <code>Volatile</code> bit set <strong>must</strong> not be used with
+barrier instructions (<code>OpControlBarrier</code>,
+<code>OpControlBarrierArriveEXT</code>, <code>OpControlBarrierWaitEXT</code>,
+or <code>OpMemoryBarrier</code>)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UnequalMemorySemantics-10875" href="#VUID-StandaloneSpirv-UnequalMemorySemantics-10875"></a> <span class="vuid">VUID-StandaloneSpirv-UnequalMemorySemantics-10875</span><br>
+
+<code>UnequalMemorySemantics</code> of <code>OpAtomicCompareExchange</code> <strong>must</strong> not
+use <code>Release</code> or <code>AcquireRelease</code> memory order</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UnequalMemorySemantics-10876" href="#VUID-StandaloneSpirv-UnequalMemorySemantics-10876"></a> <span class="vuid">VUID-StandaloneSpirv-UnequalMemorySemantics-10876</span><br>
+
+<code>UnequalMemorySemantics</code> of <code>OpAtomicCompareExchange</code> <strong>must</strong> not
+use a stronger memory order than the corresponding
+<code>EqualMemorySemantics</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UnequalMemorySemantics-10877" href="#VUID-StandaloneSpirv-UnequalMemorySemantics-10877"></a> <span class="vuid">VUID-StandaloneSpirv-UnequalMemorySemantics-10877</span><br>
+
+<code>UnequalMemorySemantics</code> of <code>OpAtomicCompareExchange</code> <strong>must</strong> not
+have any Vulkan-supported storage class semantics bit set
+(<code>UniformMemory</code>, <code>WorkgroupMemory</code>, <code>ImageMemory</code>, or
+<code>OutputMemory</code>) unless this bit is also set in the corresponding
+<code>EqualMemorySemantics</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UnequalMemorySemantics-10878" href="#VUID-StandaloneSpirv-UnequalMemorySemantics-10878"></a> <span class="vuid">VUID-StandaloneSpirv-UnequalMemorySemantics-10878</span><br>
+
+<code>UnequalMemorySemantics</code> of <code>OpAtomicCompareExchange</code> <strong>must</strong> not
+have <code>MakeVisible</code> bit set unless this bit is also set in the
+corresponding <code>EqualMemorySemantics</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UnequalMemorySemantics-10879" href="#VUID-StandaloneSpirv-UnequalMemorySemantics-10879"></a> <span class="vuid">VUID-StandaloneSpirv-UnequalMemorySemantics-10879</span><br>
+
+<code>UnequalMemorySemantics</code> of <code>OpAtomicCompareExchange</code> <strong>must</strong> have
+<code>Volatile</code> bit set if and only if this bit is also set in the
+corresponding <code>EqualMemorySemantics</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpVariable-04651" href="#VUID-StandaloneSpirv-OpVariable-04651"></a> <span class="vuid">VUID-StandaloneSpirv-OpVariable-04651</span><br>
+
+Any variable with an <code>Initializer</code> operand <strong>must</strong> have <code>Output</code>,
+<code>Private</code>, <code>Function</code>, or <code>Workgroup</code> as its <code>Storage</code> <code>Class</code>
+operand</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpVariable-04734" href="#VUID-StandaloneSpirv-OpVariable-04734"></a> <span class="vuid">VUID-StandaloneSpirv-OpVariable-04734</span><br>
+
+Any variable with an <code>Initializer</code> operand and <code>Workgroup</code> as its
+<code>Storage</code> <code>Class</code> operand <strong>must</strong> use <code>OpConstantNull</code> as the initializer</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpReadClockKHR-04652" href="#VUID-StandaloneSpirv-OpReadClockKHR-04652"></a> <span class="vuid">VUID-StandaloneSpirv-OpReadClockKHR-04652</span><br>
+
+<code>Scope</code> for <code>OpReadClockKHR</code> <strong>must</strong> be limited to <code>Subgroup</code> or
+<code>Device</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OriginLowerLeft-04653" href="#VUID-StandaloneSpirv-OriginLowerLeft-04653"></a> <span class="vuid">VUID-StandaloneSpirv-OriginLowerLeft-04653</span><br>
+
+The <code>OriginLowerLeft</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> not be used; fragment
+entry points <strong>must</strong> declare <code>OriginUpperLeft</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PixelCenterInteger-04654" href="#VUID-StandaloneSpirv-PixelCenterInteger-04654"></a> <span class="vuid">VUID-StandaloneSpirv-PixelCenterInteger-04654</span><br>
+
+The <code>PixelCenterInteger</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> not be used (pixels
+are always centered at half-integer coordinates)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UniformConstant-04655" href="#VUID-StandaloneSpirv-UniformConstant-04655"></a> <span class="vuid">VUID-StandaloneSpirv-UniformConstant-04655</span><br>
+
+Any variable in the <code>UniformConstant</code> <code>Storage</code> <code>Class</code> <strong>must</strong> be typed
+as either <code>OpTypeImage</code>, <code>OpTypeSampler</code>, <code>OpTypeSampledImage</code>,
+<code>OpTypeAccelerationStructureKHR</code>, <code>OpTypeTensorARM</code> or an array of
+one of these types</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Uniform-06807" href="#VUID-StandaloneSpirv-Uniform-06807"></a> <span class="vuid">VUID-StandaloneSpirv-Uniform-06807</span><br>
+
+Any variable in the <code>Uniform</code> or <code>StorageBuffer</code> <code>Storage</code> <code>Class</code>
+<strong>must</strong> be typed as <code>OpTypeStruct</code> or an array of this type</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PushConstant-06808" href="#VUID-StandaloneSpirv-PushConstant-06808"></a> <span class="vuid">VUID-StandaloneSpirv-PushConstant-06808</span><br>
+
+Any variable in the <code>PushConstant</code> <code>Storage</code> <code>Class</code> <strong>must</strong> be typed as
+<code>OpTypeStruct</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-04656" href="#VUID-StandaloneSpirv-OpTypeImage-04656"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-04656</span><br>
+
+<code>OpTypeImage</code> <strong>must</strong> declare a scalar 32-bit float, 64-bit integer, or
+32-bit integer type for the &#8220;Sampled Type&#8221; (<code>RelaxedPrecision</code> <strong>can</strong>
+be applied to a sampling instruction and to the variable holding the
+result of a sampling instruction)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-04657" href="#VUID-StandaloneSpirv-OpTypeImage-04657"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-04657</span><br>
+
+<code>OpTypeImage</code> <strong>must</strong> have a &#8220;Sampled&#8221; operand of 1 (sampled image)
+or 2 (storage image)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeSampledImage-06671" href="#VUID-StandaloneSpirv-OpTypeSampledImage-06671"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeSampledImage-06671</span><br>
+
+<code>OpTypeSampledImage</code> <strong>must</strong> have a <code>OpTypeImage</code> with a &#8220;Sampled&#8221;
+operand of 1 (sampled image)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Image-04965" href="#VUID-StandaloneSpirv-Image-04965"></a> <span class="vuid">VUID-StandaloneSpirv-Image-04965</span><br>
+
+The <a href="../../../../spec/latest/appendices/spirvenv.html#spirv-type" class="xref page">SPIR-V Type</a> of the <code>Image</code> <code>Format</code> operand of
+an <code>OpTypeImage</code> <strong>must</strong> match the <code>Sampled</code> <code>Type</code>, as defined
+in <a href="../../../../spec/latest/appendices/spirvenv.html#spirvenv-format-type-matching" class="xref page">Image Format and Type Matching</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpImageTexelPointer-04658" href="#VUID-StandaloneSpirv-OpImageTexelPointer-04658"></a> <span class="vuid">VUID-StandaloneSpirv-OpImageTexelPointer-04658</span><br>
+
+If an <code>OpImageTexelPointer</code> is used in an atomic operation, the image
+type of the <code>image</code> parameter to <code>OpImageTexelPointer</code> <strong>must</strong> have
+an image format of <code>R64i</code>, <code>R64ui</code>, <code>R32f</code>, <code>R32i</code>, or
+<code>R32ui</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpUntypedImageTexelPointerEXT-11416" href="#VUID-StandaloneSpirv-OpUntypedImageTexelPointerEXT-11416"></a> <span class="vuid">VUID-StandaloneSpirv-OpUntypedImageTexelPointerEXT-11416</span><br>
+
+If an <code>OpUntypedImageTexelPointerEXT</code> instruction is used in an
+atomic operation, the image type operand <strong>must</strong> have an image format of
+<code>R64i</code>, <code>R64ui</code>, <code>R32f</code>, <code>R32i</code>, or <code>R32ui</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpImageQuerySizeLod-04659" href="#VUID-StandaloneSpirv-OpImageQuerySizeLod-04659"></a> <span class="vuid">VUID-StandaloneSpirv-OpImageQuerySizeLod-04659</span><br>
+
+<code>OpImageQuerySizeLod</code>, <code>OpImageQueryLod</code>, and
+<code>OpImageQueryLevels</code> <strong>must</strong> only consume an &#8220;Image&#8221; operand whose
+type has its &#8220;Sampled&#8221; operand set to 1</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-09638" href="#VUID-StandaloneSpirv-OpTypeImage-09638"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-09638</span><br>
+
+An <code>OpTypeImage</code> <strong>must</strong> not have a &#8220;Dim&#8221; operand of <code>Rect</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-06214" href="#VUID-StandaloneSpirv-OpTypeImage-06214"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-06214</span><br>
+
+An <code>OpTypeImage</code> with a &#8220;Dim&#8221; operand of <code>SubpassData</code> <strong>must</strong>
+have an &#8220;Arrayed&#8221; operand of 0 (non-arrayed) and a &#8220;Sampled&#8221; operand
+of 2 (storage image)</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-SubpassData-04660" href="#VUID-StandaloneSpirv-SubpassData-04660"></a> <span class="vuid">VUID-StandaloneSpirv-SubpassData-04660</span><br>
+
+The <span class="eq">(u,v)</span> coordinates used for a <code>SubpassData</code> <strong>must</strong> be the
+&lt;id&gt; of a constant vector <span class="eq">(0,0)</span></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-06924" href="#VUID-StandaloneSpirv-OpTypeImage-06924"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-06924</span><br>
+
+Objects of types <code>OpTypeImage</code>, <code>OpTypeSampler</code>,
+<code>OpTypeSampledImage</code>, <code>OpTypeAccelerationStructureKHR</code>,
+<code>OpTypeTensorARM</code>, and arrays of these types <strong>must</strong> not be stored to
+or modified</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Uniform-06925" href="#VUID-StandaloneSpirv-Uniform-06925"></a> <span class="vuid">VUID-StandaloneSpirv-Uniform-06925</span><br>
+
+Any variable in the <code>Uniform</code> <code>Storage</code> <code>Class</code> decorated as <code>Block</code>
+<strong>must</strong> not be stored to or modified</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04865" href="#VUID-StandaloneSpirv-Offset-04865"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04865</span><br>
+
+Any image instruction which uses an <code>Offset</code>, <code>ConstOffset</code>, or
+<code>ConstOffsets</code> image operand, <strong>must</strong> only consume a &#8220;Sampled Image&#8221;
+operand whose type has its &#8220;Sampled&#8221; operand set to 1</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpImageGather-04664" href="#VUID-StandaloneSpirv-OpImageGather-04664"></a> <span class="vuid">VUID-StandaloneSpirv-OpImageGather-04664</span><br>
+
+    The &#8220;Component&#8221; operand of <code>OpImageGather</code>,
+<code>OpImageGatherQCOM</code>,
+    and <code>OpImageSparseGather</code> <strong>must</strong> be the &lt;id&gt; of a constant instruction</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpImage-04777" href="#VUID-StandaloneSpirv-OpImage-04777"></a> <span class="vuid">VUID-StandaloneSpirv-OpImage-04777</span><br>
+
+<code>OpImage*Dref*</code> instructions <strong>must</strong> not consume an image whose <code>Dim</code>
+is 3D</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04667" href="#VUID-StandaloneSpirv-None-04667"></a> <span class="vuid">VUID-StandaloneSpirv-None-04667</span><br>
+
+If the <code>DescriptorHeapEXT</code> capability is not declared, structure
+types <strong>must</strong> not contain opaque types</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-DescriptorHeapEXT-11482" href="#VUID-StandaloneSpirv-DescriptorHeapEXT-11482"></a> <span class="vuid">VUID-StandaloneSpirv-DescriptorHeapEXT-11482</span><br>
+
+If the <code>DescriptorHeapEXT</code> capability is declared, structure types
+<strong>must</strong> not contain opaque types other than descriptors</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-BuiltIn-04668" href="#VUID-StandaloneSpirv-BuiltIn-04668"></a> <span class="vuid">VUID-StandaloneSpirv-BuiltIn-04668</span><br>
+
+Any <code>BuiltIn</code> decoration not listed in
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-builtin-variables" class="xref page">Built-In Variables</a> <strong>must</strong> not be used</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpEntryPoint-09658" href="#VUID-StandaloneSpirv-OpEntryPoint-09658"></a> <span class="vuid">VUID-StandaloneSpirv-OpEntryPoint-09658</span><br>
+
+For a given <code>OpEntryPoint</code>, any <code>BuiltIn</code> decoration <strong>must</strong> not be
+used more than once by the <code>Input</code> interface</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpEntryPoint-09659" href="#VUID-StandaloneSpirv-OpEntryPoint-09659"></a> <span class="vuid">VUID-StandaloneSpirv-OpEntryPoint-09659</span><br>
+
+For a given <code>OpEntryPoint</code>, any <code>BuiltIn</code> decoration <strong>must</strong> not be
+used more than once by the <code>Output</code> interface</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Location-06672" href="#VUID-StandaloneSpirv-Location-06672"></a> <span class="vuid">VUID-StandaloneSpirv-Location-06672</span><br>
+
+The <code>Location</code> or <code>Component</code> decorations <strong>must</strong> only be used with
+the <code>Input</code>, <code>Output</code>, <code>RayPayloadKHR</code>,
+<code>IncomingRayPayloadKHR</code>, <code>HitAttributeKHR</code>,
+<code>HitObjectAttributeNV</code>, <code>CallableDataKHR</code>,
+<code>IncomingCallableDataKHR</code>, or <code>ShaderRecordBufferKHR</code> storage
+classes</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Location-04915" href="#VUID-StandaloneSpirv-Location-04915"></a> <span class="vuid">VUID-StandaloneSpirv-Location-04915</span><br>
+
+The <code>Location</code> or <code>Component</code> decorations <strong>must</strong> not be used with
+<code>BuiltIn</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Location-04916" href="#VUID-StandaloneSpirv-Location-04916"></a> <span class="vuid">VUID-StandaloneSpirv-Location-04916</span><br>
+
+The <code>Location</code> decorations <strong>must</strong> be used on
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-user" class="xref page">user-defined variables</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Location-04917" href="#VUID-StandaloneSpirv-Location-04917"></a> <span class="vuid">VUID-StandaloneSpirv-Location-04917</span><br>
+
+If a <a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-user" class="xref page">user-defined variable</a> is not a
+pointer to a <code>Block</code> decorated <code>OpTypeStruct</code>, then the variable
+<strong>must</strong> have a <code>Location</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Location-04918" href="#VUID-StandaloneSpirv-Location-04918"></a> <span class="vuid">VUID-StandaloneSpirv-Location-04918</span><br>
+
+If a <a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-user" class="xref page">user-defined variable</a> has a
+<code>Location</code> decoration, and the variable is a pointer to a
+<code>OpTypeStruct</code>, then the members of that structure <strong>must</strong> not have
+<code>Location</code> decorations</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Location-04919" href="#VUID-StandaloneSpirv-Location-04919"></a> <span class="vuid">VUID-StandaloneSpirv-Location-04919</span><br>
+
+If a <a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-user" class="xref page">user-defined variable</a> does not
+have a <code>Location</code> decoration, and the variable is a pointer to a
+<code>Block</code> decorated <code>OpTypeStruct</code>, then each member of the struct
+<strong>must</strong> have a <code>Location</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Component-04920" href="#VUID-StandaloneSpirv-Component-04920"></a> <span class="vuid">VUID-StandaloneSpirv-Component-04920</span><br>
+
+The <code>Component</code> decoration value <strong>must</strong> not be greater than 3</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Component-04921" href="#VUID-StandaloneSpirv-Component-04921"></a> <span class="vuid">VUID-StandaloneSpirv-Component-04921</span><br>
+
+If the <code>Component</code> decoration is used on a variable that has a vector
+type with a <code>Component</code> <code>Type</code> with a <code>Width</code> that is less than
+or equal to 32, the sum of its <code>Component</code> <code>Count</code> and the
+<code>Component</code> decoration value <strong>must</strong> be less than or equal to 4</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Component-04922" href="#VUID-StandaloneSpirv-Component-04922"></a> <span class="vuid">VUID-StandaloneSpirv-Component-04922</span><br>
+
+If the <code>Component</code> decoration is used on a variable that has a vector
+type with a <code>Component</code> <code>Type</code> with a <code>Width</code> that is equal to
+64, the sum of two times its <code>Component</code> <code>Count</code> and the
+<code>Component</code> decoration value <strong>must</strong> be less than or equal to 4</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Component-04923" href="#VUID-StandaloneSpirv-Component-04923"></a> <span class="vuid">VUID-StandaloneSpirv-Component-04923</span><br>
+
+The <code>Component</code> decorations value <strong>must</strong> not be 1 or 3 for scalar or
+two-component 64-bit data types</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Component-07703" href="#VUID-StandaloneSpirv-Component-07703"></a> <span class="vuid">VUID-StandaloneSpirv-Component-07703</span><br>
+
+The <code>Component</code> decorations <strong>must</strong> not be used for a 64-bit vector
+type with more than two components</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Component-10583" href="#VUID-StandaloneSpirv-Component-10583"></a> <span class="vuid">VUID-StandaloneSpirv-Component-10583</span><br>
+
+The <code>Component</code> decorations <strong>must</strong> not be used with any type that is
+not a scalar, vector, array of scalars or vectors, or an array of arrays
+of scalars or vectors</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Execution-10584" href="#VUID-StandaloneSpirv-Execution-10584"></a> <span class="vuid">VUID-StandaloneSpirv-Execution-10584</span><br>
+
+If the <code>Execution</code> <code>Model</code> of an entry point is not
+<code>TessellationControl</code> or <code>Geometry</code>, its interface definition
+<strong>must</strong> not include any variables in the <code>Input</code> storage class
+decorated with <code>Component</code> that are arrays of arrays of scalars or
+vectors</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Execution-10585" href="#VUID-StandaloneSpirv-Execution-10585"></a> <span class="vuid">VUID-StandaloneSpirv-Execution-10585</span><br>
+
+If the <code>Execution</code> <code>Model</code> of an entry point is not <code>MeshNV</code>,
+its interface definition <strong>must</strong> not include any variables in the
+<code>Output</code> storage class decorated with <code>Component</code> that are arrays
+of arrays of scalars or vectors</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Output-10586" href="#VUID-StandaloneSpirv-Output-10586"></a> <span class="vuid">VUID-StandaloneSpirv-Output-10586</span><br>
+
+Variables in the <code>Output</code> storage class in the <code>Vertex</code>,
+<code>TessellationControl</code>, <code>TessellationEvaluation</code>, or <code>Geometry</code>
+execution model <strong>must</strong> not have overlapping <code>Component</code> and
+<code>Location</code> decorations as defined by
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-locations" class="xref page">Location and Component Assignment</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Output-10587" href="#VUID-StandaloneSpirv-Output-10587"></a> <span class="vuid">VUID-StandaloneSpirv-Output-10587</span><br>
+
+Variables in the <code>Output</code> storage class in the <code>Fragment</code>
+execution model <strong>must</strong> not have both identical <code>Index</code> decorations and
+overlapping <code>Component</code> and <code>Location</code> decorations as defined by
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-locations" class="xref page">Location and Component Assignment</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Input-10588" href="#VUID-StandaloneSpirv-Input-10588"></a> <span class="vuid">VUID-StandaloneSpirv-Input-10588</span><br>
+
+Variables in the <code>Input</code> storage class in the
+<code>TessellationControl</code>, <code>TessellationEvaluation</code>, <code>Geometry</code>, or
+<code>Fragment</code> execution model <strong>must</strong> not have overlapping <code>Component</code>
+and <code>Location</code> decorations as defined by
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-locations" class="xref page">Location and Component Assignment</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Input-10604" href="#VUID-StandaloneSpirv-Input-10604"></a> <span class="vuid">VUID-StandaloneSpirv-Input-10604</span><br>
+
+Any variable in the <code>Input</code> storage class in the <code>Fragment</code>
+execution model <strong>must</strong> not have an assigned <code>Location</code> shared with
+another variable with different decorations for <code>PerVertexKHR</code>,
+<code>Flat</code>, <code>NoPerspective</code>, <code>Sample</code>, or <code>Centroid</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Input-09557" href="#VUID-StandaloneSpirv-Input-09557"></a> <span class="vuid">VUID-StandaloneSpirv-Input-09557</span><br>
+
+The pointers of any <code>Input</code> or <code>Output</code>
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-user" class="xref page">Interface user-defined variables</a> <strong>must</strong>
+not contain any <code>PhysicalStorageBuffer</code> <code>Storage</code> <code>Class</code> pointers</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-10684" href="#VUID-StandaloneSpirv-None-10684"></a> <span class="vuid">VUID-StandaloneSpirv-None-10684</span><br>
+
+All variables <strong>must</strong> have valid explicit layout decorations
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-explicit-layout-decorations" class="xref page">as described in Shader    Interfaces</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-GLSLShared-04669" href="#VUID-StandaloneSpirv-GLSLShared-04669"></a> <span class="vuid">VUID-StandaloneSpirv-GLSLShared-04669</span><br>
+
+The <code>GLSLShared</code> and <code>GLSLPacked</code> decorations <strong>must</strong> not be used</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TessLevelInner-10880" href="#VUID-StandaloneSpirv-TessLevelInner-10880"></a> <span class="vuid">VUID-StandaloneSpirv-TessLevelInner-10880</span><br>
+
+Any variable decorated with <code>TessLevelInner</code> or <code>TessLevelOuter</code>
+<strong>must</strong> also be decorated with <code>Patch</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Flat-04670" href="#VUID-StandaloneSpirv-Flat-04670"></a> <span class="vuid">VUID-StandaloneSpirv-Flat-04670</span><br>
+
+The <code>Flat</code>, <code>NoPerspective</code>, <code>Sample</code>, and <code>Centroid</code>
+decorations <strong>must</strong> only be used on variables with the <code>Output</code> or
+<code>Input</code> <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Flat-06201" href="#VUID-StandaloneSpirv-Flat-06201"></a> <span class="vuid">VUID-StandaloneSpirv-Flat-06201</span><br>
+
+The <code>Flat</code>, <code>NoPerspective</code>, <code>Sample</code>, and <code>Centroid</code>
+decorations <strong>must</strong> not be used on variables with the <code>Output</code> storage
+class in a fragment shader</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Flat-06202" href="#VUID-StandaloneSpirv-Flat-06202"></a> <span class="vuid">VUID-StandaloneSpirv-Flat-06202</span><br>
+
+The <code>Flat</code>, <code>NoPerspective</code>, <code>Sample</code>, and <code>Centroid</code>
+decorations <strong>must</strong> not be used on variables with the <code>Input</code> storage
+class in a vertex shader</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PerVertexKHR-06777" href="#VUID-StandaloneSpirv-PerVertexKHR-06777"></a> <span class="vuid">VUID-StandaloneSpirv-PerVertexKHR-06777</span><br>
+
+The <code>PerVertexKHR</code> decoration <strong>must</strong> only be used on variables with
+the <code>Input</code> <code>Storage</code> <code>Class</code> in a fragment shader</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Flat-04744" href="#VUID-StandaloneSpirv-Flat-04744"></a> <span class="vuid">VUID-StandaloneSpirv-Flat-04744</span><br>
+
+Any variable with integer or double-precision floating-point type and
+with <code>Input</code> <code>Storage</code> <code>Class</code> in a fragment shader, <strong>must</strong> be decorated
+<code>Flat</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-ViewportRelativeNV-04672" href="#VUID-StandaloneSpirv-ViewportRelativeNV-04672"></a> <span class="vuid">VUID-StandaloneSpirv-ViewportRelativeNV-04672</span><br>
+
+The <code>ViewportRelativeNV</code> decoration <strong>must</strong> only be used on a variable
+decorated with <code>Layer</code> in the vertex, tessellation evaluation, or
+geometry shader stages</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-ViewportRelativeNV-04673" href="#VUID-StandaloneSpirv-ViewportRelativeNV-04673"></a> <span class="vuid">VUID-StandaloneSpirv-ViewportRelativeNV-04673</span><br>
+
+The <code>ViewportRelativeNV</code> decoration <strong>must</strong> not be used unless a
+variable decorated with one of <code>ViewportIndex</code> or <code>ViewportMaskNV</code>
+is also statically used by the same <code>OpEntryPoint</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-ViewportMaskNV-04674" href="#VUID-StandaloneSpirv-ViewportMaskNV-04674"></a> <span class="vuid">VUID-StandaloneSpirv-ViewportMaskNV-04674</span><br>
+
+The <code>ViewportMaskNV</code> and <code>ViewportIndex</code> decorations <strong>must</strong> not
+both be statically used by one or more <code>OpEntryPoint</code>&#8217;s that form the
+<a href="../../../../spec/latest/chapters/pipelines.html#pipelines-graphics-subsets-pre-rasterization" class="xref page">pre-rasterization shader    stages</a> of a graphics pipeline</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-FPRoundingMode-04675" href="#VUID-StandaloneSpirv-FPRoundingMode-04675"></a> <span class="vuid">VUID-StandaloneSpirv-FPRoundingMode-04675</span><br>
+
+Rounding modes other than round-to-nearest-even and round-towards-zero
+<strong>must</strong> not be used for the <code>FPRoundingMode</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Invariant-04677" href="#VUID-StandaloneSpirv-Invariant-04677"></a> <span class="vuid">VUID-StandaloneSpirv-Invariant-04677</span><br>
+
+Variables decorated with <code>Invariant</code> and variables with structure
+types that have any members decorated with <code>Invariant</code> <strong>must</strong> be in
+the <code>Output</code> or <code>Input</code> <code>Storage</code> <code>Class</code>, <code>Invariant</code> used on an
+<code>Input</code> <code>Storage</code> <code>Class</code> variable or structure member has no effect</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-VulkanMemoryModel-04678" href="#VUID-StandaloneSpirv-VulkanMemoryModel-04678"></a> <span class="vuid">VUID-StandaloneSpirv-VulkanMemoryModel-04678</span><br>
+
+<a id="builtin-volatile-semantics"></a> If the <code>VulkanMemoryModel</code> capability
+is not declared, the <code>Volatile</code> decoration <strong>must</strong> be used on any
+variable declaration that includes one of the <code>SMIDNV</code>,
+<code>WarpIDNV</code>, <code>SubgroupSize</code>, <code>SubgroupLocalInvocationId</code>,
+<code>SubgroupEqMask</code>, <code>SubgroupGeMask</code>, <code>SubgroupGtMask</code>,
+<code>SubgroupLeMask</code>, or <code>SubgroupLtMask</code> <code>BuiltIn</code> decorations
+when used in the ray generation, closest hit, miss, intersection, or
+callable shaders, or with the <code>RayTmaxKHR</code> <code>Builtin</code> decoration
+when used in an intersection shader</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-VulkanMemoryModel-04679" href="#VUID-StandaloneSpirv-VulkanMemoryModel-04679"></a> <span class="vuid">VUID-StandaloneSpirv-VulkanMemoryModel-04679</span><br>
+
+If the <code>VulkanMemoryModel</code> capability is declared, the <code>OpLoad</code>
+instruction <strong>must</strong> use <code>MemorySemantics</code> with the <code>Volatile</code> flag
+when it accesses into any variable that includes one of the <code>SMIDNV</code>,
+<code>WarpIDNV</code>, <code>SubgroupSize</code>, <code>SubgroupLocalInvocationId</code>,
+<code>SubgroupEqMask</code>, <code>SubgroupGeMask</code>, <code>SubgroupGtMask</code>,
+<code>SubgroupLeMask</code>, or <code>SubgroupLtMask</code> <code>BuiltIn</code> decorations
+when used in the ray generation, closest hit, miss, intersection, or
+callable shaders, or with the <code>RayTmaxKHR</code> <code>Builtin</code> decoration
+when used in an intersection shader</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeRuntimeArray-04680" href="#VUID-StandaloneSpirv-OpTypeRuntimeArray-04680"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeRuntimeArray-04680</span><br>
+
+<code>OpTypeRuntimeArray</code> <strong>must</strong> only be instantiated by a variable as:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>the last member of a <code>Block</code>-decorated <code>OpTypeStruct</code> in
+<code>StorageBuffer</code> or <code>PhysicalStorageBuffer</code> storage <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><code>BufferBlock</code>-decorated <code>OpTypeStruct</code> in the <code>Uniform</code>
+storage <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p>the last member of a <code>Block</code>-decorated <code>OpTypeStruct</code> in the
+<code>Uniform</code> storage <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p>the outermost dimension of an arrayed variable in the
+<code>StorageBuffer</code>, <code>Uniform</code>, or <code>UniformConstant</code> storage
+<code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p>the <code>NodePayloadAMDX</code> storage <code>Storage</code> <code>Class</code> when the
+<code>CoalescingAMDX</code> <code>Execution</code> <code>Mode</code> is specified</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpArrayLength-11805" href="#VUID-StandaloneSpirv-OpArrayLength-11805"></a> <span class="vuid">VUID-StandaloneSpirv-OpArrayLength-11805</span><br>
+
+<code>OpArrayLength</code> and <code>OpUntypedArrayLengthKHR</code> <strong>must</strong> not be used
+with an <code>OpTypeRuntimeArray</code> that is the last member of a
+<code>Block</code>-decorated <code>OpTypeStruct</code> in the <code>Uniform</code> storage
+<code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Function-04681" href="#VUID-StandaloneSpirv-Function-04681"></a> <span class="vuid">VUID-StandaloneSpirv-Function-04681</span><br>
+
+A type <em>T</em> that is an array sized with a specialization constant <strong>must</strong>
+neither be, nor be contained in, the type <em>T2</em> of a variable <em>V</em>, unless
+either: a) <em>T</em> is equal to <em>T2</em>, b) <em>V</em> is declared in the
+<code>Function</code>, or <code>Private</code> <code>Storage</code> <code>Class</code>, c) <em>V</em> is a non-Block
+variable in the <code>Workgroup</code> <code>Storage</code> <code>Class</code>, or d) <em>V</em> is an interface
+variable with an additional level of arrayness,
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-matching" class="xref page">as described in interface    matching</a>, and <em>T</em> is the member type of the array type <em>T2</em></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Function-12294" href="#VUID-StandaloneSpirv-Function-12294"></a> <span class="vuid">VUID-StandaloneSpirv-Function-12294</span><br>
+
+A type <em>T</em> that is a vector sized with a specialization constant <strong>must</strong>
+neither be, nor be contained in, the type <em>T2</em> of a variable <em>V</em>, unless
+either: a) <em>T</em> is equal to <em>T2</em>, b) <em>V</em> is declared in the
+<code>Function</code>, or <code>Private</code> <code>Storage</code> <code>Class</code>, c) <em>V</em> is a non-Block
+variable in the <code>Workgroup</code> <code>Storage</code> <code>Class</code>, or d) <em>V</em> is an interface
+variable with an additional level of arrayness,
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-iointerfaces-matching" class="xref page">as described in interface    matching</a>, and <em>T</em> is the member type of the array type <em>T2</em></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpControlBarrier-04682" href="#VUID-StandaloneSpirv-OpControlBarrier-04682"></a> <span class="vuid">VUID-StandaloneSpirv-OpControlBarrier-04682</span><br>
+
+If <code>OpControlBarrier</code> is used in ray generation, intersection,
+any-hit, closest hit, miss, fragment, vertex, tessellation evaluation,
+or geometry shaders, the execution Scope <strong>must</strong> be <code>Subgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-SplitBarrierEXT-13552" href="#VUID-StandaloneSpirv-SplitBarrierEXT-13552"></a> <span class="vuid">VUID-StandaloneSpirv-SplitBarrierEXT-13552</span><br>
+
+The <code>SplitBarrierEXT</code> capability <strong>must</strong> not be enabled in any stage
+other than compute</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpControlBarrierArriveEXT-13553" href="#VUID-StandaloneSpirv-OpControlBarrierArriveEXT-13553"></a> <span class="vuid">VUID-StandaloneSpirv-OpControlBarrierArriveEXT-13553</span><br>
+
+The execution Scope for <code>OpControlBarrierArriveEXT</code> and
+<code>OpControlBarrierWaitEXT</code> <strong>must</strong> be <code>Workgroup</code> or <code>Subgroup</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-13556" href="#VUID-StandaloneSpirv-MemorySemantics-13556"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-13556</span><br>
+
+The <code>MemorySemantics</code> for <code>OpControlBarrierArriveEXT</code> <strong>must</strong> not
+have any non-relaxed memory order set other than <code>Release</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MemorySemantics-13557" href="#VUID-StandaloneSpirv-MemorySemantics-13557"></a> <span class="vuid">VUID-StandaloneSpirv-MemorySemantics-13557</span><br>
+
+The <code>MemorySemantics</code> for <code>OpControlBarrierWaitEXT</code> <strong>must</strong> not have
+any non-relaxed memory order set other than <code>Acquire</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-10685" href="#VUID-StandaloneSpirv-None-10685"></a> <span class="vuid">VUID-StandaloneSpirv-None-10685</span><br>
+
+Either a <code>TileShadingRateQCOM</code>, <code>LocalSize</code>, or <code>LocalSizeId</code>
+<code>Execution</code> <code>Mode</code>, or an object decorated with the <code>WorkgroupSize</code>
+decoration <strong>must</strong> be specified for each entry point with a task, mesh, or
+compute <code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-DerivativeGroupQuadsNV-04684" href="#VUID-StandaloneSpirv-DerivativeGroupQuadsNV-04684"></a> <span class="vuid">VUID-StandaloneSpirv-DerivativeGroupQuadsNV-04684</span><br>
+
+For compute shaders using the <code>DerivativeGroupQuadsNV</code> execution
+mode, the first two dimensions of the local workgroup size <strong>must</strong> be a
+multiple of two</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-DerivativeGroupLinearNV-04778" href="#VUID-StandaloneSpirv-DerivativeGroupLinearNV-04778"></a> <span class="vuid">VUID-StandaloneSpirv-DerivativeGroupLinearNV-04778</span><br>
+
+For compute shaders using the <code>DerivativeGroupLinearNV</code> execution
+mode, the product of the dimensions of the local workgroup size <strong>must</strong> be
+a multiple of four</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-DerivativeGroupQuadsKHR-10151" href="#VUID-StandaloneSpirv-DerivativeGroupQuadsKHR-10151"></a> <span class="vuid">VUID-StandaloneSpirv-DerivativeGroupQuadsKHR-10151</span><br>
+
+For compute, mesh, or task shaders using the
+<code>DerivativeGroupQuadsKHR</code> execution mode, the first two dimensions of
+the local workgroup size <strong>must</strong> be a multiple of two</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-DerivativeGroupLinearKHR-10152" href="#VUID-StandaloneSpirv-DerivativeGroupLinearKHR-10152"></a> <span class="vuid">VUID-StandaloneSpirv-DerivativeGroupLinearKHR-10152</span><br>
+
+For compute, mesh, or task shaders using the
+<code>DerivativeGroupLinearKHR</code> execution mode, the product of the
+dimensions of the local workgroup size <strong>must</strong> be a multiple of four</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpGroupNonUniformBallotBitCount-04685" href="#VUID-StandaloneSpirv-OpGroupNonUniformBallotBitCount-04685"></a> <span class="vuid">VUID-StandaloneSpirv-OpGroupNonUniformBallotBitCount-04685</span><br>
+
+If <code>OpGroupNonUniformBallotBitCount</code> is used, the group operation
+<strong>must</strong> be limited to <code>Reduce</code>, <code>InclusiveScan</code>, or
+<code>ExclusiveScan</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-04686" href="#VUID-StandaloneSpirv-None-04686"></a> <span class="vuid">VUID-StandaloneSpirv-None-04686</span><br>
+
+The <em>Pointer</em> operand of all atomic instructions <strong>must</strong> have a
+<code>Storage</code> <code>Class</code> limited to <code>Uniform</code>, <code>Workgroup</code>, <code>Image</code>,
+<code>StorageBuffer</code>, <code>PhysicalStorageBuffer</code>, or
+<code>TaskPayloadWorkgroupEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04687" href="#VUID-StandaloneSpirv-Offset-04687"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04687</span><br>
+
+Output variables or block members decorated with <code>Offset</code> that have a
+64-bit type, or a composite type containing a 64-bit type, <strong>must</strong> specify
+an <code>Offset</code> value aligned to a 8 byte boundary</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04689" href="#VUID-StandaloneSpirv-Offset-04689"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04689</span><br>
+
+The size of any output block containing any member decorated with
+<code>Offset</code> that is a 64-bit type <strong>must</strong> be a multiple of 8</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04690" href="#VUID-StandaloneSpirv-Offset-04690"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04690</span><br>
+
+The first member of an output block specifying a <code>Offset</code> decoration
+<strong>must</strong> specify a <code>Offset</code> value that is aligned to an 8 byte boundary
+if that block contains any member decorated with <code>Offset</code> and is a
+64-bit type</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04691" href="#VUID-StandaloneSpirv-Offset-04691"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04691</span><br>
+
+Output variables or block members decorated with <code>Offset</code> that have a
+32-bit type, or a composite type contains a 32-bit type, <strong>must</strong> specify
+an <code>Offset</code> value aligned to a 4 byte boundary</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04692" href="#VUID-StandaloneSpirv-Offset-04692"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04692</span><br>
+
+Output variables, blocks, or block members decorated with <code>Offset</code>
+<strong>must</strong> only contain base types that have components that are either
+32-bit or 64-bit in size</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Offset-04716" href="#VUID-StandaloneSpirv-Offset-04716"></a> <span class="vuid">VUID-StandaloneSpirv-Offset-04716</span><br>
+
+Only variables or block members in the output interface decorated with
+<code>Offset</code> <strong>can</strong> be captured for transform feedback, and those variables
+or block members <strong>must</strong> also be decorated with <code>XfbBuffer</code> and
+<code>XfbStride</code>, or inherit <code>XfbBuffer</code> and <code>XfbStride</code> decorations
+from a block containing them</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-XfbBuffer-04693" href="#VUID-StandaloneSpirv-XfbBuffer-04693"></a> <span class="vuid">VUID-StandaloneSpirv-XfbBuffer-04693</span><br>
+
+All variables or block members in the output interface of the entry
+point being compiled decorated with a specific <code>XfbBuffer</code> value
+<strong>must</strong> all be decorated with identical <code>XfbStride</code> values</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Stream-04694" href="#VUID-StandaloneSpirv-Stream-04694"></a> <span class="vuid">VUID-StandaloneSpirv-Stream-04694</span><br>
+
+If any variables or block members in the output interface of the entry
+point being compiled are decorated with <code>Stream</code>, then all variables
+belonging to the same <code>XfbBuffer</code> <strong>must</strong> specify the same <code>Stream</code>
+value</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-XfbBuffer-04696" href="#VUID-StandaloneSpirv-XfbBuffer-04696"></a> <span class="vuid">VUID-StandaloneSpirv-XfbBuffer-04696</span><br>
+
+For any two variables or block members in the output interface of the
+entry point being compiled with the same <code>XfbBuffer</code> value, the
+ranges determined by the <code>Offset</code> decoration and the size of the type
+<strong>must</strong> not overlap</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-XfbBuffer-04697" href="#VUID-StandaloneSpirv-XfbBuffer-04697"></a> <span class="vuid">VUID-StandaloneSpirv-XfbBuffer-04697</span><br>
+
+All block members in the output interface of the entry point being
+compiled that are in the same block and have a declared or inherited
+<code>XfbBuffer</code> decoration <strong>must</strong> specify the same <code>XfbBuffer</code> value</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-RayPayloadKHR-04698" href="#VUID-StandaloneSpirv-RayPayloadKHR-04698"></a> <span class="vuid">VUID-StandaloneSpirv-RayPayloadKHR-04698</span><br>
+
+<code>RayPayloadKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used in ray generation,
+closest hit or miss shaders</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-IncomingRayPayloadKHR-04699" href="#VUID-StandaloneSpirv-IncomingRayPayloadKHR-04699"></a> <span class="vuid">VUID-StandaloneSpirv-IncomingRayPayloadKHR-04699</span><br>
+
+<code>IncomingRayPayloadKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used in closest
+hit, any-hit, or miss shaders</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-IncomingRayPayloadKHR-04700" href="#VUID-StandaloneSpirv-IncomingRayPayloadKHR-04700"></a> <span class="vuid">VUID-StandaloneSpirv-IncomingRayPayloadKHR-04700</span><br>
+
+There <strong>must</strong> be at most one variable with the <code>IncomingRayPayloadKHR</code>
+<code>Storage</code> <code>Class</code> in the input interface of an entry point</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-HitAttributeKHR-04701" href="#VUID-StandaloneSpirv-HitAttributeKHR-04701"></a> <span class="vuid">VUID-StandaloneSpirv-HitAttributeKHR-04701</span><br>
+
+<code>HitAttributeKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used in intersection,
+any-hit, or closest hit shaders</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-HitAttributeKHR-04702" href="#VUID-StandaloneSpirv-HitAttributeKHR-04702"></a> <span class="vuid">VUID-StandaloneSpirv-HitAttributeKHR-04702</span><br>
+
+There <strong>must</strong> be at most one variable with the <code>HitAttributeKHR</code>
+<code>Storage</code> <code>Class</code> in the input interface of an entry point</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-HitAttributeKHR-04703" href="#VUID-StandaloneSpirv-HitAttributeKHR-04703"></a> <span class="vuid">VUID-StandaloneSpirv-HitAttributeKHR-04703</span><br>
+
+A variable with <code>HitAttributeKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be
+written to in an intersection shader</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-CallableDataKHR-04704" href="#VUID-StandaloneSpirv-CallableDataKHR-04704"></a> <span class="vuid">VUID-StandaloneSpirv-CallableDataKHR-04704</span><br>
+
+<code>CallableDataKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used in ray
+generation, closest hit, miss, and callable shaders</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-IncomingCallableDataKHR-04705" href="#VUID-StandaloneSpirv-IncomingCallableDataKHR-04705"></a> <span class="vuid">VUID-StandaloneSpirv-IncomingCallableDataKHR-04705</span><br>
+
+<code>IncomingCallableDataKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used in
+callable shaders</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-IncomingCallableDataKHR-04706" href="#VUID-StandaloneSpirv-IncomingCallableDataKHR-04706"></a> <span class="vuid">VUID-StandaloneSpirv-IncomingCallableDataKHR-04706</span><br>
+
+There <strong>must</strong> be at most one variable with the
+<code>IncomingCallableDataKHR</code> <code>Storage</code> <code>Class</code> in the input interface of an
+entry point</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-ShaderRecordBufferKHR-07119" href="#VUID-StandaloneSpirv-ShaderRecordBufferKHR-07119"></a> <span class="vuid">VUID-StandaloneSpirv-ShaderRecordBufferKHR-07119</span><br>
+
+<code>ShaderRecordBufferKHR</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used in ray
+generation, intersection, any-hit, closest hit, callable, or miss
+shaders</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Base-07650" href="#VUID-StandaloneSpirv-Base-07650"></a> <span class="vuid">VUID-StandaloneSpirv-Base-07650</span><br>
+
+The <code>Base</code> operand of <code>OpPtrAccessChain</code> or
+<code>OpUntypedPtrAccessChainKHR</code> <strong>must</strong> have a storage class of
+<code>Workgroup</code>, <code>StorageBuffer</code>, or <code>PhysicalStorageBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Base-07651" href="#VUID-StandaloneSpirv-Base-07651"></a> <span class="vuid">VUID-StandaloneSpirv-Base-07651</span><br>
+
+If the <code>Base</code> operand of <code>OpPtrAccessChain</code> or
+<code>OpUntypedPtrAccessChainKHR</code> has a <code>Workgroup</code> <code>Storage</code> <code>Class</code>,
+then the <code>VariablePointers</code> capability <strong>must</strong> be declared</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Base-07652" href="#VUID-StandaloneSpirv-Base-07652"></a> <span class="vuid">VUID-StandaloneSpirv-Base-07652</span><br>
+
+If the <code>Base</code> operand of <code>OpPtrAccessChain</code> or
+<code>OpUntypedPtrAccessChainKHR</code> has a <code>StorageBuffer</code> <code>Storage</code> <code>Class</code>,
+then the <code>VariablePointers</code> or <code>VariablePointersStorageBuffer</code>
+capability <strong>must</strong> be declared</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpUntypedVariableKHR-11167" href="#VUID-StandaloneSpirv-OpUntypedVariableKHR-11167"></a> <span class="vuid">VUID-StandaloneSpirv-OpUntypedVariableKHR-11167</span><br>
+
+Any <code>OpUntypedVariableKHR</code> with a <code>Storage</code> <code>Class</code> other than
+<code>UniformConstant</code> <strong>must</strong> have a <code>Data</code> <code>Type</code> operand specified</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpUntypedVariableKHR-11347" href="#VUID-StandaloneSpirv-OpUntypedVariableKHR-11347"></a> <span class="vuid">VUID-StandaloneSpirv-OpUntypedVariableKHR-11347</span><br>
+
+Any <code>OpUntypedVariableKHR</code> in the <code>UniformConstant</code> storage class
+without a <code>Data</code> <code>Type</code> <strong>must</strong> be decorated with
+<code>SamplerHeapEXT</code> or <code>ResourceHeapEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PhysicalStorageBuffer64-04708" href="#VUID-StandaloneSpirv-PhysicalStorageBuffer64-04708"></a> <span class="vuid">VUID-StandaloneSpirv-PhysicalStorageBuffer64-04708</span><br>
+
+If the <code>PhysicalStorageBuffer64</code> addressing model is enabled, all
+instructions that support memory access operands and that use a physical
+pointer <strong>must</strong> include the <code>Aligned</code> operand</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PhysicalStorageBuffer64-04709" href="#VUID-StandaloneSpirv-PhysicalStorageBuffer64-04709"></a> <span class="vuid">VUID-StandaloneSpirv-PhysicalStorageBuffer64-04709</span><br>
+
+If the <code>PhysicalStorageBuffer64</code> addressing model is enabled, any
+access chain instruction that accesses into a <code>RowMajor</code> matrix <strong>must</strong>
+only be used as the <code>Pointer</code> operand to <code>OpLoad</code> or <code>OpStore</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PhysicalStorageBuffer64-04710" href="#VUID-StandaloneSpirv-PhysicalStorageBuffer64-04710"></a> <span class="vuid">VUID-StandaloneSpirv-PhysicalStorageBuffer64-04710</span><br>
+
+If the <code>PhysicalStorageBuffer64</code> addressing model is enabled,
+<code>OpConvertUToPtr</code> and <code>OpConvertPtrToU</code> <strong>must</strong> use an integer type
+whose <code>Width</code> is 64</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PhysicalStorageBuffer64-06314" href="#VUID-StandaloneSpirv-PhysicalStorageBuffer64-06314"></a> <span class="vuid">VUID-StandaloneSpirv-PhysicalStorageBuffer64-06314</span><br>
+
+If the <code>PhysicalStorageBuffer64</code> addressing model is enabled any load
+or store through a physical pointer type <strong>must</strong> have an <code>Aligned</code>
+operand which is a multiple of the size of the largest scalar type in
+the pointed-to type</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeForwardPointer-04711" href="#VUID-StandaloneSpirv-OpTypeForwardPointer-04711"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeForwardPointer-04711</span><br>
+
+<code>OpTypeForwardPointer</code> <strong>must</strong> have a <code>Storage</code> <code>Class</code> of
+<code>PhysicalStorageBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpVariable-06673" href="#VUID-StandaloneSpirv-OpVariable-06673"></a> <span class="vuid">VUID-StandaloneSpirv-OpVariable-06673</span><br>
+
+There <strong>must</strong> be at most one variable in the <code>PushConstant</code>
+<code>Storage</code> <code>Class</code> listed in the <code>Interface</code> for each <code>OpEntryPoint</code>
+unless the <code>PushConstantBanksNV</code> capability is declared</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpEntryPoint-06674" href="#VUID-StandaloneSpirv-OpEntryPoint-06674"></a> <span class="vuid">VUID-StandaloneSpirv-OpEntryPoint-06674</span><br>
+
+Each <code>OpEntryPoint</code> <strong>must</strong> statically use at most one variable in the
+<code>PushConstant</code> <code>Storage</code> <code>Class</code> unless the <code>PushConstantBanksNV</code>
+capability is declared</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpEntryPoint-08721" href="#VUID-StandaloneSpirv-OpEntryPoint-08721"></a> <span class="vuid">VUID-StandaloneSpirv-OpEntryPoint-08721</span><br>
+
+Each <code>OpEntryPoint</code> <strong>must</strong> not have more than one <code>Input</code> variable
+assigned the same <code>Component</code> word inside a <code>Location</code> slot,
+either explicitly or implicitly</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpEntryPoint-08722" href="#VUID-StandaloneSpirv-OpEntryPoint-08722"></a> <span class="vuid">VUID-StandaloneSpirv-OpEntryPoint-08722</span><br>
+
+Each <code>OpEntryPoint</code> <strong>must</strong> not have more than one <code>Output</code> variable
+assigned the same <code>Component</code> word inside a <code>Location</code> slot,
+either explicitly or implicitly</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Result-04780" href="#VUID-StandaloneSpirv-Result-04780"></a> <span class="vuid">VUID-StandaloneSpirv-Result-04780</span><br>
+
+The <code>Result</code> <code>Type</code> operand of any <code>OpImageRead</code> or
+<code>OpImageSparseRead</code> instruction <strong>must</strong> be a vector of four components</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-PushConstant-06675" href="#VUID-StandaloneSpirv-PushConstant-06675"></a> <span class="vuid">VUID-StandaloneSpirv-PushConstant-06675</span><br>
+
+Any variable in the <code>PushConstant</code> or <code>StorageBuffer</code> storage
+class <strong>must</strong> be decorated as <code>Block</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Uniform-06676" href="#VUID-StandaloneSpirv-Uniform-06676"></a> <span class="vuid">VUID-StandaloneSpirv-Uniform-06676</span><br>
+
+Any variable in the <code>Uniform</code> <code>Storage</code> <code>Class</code> <strong>must</strong> be decorated as
+<code>Block</code> or <code>BufferBlock</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UniformConstant-06677" href="#VUID-StandaloneSpirv-UniformConstant-06677"></a> <span class="vuid">VUID-StandaloneSpirv-UniformConstant-06677</span><br>
+
+Any variable in the <code>UniformConstant</code>, <code>StorageBuffer</code>, or
+<code>Uniform</code> <code>Storage</code> <code>Class</code> <strong>must</strong> be decorated with either
+<code>DescriptorSet</code> and <code>Binding</code>, or <code>BuiltIn</code> with
+<code>SamplerHeapEXT</code> or <code>ResourceHeapEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-InputAttachmentIndex-06678" href="#VUID-StandaloneSpirv-InputAttachmentIndex-06678"></a> <span class="vuid">VUID-StandaloneSpirv-InputAttachmentIndex-06678</span><br>
+
+Variables decorated with <code>InputAttachmentIndex</code> <strong>must</strong> be in the
+<code>UniformConstant</code> <code>Storage</code> <code>Class</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-DescriptorSet-06491" href="#VUID-StandaloneSpirv-DescriptorSet-06491"></a> <span class="vuid">VUID-StandaloneSpirv-DescriptorSet-06491</span><br>
+
+If a variable is decorated by <code>DescriptorSet</code> or <code>Binding</code>, the
+<code>Storage</code> <code>Class</code> <strong>must</strong> correspond to an entry in
+<a href="../../../../spec/latest/chapters/interfaces.html#interfaces-resources-storage-class-correspondence" class="xref page">Shader Resource and    Storage Class Correspondence</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Input-06778" href="#VUID-StandaloneSpirv-Input-06778"></a> <span class="vuid">VUID-StandaloneSpirv-Input-06778</span><br>
+
+Variables with a <code>Storage</code> <code>Class</code> of <code>Input</code> in a fragment shader stage
+that are decorated with <code>PerVertexKHR</code> <strong>must</strong> be declared as arrays</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07102" href="#VUID-StandaloneSpirv-MeshEXT-07102"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07102</span><br>
+
+The module <strong>must</strong> not contain both an entry point that uses the
+<code>TaskEXT</code> or <code>MeshEXT</code> <code>Execution</code> <code>Model</code> and an entry point that
+uses the <code>TaskNV</code> or <code>MeshNV</code> <code>Execution</code> <code>Model</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07106" href="#VUID-StandaloneSpirv-MeshEXT-07106"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07106</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code>
+<code>OpSetMeshOutputsEXT</code> <strong>must</strong> be called before any outputs are written</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07107" href="#VUID-StandaloneSpirv-MeshEXT-07107"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07107</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> all variables
+declared in the <code>Output</code> <code>Storage</code> <code>Class</code> <strong>must</strong> not be read</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07108" href="#VUID-StandaloneSpirv-MeshEXT-07108"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07108</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> for
+<code>OpSetMeshOutputsEXT</code> instructions, the &#8220;Vertex Count&#8221; and
+&#8220;Primitive Count&#8221; operands <strong>must</strong> not depend on <code>ViewIndex</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07109" href="#VUID-StandaloneSpirv-MeshEXT-07109"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07109</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> variables
+decorated with <code>PrimitivePointIndicesEXT</code>,
+<code>PrimitiveLineIndicesEXT</code>, or <code>PrimitiveTriangleIndicesEXT</code>
+declared as an array <strong>must</strong> not be accessed by indices that depend on
+<code>ViewIndex</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07110" href="#VUID-StandaloneSpirv-MeshEXT-07110"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07110</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> any values
+stored in variables decorated with <code>PrimitivePointIndicesEXT</code>,
+<code>PrimitiveLineIndicesEXT</code>, or <code>PrimitiveTriangleIndicesEXT</code> <strong>must</strong>
+not depend on <code>ViewIndex</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07111" href="#VUID-StandaloneSpirv-MeshEXT-07111"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07111</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> variables in
+workgroup or private <code>Storage</code> <code>Class</code> declared as or containing a
+composite type <strong>must</strong> not be accessed by indices that depend on
+<code>ViewIndex</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07330" href="#VUID-StandaloneSpirv-MeshEXT-07330"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07330</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> the
+<code>OutputVertices</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> be greater than 0</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MeshEXT-07331" href="#VUID-StandaloneSpirv-MeshEXT-07331"></a> <span class="vuid">VUID-StandaloneSpirv-MeshEXT-07331</span><br>
+
+In mesh shaders using the <code>MeshEXT</code> <code>Execution</code> <code>Model</code> the
+<code>OutputPrimitivesEXT</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> be greater than 0</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Input-07290" href="#VUID-StandaloneSpirv-Input-07290"></a> <span class="vuid">VUID-StandaloneSpirv-Input-07290</span><br>
+
+Variables with a <code>Storage</code> <code>Class</code> of <code>Input</code> or <code>Output</code> and a type
+of <code>OpTypeBool</code> <strong>must</strong> be decorated with the <code>BuiltIn</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileImageEXT-08723" href="#VUID-StandaloneSpirv-TileImageEXT-08723"></a> <span class="vuid">VUID-StandaloneSpirv-TileImageEXT-08723</span><br>
+
+The tile image variable declarations <strong>must</strong> obey the constraints on the
+<code>TileImageEXT</code> <code>Storage</code> <code>Class</code> and the <code>Location</code> decoration
+described in <a href="../../../../spec/latest/chapters/interfaces.html#interfaces-fragmenttileimage" class="xref page">Fragment Tile Image    Interface</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-08724" href="#VUID-StandaloneSpirv-None-08724"></a> <span class="vuid">VUID-StandaloneSpirv-None-08724</span><br>
+
+The <code>TileImageEXT</code> <code>Storage</code> <code>Class</code> <strong>must</strong> only be used for declaring
+tile image variables</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Pointer-08973" href="#VUID-StandaloneSpirv-Pointer-08973"></a> <span class="vuid">VUID-StandaloneSpirv-Pointer-08973</span><br>
+
+The <code>Storage</code> <code>Class</code> of the <code>Pointer</code> operand to
+<code>OpCooperativeMatrixLoadKHR</code> or <code>OpCooperativeMatrixStoreKHR</code>
+<strong>must</strong> be limited to <code>Workgroup</code>, <code>StorageBuffer</code>, or
+<code>PhysicalStorageBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeFloat-10370" href="#VUID-StandaloneSpirv-OpTypeFloat-10370"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeFloat-10370</span><br>
+
+Variables with a type of <code>OpTypeFloat</code> and an encoding of
+<code>BFloat16KHR</code> <strong>must</strong> not be declared with a <code>Storage</code> <code>Class</code> of
+<code>Input</code> or <code>Output</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UniformBufferArrayDynamicIndexing-10127" href="#VUID-StandaloneSpirv-UniformBufferArrayDynamicIndexing-10127"></a> <span class="vuid">VUID-StandaloneSpirv-UniformBufferArrayDynamicIndexing-10127</span><br>
+
+If the <code>UniformBufferArrayDynamicIndexing</code> capability is not
+declared, and an instruction accesses memory through a uniform buffer,
+the uniform buffer through which that memory is accessed <strong>must</strong> be
+determined by <a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant integral    expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-SampledImageArrayDynamicIndexing-10128" href="#VUID-StandaloneSpirv-SampledImageArrayDynamicIndexing-10128"></a> <span class="vuid">VUID-StandaloneSpirv-SampledImageArrayDynamicIndexing-10128</span><br>
+
+If the <code>SampledImageArrayDynamicIndexing</code> capability is not declared,
+and an instruction accesses memory through a sampled image or sampler,
+the sampled image or sampler through which that memory is accessed <strong>must</strong>
+be determined by <a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant    integral expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-StorageBufferArrayDynamicIndexing-10129" href="#VUID-StandaloneSpirv-StorageBufferArrayDynamicIndexing-10129"></a> <span class="vuid">VUID-StandaloneSpirv-StorageBufferArrayDynamicIndexing-10129</span><br>
+
+If the <code>StorageBufferArrayDynamicIndexing</code> capability is not
+declared, and an instruction accesses memory through a storage buffer,
+the storage buffer through which that memory is accessed <strong>must</strong> be
+determined by <a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant integral    expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-StorageImageArrayDynamicIndexing-10130" href="#VUID-StandaloneSpirv-StorageImageArrayDynamicIndexing-10130"></a> <span class="vuid">VUID-StandaloneSpirv-StorageImageArrayDynamicIndexing-10130</span><br>
+
+If the <code>StorageImageArrayDynamicIndexing</code> capability is not declared,
+and an instruction accesses memory through a storage image, the storage
+image through which that memory is accessed <strong>must</strong> be determined by
+<a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant integral expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-InputAttachmentArrayDynamicIndexing-10131" href="#VUID-StandaloneSpirv-InputAttachmentArrayDynamicIndexing-10131"></a> <span class="vuid">VUID-StandaloneSpirv-InputAttachmentArrayDynamicIndexing-10131</span><br>
+
+If the <code>InputAttachmentArrayDynamicIndexing</code> capability is not
+declared, and an instruction accesses memory through an input
+attachment, the input attachment through which that memory is accessed
+<strong>must</strong> be determined by <a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant    integral expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-UniformTexelBufferArrayDynamicIndexing-10132" href="#VUID-StandaloneSpirv-UniformTexelBufferArrayDynamicIndexing-10132"></a> <span class="vuid">VUID-StandaloneSpirv-UniformTexelBufferArrayDynamicIndexing-10132</span><br>
+
+If the <code>UniformTexelBufferArrayDynamicIndexing</code> capability is not
+declared, and an instruction accesses memory through a uniform texel
+buffer, the uniform texel buffer through which that memory is accessed
+<strong>must</strong> be determined by <a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant    integral expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-StorageTexelBufferArrayDynamicIndexing-10133" href="#VUID-StandaloneSpirv-StorageTexelBufferArrayDynamicIndexing-10133"></a> <span class="vuid">VUID-StandaloneSpirv-StorageTexelBufferArrayDynamicIndexing-10133</span><br>
+
+If the <code>StorageTexelBufferArrayDynamicIndexing</code> capability is not
+declared, and an instruction accesses memory through a storage texel
+buffer, the storage texel buffer through which that memory is accessed
+<strong>must</strong> be determined by <a href="../../../../spec/latest/appendices/glossary.html#glossary-constant-integral-expression" class="xref page">constant    integral expressions</a></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-MaximallyReconvergesKHR-09565" href="#VUID-StandaloneSpirv-MaximallyReconvergesKHR-09565"></a> <span class="vuid">VUID-StandaloneSpirv-MaximallyReconvergesKHR-09565</span><br>
+
+The <code>MaximallyReconvergesKHR</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> not be applied to
+an entry point if an <em>invocation repack instruction</em> is statically used</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileShadingQCOM-10686" href="#VUID-StandaloneSpirv-TileShadingQCOM-10686"></a> <span class="vuid">VUID-StandaloneSpirv-TileShadingQCOM-10686</span><br>
+
+<code>TileShadingQCOM</code> capability <strong>must</strong> not be enabled in any stage other
+than compute or fragment</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Execution-10687" href="#VUID-StandaloneSpirv-Execution-10687"></a> <span class="vuid">VUID-StandaloneSpirv-Execution-10687</span><br>
+
+<code>Execution</code> <code>Mode</code> <code>NonCoherentTileAttachmentReadQCOM</code> <strong>must</strong>
+not be used in any stage other than fragment</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Execution-10688" href="#VUID-StandaloneSpirv-Execution-10688"></a> <span class="vuid">VUID-StandaloneSpirv-Execution-10688</span><br>
+
+<code>Execution</code> <code>Mode</code> <code>TileShadingRateQCOM</code> <strong>must</strong> not be used in
+any stage other than compute</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10689" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10689"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10689</span><br>
+
+If the <code>TileAttachmentQCOM</code> <code>Storage</code> <code>Class</code> is used, the
+<code>TileShadingQCOM</code> capability <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-NonCoherentTileAttachmentReadQCOM-10690" href="#VUID-StandaloneSpirv-NonCoherentTileAttachmentReadQCOM-10690"></a> <span class="vuid">VUID-StandaloneSpirv-NonCoherentTileAttachmentReadQCOM-10690</span><br>
+
+If the <code>NonCoherentTileAttachmentReadQCOM</code> <code>Execution</code> <code>Mode</code>
+is used, the <code>TileShadingQCOM</code> capability <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileShadingRateQCOM-10691" href="#VUID-StandaloneSpirv-TileShadingRateQCOM-10691"></a> <span class="vuid">VUID-StandaloneSpirv-TileShadingRateQCOM-10691</span><br>
+
+If the <code>TileShadingRateQCOM</code> <code>Execution</code> <code>Mode</code> is used, the
+<code>TileShadingQCOM</code> capability <strong>must</strong> be enabled</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileShadingRateQCOM-10692" href="#VUID-StandaloneSpirv-TileShadingRateQCOM-10692"></a> <span class="vuid">VUID-StandaloneSpirv-TileShadingRateQCOM-10692</span><br>
+
+If the <code>TileShadingRateQCOM</code> <code>Execution</code> <code>Mode</code> is used,
+<code>LocalSize</code> and <code>LocalSizeId</code> <code>Execution</code> <code>Mode</code> <strong>must</strong> not be
+specified</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-10693" href="#VUID-StandaloneSpirv-OpTypeImage-10693"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-10693</span><br>
+
+<code>OpTypeImage</code> variables in the <code>TileAttachmentQCOM</code> <code>Storage</code>
+<code>Class</code> <strong>must</strong> have <code>Dim</code> equal to <code>2D</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeImage-10694" href="#VUID-StandaloneSpirv-OpTypeImage-10694"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeImage-10694</span><br>
+
+<code>OpTypeImage</code> variables in the <code>TileAttachmentQCOM</code> <code>Storage</code>
+<code>Class</code> <strong>must</strong> <code>Sampled</code> equal to <code>1</code> or <code>2</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10695" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10695"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10695</span><br>
+
+Any variable in the <code>TileAttachmentQCOM</code> <code>Storage</code> <code>Class</code>
+<strong>must</strong> be decorated with <code>DescriptorSet</code> and <code>Binding</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10696" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10696"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10696</span><br>
+
+Any variable in the <code>TileAttachmentQCOM</code> <code>Storage</code> <code>Class</code>
+<strong>must</strong> not be decorated with <code>Component</code> decoration</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-TileAttachmentQCOM-10697" href="#VUID-StandaloneSpirv-TileAttachmentQCOM-10697"></a> <span class="vuid">VUID-StandaloneSpirv-TileAttachmentQCOM-10697</span><br>
+
+An OpTypeImage variables in the <code>TileAttachmentQCOM</code> <code>Storage</code>
+<code>Class</code> <strong>must</strong> not be consumed by an <code>OpImageQuery*</code> instruction</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeFloat-10823" href="#VUID-StandaloneSpirv-OpTypeFloat-10823"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeFloat-10823</span><br>
+
+Variables with a type of <code>OpTypeFloat</code> and an encoding of
+<code>Float8E4M3EXT</code> or <code>Float8E5M2EXT</code> <strong>must</strong> not be declared with a
+<code>Storage</code> <code>Class</code> of <code>Input</code> or <code>Output</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpGraphInputARM-09931" href="#VUID-StandaloneSpirv-OpGraphInputARM-09931"></a> <span class="vuid">VUID-StandaloneSpirv-OpGraphInputARM-09931</span><br>
+
+The <code>InputIndex</code> and <code>ElementIndex</code> operands to
+<code>OpGraphInputARM</code> <strong>must</strong> be the &lt;id&gt; of a constant instruction</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpGraphSetOutputARM-09932" href="#VUID-StandaloneSpirv-OpGraphSetOutputARM-09932"></a> <span class="vuid">VUID-StandaloneSpirv-OpGraphSetOutputARM-09932</span><br>
+
+The <code>OutputIndex</code> and <code>ElementIndex</code> operands to
+<code>OpGraphSetOutputARM</code> <strong>must</strong> be the &lt;id&gt; of a constant instruction</p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Result-11336" href="#VUID-StandaloneSpirv-Result-11336"></a> <span class="vuid">VUID-StandaloneSpirv-Result-11336</span><br>
+
+If the <code>Result</code> <code>Type</code> operand of <code>OpLoad</code> is
+<code>OpTypeSampler</code>, <code>Pointer</code> <strong>must</strong> be derived from a variable
+decorated with <code>Binding</code> and <code>DescriptorSet</code>, or decorated with
+<code>BuiltIn</code> and <code>SamplerHeapEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Result-11337" href="#VUID-StandaloneSpirv-Result-11337"></a> <span class="vuid">VUID-StandaloneSpirv-Result-11337</span><br>
+
+If the <code>Result</code> <code>Type</code> operand of <code>OpLoad</code> is <code>OpTypeImage</code>,
+<code>Pointer</code> <strong>must</strong> be derived from a variable decorated with
+<code>Binding</code> and <code>DescriptorSet</code>, or decorated with <code>BuiltIn</code> and
+<code>ResourceHeapEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Result-11339" href="#VUID-StandaloneSpirv-Result-11339"></a> <span class="vuid">VUID-StandaloneSpirv-Result-11339</span><br>
+
+If the <code>Result</code> <code>Type</code> operand of <code>OpLoad</code> is
+<code>OpTypeAccelerationStructureKHR</code>, and <code>Pointer</code> is not in the
+<code>Private</code> or <code>Function</code> <code>Storage</code> <code>Class</code>, <code>Pointer</code> <strong>must</strong> be
+derived from a variable decorated with <code>Binding</code> and
+<code>DescriptorSet</code>, or decorated with <code>BuiltIn</code> and
+<code>ResourceHeapEXT</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-OpTypeUntypedPointerKHR-11417" href="#VUID-StandaloneSpirv-OpTypeUntypedPointerKHR-11417"></a> <span class="vuid">VUID-StandaloneSpirv-OpTypeUntypedPointerKHR-11417</span><br>
+
+The <code>Storage</code> <code>Class</code> of <code>OpTypeUntypedPointerKHR</code> <strong>must</strong> be <code>Image</code>,
+<code>UniformConstant</code>,<code>Workgroup</code>, <code>StorageBuffer</code>, <code>Uniform</code>,
+<code>PushConstant</code>, or <code>PhysicalStorageBuffer</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-None-12295" href="#VUID-StandaloneSpirv-None-12295"></a> <span class="vuid">VUID-StandaloneSpirv-None-12295</span><br>
+
+If the <code>LongVectorEXT</code> capability is not declared, the <code>Component</code>
+<code>Count</code> of any vector type <strong>must</strong> be less than or equal to <code>4</code> and
+greater than <code>1</code></p>
+</li>
+<li>
+<p><a id="VUID-StandaloneSpirv-Type-12297" href="#VUID-StandaloneSpirv-Type-12297"></a> <span class="vuid">VUID-StandaloneSpirv-Type-12297</span><br>
+
+Any pointer type whose <code>Type</code> parameter is a vector type with more
+than four components (or an aggregate containing such a type) <strong>must</strong> have
+<code>Storage</code> <code>Class</code> of <code>Function</code>, <code>Private</code>, <code>Uniform</code>,
+<code>Workgroup</code>, <code>StorageBuffer</code>, <code>PhysicalStorageBuffer</code>,
+<code>PushConstant</code>, or <code>ShaderRecordBufferKHR</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_see_also"><a class="anchor" href="#_see_also"></a>See Also</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>No cross-references are available</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_document_notes"><a class="anchor" href="#_document_notes"></a>Document Notes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For more information, see the <a href="../../../../spec/latest/index.html" class="xref page">Vulkan Specification</a> (NOTE: cannot determine Specification page containing this refpage).</p>
+</div>
+<div class="paragraph">
+<p>This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

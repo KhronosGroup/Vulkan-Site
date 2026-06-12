@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>vkCmdBindPipeline(3) :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+  </head>
+  <body class="article">
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:refpages" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="vkCmdBindPipeline.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href').split('/').pop()===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../index.html">Vulkan API Reference Pages</a></li>
+    <li>Commands</li>
+    <li>C</li>
+    <li><a href="vkCmdBindPipeline.html">vkCmdBindPipeline</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">vkCmdBindPipeline(3)</h1>
+<div class="sect1">
+<h2 id="_name"><a class="anchor" href="#_name"></a>Name</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>vkCmdBindPipeline - Bind a pipeline object to a command buffer</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_c_specification"><a class="anchor" href="#_c_specification"></a>C Specification</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once a pipeline has been created, it <strong>can</strong> be bound to the command buffer
+using the command:</p>
+</div>
+<div id="vkCmdBindPipeline" class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c hljs" data-lang="c">// Provided by VK_VERSION_1_0
+void vkCmdBindPipeline(
+    VkCommandBuffer                             commandBuffer,
+    VkPipelineBindPoint                         pipelineBindPoint,
+    VkPipeline                                  pipeline);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_parameters"><a class="anchor" href="#_parameters"></a>Parameters</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><code>commandBuffer</code> is the command buffer that the pipeline will be
+bound to.</p>
+</li>
+<li>
+<p><code>pipelineBindPoint</code> is a <a href="VkPipelineBindPoint.html" class="xref page">VkPipelineBindPoint</a> value specifying
+to which bind point the pipeline is bound.
+Binding one does not disturb the others.</p>
+</li>
+<li>
+<p><code>pipeline</code> is the pipeline to be bound.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_description"><a class="anchor" href="#_description"></a>Description</h2>
+<div class="sectionbody">
+<div id="pipelines-bindpoint-commands" class="paragraph">
+<p>Once bound, a pipeline binding affects subsequent commands that interact
+with the given pipeline type in the command buffer until a different
+pipeline of the same type is bound to the bind
+point, or until the pipeline bind point is disturbed by binding a
+<a href="../../../../spec/latest/chapters/shaders.html#shaders-objects" class="xref page">shader object</a> as described in
+<a href="../../../../spec/latest/chapters/shaders.html#shaders-objects-pipeline-interaction" class="xref page">Interaction with Pipelines</a>.
+Commands that do not interact with the <a href="../../../../spec/latest/chapters/shaders.html#shaders-binding" class="xref page">given pipeline</a>
+type <strong>must</strong> not be affected by the pipeline state.</p>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-00777" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-00777"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-00777</span><br>
+
+If <code>pipelineBindPoint</code> is <a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_COMPUTE</a>, the
+<code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong>
+support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-00778" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-00778"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-00778</span><br>
+
+If <code>pipelineBindPoint</code> is <a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_GRAPHICS</a>, the
+<code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong>
+support graphics operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-00779" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-00779"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-00779</span><br>
+
+If <code>pipelineBindPoint</code> is <a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_COMPUTE</a>,
+<code>pipeline</code> <strong>must</strong> be a compute pipeline</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-00780" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-00780"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-00780</span><br>
+
+If <code>pipelineBindPoint</code> is <a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_GRAPHICS</a>,
+<code>pipeline</code> <strong>must</strong> be a graphics pipeline</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipeline-00781" href="#VUID-vkCmdBindPipeline-pipeline-00781"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipeline-00781</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-variableMultisampleRate" class="xref page">    <code>variableMultisampleRate</code></a> feature is not supported, <code>pipeline</code>
+is a graphics pipeline, the current subpass <a href="../../../../spec/latest/chapters/renderpass.html#renderpass-noattachments" class="xref page">    uses no attachments</a>, and this is not the first call to this function
+with a graphics pipeline after transitioning to the current subpass,
+then the sample count specified by this pipeline <strong>must</strong> match that set in
+the previous pipeline</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-variableSampleLocations-01525" href="#VUID-vkCmdBindPipeline-variableSampleLocations-01525"></a> <span class="vuid">VUID-vkCmdBindPipeline-variableSampleLocations-01525</span><br>
+
+If
+<a href="VkPhysicalDeviceSampleLocationsPropertiesEXT.html" class="xref page">VkPhysicalDeviceSampleLocationsPropertiesEXT</a>::<code>variableSampleLocations</code>
+is <a href="VK_FALSE.html" class="xref page">VK_FALSE</a>, and <code>pipeline</code> is a graphics pipeline created
+with a <code>renderPass</code> that is not <a href="VK_NULL_HANDLE.html" class="xref page">VK_NULL_HANDLE</a> and with a
+<a href="VkPipelineSampleLocationsStateCreateInfoEXT.html" class="xref page">VkPipelineSampleLocationsStateCreateInfoEXT</a> structure having its
+<code>sampleLocationsEnable</code> member set to <a href="VK_TRUE.html" class="xref page">VK_TRUE</a> but without
+<a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT</a> enabled then the current
+render pass instance <strong>must</strong> have been begun by specifying a
+<a href="VkRenderPassSampleLocationsBeginInfoEXT.html" class="xref page">VkRenderPassSampleLocationsBeginInfoEXT</a> structure whose
+<code>pPostSubpassSampleLocations</code> member contains an element with a
+<code>subpassIndex</code> matching the current subpass index and the
+<code>sampleLocationsInfo</code> member of that element <strong>must</strong> match the
+<code>sampleLocationsInfo</code> specified in
+<a href="VkPipelineSampleLocationsStateCreateInfoEXT.html" class="xref page">VkPipelineSampleLocationsStateCreateInfoEXT</a> when the pipeline was
+created</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-None-02323" href="#VUID-vkCmdBindPipeline-None-02323"></a> <span class="vuid">VUID-vkCmdBindPipeline-None-02323</span><br>
+
+This command <strong>must</strong> not be recorded when transform feedback is active</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-02391" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-02391"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-02391</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR</a>, the <code>VkCommandPool</code>
+that <code>commandBuffer</code> was allocated from <strong>must</strong> support compute
+operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-02392" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-02392"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-02392</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR</a>, <code>pipeline</code> <strong>must</strong> be a
+ray tracing pipeline</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-06721" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-06721"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-06721</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR</a>, <code>commandBuffer</code> <strong>must</strong>
+not be a protected command buffer</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineProtectedAccess-07408" href="#VUID-vkCmdBindPipeline-pipelineProtectedAccess-07408"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineProtectedAccess-07408</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-pipelineProtectedAccess" class="xref page">    <code>pipelineProtectedAccess</code></a> feature is enabled, and
+<code>commandBuffer</code> is a protected command buffer, <code>pipeline</code> <strong>must</strong>
+have been created without
+<a href="VkPipelineCreateFlagBits.html" class="xref page">VK_PIPELINE_CREATE_NO_PROTECTED_ACCESS_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineProtectedAccess-07409" href="#VUID-vkCmdBindPipeline-pipelineProtectedAccess-07409"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineProtectedAccess-07409</span><br>
+
+If the <a href="../../../../spec/latest/chapters/features.html#features-pipelineProtectedAccess" class="xref page">    <code>pipelineProtectedAccess</code></a> feature is enabled, and
+<code>commandBuffer</code> is not a protected command buffer, <code>pipeline</code>
+<strong>must</strong> have been created without
+<a href="VkPipelineCreateFlagBits.html" class="xref page">VK_PIPELINE_CREATE_PROTECTED_ACCESS_ONLY_BIT</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipeline-03382" href="#VUID-vkCmdBindPipeline-pipeline-03382"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipeline-03382</span><br>
+
+<code>pipeline</code> <strong>must</strong> not have been created with
+<a href="VkPipelineCreateFlagBits.html" class="xref page">VK_PIPELINE_CREATE_LIBRARY_BIT_KHR</a> set</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-commandBuffer-04808" href="#VUID-vkCmdBindPipeline-commandBuffer-04808"></a> <span class="vuid">VUID-vkCmdBindPipeline-commandBuffer-04808</span><br>
+
+If <code>commandBuffer</code> is a secondary command buffer with
+<a href="VkCommandBufferInheritanceViewportScissorInfoNV.html" class="xref page">VkCommandBufferInheritanceViewportScissorInfoNV</a>::<code>viewportScissor2D</code>
+enabled and <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_GRAPHICS</a>, then the <code>pipeline</code> <strong>must</strong>
+have been created with <a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT</a> or
+<a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_VIEWPORT</a>, and
+<a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT</a> or
+<a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_SCISSOR</a> enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-commandBuffer-04809" href="#VUID-vkCmdBindPipeline-commandBuffer-04809"></a> <span class="vuid">VUID-vkCmdBindPipeline-commandBuffer-04809</span><br>
+
+If <code>commandBuffer</code> is a secondary command buffer with
+<a href="VkCommandBufferInheritanceViewportScissorInfoNV.html" class="xref page">VkCommandBufferInheritanceViewportScissorInfoNV</a>::<code>viewportScissor2D</code>
+enabled and <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_GRAPHICS</a> and <code>pipeline</code> was created
+with <a href="VkPipelineDiscardRectangleStateCreateInfoEXT.html" class="xref page">VkPipelineDiscardRectangleStateCreateInfoEXT</a> structure and
+its <code>discardRectangleCount</code> member is not <code>0</code>, or the pipeline was
+created with <a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_DISCARD_RECTANGLE_ENABLE_EXT</a>
+enabled, then the pipeline <strong>must</strong> have been created with
+<a href="VkDynamicState.html" class="xref page">VK_DYNAMIC_STATE_DISCARD_RECTANGLE_EXT</a> enabled</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-04881" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-04881"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-04881</span><br>
+
+If <code>pipelineBindPoint</code> is <a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_GRAPHICS</a> and
+the <a href="../../../../spec/latest/chapters/limits.html#limits-provokingVertexModePerPipeline" class="xref page">    <code>provokingVertexModePerPipeline</code></a> limit is <a href="VK_FALSE.html" class="xref page">VK_FALSE</a>, then
+pipeline&#8217;s
+<a href="VkPipelineRasterizationProvokingVertexStateCreateInfoEXT.html" class="xref page">VkPipelineRasterizationProvokingVertexStateCreateInfoEXT</a>::<code>provokingVertexMode</code>
+<strong>must</strong> be the same as that of any other pipelines previously bound to
+this bind point within the current render pass instance, including any
+pipeline already bound when beginning the render pass instance</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-04949" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-04949"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-04949</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_SUBPASS_SHADING_HUAWEI</a>, the
+<code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong>
+support compute operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-04950" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-04950"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-04950</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_SUBPASS_SHADING_HUAWEI</a>, <code>pipeline</code>
+<strong>must</strong> be a subpass shading pipeline</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-09910" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-09910"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-09910</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_DATA_GRAPH_ARM</a>, the <code>VkCommandPool</code>
+that <code>commandBuffer</code> was allocated from <strong>must</strong> have been created for
+a queue family that supports <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_DATA_GRAPH_BIT_ARM</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-09911" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-09911"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-09911</span><br>
+
+If <code>pipelineBindPoint</code> is
+<a href="VkPipelineBindPoint.html" class="xref page">VK_PIPELINE_BIND_POINT_DATA_GRAPH_ARM</a>, <code>pipeline</code> <strong>must</strong> be a
+<a href="../../../../spec/latest/chapters/VK_ARM_data_graph/graphs.html#graphs-pipelines" class="xref page">data graph pipeline</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipeline-09912" href="#VUID-vkCmdBindPipeline-pipeline-09912"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipeline-09912</span><br>
+
+If <code>pipeline</code> is a <a href="../../../../spec/latest/chapters/VK_ARM_data_graph/graphs.html#graphs-pipelines" class="xref page">data graph pipeline</a> and the
+<a href="VkDataGraphPipelineCreateInfoARM.html" class="xref page">VkDataGraphPipelineCreateInfoARM</a> structure used to create it had a
+<a href="VkDataGraphProcessingEngineCreateInfoARM.html" class="xref page">VkDataGraphProcessingEngineCreateInfoARM</a> structure in its
+<code>pNext</code> chain that specified any foreign data processing engines,
+then the command pool from which <code>commandBuffer</code> was allocated <strong>must</strong>
+have been created with a <a href="VkCommandPoolCreateInfo.html" class="xref page">VkCommandPoolCreateInfo</a> structure that
+had a <a href="VkDataGraphProcessingEngineCreateInfoARM.html" class="xref page">VkDataGraphProcessingEngineCreateInfoARM</a> structure
+specifying a superset of the foreign data graph processing engines
+specified at pipeline creation time in its <code>pNext</code> chain</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipeline-09913" href="#VUID-vkCmdBindPipeline-pipeline-09913"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipeline-09913</span><br>
+
+If <code>pipeline</code> is a <a href="../../../../spec/latest/chapters/VK_ARM_data_graph/graphs.html#graphs-pipelines" class="xref page">data graph pipeline</a> and the
+<a href="VkDataGraphPipelineCreateInfoARM.html" class="xref page">VkDataGraphPipelineCreateInfoARM</a> structure used to create it did
+not have a <a href="VkDataGraphProcessingEngineCreateInfoARM.html" class="xref page">VkDataGraphProcessingEngineCreateInfoARM</a> structure in
+its <code>pNext</code> chain, then the command pool from which
+<code>commandBuffer</code> was allocated <strong>must</strong> not have been created with a
+<a href="VkCommandPoolCreateInfo.html" class="xref page">VkCommandPoolCreateInfo</a> that had a
+<a href="VkDataGraphProcessingEngineCreateInfoARM.html" class="xref page">VkDataGraphProcessingEngineCreateInfoARM</a> structure in its
+<code>pNext</code> chain</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Valid Usage (Implicit)</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-commandBuffer-parameter" href="#VUID-vkCmdBindPipeline-commandBuffer-parameter"></a> <span class="vuid">VUID-vkCmdBindPipeline-commandBuffer-parameter</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be a valid <a href="VkCommandBuffer.html" class="xref page">VkCommandBuffer</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipelineBindPoint-parameter" href="#VUID-vkCmdBindPipeline-pipelineBindPoint-parameter"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipelineBindPoint-parameter</span><br>
+ <code>pipelineBindPoint</code> <strong>must</strong> be a valid <a href="VkPipelineBindPoint.html" class="xref page">VkPipelineBindPoint</a> value</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-pipeline-parameter" href="#VUID-vkCmdBindPipeline-pipeline-parameter"></a> <span class="vuid">VUID-vkCmdBindPipeline-pipeline-parameter</span><br>
+ <code>pipeline</code> <strong>must</strong> be a valid <a href="VkPipeline.html" class="xref page">VkPipeline</a> handle</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-commandBuffer-recording" href="#VUID-vkCmdBindPipeline-commandBuffer-recording"></a> <span class="vuid">VUID-vkCmdBindPipeline-commandBuffer-recording</span><br>
+ <code>commandBuffer</code> <strong>must</strong> be in the <a href="../../../../spec/latest/chapters/cmdbuffers.html#commandbuffers-lifecycle" class="xref page">recording state</a></p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-commandBuffer-cmdpool" href="#VUID-vkCmdBindPipeline-commandBuffer-cmdpool"></a> <span class="vuid">VUID-vkCmdBindPipeline-commandBuffer-cmdpool</span><br>
+ The <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> support <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_COMPUTE_BIT</a>, <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_DATA_GRAPH_BIT_ARM</a>, or <a href="VkQueueFlagBits.html" class="xref page">VK_QUEUE_GRAPHICS_BIT</a> operations</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-videocoding" href="#VUID-vkCmdBindPipeline-videocoding"></a> <span class="vuid">VUID-vkCmdBindPipeline-videocoding</span><br>
+ This command <strong>must</strong> only be called outside of a video coding scope</p>
+</li>
+<li>
+<p><a id="VUID-vkCmdBindPipeline-commonparent" href="#VUID-vkCmdBindPipeline-commonparent"></a> <span class="vuid">VUID-vkCmdBindPipeline-commonparent</span><br>
+ Both of <code>commandBuffer</code>, and <code>pipeline</code> <strong>must</strong> have been created, allocated, or retrieved from the same <a href="VkDevice.html" class="xref page">VkDevice</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Host Synchronization</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Host access to <code>commandBuffer</code> <strong>must</strong> be externally synchronized</p>
+</li>
+<li>
+<p>Host access to the <code>VkCommandPool</code> that <code>commandBuffer</code> was allocated from <strong>must</strong> be externally synchronized</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Command Properties</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+<col style="width: 20%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/cmdbuffers.html#VkCommandBufferLevel" class="xref page">Command Buffer Levels</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/renderpass.html#vkCmdBeginRenderPass" class="xref page">Render Pass Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/videocoding.html#vkCmdBeginVideoCodingKHR" class="xref page">Video Coding Scope</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/devsandqueues.html#VkQueueFlagBits" class="xref page">Supported Queue Types</a></th>
+<th class="tableblock halign-left valign-top"><a href="../../../../spec/latest/chapters/fundamentals.html#fundamentals-queueoperation-command-types" class="xref page">Command Type</a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary<br>
+Secondary</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Both</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outside</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VK_QUEUE_COMPUTE_BIT<br>
+VK_QUEUE_DATA_GRAPH_BIT_ARM<br>
+VK_QUEUE_GRAPHICS_BIT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">State</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sidebarblock">
+<div class="content">
+<div class="title">Conditional Rendering</div>
+<div class="paragraph">
+<p>vkCmdBindPipeline is not affected by <a href="../../../../spec/latest/chapters/drawing.html#drawing-conditional-rendering" class="xref page">conditional rendering</a></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_see_also"><a class="anchor" href="#_see_also"></a>See Also</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="VK_VERSION_1_0.html" class="xref page">VK_VERSION_1_0</a>, <a href="VkCommandBuffer.html" class="xref page">VkCommandBuffer</a>, <a href="VkPipeline.html" class="xref page">VkPipeline</a>, <a href="VkPipelineBindPoint.html" class="xref page">VkPipelineBindPoint</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_document_notes"><a class="anchor" href="#_document_notes"></a>Document Notes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For more information, see the <a href="../../../../spec/latest/chapters/pipelines.html#vkCmdBindPipeline" class="xref page">Vulkan Specification</a>.</p>
+</div>
+<div class="paragraph">
+<p>This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>
