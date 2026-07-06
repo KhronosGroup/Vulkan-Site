@@ -99,6 +99,9 @@ jobs:
       pull-requests: write
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
@@ -384,7 +387,31 @@ jobs:
 
       - name: "Deploy to GitHub Pages"
         if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: "Verify deployment is live"
+        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deployment.outputs.page_url }}"
+          IS_PR="${{ steps.stage.outputs.is_pr }}"
+          PR_NUM="${{ steps.stage.outputs.pr_num }}"
+          if [ "${IS_PR}" = "true" ]; then
+            URL="${URL%/}/PR-${PR_NUM}/"
+          fi
+          echo "Checking ${URL} ..."
+          for i in $(seq 1 10); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' -L "$URL")
+            if [ "$CODE" = "200" ]; then
+              echo "Deployment verified live at ${URL}"
+              exit 0
+            fi
+            echo "Attempt $i: got HTTP ${CODE}, retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Pages deployment reported success but ${URL} is not serving HTTP 200 (last status: ${CODE})"
+          exit 1
 
       - name: "Push changes to gh-pages branch"
         if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
