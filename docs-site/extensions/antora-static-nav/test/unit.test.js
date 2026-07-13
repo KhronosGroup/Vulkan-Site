@@ -226,7 +226,7 @@ describe('buildReplacement', () => {
   })
 
   it('invokes the static-nav global with the per-page prefix', () => {
-    const r = buildReplacement('../_static_nav.js', 'vkFoo.html', '../')
+    const r = buildReplacement('../_static_nav.js', '../man/vkFoo.html', '../')
     assert.ok(r.includes('window.__antoraStaticNav'))
     assert.ok(r.includes('"../"'))
   })
@@ -236,10 +236,19 @@ describe('buildReplacement', () => {
     assert.ok(r.includes('window.__antoraStaticNav&&window.__antoraStaticNav("")'))
   })
 
-  it('includes an inline script referencing the page filename', () => {
-    const r = buildReplacement('../_static_nav.js', 'vkFoo.html', '../')
-    assert.ok(r.includes('"vkFoo.html"'))
+  it('includes an inline script referencing the full page href', () => {
+    const r = buildReplacement('../_static_nav.js', '../man/vkFoo.html', '../')
+    assert.ok(r.includes('"../man/vkFoo.html"'))
     assert.ok(r.includes('is-current-page'))
+  })
+
+  it('matches the full href rather than just the basename', () => {
+    // Two pages named "vkFoo.html" in different directories must not be
+    // confused: the inline script compares the whole href, not the tail
+    // after the last "/".
+    const r = buildReplacement('../_static_nav.js', '../chapterB/vkFoo.html', '../')
+    assert.ok(!r.includes(".split('/').pop()"), 'must not match by basename alone')
+    assert.ok(r.includes("getAttribute('href')===f"), 'compares full href')
   })
 
   it('uses the navRel path verbatim in the src attribute', () => {

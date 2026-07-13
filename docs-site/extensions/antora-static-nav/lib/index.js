@@ -163,16 +163,24 @@ function buildNavJs (navHtml) {
  *   1. Synchronous loader — fetches _static_nav.js (defines the global)
  *   2. Tiny inline — invokes the global with this page's back-to-root prefix
  *      and re-applies is-current-page to this page's nav entry
+ *
+ * `pageHref` must be the exact href the shared nav will render for this page
+ * once buildNavJs's `prefix` substitution runs (i.e. `prefix + <page's path
+ * relative to the component root>`). Matching on the full href — rather than
+ * just the basename — is required because multiple pages across different
+ * directories can share the same filename (e.g. two "introduction.html"
+ * pages in different chapters); basename-only matching would always
+ * highlight the first such page found in the nav.
  */
-function buildReplacement (navRel, pageBasename, prefix) {
-  const fileJson = JSON.stringify(pageBasename)
+function buildReplacement (navRel, pageHref, prefix) {
+  const hrefJson = JSON.stringify(pageHref)
   const prefixJson = JSON.stringify(prefix || '')
   const currentPageJs =
     `window.__antoraStaticNav&&window.__antoraStaticNav(${prefixJson});` +
-    `!function(){var f=${fileJson},` +
+    `!function(){var f=${hrefJson},` +
     "ls=document.querySelectorAll('.nav-link[href]');" +
     'for(var i=0;i<ls.length;i++){' +
-    "if(ls[i].getAttribute('href').split('/').pop()===f){" +
+    "if(ls[i].getAttribute('href')===f){" +
     "var li=ls[i].closest('li');" +
     "if(li){li.classList.add('is-current-page');break;}" +
     '}}}();'
@@ -280,7 +288,14 @@ module.exports.register = function register ({ config = {} }) {
         const backToRoot = path.posix.relative(pageDir, componentRoot)
         const prefix = backToRoot === '' ? '' : backToRoot + '/'
 
-        const replacement = buildReplacement(navRel, page.out.basename, prefix)
+        // The full component-root-relative path (not just the basename)
+        // identifies this page uniquely, since multiple pages in different
+        // directories can share the same filename.
+        const pageOutPath = page.out.path.replace(/\\/g, '/')
+        const pageKeyRelToRoot = path.posix.relative(componentRoot, pageOutPath)
+        const pageHref = prefix + pageKeyRelToRoot
+
+        const replacement = buildReplacement(navRel, pageHref, prefix)
         const newHtml = html.slice(0, block.start) + replacement + html.slice(block.end)
         page.contents = Buffer.from(newHtml, 'utf8')
 

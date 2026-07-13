@@ -157,14 +157,48 @@ describe('register integration', () => {
     ])
   })
 
-  it('inline script marks the correct current page by filename', () => {
+  it('inline script marks the correct current page by full path', () => {
     const nav = makeNav(60_000)
     const page = makePage('refpages', 'latest', 'ROOT', 'vkSpecialFn.html', nav)
     const ctx = makeContext([page])
     ctx.fire('pagesComposed')
 
     const rewritten = page.contents.toString('utf8')
-    assert.ok(rewritten.includes('"vkSpecialFn.html"'), 'page filename in inline script')
+    assert.ok(rewritten.includes('"vkSpecialFn.html"'), 'page path in inline script')
+  })
+
+  // Regression for the "duplicate filename" bug: two pages named the same
+  // thing in different directories must each highlight their own nav entry,
+  // not whichever same-named page happens to come first in the DOM.
+  it('distinguishes pages with the same basename in different directories', () => {
+    const navWithDupeLinks =
+      '<div id="split-0"><ul class="nav-list">' +
+      '<li class="nav-item"><a class="nav-link" href="chapterA/introduction.html">Intro A</a></li>' +
+      '<li class="nav-item"><a class="nav-link" href="chapterB/introduction.html">Intro B</a></li>' +
+      '<li>' + 'x'.repeat(60_000) + '</li>' +
+      '</ul></div>'
+
+    const pageA = makePage('tutorial', 'latest', 'ROOT', 'introduction.html', navWithDupeLinks)
+    pageA.out.dirname = 'tutorial/latest/chapterA'
+    pageA.out.path = 'tutorial/latest/chapterA/introduction.html'
+
+    const pageB = makePage('tutorial', 'latest', 'ROOT', 'introduction.html', navWithDupeLinks)
+    pageB.out.dirname = 'tutorial/latest/chapterB'
+    pageB.out.path = 'tutorial/latest/chapterB/introduction.html'
+
+    const ctx = makeContext([pageA, pageB])
+    ctx.fire('pagesComposed')
+
+    const htmlA = pageA.contents.toString('utf8')
+    const htmlB = pageB.contents.toString('utf8')
+
+    // Each page's inline script must key off its own full component-root-
+    // relative href, not the shared basename "introduction.html".
+    assert.ok(htmlA.includes('"../chapterA/introduction.html"'), 'page A matches its own href')
+    assert.ok(!htmlA.includes('"../chapterB/introduction.html"'), 'page A does not match chapter B')
+
+    assert.ok(htmlB.includes('"../chapterB/introduction.html"'), 'page B matches its own href')
+    assert.ok(!htmlB.includes('"../chapterA/introduction.html"'), 'page B does not match chapter A')
   })
 
   // Regression for the /source/source/ duplication bug. When the nav is
