@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Element-Wise Operations :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Vulkan_Compute_for_ML/03_element_wise_operations.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Vulkan Compute for ML</li>
+    <li><a href="03_element_wise_operations.html">Element-wise Operations</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Element-Wise Operations</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Element-wise operations are the simplest ML operations and an excellent starting point for implementing neural network layers in Vulkan compute shaders. These operations apply the same function independently to every element in a tensor—no dependencies between elements, perfect parallelism, straightforward implementation.</p>
+</div>
+<div class="paragraph">
+<p>Think about what "element-wise" means: you have a tensor (a multi-dimensional array of numbers), and you apply the same function to each element independently. If you have a tensor with 1 million elements, you perform 1 million independent function evaluations. There&#8217;s no communication between elements, no shared state, no complex dependencies. This makes element-wise operations embarrassingly parallel—perfect for GPUs.</p>
+</div>
+<div class="paragraph">
+<p>Activation functions are the most common element-wise operations in neural networks. As we learned in the ML Inference Pipeline chapter, activation functions introduce non-linearity, allowing neural networks to learn complex patterns. During inference, activation functions are applied after most layers: convolution → activation, fully connected → activation, normalization → activation. They&#8217;re everywhere, and they need to be fast.</p>
+</div>
+<div class="paragraph">
+<p>This chapter covers implementing the most common activation functions as Vulkan compute shaders: ReLU (the workhorse of modern networks), sigmoid (still used in specific contexts), and tanh (common in recurrent networks). We&#8217;ll discuss parallelization strategies, numerical stability considerations, and performance optimization techniques that apply to all element-wise operations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_element_wise_operations_matter"><a class="anchor" href="#_why_element_wise_operations_matter"></a>Why Element-Wise Operations Matter</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into implementations, let&#8217;s understand why these operations are important and what makes them challenging despite their simplicity.</p>
+</div>
+<div class="sect2">
+<h3 id="_computational_intensity"><a class="anchor" href="#_computational_intensity"></a>Computational Intensity</h3>
+<div class="paragraph">
+<p>Element-wise operations are computationally cheap—each element requires just a few arithmetic operations. ReLU is literally <code>max(0, x)</code>, which is a single comparison and selection. Sigmoid requires an exponential, which is more expensive but still just a handful of operations.</p>
+</div>
+<div class="paragraph">
+<p>The challenge isn&#8217;t the computation itself—it&#8217;s the memory bandwidth. For a tensor with 1 million float32 elements, you&#8217;re reading 4MB of input data and writing 4MB of output data. On a GPU with 500 GB/s memory bandwidth, that&#8217;s 8MB / 500 GB/s ≈ 16 microseconds just for memory transfers. The actual computation might take only a few microseconds.</p>
+</div>
+<div class="paragraph">
+<p>This means element-wise operations are <strong>memory-bound</strong>, not compute-bound. Your optimization focus should be on memory access patterns, not arithmetic efficiency. Coalesced memory access, cache utilization, and minimizing redundant transfers matter more than shaving a few instructions off the computation.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_fusion_opportunities"><a class="anchor" href="#_fusion_opportunities"></a>Fusion Opportunities</h3>
+<div class="paragraph">
+<p>Because element-wise operations are so cheap, running them as separate compute dispatches is wasteful. Each dispatch has overhead: binding pipelines, updating descriptor sets, issuing commands, synchronizing. For a simple ReLU that takes microseconds to execute, the overhead might be larger than the actual work.</p>
+</div>
+<div class="paragraph">
+<p>The solution is <strong>operation fusion</strong>: combining multiple operations into a single compute shader. Instead of:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">Convolution → Write to memory → Read from memory → ReLU → Write to memory</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You do:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">Convolution + ReLU → Write to memory</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The intermediate result never touches memory—it stays in registers. This eliminates memory bandwidth, reduces latency, and improves throughput. We&#8217;ll discuss fusion strategies later in this chapter.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_numerical_stability"><a class="anchor" href="#_numerical_stability"></a>Numerical Stability</h3>
+<div class="paragraph">
+<p>Some activation functions involve exponentials or divisions, which can cause numerical issues. Sigmoid computes <code>1 / (1 + exp(-x))</code>. For large negative x, <code>exp(-x)</code> overflows to infinity. For large positive x, <code>exp(-x)</code> underflows to zero, and you&#8217;re computing <code>1 / 1 = 1</code>, which is correct, but the intermediate overflow is problematic.</p>
+</div>
+<div class="paragraph">
+<p>Numerical stability isn&#8217;t just academic—it causes real bugs. Your network might work fine during testing with small inputs, then fail in production when it encounters edge cases. We&#8217;ll cover stable implementations for each activation function.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_relu_the_simplest_activation"><a class="anchor" href="#_relu_the_simplest_activation"></a>ReLU: The Simplest Activation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>ReLU (Rectified Linear Unit) is the most common activation function in modern neural networks. It&#8217;s defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">ReLU(x) = max(0, x)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the input is positive, output it unchanged. If it&#8217;s negative, output zero. That&#8217;s it. No exponentials, no divisions, just a comparison and a selection.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_relu_dominates"><a class="anchor" href="#_why_relu_dominates"></a>Why ReLU Dominates</h3>
+<div class="paragraph">
+<p>ReLU became the default activation function for deep networks because it solves the vanishing gradient problem that plagued sigmoid and tanh. During training, gradients flow backward through the network. With sigmoid, gradients get multiplied by small numbers (the sigmoid derivative is at most 0.25), and after many layers, gradients vanish to nearly zero. Early layers stop learning.</p>
+</div>
+<div class="paragraph">
+<p>ReLU&#8217;s gradient is simple: 1 for positive inputs, 0 for negative inputs. No multiplication by small numbers, no vanishing. This allows training much deeper networks—hundreds of layers instead of just a few dozen.</p>
+</div>
+<div class="paragraph">
+<p>For inference (our focus), ReLU&#8217;s advantage is speed. It&#8217;s the cheapest activation function to compute, making it ideal for real-time applications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_slang_implementation"><a class="anchor" href="#_slang_implementation"></a>Slang Implementation</h3>
+<div class="paragraph">
+<p>Here&#8217;s the complete Slang compute shader for ReLU:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 256) in;
+
+layout(set = 0, binding = 0) readonly buffer InputBuffer {
+    float input_data[];
+};
+
+layout(set = 0, binding = 1) writeonly buffer OutputBuffer {
+    float output_data[];
+};
+
+layout(push_constant) uniform PushConstants {
+    uint num_elements;
+} pc;
+
+void main() {
+    uint global_id = gl_GlobalInvocationID.x;
+
+    if (global_id &gt;= pc.num_elements) {
+        return;
+    }
+
+    float value = input_data[global_id];
+    output_data[global_id] = max(0.0, value);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s break this down:</p>
+</div>
+<div class="paragraph">
+<p><strong>Work Group Size</strong>: We use <code>local_size_x = 256</code>, meaning each work group has 256 threads. This is a good default for most GPUs—large enough to hide latency, small enough to not exhaust resources. You might tune this for your specific hardware.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory Layout</strong>: Input and output are simple float arrays. We use <code>readonly</code> and <code>writeonly</code> qualifiers to help the compiler optimize memory access. The GPU knows it doesn&#8217;t need to worry about read-after-write hazards.</p>
+</div>
+<div class="paragraph">
+<p><strong>Push Constants</strong>: We pass the number of elements via push constants. This is faster than using a uniform buffer for small amounts of data. Push constants are embedded directly in the command buffer.</p>
+</div>
+<div class="paragraph">
+<p><strong>Bounds Checking</strong>: The <code>if (global_id &gt;= pc.num_elements)</code> check handles cases where the number of elements isn&#8217;t a multiple of the work group size. Without this, threads beyond the array bounds would access invalid memory.</p>
+</div>
+<div class="paragraph">
+<p><strong>The Computation</strong>: <code>max(0.0, value)</code> is the entire ReLU operation. The GPU compiles this to a single instruction on most hardware.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dispatching_the_shader"><a class="anchor" href="#_dispatching_the_shader"></a>Dispatching the Shader</h3>
+<div class="paragraph">
+<p>Here&#8217;s how you dispatch this shader from your Vulkan application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Assuming you've already created the pipeline and descriptor sets
+
+// Update descriptor set with input/output buffers
+vk::DescriptorBufferInfo inputInfo{*inputBuffer, 0, VK_WHOLE_SIZE};
+vk::DescriptorBufferInfo outputInfo{*outputBuffer, 0, VK_WHOLE_SIZE};
+
+vk::WriteDescriptorSet writes[2] = {
+    {
+        .dstSet = *descriptorSet,
+        .dstBinding = 0,
+        .descriptorCount = 1,
+        .descriptorType = vk::DescriptorType::eStorageBuffer,
+        .pBufferInfo = &amp;inputInfo
+    },
+    {
+        .dstSet = *descriptorSet,
+        .dstBinding = 1,
+        .descriptorCount = 1,
+        .descriptorType = vk::DescriptorType::eStorageBuffer,
+        .pBufferInfo = &amp;outputInfo
+    }
+};
+
+device.updateDescriptorSets(writes, nullptr);
+
+// Record commands
+commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, *reluPipeline);
+commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                                 *pipelineLayout, 0, *descriptorSet, nullptr);
+
+// Push constants
+uint32_t numElements = 1000000;  // 1 million elements
+commandBuffer.pushConstants(*pipelineLayout,
+                           vk::ShaderStageFlagBits::eCompute, 0, sizeof(uint32_t), &amp;numElements);
+
+// Dispatch: ceil(numElements / 256) work groups
+uint32_t numWorkGroups = (numElements + 255) / 256;
+commandBuffer.dispatch(numWorkGroups, 1, 1);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The key calculation is the number of work groups: <code>(numElements + 255) / 256</code>. This is ceiling division—we round up to ensure we have enough threads to cover all elements.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>Performance Considerations</h3>
+<div class="paragraph">
+<p>ReLU is so fast that the bottleneck is almost always memory bandwidth, not computation. Here are strategies to maximize performance:</p>
+</div>
+<div class="paragraph">
+<p><strong>Coalesced Memory Access</strong>: Our shader accesses memory sequentially—thread 0 reads element 0, thread 1 reads element 1, etc. This allows the GPU to coalesce multiple reads into a single memory transaction. If threads accessed memory randomly, performance would drop significantly.</p>
+</div>
+<div class="paragraph">
+<p><strong>Vectorization</strong>: Instead of processing one float per thread, you can process multiple floats using vector types (vec2, vec4). This can improve throughput on some GPUs:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">layout(set = 0, binding = 0) readonly buffer InputBuffer {
+    vec4 input_data[];
+};
+
+layout(set = 0, binding = 1) writeonly buffer OutputBuffer {
+    vec4 output_data[];
+};
+
+void main() {
+    uint global_id = gl_GlobalInvocationID.x;
+
+    if (global_id &gt;= pc.num_elements) {
+        return;
+    }
+
+    vec4 value = input_data[global_id];
+    output_data[global_id] = max(vec4(0.0), value);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now each thread processes 4 floats. You dispatch <code>numElements / 4</code> work groups. This can improve performance by 10-30% on some hardware.</p>
+</div>
+<div class="paragraph">
+<p><strong>In-Place Operation</strong>: If you don&#8217;t need to preserve the input, you can write the output back to the input buffer, eliminating one buffer allocation and halving memory bandwidth:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">layout(set = 0, binding = 0) buffer InOutBuffer {
+    float data[];
+};
+
+void main() {
+    uint global_id = gl_GlobalInvocationID.x;
+
+    if (global_id &gt;= pc.num_elements) {
+        return;
+    }
+
+    data[global_id] = max(0.0, data[global_id]);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is safe because each thread only accesses its own element—no race conditions.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sigmoid_the_classic_activation"><a class="anchor" href="#_sigmoid_the_classic_activation"></a>Sigmoid: The Classic Activation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Sigmoid is defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">sigmoid(x) = 1 / (1 + exp(-x))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It maps any input to the range (0, 1), making it useful for binary classification (output represents probability) and gates in recurrent networks (LSTM, GRU).</p>
+</div>
+<div class="paragraph">
+<p>Sigmoid was the dominant activation function in early neural networks but has largely been replaced by ReLU for hidden layers. However, it&#8217;s still used in specific contexts: output layers for binary classification, attention mechanisms, and gating functions.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_numerical_stability_problem"><a class="anchor" href="#_the_numerical_stability_problem"></a>The Numerical Stability Problem</h3>
+<div class="paragraph">
+<p>The naive implementation has a serious problem. For large negative x (say, x = -100), <code>exp(-x) = exp(100)</code> overflows to infinity. Then <code>1 / (1 + infinity) = 0</code>, which is mathematically correct, but the intermediate overflow can cause NaN or other issues depending on the hardware.</p>
+</div>
+<div class="paragraph">
+<p>For large positive x (say, x = 100), <code>exp(-x) = exp(-100)</code> underflows to zero. Then <code>1 / (1 + 0) = 1</code>, which is correct. But we&#8217;ve wasted computation on an exponential that underflows.</p>
+</div>
+<div class="paragraph">
+<p>The solution is to use different formulations for positive and negative inputs:</p>
+</div>
+<div class="paragraph">
+<p>For x &gt;= 0:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">sigmoid(x) = 1 / (1 + exp(-x))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For x &lt; 0:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">sigmoid(x) = exp(x) / (1 + exp(x))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The second formulation is mathematically equivalent (multiply numerator and denominator by exp(x)), but it avoids overflow. For negative x, exp(x) is always less than 1, so no overflow.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_slang_implementation_2"><a class="anchor" href="#_slang_implementation_2"></a>Slang Implementation</h3>
+<div class="paragraph">
+<p>Here&#8217;s the numerically stable sigmoid implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 256) in;
+
+layout(set = 0, binding = 0) readonly buffer InputBuffer {
+    float input_data[];
+};
+
+layout(set = 0, binding = 1) writeonly buffer OutputBuffer {
+    float output_data[];
+};
+
+layout(push_constant) uniform PushConstants {
+    uint num_elements;
+} pc;
+
+float sigmoid(float x) {
+    if (x &gt;= 0.0) {
+        // For positive x, use standard formulation
+        return 1.0 / (1.0 + exp(-x));
+    } else {
+        // For negative x, use exp(x) / (1 + exp(x)) to avoid overflow
+        float exp_x = exp(x);
+        return exp_x / (1.0 + exp_x);
+    }
+}
+
+void main() {
+    uint global_id = gl_GlobalInvocationID.x;
+
+    if (global_id &gt;= pc.num_elements) {
+        return;
+    }
+
+    float value = input_data[global_id];
+    output_data[global_id] = sigmoid(value);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>sigmoid</code> function handles both cases. The branch might seem expensive, but modern GPUs handle branches well when threads in a warp/wavefront take the same path (which is common—inputs are often similar in magnitude).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_considerations_2"><a class="anchor" href="#_performance_considerations_2"></a>Performance Considerations</h3>
+<div class="paragraph">
+<p>Sigmoid is more expensive than ReLU because of the exponential. On most GPUs, <code>exp()</code> takes 10-20 cycles compared to 1-2 cycles for <code>max()</code>. This means sigmoid is 5-10x slower than ReLU for the same number of elements.</p>
+</div>
+<div class="paragraph">
+<p>However, sigmoid is still memory-bound for large tensors. The exponential adds latency, but memory bandwidth remains the bottleneck.</p>
+</div>
+<div class="paragraph">
+<p><strong>Approximations</strong>: If you need maximum performance and can tolerate slight inaccuracy, you can use polynomial approximations for sigmoid. These trade accuracy for speed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Fast sigmoid approximation (less accurate)
+float fast_sigmoid(float x) {
+    return 0.5 + 0.5 * (x / (1.0 + abs(x)));
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This approximation is much faster (no exponential) but less accurate, especially for large |x|. Use it only if profiling shows sigmoid is a bottleneck and accuracy requirements allow it.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_tanh_the_symmetric_activation"><a class="anchor" href="#_tanh_the_symmetric_activation"></a>Tanh: The Symmetric Activation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Tanh (hyperbolic tangent) is defined as:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">tanh(x) = (exp(x) - exp(-x)) / (exp(x) + exp(-x))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>It maps inputs to the range (-1, 1), making it zero-centered (unlike sigmoid, which outputs 0 to 1). This zero-centering is useful for certain architectures, particularly recurrent networks.</p>
+</div>
+<div class="paragraph">
+<p>Tanh is mathematically related to sigmoid:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">tanh(x) = 2 * sigmoid(2x) - 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This relationship suggests we could implement tanh using sigmoid, but computing it directly is more efficient.</p>
+</div>
+<div class="sect2">
+<h3 id="_numerical_stability_2"><a class="anchor" href="#_numerical_stability_2"></a>Numerical Stability</h3>
+<div class="paragraph">
+<p>Tanh has similar numerical issues to sigmoid. For large positive x, <code>exp(-x)</code> underflows. For large negative x, <code>exp(x)</code> underflows. The stable formulation is:</p>
+</div>
+<div class="paragraph">
+<p>For x &gt;= 0:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">tanh(x) = (1 - exp(-2x)) / (1 + exp(-2x))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For x &lt; 0:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">tanh(x) = (exp(2x) - 1) / (exp(2x) + 1)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_slang_implementation_3"><a class="anchor" href="#_slang_implementation_3"></a>Slang Implementation</h3>
+<div class="paragraph">
+<p>Here&#8217;s the numerically stable tanh implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 256) in;
+
+layout(set = 0, binding = 0) readonly buffer InputBuffer {
+    float input_data[];
+};
+
+layout(set = 0, binding = 1) writeonly buffer OutputBuffer {
+    float output_data[];
+};
+
+layout(push_constant) uniform PushConstants {
+    uint num_elements;
+} pc;
+
+float tanh_stable(float x) {
+    if (x &gt;= 0.0) {
+        float exp_neg_2x = exp(-2.0 * x);
+        return (1.0 - exp_neg_2x) / (1.0 + exp_neg_2x);
+    } else {
+        float exp_2x = exp(2.0 * x);
+        return (exp_2x - 1.0) / (exp_2x + 1.0);
+    }
+}
+
+void main() {
+    uint global_id = gl_GlobalInvocationID.x;
+
+    if (global_id &gt;= pc.num_elements) {
+        return;
+    }
+
+    float value = input_data[global_id];
+    output_data[global_id] = tanh_stable(value);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Alternatively, many Slang implementations provide a built-in <code>tanh()</code> function that&#8217;s already numerically stable. You can use it directly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">output_data[global_id] = tanh(input_data[global_id]);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Check your GPU vendor&#8217;s documentation to see if the built-in is optimized for your hardware.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_operation_fusion"><a class="anchor" href="#_operation_fusion"></a>Operation Fusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As mentioned earlier, running activation functions as separate dispatches is inefficient. Fusion combines multiple operations into a single shader, eliminating intermediate memory transfers.</p>
+</div>
+<div class="sect2">
+<h3 id="_fusing_convolution_and_relu"><a class="anchor" href="#_fusing_convolution_and_relu"></a>Fusing Convolution and ReLU</h3>
+<div class="paragraph">
+<p>A common pattern is convolution followed by ReLU. Instead of:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Dispatch convolution shader → write results to buffer</p>
+</li>
+<li>
+<p>Insert pipeline barrier</p>
+</li>
+<li>
+<p>Dispatch ReLU shader → read from buffer, write to another buffer</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You do:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Dispatch fused convolution+ReLU shader → write final results directly</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s a simplified example of a fused shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(set = 0, binding = 0) readonly buffer InputBuffer {
+    float input_data[];
+};
+
+layout(set = 0, binding = 1) readonly buffer WeightBuffer {
+    float weights[];
+};
+
+layout(set = 0, binding = 2) writeonly buffer OutputBuffer {
+    float output_data[];
+};
+
+// ... push constants for dimensions ...
+
+void main() {
+    // Compute convolution (simplified)
+    float sum = 0.0;
+    // ... convolution computation ...
+
+    // Apply ReLU immediately, before writing to memory
+    float activated = max(0.0, sum);
+
+    // Write final result
+    output_data[output_index] = activated;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The key is that <code>sum</code> never leaves registers—it&#8217;s computed, activated, and written in one pass. This eliminates one buffer allocation and two memory transfers (write intermediate result, read it back).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_benefits_of_fusion"><a class="anchor" href="#_benefits_of_fusion"></a>Benefits of Fusion</h3>
+<div class="paragraph">
+<p><strong>Reduced Memory Bandwidth</strong>: Fewer reads and writes means less pressure on memory bandwidth, which is often the bottleneck.</p>
+</div>
+<div class="paragraph">
+<p><strong>Lower Latency</strong>: Fewer dispatches means less overhead from command submission, pipeline binding, and synchronization.</p>
+</div>
+<div class="paragraph">
+<p><strong>Better Cache Utilization</strong>: Data stays in cache between operations instead of being evicted and reloaded.</p>
+</div>
+<div class="paragraph">
+<p>The downside is increased shader complexity and reduced modularity. You need separate fused shaders for each combination (conv+ReLU, conv+sigmoid, etc.). For production systems, the performance benefits usually outweigh the complexity cost.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_batching_and_memory_access_patterns"><a class="anchor" href="#_batching_and_memory_access_patterns"></a>Batching and Memory Access Patterns</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When processing multiple tensors (batching), memory layout affects performance significantly.</p>
+</div>
+<div class="sect2">
+<h3 id="_contiguous_vs_strided_access"><a class="anchor" href="#_contiguous_vs_strided_access"></a>Contiguous vs Strided Access</h3>
+<div class="paragraph">
+<p>If your batch of tensors is laid out contiguously in memory:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">[tensor0_element0, tensor0_element1, ..., tensor1_element0, tensor1_element1, ...]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then sequential threads access sequential memory locations, enabling coalesced access. This is the ideal case.</p>
+</div>
+<div class="paragraph">
+<p>If tensors are interleaved:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">[tensor0_element0, tensor1_element0, tensor2_element0, tensor0_element1, tensor1_element1, ...]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then threads access memory with strides, reducing coalescing efficiency. Performance can drop by 2-3x.</p>
+</div>
+<div class="paragraph">
+<p>Whenever possible, arrange your data for contiguous access. If you must use strided access, consider using shared memory to improve access patterns.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_multi_dimensional_tensors"><a class="anchor" href="#_multi_dimensional_tensors"></a>Multi-Dimensional Tensors</h3>
+<div class="paragraph">
+<p>For multi-dimensional tensors (e.g., 4D tensors with shape [batch, channels, height, width]), you need to map 3D thread IDs to linear buffer indices.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+
+void main() {
+    uint x = gl_GlobalInvocationID.x;
+    uint y = gl_GlobalInvocationID.y;
+    uint z = gl_GlobalInvocationID.z;
+
+    // Map 3D coordinates to linear index
+    // Assuming NCHW layout: [batch, channels, height, width]
+    uint index = z * (channels * height * width) +
+                 channel * (height * width) +
+                 y * width +
+                 x;
+
+    if (x &gt;= width || y &gt;= height || z &gt;= batch) {
+        return;
+    }
+
+    output_data[index] = max(0.0, input_data[index]);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You dispatch with 3D work groups: <code>vkCmdDispatch(cmd, width/16, height/16, batch)</code>.</p>
+</div>
+<div class="paragraph">
+<p>This approach works well for 2D and 3D tensors. For higher dimensions, you might flatten some dimensions or use multiple dispatches.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Element-wise operations are the simplest ML operations but require careful implementation for optimal performance. Key takeaways:</p>
+</div>
+<div class="paragraph">
+<p><strong>ReLU</strong> is the fastest and most common activation function. Its implementation is trivial (<code>max(0, x)</code>), making it ideal for real-time inference.</p>
+</div>
+<div class="paragraph">
+<p><strong>Sigmoid</strong> and <strong>tanh</strong> require numerically stable implementations to avoid overflow/underflow. Use different formulations for positive and negative inputs.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory bandwidth</strong> is the bottleneck for element-wise operations, not computation. Focus on coalesced memory access and minimizing transfers.</p>
+</div>
+<div class="paragraph">
+<p><strong>Operation fusion</strong> eliminates intermediate memory transfers by combining multiple operations into a single shader. This is essential for performance in production systems.</p>
+</div>
+<div class="paragraph">
+<p><strong>Batching</strong> and proper memory layout ensure efficient GPU utilization. Contiguous memory access enables coalescing, while strided access hurts performance.</p>
+</div>
+<div class="paragraph">
+<p>With these element-wise operations implemented, you have the building blocks for activation functions in your neural network inference engine. The next chapter covers matrix operations—the computational workhorses of neural networks.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_compute_pipeline_review.html" class="xref page">Previous: Compute Pipeline Review</a> | <a href="04_matrix_operations.html" class="xref page">Next: Matrix Operations</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

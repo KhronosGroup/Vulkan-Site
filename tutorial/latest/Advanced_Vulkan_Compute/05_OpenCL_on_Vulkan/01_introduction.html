@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Heterogeneous Ecosystem: OpenCL on Vulkan :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_Vulkan_Compute/05_OpenCL_on_Vulkan/01_introduction.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced Vulkan Compute</li>
+    <li>Heterogeneous Ecosystem: OpenCL on Vulkan</li>
+    <li><a href="01_introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Heterogeneous Ecosystem: OpenCL on Vulkan</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan is often seen as the "modern successor" to OpenGL, primarily focused on real-time graphics. However, in the world of <strong>HPC</strong> (High-Performance Computing) and <strong>GPGPU</strong> (General-Purpose GPU programming), <strong>OpenCL</strong> has been the industry standard for over a decade. Millions of lines of legacy code for physics, financial modeling, and scientific simulation are written in OpenCL C.</p>
+</div>
+<div class="paragraph">
+<p>Until recently, running OpenCL code on a Vulkan-only driver was a significant challenge. But thanks to the <strong>Vulkan 1.4</strong> ecosystem and tools like <code>clspv</code> and <code>clvk</code>, that gap has finally been bridged.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_wider_ecosystem_pocl_and_angle"><a class="anchor" href="#_the_wider_ecosystem_pocl_and_angle"></a>The Wider Ecosystem: pocl and ANGLE</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter focuses on <code>clvk</code>, but it is worth knowing about two other actively-developed implementations that put OpenCL on top of Vulkan via the same <code>clspv</code> compiler. Both share the <code>clspv</code> kernel-compatibility constraints described throughout this chapter (loop bounds must be compile-time constants, etc.), so the material here transfers directly.</p>
+</div>
+<div class="sect2">
+<h3 id="_pocl_portable_computing_language"><a class="anchor" href="#_pocl_portable_computing_language"></a>pocl — Portable Computing Language</h3>
+<div class="paragraph">
+<p><a href="https://portablecl.org/">pocl</a> (MIT licence) is a full OpenCL 3.0 runtime whose primary compiler infrastructure is <strong>LLVM/Clang</strong>, not <code>clspv</code>.  Its Vulkan driver is a secondary backend that <em>does</em> call <code>clspv</code> for kernel compilation, but pocl&#8217;s headline strength is its <strong>CPU and Intel Level Zero GPU paths</strong>, both of which achieved Khronos-conformant OpenCL 3.0 certification as of the pocl 7.0 release (January 2025).</p>
+</div>
+<table class="tableblock frame-all grid-all fit-content">
+<caption class="title">Table 1. pocl strengths</caption>
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Strength</th>
+<th class="tableblock halign-left valign-top">Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CPU as a first-class device</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pocl&#8217;s CPU path (x86-64, ARM64, RISC-V) is production-conformant with ~100 % CTS pass rates, something no Vulkan-only runtime like <code>clvk</code> can offer.  This lets a single pocl installation serve every device in the system — from a server CPU to a discrete GPU — under one ICD.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Multi-target from one runtime</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The same pocl binary can dispatch to CPU, Intel GPU (Level Zero), NVIDIA (libCUDA), and Vulkan simultaneously.  This is valuable for HPC workloads that need portable fallback paths.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SYCL backend</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pocl can serve as the OpenCL backend for DPC/SYCL applications, widening its reach to modern heterogeneous C code.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Accepts SPIR-V and LLVM bitcode</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">In addition to OpenCL C source, pocl accepts pre-compiled SPIR-V 1.4/1.5 and LLVM bitcode as program input, enabling more flexible toolchain integration.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Experimental Built-in Kernels (DBK)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pocl 7.x adds vendor-neutral built-in kernels for GEMM, JPEG, and ONNX inference — workloads that benefit from a dispatch abstraction above raw compute shaders.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all fit-content">
+<caption class="title">Table 2. pocl weaknesses (Vulkan path specifically)</caption>
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Weakness</th>
+<th class="tableblock halign-left valign-top">Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vulkan driver is unmaintained</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pocl&#8217;s own documentation labels the Vulkan backend "INCOMPLETE, without an active maintainer. Pull Requests welcomed."  <code>clvk</code> is actively maintained and Khronos-conformant; pocl&#8217;s Vulkan driver has "low maturity with limited testing" and no stated CTS pass rate.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenCL 1.2 subset only on Vulkan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">While pocl&#8217;s CPU and Level Zero paths support OpenCL 3.0, the Vulkan driver exposes only most of the OpenCL 1.2 API.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No image/sampler support on Vulkan</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Buffer-only workloads are supported; image objects and samplers are not implemented on the Vulkan path.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Build complexity</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pocl&#8217;s Vulkan driver requires <code>clspv</code> to be built separately (its own LLVM checkout, specified via <code>CLSPV_DIR</code>), whereas <code>clvk</code> bundles <code>clspv</code> as a CMake sub-project.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No <code>CL_MEM_USE_HOST_PTR</code> on discrete GPUs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Host-pointer aliasing, often used to avoid copies, is unsupported on discrete-GPU Vulkan devices.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>In short: choose pocl if you need a <strong>portable CPU+GPU runtime</strong> with certified conformance on CPU or Intel.  Its Vulkan path is not production-ready and should not be used in place of <code>clvk</code> for GPU compute.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_angle_almost_native_graphics_layer_engine"><a class="anchor" href="#_angle_almost_native_graphics_layer_engine"></a>ANGLE — Almost Native Graphics Layer Engine</h3>
+<div class="paragraph">
+<p><a href="https://chromium.googlesource.com/angle/angle">ANGLE</a> is Google&#8217;s multi-platform OpenGL ES / EGL translation layer, used inside Chrome and Chromium.  OpenCL is a <strong>secondary, explicitly experimental</strong> feature added to enable graphics–compute interop within the same Vulkan context.  Its OpenCL implementation lives in <code>src/libOpenCL/</code> and <code>src/libANGLE/renderer/vulkan/CL*Vk.cpp</code>.</p>
+</div>
+<div class="paragraph">
+<p>At runtime, ANGLE&#8217;s Vulkan backend calls <code>ClspvCompileSource()</code> to compile OpenCL C to SPIR-V using the same <code>clspv</code> pipeline as <code>clvk</code>.  It supports a three-stage model (source → LLVM bitcode → executable SPIR-V) that enables binary caching, and it validates the SPIR-V before creating the <code>VkShaderModule</code>.</p>
+</div>
+<table class="tableblock frame-all grid-all fit-content">
+<caption class="title">Table 3. ANGLE strengths</caption>
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Strength</th>
+<th class="tableblock halign-left valign-top">Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cl_khr_external_memory</code> — zero-copy graphics–compute interop</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANGLE&#8217;s Vulkan backend implements <code>cl_khr_external_memory</code>, which allows an OpenCL buffer to alias a <code>VkBuffer</code> or <code>VkImage</code> directly.  Mainline <code>clvk</code> explicitly does <strong>not</strong> implement this extension.  For mixed rendering+compute pipelines (e.g. post-processing a rendered frame entirely on the GPU without a readback) ANGLE is currently the only <code>clspv</code>-based runtime that can eliminate that copy.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Full image support</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANGLE implements the complete <code>enqueueRead/Write/Copy/FillImage</code>, <code>enqueueMapImage</code>, and <code>enqueueCopyImageToBuffer</code> surface, which pocl&#8217;s Vulkan driver entirely lacks.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Passthrough backend</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On systems with a native vendor OpenCL driver, ANGLE can forward calls directly without <code>clspv</code> overhead while still exposing a unified ICD interface — useful for mixed-hardware CI environments.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Active development</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Backed by the Chromium team with continuous integration infrastructure.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all fit-content">
+<caption class="title">Table 4. ANGLE weaknesses</caption>
+<colgroup>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Weakness</th>
+<th class="tableblock halign-left valign-top">Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenCL is explicitly experimental</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The README describes it as work-in-progress.  ANGLE&#8217;s primary mission is OpenGL ES translation; the OpenCL layer exists to serve Chromium&#8217;s internal needs, not as a general-purpose runtime.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No Khronos conformance submission</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Neither ANGLE&#8217;s Vulkan path nor any other path has been submitted for OpenCL conformance testing, unlike <code>clvk</code> (conformant) and pocl&#8217;s CPU path (conformant).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Chromium build system</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ANGLE uses <code>gn</code>/<code>ninja</code> with Chromium&#8217;s depot_tools.  Building it standalone outside of a Chromium checkout is documented but non-trivial for developers not already in that ecosystem.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Not distributed as a standalone ICD</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>clvk</code> and pocl ship as drop-in <code>libOpenCL.so</code> replacements.  ANGLE&#8217;s OpenCL layer is primarily consumed inside Chrome; independent adoption as a compute runtime is uncommon.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Same <code>clspv</code> kernel restrictions apply</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No <code>double</code> by default, loop bounds must be compile-time constants — identical to the constraints documented throughout this chapter.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>In short: consider ANGLE if you are building a <strong>mixed rendering+compute pipeline</strong> that genuinely needs zero-copy sharing between OpenCL and Vulkan memory objects.  It is not a general-purpose alternative to <code>clvk</code> today.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_at_a_glance"><a class="anchor" href="#_at_a_glance"></a>At a Glance</h3>
+<table class="tableblock frame-all grid-all fit-content">
+<colgroup>
+<col>
+<col>
+<col>
+<col>
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top"></th>
+<th class="tableblock halign-left valign-top"><code>clvk</code></th>
+<th class="tableblock halign-left valign-top">pocl (Vulkan path)</th>
+<th class="tableblock halign-left valign-top">ANGLE (Vulkan path)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primary purpose</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenCL on Vulkan GPU</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Portable OpenCL (CPU-first)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GL ES translation (CL secondary)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Compiler backend</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">clspv (bundled)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">clspv (must build separately)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">clspv (runtime call)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OpenCL version (Vulkan path)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">~1.2 subset</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.x–3.0 (in progress)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Khronos conformant</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No (Vulkan driver incomplete)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No (experimental)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Image support</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cl_khr_external_memory</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Standalone ICD</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Yes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Primarily in-Chromium</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Maintainer status</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Active</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vulkan driver unmaintained</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Active (Chromium)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_run_opencl_on_vulkan"><a class="anchor" href="#_why_run_opencl_on_vulkan"></a>Why Run OpenCL on Vulkan?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You might wonder why we would want to run "legacy" OpenCL code on a modern API like Vulkan. There are three main reasons:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Code Reuse</strong>: Porting a massive, battle-tested OpenCL kernel to GLSL or Slang is error-prone and time-consuming. By using the OpenCL-on-Vulkan pipeline, you can run your existing kernels with minimal changes.</p>
+</li>
+<li>
+<p><strong>Cross-Vendor Compatibility</strong>: Not all hardware vendors provide a high-quality, native OpenCL driver (especially on mobile or integrated GPUs). By layering OpenCL on top of Vulkan, you can provide an OpenCL implementation wherever Vulkan is available.</p>
+</li>
+<li>
+<p><strong>Unified Tooling</strong>: If your application already uses Vulkan for rendering, being able to handle compute workloads through the same API simplifies your synchronization, memory management, and deployment.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_opencl_on_vulkan_standard_not_special"><a class="anchor" href="#_opencl_on_vulkan_standard_not_special"></a>OpenCL on Vulkan: Standard, Not Special</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A key insight from conformant layered implementations like <code>clvk</code> is that OpenCL-on-Vulkan looks and behaves like <strong>any other OpenCL implementation</strong> from the application&#8217;s perspective. You use the same <code>clCreateContext</code>, <code>clEnqueueNDRangeKernel</code>, and other standard OpenCL 3.0 calls. The Vulkan layer underneath is an implementation detail.</p>
+</div>
+<div class="paragraph">
+<p>What makes this interesting from a Vulkan developer&#8217;s perspective is the <strong>advanced Vulkan features</strong> that make a conformant OpenCL implementation possible:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>SPIR-V as the Bridge</strong>: OpenCL C kernels are compiled into <strong>SPIR-V</strong> (Standard Portable Intermediate Representation - V), the same binary format used by Vulkan for its shaders. This is the key integration point — Vulkan&#8217;s shader format is flexible enough to express OpenCL semantics.</p>
+</li>
+<li>
+<p><strong>Variable Pointers and Buffer Device Address</strong>: OpenCL&#8217;s pointer-based memory model requires Vulkan&#8217;s <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_variable_pointers.html"><code>VK_KHR_variable_pointers</code></a> (core in Vulkan 1.1) and <a href="https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_buffer_device_address.html">Buffer Device Address</a> to emulate flat address spaces efficiently.</p>
+</li>
+<li>
+<p><strong>Subgroup Extensions</strong>: The <code>cl_khr_sub_groups</code> extension maps OpenCL subgroup operations directly onto Vulkan&#8217;s subgroup operations, enabling hardware-accelerated reductions and scans where supported. Note that work-group collective operations (an OpenCL C 2.0 feature) are optional in OpenCL 3.0 and may not be available in every layered implementation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In this chapter, we&#8217;ll explore the two primary tools: <strong>AOT</strong> (Ahead-of-Time) compilation using <code>clspv</code>, and <strong>Runtime Layering</strong> using <code>clvk</code>.</p>
+</div>
+<div class="paragraph">
+<p><a href="../04_Subgroup_Operations/04_non_uniform_indexing.html" class="xref page">Previous: Non-Uniform Indexing</a> | <a href="02_setup_and_installation.html" class="xref page">Next: Setup and Installation</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

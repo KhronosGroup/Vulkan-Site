@@ -1,0 +1,71 @@
+# SIGGRAPH 2026: How to write a Vulkan application in 2026
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/courses/siggraph2026_vk_tutorial/README.html
+
+## Table of Contents
+
+- [Resources](#_resources)
+- [Attribution](#_attribution)
+
+## Content
+
+* 
+**Main page**: [Course Overview](https://docs.vulkan.org/tutorial/latest/courses/siggraph2026_vk_tutorial/00_Overview.html)
+
+* 
+**Slides**: [How to write a Vulkan application in 2026](https://github.com/KhronosGroup/Vulkan-Tutorial/blob/main/attachments/How_to_write_a_Vulkan_application_in_2026.pdf).
+
+* 
+**Source code**: [attachments/siggraph2026_vk_tutorial](https://github.com/KhronosGroup/Vulkan-Tutorial/tree/main/attachments/siggraph2026_vk_tutorial).
+
+This folder contains the courseware for "SIGGRAPH 2026: How to write a Vulkan application in 2026".
+
+SIGGRAPH page:
+- [https://s2026.conference-schedule.org/presentation/?id=gensub_276&sess=sess202](https://s2026.conference-schedule.org/presentation/?id=gensub_276&sess=sess202)
+
+Session details (from the SIGGRAPH listing):
+
+* 
+Course Title: How to write a Vulkan application in 2026
+
+* 
+Course Date and Time: Wed Jul 22, 9am-12:15pm PDT
+
+* 
+Course Location: Petree D
+
+* 
+Interest Areas: Gaming & Interactive
+
+* 
+Keywords: Education, Games, Real-Time, Rendering
+
+Authors / Presenters:
+
+* 
+Iago Calvo Lista (Arm)
+
+* 
+Jose Emilio Muñoz Lopez (Arm)
+
+* 
+Ralph Potter (Samsung & Khronos Group)
+
+Co-authors:
+
+* 
+Elvar Unnthorsson (Arm)
+
+Attribution:
+
+* 
+The instructional flow and course content here are adapted from the above SIGGRAPH 2026 course. Please cite the authors above when referencing or reusing this material.
+
+* 
+We would like to thank all Khronos Group members and the countless open source contributors to the Vulkan ecosystem, including libraries like vk-bootstrap and Vulkan-Hpp that made this course possible.
+
+If you notice any discrepancy with the official SIGGRAPH listing (title, time, location, or presenters), please open an issue so we can correct the attribution promptly.

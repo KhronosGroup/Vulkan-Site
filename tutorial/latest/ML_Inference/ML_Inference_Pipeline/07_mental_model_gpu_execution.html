@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Mental Model: GPU Execution :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/ML_Inference_Pipeline/07_mental_model_gpu_execution.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>ML Inference Pipeline</li>
+    <li><a href="07_mental_model_gpu_execution.html">Mental Model: GPU Execution</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Mental Model: GPU Execution</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;ve covered a lot of ground—from what machine learning is, to how neural networks work, to the formats that package trained models. Now it&#8217;s time to tie everything together with a mental model that connects all these concepts to actual GPU execution with Vulkan.</p>
+</div>
+<div class="paragraph">
+<p>Think of this chapter as stepping back to see the whole picture. We&#8217;re going to trace the complete journey from a trained model sitting on disk to inference running on your GPU, identifying the key challenges and design decisions along the way.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_journey_from_model_to_gpu"><a class="anchor" href="#_the_journey_from_model_to_gpu"></a>The Journey from Model to GPU</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s follow a trained model through its complete lifecycle in your application. Understanding this journey helps you see where each piece fits and why it matters.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1: Training (Not Our Problem)</strong></p>
+</div>
+<div class="paragraph">
+<p>Somewhere, someone trained a neural network. Maybe it was you, maybe it was a researcher who published a pre-trained model. They used PyTorch or TensorFlow, fed it millions of examples, and after hours or days of computation, got a trained model. The weights and biases have been learned, the model performs well on test data, and now it&#8217;s ready for deployment.</p>
+</div>
+<div class="paragraph">
+<p>This is where our story begins—with a trained model that needs to run efficiently in production.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2: Export to Inference Format</strong></p>
+</div>
+<div class="paragraph">
+<p>The training framework&#8217;s native format isn&#8217;t ideal for deployment. It includes training-specific machinery, might be tied to a particular framework version, and isn&#8217;t optimized for size or loading speed. So the model gets exported to an inference format—TFLite or ONNX.</p>
+</div>
+<div class="paragraph">
+<p>This export process strips out training-specific components, optimizes the graph (removing unnecessary operations, fusing layers where possible), and packages everything into a compact, standardized format. What you get is a file—maybe a few megabytes to a few hundred megabytes—that contains the network architecture, all the learned weights, and metadata about how to use it.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3: Load and Parse (Your First Challenge)</strong></p>
+</div>
+<div class="paragraph">
+<p>Now your application needs to load this model file. This is your first real challenge: parsing the format-specific structure to extract the information you need.</p>
+</div>
+<div class="paragraph">
+<p>You&#8217;re reading a binary file with a specific schema. For ONNX, that means parsing Protocol Buffers. For TFLite, it&#8217;s FlatBuffers. Each has its quirks, but they all contain the same essential information: what layers exist, how they&#8217;re connected, what operations each layer performs, and the weights for each operation.</p>
+</div>
+<div class="paragraph">
+<p>As you parse, you&#8217;re building an internal representation—a graph structure that captures the model&#8217;s architecture. Each node in this graph represents an operation (convolution, matrix multiply, activation function, etc.), and edges represent data flow between operations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4: Compile to Vulkan (The Translation)</strong></p>
+</div>
+<div class="paragraph">
+<p>With the model graph in hand, you need to translate it to Vulkan compute operations. This is where your understanding of both neural networks and Vulkan comes together.</p>
+</div>
+<div class="paragraph">
+<p>Each operation type in the model needs a corresponding compute shader. A convolution layer needs a convolution shader. A matrix multiplication needs a matrix multiply shader. An activation function needs an activation shader. You&#8217;re essentially building a library of compute shaders that implement neural network operations.</p>
+</div>
+<div class="paragraph">
+<p>But it&#8217;s not just about the shaders. You also need to:</p>
+</div>
+<div class="paragraph">
+<p><strong>Allocate GPU memory</strong> for all the tensors—inputs, outputs, intermediate activations, and weights. This is a significant design decision. Do you allocate everything upfront (static allocation) or as needed (dynamic allocation)? Do you reuse memory for intermediate results that are no longer needed?</p>
+</div>
+<div class="paragraph">
+<p><strong>Upload weights</strong> to GPU memory. These are the millions of learned parameters that define your model. They&#8217;re constant during inference, so you upload them once and keep them resident on the GPU.</p>
+</div>
+<div class="paragraph">
+<p><strong>Create Vulkan pipelines</strong> for each shader, with appropriate descriptor sets for accessing buffers. This is standard Vulkan work, but the scale might be larger than you&#8217;re used to—a complex model might have dozens of different operation types.</p>
+</div>
+<div class="paragraph">
+<p><strong>Plan the execution order</strong>. The model graph tells you dependencies—which operations must complete before others can start. You need to translate this into a sequence of compute dispatches with appropriate synchronization.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 5: Execute Inference (The Payoff)</strong></p>
+</div>
+<div class="paragraph">
+<p>Now you&#8217;re ready to run inference. Here&#8217;s what happens for each inference request:</p>
+</div>
+<div class="paragraph">
+<p><strong>Transfer input data</strong> to GPU memory. This might be an image, audio buffer, or other input data. The transfer itself is straightforward, but minimizing this overhead is important for latency-sensitive applications.</p>
+</div>
+<div class="paragraph">
+<p><strong>Dispatch compute shaders</strong> in the order you planned. Each shader reads its input tensors, performs its operation, and writes output tensors. Data flows through the network, layer by layer, until you reach the final output.</p>
+</div>
+<div class="paragraph">
+<p><strong>Synchronize between operations</strong>. This is crucial for correctness. You need to ensure that each operation completes and its writes are visible before dependent operations start. Vulkan gives you several tools for this: pipeline barriers, memory barriers, and semaphores.</p>
+</div>
+<div class="paragraph">
+<p><strong>Read results back</strong> to CPU memory. The final output tensor contains your predictions—class probabilities, detected objects, generated text, whatever your model produces.</p>
+</div>
+<div class="paragraph">
+<p>This entire process—from input to output—needs to happen fast. For real-time applications, you might need to complete inference in just a few milliseconds.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_key_challenges"><a class="anchor" href="#_the_key_challenges"></a>The Key Challenges</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s dig deeper into the challenges you&#8217;ll face at each stage, because understanding these challenges helps you make better design decisions.</p>
+</div>
+<div class="sect2">
+<h3 id="_challenge_1_memory_management"><a class="anchor" href="#_challenge_1_memory_management"></a>Challenge 1: Memory Management</h3>
+<div class="paragraph">
+<p>Neural networks work with large multi-dimensional arrays (tensors). A single image might be 224×224×3 floats (about 600KB). Intermediate activations can be much larger. A typical model might need hundreds of megabytes of GPU memory.</p>
+</div>
+<div class="paragraph">
+<p>The naive approach—allocate a new buffer for every tensor—is wasteful. Many intermediate tensors are only needed briefly. Once an operation completes and its outputs are consumed by the next operation, that memory can be reused.</p>
+</div>
+<div class="paragraph">
+<p>The smart approach is to analyze the model graph and identify which tensors can share memory. If tensor A is only needed for operations 1-3, and tensor B is only needed for operations 5-7, they can use the same memory. This is called <strong>memory reuse</strong> or <strong>memory pooling</strong>, and it can dramatically reduce your memory footprint.</p>
+</div>
+<div class="paragraph">
+<p>The tradeoff is complexity. Static allocation with memory reuse requires analyzing the entire graph upfront and planning memory usage. Dynamic allocation is simpler but slower and uses more memory. For most applications, the performance benefits of static allocation are worth the implementation complexity.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_challenge_2_synchronization"><a class="anchor" href="#_challenge_2_synchronization"></a>Challenge 2: Synchronization</h3>
+<div class="paragraph">
+<p>GPUs are massively parallel, but neural network inference is inherently sequential—each layer depends on the previous layer&#8217;s output. You can&#8217;t start layer 5 until layer 4 completes. This creates a tension between parallelism and dependencies.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan gives you explicit control over synchronization, which is both powerful and dangerous. Too little synchronization, and you get race conditions—operations reading data before it&#8217;s written, leading to incorrect results. Too much synchronization, and you serialize execution, losing parallelism and performance.</p>
+</div>
+<div class="paragraph">
+<p>The key is understanding your dependencies precisely. Use pipeline barriers to enforce necessary ordering while allowing independent operations to overlap. For example, if your model has parallel branches (common in modern architectures), those branches can execute concurrently as long as you synchronize when they merge.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_challenge_3_performance_optimization"><a class="anchor" href="#_challenge_3_performance_optimization"></a>Challenge 3: Performance Optimization</h3>
+<div class="paragraph">
+<p>Getting inference working is one thing. Getting it fast is another. There are many optimization opportunities:</p>
+</div>
+<div class="paragraph">
+<p><strong>Operation fusion</strong>: Combining multiple operations into a single shader reduces overhead. For example, convolution followed by activation can be fused into one shader that does both, eliminating an intermediate buffer and a dispatch.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory layout</strong>: How you arrange data in memory affects cache efficiency. Some layouts are better for certain operations. Finding the right layout—or converting between layouts—can significantly impact performance.</p>
+</div>
+<div class="paragraph">
+<p><strong>Batching</strong>: Processing multiple inputs together can improve throughput by better utilizing the GPU. Instead of running inference on one image at a time, process 4 or 8 or 16 together. This increases latency but dramatically improves throughput.</p>
+</div>
+<div class="paragraph">
+<p><strong>Hardware-specific features</strong>: Modern GPUs have specialized hardware for certain operations. For example, Tensor cores on NVIDIA GPUs, WMMA on AMD, or XMX on Intel accelerate matrix multiplication. Understanding your target hardware and leveraging its capabilities (often via cross-vendor APIs like WebGPU or Vulkan) can provide substantial speedups.</p>
+</div>
+<div class="paragraph">
+<p>The challenge is knowing which optimizations matter for your specific model and hardware. Profiling is essential—measure where time is actually spent, then optimize those hotspots.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_thinking_in_layers_and_operations"><a class="anchor" href="#_thinking_in_layers_and_operations"></a>Thinking in Layers and Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As you implement inference, it helps to think about the mapping between neural network concepts and GPU compute operations. Let&#8217;s make this concrete with examples.</p>
+</div>
+<div class="paragraph">
+<p><strong>Dense (Fully Connected) Layer</strong>: This is fundamentally a matrix multiplication followed by an activation function. Your input is a vector (or batch of vectors), your weights are a matrix, and you&#8217;re computing <code>output = activation(weights × input + bias)</code>. On the GPU, this becomes a matrix multiply shader followed by an activation shader. The matrix multiply is the expensive part—it&#8217;s O(n²) or O(n³) depending on dimensions—so optimizing it matters.</p>
+</div>
+<div class="paragraph">
+<p><strong>Convolutional Layer</strong>: This is a sliding window operation. You&#8217;re taking a small filter (maybe 3×3 or 5×5) and sliding it across your input, computing a weighted sum at each position. With multiple filters and multiple input channels, this becomes a lot of computation. On the GPU, you can parallelize across output positions and channels. Each work group might compute one output tile, with threads within the group handling different channels or positions.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pooling Layer</strong>: This is simpler—downsampling by taking the maximum or average over small regions. It&#8217;s embarrassingly parallel: each output position is independent. Your shader can process many output positions in parallel with minimal synchronization.</p>
+</div>
+<div class="paragraph">
+<p><strong>Normalization Layer</strong>: This requires computing statistics (mean, variance) across a dimension, then normalizing. It&#8217;s trickier because computing statistics requires reduction operations, which need careful synchronization. But once you have the statistics, applying the normalization is straightforward.</p>
+</div>
+<div class="paragraph">
+<p>Understanding these mappings helps you design efficient shaders and reason about performance. A model with many convolutions will be compute-bound. A model with many small operations will be overhead-bound. Knowing this guides your optimization strategy.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_putting_it_all_together"><a class="anchor" href="#_putting_it_all_together"></a>Putting It All Together</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s trace through a complete example to make this concrete. Imagine you&#8217;re running inference on an image classification model—something like ResNet-50.</p>
+</div>
+<div class="paragraph">
+<p>You start with an image: 224×224×3 pixels. You transfer it to GPU memory—about 600KB. Your first layer is a convolution: 7×7 filters, 64 output channels. You dispatch your convolution shader, which reads the input image and weight tensors, computes the convolution, and writes the output. This output is 112×112×64 (downsampled due to stride).</p>
+</div>
+<div class="paragraph">
+<p>Next comes batch normalization and ReLU activation. You dispatch shaders for these operations, reading the convolution output and writing normalized, activated results.</p>
+</div>
+<div class="paragraph">
+<p>Then you enter a series of residual blocks—the core of ResNet. Each block has multiple convolutions, normalizations, and activations, with skip connections that add earlier activations to later ones. You dispatch shaders for each operation, carefully synchronizing to ensure skip connections read the right data.</p>
+</div>
+<div class="paragraph">
+<p>After many layers, you reach global average pooling—reducing each channel to a single value. Then a final fully connected layer that produces class probabilities. You dispatch these final shaders, and the output is a vector of 1000 probabilities (for ImageNet classes).</p>
+</div>
+<div class="paragraph">
+<p>Finally, you read this output back to CPU memory. You find the maximum probability, and that&#8217;s your prediction: "golden retriever" or "coffee mug" or whatever the model thinks the image contains.</p>
+</div>
+<div class="paragraph">
+<p>This entire process—dozens of shader dispatches, hundreds of megabytes of data flowing through the GPU—completes in milliseconds. That&#8217;s the power of GPU acceleration for neural network inference.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter presented the complete mental model for ML inference with Vulkan, tracing the journey from trained model to GPU execution. The pipeline consists of exporting to an inference format, loading and parsing the model file, compiling to Vulkan compute shaders, and executing inference on the GPU.</p>
+</div>
+<div class="paragraph">
+<p>The key challenges are memory management (allocating and reusing buffers efficiently), synchronization (enforcing dependencies without over-serializing), and performance optimization (fusion, layout, batching, hardware features). Understanding the mapping between neural network layers and GPU compute operations helps you design efficient implementations.</p>
+</div>
+<div class="paragraph">
+<p>Throughout this ML Inference Pipeline chapter series, we&#8217;ve built a comprehensive foundation: what machine learning is, how neural networks work, the distinction between training and inference, transfer learning strategies, model formats, and the complete execution pipeline. This conceptual understanding prepares you for the practical implementation in the next chapter, where we&#8217;ll dive into Vulkan compute shaders for ML workloads.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_looking_back_and_forward"><a class="anchor" href="#_looking_back_and_forward"></a>Looking Back and Forward</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s recap what we&#8217;ve learned across this entire chapter series:</p>
+</div>
+<div class="paragraph">
+<p>We started by understanding that <strong>machine learning</strong> teaches computers to learn from data rather than following explicit rules. This fundamental shift—from programming rules to learning patterns—enables tasks that would be impossible to program explicitly.</p>
+</div>
+<div class="paragraph">
+<p>We explored <strong>neural networks</strong> as mathematical functions inspired by biological neurons. We saw why <strong>linear functions alone are insufficient</strong>—they collapse into simpler forms—and why <strong>non-linear activation functions</strong> are essential for neural networks to approximate complex functions.</p>
+</div>
+<div class="paragraph">
+<p>We distinguished <strong>training</strong> from <strong>inference</strong>, understanding that inference is about using trained models efficiently, not about the learning process itself. We explored the <strong>inference pipeline</strong>: preprocessing, neural network execution, and postprocessing.</p>
+</div>
+<div class="paragraph">
+<p>We learned about <strong>transfer learning</strong>, which allows us to leverage pre-trained models instead of training from scratch. We explored <strong>model formats</strong> (TFLite and ONNX) that bridge training frameworks and deployment environments.</p>
+</div>
+<div class="paragraph">
+<p>Finally, we traced the <strong>complete pipeline</strong> from trained model to GPU execution, identifying the key challenges in memory management, synchronization, and performance optimization.</p>
+</div>
+<div class="paragraph">
+<p>With this mental model in place—from mathematical foundations to practical implementation pipeline—you&#8217;re ready for the technical details. In the next chapter, we&#8217;ll explore Vulkan compute pipelines specifically for ML workloads, implement basic operations, and build toward a complete inference engine.</p>
+</div>
+<div class="paragraph">
+<p>The journey from concepts to code begins now.</p>
+</div>
+<div class="paragraph">
+<p><a href="06_model_formats.html" class="xref page">Previous: Model Formats</a> | <a href="../Vulkan_Compute_for_ML/01_introduction.html" class="xref page">Next: Vulkan Compute for ML</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

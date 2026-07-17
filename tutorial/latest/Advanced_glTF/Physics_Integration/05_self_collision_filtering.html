@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Self-Collision Filtering :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Physics_Integration/05_self_collision_filtering.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Physics Integration</li>
+    <li><a href="05_self_collision_filtering.html">Self-collision filtering</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Self-Collision Filtering</h1>
+<div class="sect1">
+<h2 id="_why_characters_explode_without_filtering"><a class="anchor" href="#_why_characters_explode_without_filtering"></a>Why Characters Explode Without Filtering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When you enable full collision detection between all of a ragdoll&#8217;s body parts, the simulation becomes unstable almost immediately. The problem is geometric overlap: in a real human body, adjacent body segments share volume. The arm is in contact with the torso. The thigh overlaps slightly with the pelvis at the hip socket. The spine segments interpenetrate. This is fine for visual purposes—the skin mesh hides all of this—but the physics engine doesn&#8217;t know about the skin. It sees the underlying collision shapes, and if those shapes overlap, the solver interprets the overlap as a penetration that must be resolved with a large separating force.</p>
+</div>
+<div class="paragraph">
+<p>The result is that adjacent bone bodies push each other apart violently. The arm gets ejected from the torso. The thighs drive the pelvis upward. The spine segments fly apart. The constraints try to pull everything back together, the contacts push everything apart, and the simulation enters a state of permanent internal conflict that produces the classic "exploding ragdoll" artifact.</p>
+</div>
+<div class="paragraph">
+<p>The solution is to tell the physics engine which pairs of bodies should <strong>not</strong> collide with each other. This is called <strong>collision filtering</strong>. Physics engines implement it using bitmasks: each body belongs to one or more <strong>collision groups</strong>, and each body has a <strong>collision mask</strong> that specifies which groups it is allowed to collide with. Two bodies will only generate collision contacts if the first body&#8217;s group bit is set in the second body&#8217;s mask, and vice versa.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_designing_the_bitmask_layout"><a class="anchor" href="#_designing_the_bitmask_layout"></a>Designing the Bitmask Layout</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The art of collision filtering is in choosing a bitmask layout that correctly expresses the collision rules for your ragdoll without requiring you to enumerate every forbidden pair explicitly. A well-designed layout lets you express the rules compactly and extend them easily.</p>
+</div>
+<div class="paragraph">
+<p>For a humanoid character, a practical layout organizes body parts by anatomical region. Each region becomes a named bit:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Collision group bits for a humanoid ragdoll
+// Each body part type gets one bit.
+namespace CollisionGroup {
+    constexpr uint32_t WORLD     = (1 &lt;&lt; 0); // Static world geometry
+    constexpr uint32_t PROPS     = (1 &lt;&lt; 1); // Dynamic world objects (crates, barrels, etc.)
+    constexpr uint32_t TORSO     = (1 &lt;&lt; 2); // Chest, spine, pelvis
+    constexpr uint32_t HEAD      = (1 &lt;&lt; 3); // Skull and neck
+    constexpr uint32_t ARM_L     = (1 &lt;&lt; 4); // Left upper arm and forearm
+    constexpr uint32_t ARM_R     = (1 &lt;&lt; 5); // Right upper arm and forearm
+    constexpr uint32_t HAND_L    = (1 &lt;&lt; 6); // Left hand and wrist
+    constexpr uint32_t HAND_R    = (1 &lt;&lt; 7); // Right hand and wrist
+    constexpr uint32_t LEG_L     = (1 &lt;&lt; 8); // Left thigh and shin
+    constexpr uint32_t LEG_R     = (1 &lt;&lt; 9); // Right thigh and shin
+    constexpr uint32_t FOOT_L    = (1 &lt;&lt; 10); // Left foot and ankle
+    constexpr uint32_t FOOT_R    = (1 &lt;&lt; 11); // Right foot and ankle
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this layout, the torso can be assigned to the <code>TORSO</code> group, and its collision mask can be set to allow collisions only with <code>WORLD</code> and <code>PROPS</code>—meaning it will collide with the environment and moveable objects, but not with any of the character&#8217;s own limbs. The arms similarly collide with the world and props, but not with the torso or with each other.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Collision masks define what each group can collide WITH.
+namespace CollisionMask {
+    using namespace CollisionGroup;
+
+    // The torso collides with world and props, but NOT with its own arms, legs, or head.
+    // Internal ragdoll self-collision is handled by constraints, not contacts.
+    constexpr uint32_t TORSO = WORLD | PROPS;
+
+    // The head doesn't collide with the neck/torso (they are constrained together),
+    // but can hit the world.
+    constexpr uint32_t HEAD = WORLD | PROPS;
+
+    // Arms collide with world and props. They can also collide with the opposing side
+    // (left arm can interact with right arm if they cross) but not with the torso.
+    constexpr uint32_t ARM_L  = WORLD | PROPS | ARM_R;
+    constexpr uint32_t ARM_R  = WORLD | PROPS | ARM_L;
+    constexpr uint32_t HAND_L = WORLD | PROPS | ARM_R | HAND_R;
+    constexpr uint32_t HAND_R = WORLD | PROPS | ARM_L | HAND_L;
+
+    // Legs collide with world, props, and with each other (they can interact
+    // when the character's legs cross during a fall).
+    constexpr uint32_t LEG_L  = WORLD | PROPS | LEG_R;
+    constexpr uint32_t LEG_R  = WORLD | PROPS | LEG_L;
+    constexpr uint32_t FOOT_L = WORLD | PROPS | LEG_R | FOOT_R;
+    constexpr uint32_t FOOT_R = WORLD | PROPS | LEG_L | FOOT_L;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This design allows left and right limbs to interact with each other—which is correct, since a falling character&#8217;s arms can and do cross—while preventing adjacent constrained segments from generating destructive contact forces.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_applying_masks_from_gltf_extras"><a class="anchor" href="#_applying_masks_from_gltf_extras"></a>Applying Masks from glTF Extras</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Earlier, when we defined our collider extras format, we included <code>collision_group</code> and <code>collision_mask</code> as string fields. Now we can write a resolver that maps those human-readable strings to the bitmask values:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uint32_t resolve_collision_group(const std::string&amp; group_name)
+{
+    static const std::unordered_map&lt;std::string, uint32_t&gt; group_map = {
+        { "world",   CollisionGroup::WORLD   },
+        { "props",   CollisionGroup::PROPS   },
+        { "torso",   CollisionGroup::TORSO   },
+        { "head",    CollisionGroup::HEAD    },
+        { "arm_l",   CollisionGroup::ARM_L   },
+        { "arm_r",   CollisionGroup::ARM_R   },
+        { "hand_l",  CollisionGroup::HAND_L  },
+        { "hand_r",  CollisionGroup::HAND_R  },
+        { "leg_l",   CollisionGroup::LEG_L   },
+        { "leg_r",   CollisionGroup::LEG_R   },
+        { "foot_l",  CollisionGroup::FOOT_L  },
+        { "foot_r",  CollisionGroup::FOOT_R  },
+    };
+
+    auto it = group_map.find(group_name);
+    return (it != group_map.end()) ? it-&gt;second : 0;
+}
+
+// The mask field in extras is a comma-separated list of group names
+// e.g., "world,props,leg_r" =&gt; WORLD | PROPS | LEG_R
+uint32_t resolve_collision_mask(const std::string&amp; mask_str)
+{
+    uint32_t mask = 0;
+    std::stringstream ss(mask_str);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+        // Trim whitespace
+        token.erase(0, token.find_first_not_of(" \t"));
+        token.erase(token.find_last_not_of(" \t") + 1);
+        mask |= resolve_collision_group(token);
+    }
+    return mask;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When we create a physics body for a bone, we apply these masks:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">JPH::BodyCreationSettings settings;
+// ... set shape, mass, pose ...
+settings.mMotionType = JPH::EMotionType::Kinematic;
+
+// Apply collision filtering from the parsed extras
+// settings.mObjectLayer = resolve_collision_layer(node.collider_def.collision_group, node.collider_def.collision_mask);
+
+JPH::BodyID body = physics_world.create_body(settings);</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_filtering_between_characters"><a class="anchor" href="#_filtering_between_characters"></a>Filtering Between Characters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The bitmask design above handles self-collision for a single character. But what about multiple characters? If two characters are fighting, you probably want their ragdolls to interact—one character&#8217;s falling body should be able to knock the other character&#8217;s body. But you still don&#8217;t want Character A&#8217;s arm to collide with Character A&#8217;s own torso.</p>
+</div>
+<div class="paragraph">
+<p>The standard technique for multi-character filtering is to add a <strong>character instance layer</strong> on top of the body-part groups. Each character instance gets a unique numeric ID, and the collision mask for Character A&#8217;s body parts explicitly excludes Character A&#8217;s own other body parts, while including the corresponding body parts of all other characters.</p>
+</div>
+<div class="paragraph">
+<p>For small numbers of characters, the simplest approach is to just not worry about it. With proper joint limits, self-collision from adjacent constrained segments is prevented by the constraints themselves—only distant self-collisions (like the arm crossing to the far side of the body) would need explicit filtering, and those are relatively rare. The important filtering is between adjacent segments that are connected by constraints, which we always want to filter out.</p>
+</div>
+<div class="paragraph">
+<p>For large numbers of characters—a crowd simulation, for example—you will need a more sophisticated filtering system. One common approach is to allocate a block of 8 or 16 bits per character and assign one bit per body region within that block. This allows the broadphase to quickly cull collisions between same-character body parts at the layer level, without requiring per-pair contact filtering.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_verifying_your_filters"><a class="anchor" href="#_verifying_your_filters"></a>Verifying Your Filters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After setting up collision filtering, it is worth taking a few minutes to test it deliberately. The easiest test is to spawn a single character, trigger the ragdoll, and watch it fall. Signs of filtering problems:</p>
+</div>
+<div class="paragraph">
+<p>If the ragdoll immediately explodes on the first frame, adjacent body parts are generating penetration contacts—you have a filtering gap between constrained neighbors. Check that the groups and masks for adjacent bones (e.g., upper arm and forearm) exclude each other.</p>
+</div>
+<div class="paragraph">
+<p>If the character&#8217;s arms pass straight through walls or floors, a mask is too restrictive—the body part is not colliding with WORLD geometry. Check that <code>WORLD</code> is included in every body part&#8217;s collision mask.</p>
+</div>
+<div class="paragraph">
+<p>If two characters' ragdolls merge together and pass through each other when they fall on top of each other, the mask does not include the opposing character&#8217;s body part groups. This is expected if you filtered out all character-vs-character collision, but undesirable if you wanted characters to interact.</p>
+</div>
+<div class="paragraph">
+<p>The debug drawer we will build in Chapter 8 will be invaluable for visualizing collision shapes and their assigned layers, making these issues much easier to diagnose visually.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_ragdoll_handoff.html" class="xref page">Previous: The Ragdoll Handoff</a> | <a href="06_conclusion.html" class="xref page">Next: Conclusion</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

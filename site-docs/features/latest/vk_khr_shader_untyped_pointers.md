@@ -1,0 +1,239 @@
+# VK_KHR_shader_untyped_pointers
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_KHR_shader_untyped_pointers.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. SPV_KHR_untyped_pointers](#_spv_khr_untyped_pointers)
+- [3.1._SPV_KHR_untyped_pointers](#_spv_khr_untyped_pointers)
+- [3.2. Examples](#_examples)
+- [4. Issues](#_issues)
+- [4.1. Which storage classes should allow untyped pointers?](#_which_storage_classes_should_allow_untyped_pointers)
+- [4.1._Which_storage_classes_should_allow_untyped_pointers?](#_which_storage_classes_should_allow_untyped_pointers)
+
+## Content
+
+Shader SPIR-V mostly uses strongly-typed pointers.
+This is problematic for multiple reasons:
+
+LLVM (a common compiler infrastructure used by many drivers and tools) has moved away from typed pointers.
+LLVM calls them opaque pointers.
+Translation from LLVM IR to SPIR-V requires reconstructing type information
+in a careful manner to satisfy Shader SPIR-V rules.
+Translation to LLVM IR is simpler as it mainly involves dropping type information.
+
+Many extensions attempt to workaround the strongly-typed requirement or would benefit from a relaxation of that requirement:
+
+* 
+[SPV_KHR_cooperative_matrix](https://github.khronos.org/SPIRV-Registry/extensions/KHR/SPV_KHR_cooperative_matrix.html)
+uses separate operands to allow type reinterpretation vs the declared
+type of the pointer.
+
+* 
+[SPV_KHR_workgroup_memory_explicit_layout](https://github.khronos.org/SPIRV-Registry/extensions/KHR/SPV_KHR_workgroup_memory_explicit_layout.html)
+uses aliased `Workgroup` variables with different data layout to
+provide C-like union functionality.
+
+* 
+8-bit integer and 16-bit floating point/integer arithmetic features require
+extraneous type conversion instructions if the corresponding storage
+features are not supported.
+
+* 
+[SPV_KHR_physical_storage_buffer](https://github.khronos.org/SPIRV-Registry/extensions/KHR/SPV_KHR_physical_storage_buffer.html)
+adds limited support for physical pointers that are not strongly typed.
+
+HLLs have constructs that are not strongly typed (e.g. byte address buffers in HLSL).
+Generating code for these resources leads to extraneous conversions.
+
+Physical memory is not inherently typed.
+Strongly-typed pointers represent a direct translation of traditional shading
+languages (e.g. GLSL) that have very restricted representation of memory.
+SPIR-V does not need to enforce types on memory to support those languages, and
+by supporting less strongly-typed pointers SPIR-V can more easily support a
+wider variety of languages.
+
+The problems above could be addressed in whole or piecemeal:
+
+Add a non-strongly typed pointer to SPIR-V.
+
+Support pointers in `OpBitcast` in Shader SPIR-V.
+This would provide direct support type reinterpretation.
+
+Add new types such as a C-like union to provide some forms of type reinterpretation.
+
+Options 2 and 3 both maintain type information pointers and either can solve
+problems 2 and 3 above, but are a less clean solution to problem 1.
+Option 1 is a direct implementation for problem 1 and also solves problems 2 and 3.
+
+Given the prevalence of LLVM in the Vulkan ecosystem, there is a strong
+incentive to have parallel functionality.
+For example, HLSL is moving into mainline Clang so, long term, it would be
+beneficial to be able to emit SPIR-V that more closely matches the LLVM IR used
+to produce it.
+Many other languages also go through LLVM IR and likewise benefit from a
+simpler translation.
+
+This extension implements solution 3 above and was chosen because of the desire
+for convergence with LLVM IR over the long term.
+
+The extension adds a number of new instructions based around a new pointer
+type, `OpTypeUntypedPointerKHR`.
+The other new instructions are necessary to replace the type information that
+was previously carried in the pointer type:
+
+* 
+`OpUntypedVariableKHR`
+
+* 
+`OpUntypedAccessChainKHR`
+
+* 
+`OpUntypedInBoundsAccessChainKHR`
+
+* 
+`OpUntypedPtrAccessChainKHR`
+
+* 
+`OpUntypedArrayLengthKHR`
+
+Note: The extension includes other new instructions to facilitate additional client APIs.
+
+As can be seen from the list above, there are actually few instructions that
+require replacement.
+Most instruction already encode the necessary type information (e.g.
+`OpLoad` and `OpStore`).
+The new instructions all mirror existing instructions with an additional
+operand to describe how type information should be interpreted.
+Since the type interpretation comes from the instruction with untyped pointers,
+it is much simpler that to provide effective type reinterpretation.
+
+One caveat with untyped pointers is that there must be a consistent interpretation of all data types.
+
+In order to accomplish this, VK_KHR_shader_untyped_pointers limits the use of
+untyped pointers to storage classes with an explicit layout.
+
+Note: SPV_KHR_untyped_pointers was provisionally released without being enabled
+in Vulkan to provide tooling an opportunity to adapt and test that sufficient
+functionality was exposed in the extension.
+
+Consider the following use of a `ByteAddressBuffer` in HLSL:
+
+ByteAddressBuffer buffer;
+
+void foo(uint offset1, uint offset 2) {
+  float4 x = buffer.Load(offset1);
+  uint4 y = buffer.Load(offset2);
+  // ...
+}
+
+When translating to SPIR-V, tools must choose a data representation for the
+buffer, but there is no obvious choice based on its usage.
+Both `float4` and `uint` data is accessed from the buffer at non-static
+indexes.
+With strongly-typed pointers, the tool must choose a representation and insert
+instructions necessary to convert types to satisfy other uses.
+The simplest choice for this example would be to use `uint` as the base
+data.
+The resulting SPIR-V would look something like:
+
+; ...
+      %void = OpTypeVoid
+      %uint = OpTypeInt 32 0
+    %uint_0 = OpConstant %uint 0
+    %uint_1 = OpConstant %uint 1
+    %uint_4 = OpConstant %uint 4
+     %float = OpTypeFloat 32
+    %float4 = OpTypeVector %float 4
+     %array = OpTypeRuntimeArray %uint
+     %block = OpTypeStruct %array
+  %ptr_uint = OpTypePointer StorageBuffer %uint
+ %ptr_block = OpTypePointer StorageBuffer %array
+    %buffer = OpVariable %ptr_array StorageBuffer
+  %foo_type = OpTypeFunction %void %uint %uint
+       %foo = OpFunction %void None %foo_type
+   %offset1 = OpFunctionParameter %uint
+   %offset2 = OpFunctionParameter %uint
+     %entry = OpLabel
+
+%w_offset1 = OpUDiv %uint %offset1 %uint_4
+%w_offset2 = OpUDiv %uint %offset1 %uint_4
+
+; Initialize x[0]
+%x_access_0 = OpAccessChain %ptr_uint %buffer %uint_0 %w_offset1
+  %x_load_0 = OpLoad %uint %x_access_0
+  %x_cast_0 = OpBitcast %float %x_load_0
+
+; Initialize x[1]
+   %x_add_1 = OpIAdd %uint %w_offset1 %uint_1
+%x_access_1 = OpAccessChain %ptr_uint %buffer %uint_0 %x_add_1
+  %x_load_1 = OpLoad %uint %x_access_1
+  %x_cast_1 = OpBitcast %float %x_load_1
+
+; Initialize x[2]
+   %x_add_2 = OpIAdd %uint %x_add_1 %uint_1
+%x_access_2 = OpAccessChain %ptr_uint %buffer %uint_0 %x_add_2
+  %x_load_2 = OpLoad %uint %x_access_2
+  %x_cast_2 = OpBitcast %float %x_load_2
+
+; Initialize x[3]
+   %x_add_3 = OpIAdd %uint %x_add_2 %uint_1
+%x_access_3 = OpAccessChain %ptr_uint %buffer %uint_0 %x_add_3
+  %x_load_3 = OpLoad %uint %x_access_3
+  %x_cast_3 = OpBitcast %float %x_load_3
+; Full x
+         %x = OpCompositeConstruct %float4 %x_cast_0 %x_cast_1 %x_cast_2 %x_cast_3
+
+; Initialize y
+ %y_access = OpAccessChain %ptr_uint %buffer %uint_0 %w_offset2
+        %y = OpLoad %uint %y_access
+
+; ...
+
+In order to initialize `x`, the SPIR-V performs multiple loads and bitcasts.
+Compare that to the SPIR-V with untyped pointers:
+
+; ...
+       %void = OpTypeVoid
+      %uchar = OpTypeInt 8 0
+       %uint = OpTypeInt 32 0
+     %uint_0 = OpConstant %uint 0
+     %uint_1 = OpConstant %uint 1
+      %float = OpTypeFloat 32
+     %float4 = OpTypeVector %float 4
+%uchar_array = OpTypeRuntimeArray %uint
+      %array = OpTypeRuntimeArray %uint
+      %block = OpTypeStruct %array
+        %ptr = OpTypeUntypedPointerKHR StorageBuffer
+     %buffer = OpUntypedVariableKHR %ptr StorageBuffer %block
+   %foo_type = OpTypeFunction %void %uint %uint
+        %foo = OpFunction %void None %foo_type
+    %offset1 = OpFunctionParameter %uint
+    %offset2 = OpFunctionParameter %uint
+      %entry = OpLabel
+
+; Initialize x
+   %x_access = OpUntypedAccessChainKHR %ptr %uchar_array %buffer %offset1
+          %x = OpLoad %float4 %x_access
+
+; Initialize y
+   %y_access = OpUntypedAccessChainKHR %ptr %uchar_array %buffer %offset2
+          %y = OpLoad %uint %y_access
+
+With untyped pointers, type interpretation is flexible and the type
+interpretation for addressing can be separated from type interpretation for
+memory operations.
+Because of this flexibility, the reinterpretation of types is simple and the
+generated code is greatly simplified.
+
+Because data needs a consistent layout among different interpretations, only
+explicitly laid out storage classes are supported.

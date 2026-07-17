@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Camera Integration: The Zero-Copy Pipeline :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Embedded_Applications/03_camera_integration.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Embedded Applications</li>
+    <li><a href="03_camera_integration.html">Camera Integration</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Camera Integration: The Zero-Copy Pipeline</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>In a desktop application, camera integration is often treated as a solved problem—you use a library like OpenCV, grab a frame with a single function call, and upload it to the GPU. On a high-end PC with 32GB of RAM and a 300W GPU, you can afford to be sloppy. But in the world of <strong>Embedded Systems</strong>, sloppy code is a death sentence for your product.</p>
+</div>
+<div class="paragraph">
+<p>A standard 1080p RGB frame takes <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="7.196ex" height="1.595ex" role="img" focusable="false" viewBox="0 -683 3180.8 705"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2248" d="M55 319Q55 360 72 393T114 444T163 472T205 482Q207 482 213 482T223 483Q262 483 296 468T393 413L443 381Q502 346 553 346Q609 346 649 375T694 454Q694 465 698 474T708 483Q722 483 722 452Q722 386 675 338T555 289Q514 289 468 310T388 357T308 404T224 426Q164 426 125 393T83 318Q81 289 69 289Q55 289 55 319ZM55 85Q55 126 72 159T114 210T163 238T205 248Q207 248 213 248T223 249Q262 249 296 234T393 179L443 147Q502 112 553 112Q609 112 649 141T694 220Q694 249 708 249T722 217Q722 153 675 104T555 55Q514 55 468 76T388 123T308 170T224 192Q164 192 125 159T83 84Q80 55 69 55Q55 55 55 85Z"></path></g><g data-mml-node="mn" transform="translate(1055.8,0)"><path data-c="36" d="M42 313Q42 476 123 571T303 666Q372 666 402 630T432 550Q432 525 418 510T379 495Q356 495 341 509T326 548Q326 592 373 601Q351 623 311 626Q240 626 194 566Q147 500 147 364L148 360Q153 366 156 373Q197 433 263 433H267Q313 433 348 414Q372 400 396 374T435 317Q456 268 456 210V192Q456 169 451 149Q440 90 387 34T253 -22Q225 -22 199 -14T143 16T92 75T56 172T42 313ZM257 397Q227 397 205 380T171 335T154 278T148 216Q148 133 160 97T198 39Q222 21 251 21Q302 21 329 59Q342 77 347 104T352 209Q352 289 347 316T329 361Q302 397 257 397Z"></path></g><g data-mml-node="mtext" transform="translate(1555.8,0)"><path data-c="4D" d="M132 622Q125 629 121 631T105 634T62 637H29V683H135Q221 683 232 682T249 675Q250 674 354 398L458 124L562 398Q666 674 668 675Q671 681 683 682T781 683H887V637H854Q814 636 803 634T785 622V61Q791 51 802 49T854 46H887V0H876Q855 3 736 3Q605 3 596 0H585V46H618Q660 47 669 49T688 61V347Q688 424 688 461T688 546T688 613L687 632Q454 14 450 7Q446 1 430 1T410 7Q409 9 292 316L176 624V606Q175 588 175 543T175 463T175 356L176 86Q187 50 261 46H278V0H269Q254 3 154 3Q52 3 37 0H29V46H46Q78 48 98 56T122 69T132 86V622Z"></path><path data-c="42" d="M131 622Q124 629 120 631T104 634T61 637H28V683H229H267H346Q423 683 459 678T531 651Q574 627 599 590T624 512Q624 461 583 419T476 360L466 357Q539 348 595 302T651 187Q651 119 600 67T469 3Q456 1 242 0H28V46H61Q103 47 112 49T131 61V622ZM511 513Q511 560 485 594T416 636Q415 636 403 636T371 636T333 637Q266 637 251 636T232 628Q229 624 229 499V374H312L396 375L406 377Q410 378 417 380T442 393T474 417T499 456T511 513ZM537 188Q537 239 509 282T430 336L329 337H229V200V116Q229 57 234 52Q240 47 334 47H383Q425 47 443 53Q486 67 511 104T537 188Z" transform="translate(917,0)"></path></g></g></g></svg> </span> of memory. If you use the "Desktop Way"—copying that frame from the kernel to user-space, then from OpenCV to a Vulkan staging buffer, and finally to the GPU—you have moved <strong>18MB of data</strong> for every single frame. At 60 FPS, that is over <strong>1 GB/s</strong> of memory bandwidth just for "moving pixels around." On a Raspberry Pi or a Jetson Nano, this bandwidth tax is enough to saturate the memory bus, causing your ML inference to crawl, your frame rate to drop, and your SoC to overheat.</p>
+</div>
+<div class="paragraph">
+<p>In this chapter, we are going to learn the "Holy Grail" of embedded vision: the <strong>Zero-Copy Pipeline</strong>. We will explore how to use <strong>V4L2</strong> and <strong>dmabuf</strong> to feed pixels directly from the sensor into Vulkan compute shaders without a single CPU-side memory copy.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_v4l2_foundation_talking_to_sensors"><a class="anchor" href="#_the_v4l2_foundation_talking_to_sensors"></a>The V4L2 Foundation: Talking to Sensors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Linux uses the <a href="https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/v4l2.html"><strong>Video for Linux 2 (V4L2)</strong></a> API to interface with cameras. To get maximum speed, we avoid the naive <code>read()</code> call (which performs a slow kernel-to-user copy) and use <strong>Streaming I/O with Memory Mapping (MMAP)</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_ioctl_lifecycle_managing_the_sensor"><a class="anchor" href="#_the_ioctl_lifecycle_managing_the_sensor"></a>The IOCTL Lifecycle: Managing the Sensor</h3>
+<div class="paragraph">
+<p>Communication with V4L2 happens via <code>ioctl</code> (Input/Output Control) calls. A production camera pipeline follows a strict sequence of state transitions that you must manage manually.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">IOCTL Command</th>
+<th class="tableblock halign-left valign-top">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_S_FMT</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Set the pixel format (e.g., YUYV) and resolution.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_REQBUFS</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allocate a pool of buffers in the kernel.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_QUERYBUF</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Get the physical memory offset for each buffer.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_EXPBUF</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>The Magic Step</strong>: Export the buffer as a <code>dmabuf</code> file descriptor.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_QBUF</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Give a buffer to the kernel to be filled by the sensor.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_STREAMON</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Start the sensor&#8217;s DMA engine.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>VIDIOC_DQBUF</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Retrieve a filled buffer from the kernel.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_deep_dive_buffer_negotiation"><a class="anchor" href="#_deep_dive_buffer_negotiation"></a>Deep Dive: Buffer Negotiation</h3>
+<div class="paragraph">
+<p>Before you can stream, you must negotiate the number of buffers with the kernel. For high-speed ML, we typically use <strong>Triple Buffering</strong> (3 buffers) or <strong>Quad Buffering</strong> (4 buffers).</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Buffer 1</strong>: Being filled by the camera sensor (Hardware ownership).</p>
+</li>
+<li>
+<p><strong>Buffer 2</strong>: Being processed by the Vulkan ML engine (GPU ownership).</p>
+</li>
+<li>
+<p><strong>Buffer 3</strong>: Waiting in the queue to be filled next.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This pipelining ensures that the sensor never has to wait for the GPU, and vice-versa.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Request 4 buffers from the kernel
+v4l2_requestbuffers req = {
+    .count = 4,
+    .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
+    .memory = V4L2_MEMORY_MMAP
+};
+if (ioctl(fd, VIDIOC_REQBUFS, &amp;req) &lt; 0) {
+    perror("Requesting buffers failed");
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_initializing_the_device"><a class="anchor" href="#_initializing_the_device"></a>Initializing the Device</h3>
+<div class="paragraph">
+<p>Before we can stream, we must find the correct <code>/dev/videoX</code> node and configure it. Embedded devices often have multiple nodes (e.g., <code>/dev/video0</code> for the sensor, <code>/dev/video1</code> for metadata). You can use the <code>v4l2-ctl</code> tool to inspect your hardware:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># List all video devices and their capabilities
+v4l2-ctl --list-devices
+# List supported formats for /dev/video0
+v4l2-ctl -d /dev/video0 --list-formats-ext</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// 1. Open the camera device
+// We open in Read/Write mode because ioctls require both.
+int fd = open("/dev/video0", O_RDWR);
+
+// 2. Set Format (YUYV 1080p)
+// YUYV is the native format for most MIPI CSI cameras.
+v4l2_format fmt = {
+    .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
+    .fmt = { .pix = {
+        .width = 1920,
+        .height = 1080,
+        .pixelformat = V4L2_PIX_FMT_YUYV,
+        .field = V4L2_FIELD_NONE
+    }}
+};
+if (ioctl(fd, VIDIOC_S_FMT, &amp;fmt) &lt; 0) {
+    throw std::runtime_error("Failed to set V4L2 format");
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_mapping_mmap_vs_dma_buf"><a class="anchor" href="#_memory_mapping_mmap_vs_dma_buf"></a>Memory Mapping (MMAP) vs. DMA-BUF</h3>
+<div class="paragraph">
+<p>V4L2 supports two primary ways to access memory:
+1.  <strong>V4L2_MEMORY_MMAP</strong>: The driver allocates memory in the kernel. You "map" it into your process. This is great for CPU-only processing.
+2.  <strong>V4L2_MEMORY_DMABUF</strong>: You allocate memory (e.g., in Vulkan) and give the File Descriptor to the camera.</p>
+</div>
+<div class="paragraph">
+<p>In this chapter, we will use the <strong>Export MMAP to DMA-BUF</strong> path. This is the most widely supported method because it allows the camera driver (which knows its own alignment requirements) to allocate the memory, which we then simply "import" into Vulkan.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_zero_copy_secret_dmabuf"><a class="anchor" href="#_the_zero_copy_secret_dmabuf"></a>The Zero-Copy Secret: <code>dmabuf</code></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <strong>dmabuf</strong> is a kernel-level handle to a piece of physical RAM. Think of it as a pointer that can cross the border between different hardware drivers. By exporting a V4L2 buffer as a dmabuf, we can tell the GPU: "Don&#8217;t allocate your own memory; just look at the memory at this physical address."</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/ML_Inference/Embedded_Applications/zero_copy_pipeline.svg" alt="Diagram showing physical memory sharing between V4L2 sensor and Vulkan GPU via dmabuf" width="800">
+</div>
+<div class="title">Figure 1. The Zero-Copy dmabuf Pipeline</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_1_exporting_from_v4l2"><a class="anchor" href="#_phase_1_exporting_from_v4l2"></a>Phase 1: Exporting from V4L2</h3>
+<div class="paragraph">
+<p>We ask the camera driver for a file descriptor that represents the physical memory of a specific buffer.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">v4l2_exportbuffer expbuf = {
+    .type = V4L2_BUF_TYPE_VIDEO_CAPTURE,
+    .index = i // The index of the buffer (usually 0 to 3)
+};
+if (ioctl(fd, VIDIOC_EXPBUF, &amp;expbuf) &lt; 0) {
+    perror("Exporting dmabuf failed");
+}
+// This integer is a standard File Descriptor.
+// You can send it to other processes or drivers!
+int sharedFd = expbuf.fd;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_2_importing_into_vulkan"><a class="anchor" href="#_phase_2_importing_into_vulkan"></a>Phase 2: Importing into Vulkan</h3>
+<div class="paragraph">
+<p>We tell Vulkan that we want to use this external memory. This requires the <a href="https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VK_KHR_external_memory_fd.html"><code>VK_KHR_external_memory_fd</code></a> extension.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// 1. Define External Memory Properties
+// We tell Vulkan that this memory comes from a DMA-BUF handle.
+vk::ImportMemoryFdInfoKHR importInfo{
+    .handleType = vk::ExternalMemoryHandleTypeFlagBits::eDmaBufEXT,
+    .fd = sharedFd
+};
+
+vk::MemoryAllocateInfo allocInfo{
+    .pNext = &amp;importInfo,
+    .allocationSize = bufferSize, // This must match the V4L2 buffer length
+    .memoryTypeIndex = findDmabufCompatibleMemoryType()
+};
+
+// 2. Allocate 'External' Memory
+// Note: Vulkan now 'shares' ownership of the memory with the kernel.
+// It does not perform a copy; it simply maps the physical address.
+vk::raii::DeviceMemory vulkanMemory = device.allocateMemory(allocInfo);
+
+// 3. Bind to a Linear Image
+// Camera sensors write data in 'Linear' order (pixel by pixel).
+// Most GPUs prefer 'Tiled' order, but we MUST use linear here.
+vk::ImageCreateInfo imageInfo{
+    .imageType = vk::ImageType::e2D,
+    .format = vk::Format::eG8B8G8R8G8B8G8R8_422_Unorm, // YUYV
+    .tiling = vk::ImageTiling::eLinear,
+    .usage = vk::ImageUsageFlagBits::eSampled,
+    .extent = {1920, 1080, 1}
+};
+vk::raii::Image cameraImage = device.createImage(imageInfo);
+cameraImage.bindMemory(*vulkanMemory, 0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>The Payoff</strong>: You have achieved <span class="steminline"> <svg style="vertical-align: -0.127ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="5.278ex" height="1.824ex" role="img" focusable="false" viewBox="0 -750 2333 806"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(1000,0)"></path></g><g data-mml-node="mi" transform="translate(1500,0)"><path data-c="25" d="M465 605Q428 605 394 614T340 632T319 641Q332 608 332 548Q332 458 293 403T202 347Q145 347 101 402T56 548Q56 637 101 693T202 750Q241 750 272 719Q359 642 464 642Q580 642 650 732Q662 748 668 749Q670 750 673 750Q682 750 688 743T693 726Q178 -47 170 -52Q166 -56 160 -56Q147 -56 142 -45Q137 -36 142 -27Q143 -24 363 304Q469 462 525 546T581 630Q528 605 465 605ZM207 385Q235 385 263 427T292 548Q292 617 267 664T200 712Q193 712 186 709T167 698T147 668T134 615Q132 595 132 548V527Q132 436 165 403Q183 385 203 385H207ZM500 146Q500 234 544 290T647 347Q699 347 737 292T776 146T737 0T646 -56Q590 -56 545 0T500 146ZM651 -18Q679 -18 707 24T736 146Q736 215 711 262T644 309Q637 309 630 306T611 295T591 265T578 212Q577 200 577 146V124Q577 -18 647 -18H651Z"></path></g></g></g></svg> </span> CPU savings. The pixels land in RAM, and the GPU reads them from that exact same RAM. The CPU never touches a single byte of the image.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_understanding_yuv_the_embedded_reality"><a class="anchor" href="#_understanding_yuv_the_embedded_reality"></a>Understanding YUV: The Embedded Reality</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Embedded sensors rarely output RGB. They usually output <strong>YUV422 (YUYV)</strong>. This is an artifact of television history that remains useful today because it allows for simple compression. You can explore the various <a href="https://fourcc.org/yuv.php">YUV format variations</a> to understand their memory layouts. The human eye is much more sensitive to brightness (Luminance) than color (Chrominance).</p>
+</div>
+<div class="sect2">
+<h3 id="_the_macropixel_layout"><a class="anchor" href="#_the_macropixel_layout"></a>The Macropixel Layout</h3>
+<div class="paragraph">
+<p>In a <strong>YUYV</strong> stream, pixels are packed in pairs to save space. Every 4 bytes contains <strong>two</strong> pixels:
+<code>[Y0, U, Y1, V]</code></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Pixel 0</strong> is reconstructed using <code>(Y0, U, V)</code>.</p>
+</li>
+<li>
+<p><strong>Pixel 1</strong> is reconstructed using <code>(Y1, U, V)</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This means the color (U and V) is shared between two adjacent pixels. This reduces the bandwidth by 33% compared to RGB888. However, it means your Vulkan shader cannot just read a <code>vec4</code>. It must understand the layout.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_yuyv_to_rgb_mathematics"><a class="anchor" href="#_the_yuyv_to_rgb_mathematics"></a>The YUYV-to-RGB Mathematics</h3>
+<div class="paragraph">
+<p>We use the <strong>BT.601</strong> color space coefficients. The transformation from normalized YUV <span class="steminline"> <svg style="vertical-align: -0.566ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="3.897ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 1722.7 1000"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="5B" d="M118 -250V750H255V710H158V-210H255V-250H118Z"></path></g><g data-mml-node="mn" transform="translate(278,0)"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path></g><g data-mml-node="mo" transform="translate(778,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mn" transform="translate(1222.7,0)"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path></g></g></g></svg> </span>] to RGB is a linear matrix multiplication:</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -3.733ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="42.868ex" height="8.597ex" role="img" focusable="false" viewBox="0 -2150 18947.7 3800"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mrow"><g data-mml-node="mo"><path data-c="23A1" d="M319 -645V1154H666V1070H403V-645H319Z" transform="translate(0,996)"></path><path data-c="23A3" d="M319 -644V1155H403V-560H666V-644H319Z" transform="translate(0,-1006)"></path><svg width="667" height="402" y="49" x="0" viewBox="0 100.5 667 402"><path data-c="23A2" d="M319 0V602H403V0H319Z" transform="scale(1,1.002)"></path></svg></g><g data-mml-node="mtable" transform="translate(667,0)"><g data-mml-node="mtr" transform="translate(0,1400)"><g data-mml-node="mtd" transform="translate(13.5,0)"><g data-mml-node="mi"><path data-c="1D445" d="M230 637Q203 637 198 638T193 649Q193 676 204 682Q206 683 378 683Q550 682 564 680Q620 672 658 652T712 606T733 563T739 529Q739 484 710 445T643 385T576 351T538 338L545 333Q612 295 612 223Q612 212 607 162T602 80V71Q602 53 603 43T614 25T640 16Q668 16 686 38T712 85Q717 99 720 102T735 105Q755 105 755 93Q755 75 731 36Q693 -21 641 -21H632Q571 -21 531 4T487 82Q487 109 502 166T517 239Q517 290 474 313Q459 320 449 321T378 323H309L277 193Q244 61 244 59Q244 55 245 54T252 50T269 48T302 46H333Q339 38 339 37T336 19Q332 6 326 0H311Q275 2 180 2Q146 2 117 2T71 2T50 1Q33 1 33 10Q33 12 36 24Q41 43 46 45Q50 46 61 46H67Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628Q287 635 230 637ZM630 554Q630 586 609 608T523 636Q521 636 500 636T462 637H440Q393 637 386 627Q385 624 352 494T319 361Q319 360 388 360Q466 361 492 367Q556 377 592 426Q608 449 619 486T630 554Z"></path></g></g></g><g data-mml-node="mtr"><g data-mml-node="mtd"><g data-mml-node="mi"><path data-c="1D43A" d="M50 252Q50 367 117 473T286 641T490 704Q580 704 633 653Q642 643 648 636T656 626L657 623Q660 623 684 649Q691 655 699 663T715 679T725 690L740 705H746Q760 705 760 698Q760 694 728 561Q692 422 692 421Q690 416 687 415T669 413H653Q647 419 647 422Q647 423 648 429T650 449T651 481Q651 552 619 605T510 659Q492 659 471 656T418 643T357 615T294 567T236 496T189 394T158 260Q156 242 156 221Q156 173 170 136T206 79T256 45T308 28T353 24Q407 24 452 47T514 106Q517 114 529 161T541 214Q541 222 528 224T468 227H431Q425 233 425 235T427 254Q431 267 437 273H454Q494 271 594 271Q634 271 659 271T695 272T707 272Q721 272 721 263Q721 261 719 249Q714 230 709 228Q706 227 694 227Q674 227 653 224Q646 221 643 215T629 164Q620 131 614 108Q589 6 586 3Q584 1 581 1Q571 1 553 21T530 52Q530 53 528 52T522 47Q448 -22 322 -22Q201 -22 126 55T50 252Z"></path></g></g></g><g data-mml-node="mtr" transform="translate(0,-1400)"><g data-mml-node="mtd" transform="translate(13.5,0)"><g data-mml-node="mi"><path data-c="1D435" d="M231 637Q204 637 199 638T194 649Q194 676 205 682Q206 683 335 683Q594 683 608 681Q671 671 713 636T756 544Q756 480 698 429T565 360L555 357Q619 348 660 311T702 219Q702 146 630 78T453 1Q446 0 242 0Q42 0 39 2Q35 5 35 10Q35 17 37 24Q42 43 47 45Q51 46 62 46H68Q95 46 128 49Q142 52 147 61Q150 65 219 339T288 628Q288 635 231 637ZM649 544Q649 574 634 600T585 634Q578 636 493 637Q473 637 451 637T416 636H403Q388 635 384 626Q382 622 352 506Q352 503 351 500L320 374H401Q482 374 494 376Q554 386 601 434T649 544ZM595 229Q595 273 572 302T512 336Q506 337 429 337Q311 337 310 336Q310 334 293 263T258 122L240 52Q240 48 252 48T333 46Q422 46 429 47Q491 54 543 105T595 229Z"></path></g></g></g></g><g data-mml-node="mo" transform="translate(1453,0)"><path data-c="23A4" d="M0 1070V1154H347V-645H263V1070H0Z" transform="translate(0,996)"></path><path data-c="23A6" d="M263 -560V1155H347V-644H0V-560H263Z" transform="translate(0,-1006)"></path><svg width="667" height="402" y="49" x="0" viewBox="0 100.5 667 402"><path data-c="23A5" d="M263 0V602H347V0H263Z" transform="scale(1,1.002)"></path></svg></g></g><g data-mml-node="mo" transform="translate(2397.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mrow" transform="translate(3453.6,0)"><g data-mml-node="mo"><path data-c="23A1" d="M319 -645V1154H666V1070H403V-645H319Z" transform="translate(0,996)"></path><path data-c="23A3" d="M319 -644V1155H403V-560H666V-644H319Z" transform="translate(0,-1006)"></path><svg width="667" height="402" y="49" x="0" viewBox="0 100.5 667 402"><path data-c="23A2" d="M319 0V602H403V0H319Z" transform="scale(1,1.002)"></path></svg></g><g data-mml-node="mtable" transform="translate(667,0)"><g data-mml-node="mtr" transform="translate(0,1400)"><g data-mml-node="mtd"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(778,0)"></path></g></g><g data-mml-node="mtd" transform="translate(3167,0)"><g data-mml-node="mn"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(778,0)"></path></g></g><g data-mml-node="mtd" transform="translate(6723,0)"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z" transform="translate(778,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(1278,0)"></path><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z" transform="translate(1778,0)"></path></g></g></g><g data-mml-node="mtr"><g data-mml-node="mtd"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(778,0)"></path></g></g><g data-mml-node="mtd" transform="translate(2278,0)"><g data-mml-node="mo"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mn" transform="translate(778,0)"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z" transform="translate(778,0)"></path><path data-c="34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z" transform="translate(1278,0)"></path><path data-c="34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z" transform="translate(1778,0)"></path></g></g><g data-mml-node="mtd" transform="translate(6334,0)"><g data-mml-node="mo"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mn" transform="translate(778,0)"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="37" d="M55 458Q56 460 72 567L88 674Q88 676 108 676H128V672Q128 662 143 655T195 646T364 644H485V605L417 512Q408 500 387 472T360 435T339 403T319 367T305 330T292 284T284 230T278 162T275 80Q275 66 275 52T274 28V19Q270 2 255 -10T221 -22Q210 -22 200 -19T179 0T168 40Q168 198 265 368Q285 400 349 489L395 552H302Q128 552 119 546Q113 543 108 522T98 479L95 458V455H55V458Z" transform="translate(778,0)"></path><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z" transform="translate(1278,0)"></path><path data-c="34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z" transform="translate(1778,0)"></path></g></g></g><g data-mml-node="mtr" transform="translate(0,-1400)"><g data-mml-node="mtd"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(778,0)"></path></g></g><g data-mml-node="mtd" transform="translate(2667,0)"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="37" d="M55 458Q56 460 72 567L88 674Q88 676 108 676H128V672Q128 662 143 655T195 646T364 644H485V605L417 512Q408 500 387 472T360 435T339 403T319 367T305 330T292 284T284 230T278 162T275 80Q275 66 275 52T274 28V19Q270 2 255 -10T221 -22Q210 -22 200 -19T179 0T168 40Q168 198 265 368Q285 400 349 489L395 552H302Q128 552 119 546Q113 543 108 522T98 479L95 458V455H55V458Z" transform="translate(778,0)"></path><path data-c="37" d="M55 458Q56 460 72 567L88 674Q88 676 108 676H128V672Q128 662 143 655T195 646T364 644H485V605L417 512Q408 500 387 472T360 435T339 403T319 367T305 330T292 284T284 230T278 162T275 80Q275 66 275 52T274 28V19Q270 2 255 -10T221 -22Q210 -22 200 -19T179 0T168 40Q168 198 265 368Q285 400 349 489L395 552H302Q128 552 119 546Q113 543 108 522T98 479L95 458V455H55V458Z" transform="translate(1278,0)"></path><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z" transform="translate(1778,0)"></path></g></g><g data-mml-node="mtd" transform="translate(7223,0)"><g data-mml-node="mn"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(778,0)"></path></g></g></g></g><g data-mml-node="mo" transform="translate(10057,0)"><path data-c="23A4" d="M0 1070V1154H347V-645H263V1070H0Z" transform="translate(0,996)"></path><path data-c="23A6" d="M263 -560V1155H347V-644H0V-560H263Z" transform="translate(0,-1006)"></path><svg width="667" height="402" y="49" x="0" viewBox="0 100.5 667 402"><path data-c="23A5" d="M263 0V602H347V0H263Z" transform="scale(1,1.002)"></path></svg></g></g><g data-mml-node="mrow" transform="translate(14344.2,0)"><g data-mml-node="mo"><path data-c="23A1" d="M319 -645V1154H666V1070H403V-645H319Z" transform="translate(0,996)"></path><path data-c="23A3" d="M319 -644V1155H403V-560H666V-644H319Z" transform="translate(0,-1006)"></path><svg width="667" height="402" y="49" x="0" viewBox="0 100.5 667 402"><path data-c="23A2" d="M319 0V602H403V0H319Z" transform="scale(1,1.002)"></path></svg></g><g data-mml-node="mtable" transform="translate(667,0)"><g data-mml-node="mtr" transform="translate(0,1400)"><g data-mml-node="mtd" transform="translate(1253.2,0)"><g data-mml-node="mi"><path data-c="1D44C" d="M66 637Q54 637 49 637T39 638T32 641T30 647T33 664T42 682Q44 683 56 683Q104 680 165 680Q288 680 306 683H316Q322 677 322 674T320 656Q316 643 310 637H298Q242 637 242 624Q242 619 292 477T343 333L346 336Q350 340 358 349T379 373T411 410T454 461Q546 568 561 587T577 618Q577 634 545 637Q528 637 528 647Q528 649 530 661Q533 676 535 679T549 683Q551 683 578 682T657 680Q684 680 713 681T746 682Q763 682 763 673Q763 669 760 657T755 643Q753 637 734 637Q662 632 617 587Q608 578 477 424L348 273L322 169Q295 62 295 57Q295 46 363 46Q379 46 384 45T390 35Q390 33 388 23Q384 6 382 4T366 1Q361 1 324 1T232 2Q170 2 138 2T102 1Q84 1 84 9Q84 14 87 24Q88 27 89 30T90 35T91 39T93 42T96 44T101 45T107 45T116 46T129 46Q168 47 180 50T198 63Q201 68 227 171L252 274L129 623Q128 624 127 625T125 627T122 629T118 631T113 633T105 634T96 635T83 636T66 637Z"></path></g></g></g><g data-mml-node="mtr"><g data-mml-node="mtd" transform="translate(1,0)"><g data-mml-node="mi"><path data-c="1D448" d="M107 637Q73 637 71 641Q70 643 70 649Q70 673 81 682Q83 683 98 683Q139 681 234 681Q268 681 297 681T342 682T362 682Q378 682 378 672Q378 670 376 658Q371 641 366 638H364Q362 638 359 638T352 638T343 637T334 637Q295 636 284 634T266 623Q265 621 238 518T184 302T154 169Q152 155 152 140Q152 86 183 55T269 24Q336 24 403 69T501 205L552 406Q599 598 599 606Q599 633 535 637Q511 637 511 648Q511 650 513 660Q517 676 519 679T529 683Q532 683 561 682T645 680Q696 680 723 681T752 682Q767 682 767 672Q767 650 759 642Q756 637 737 637Q666 633 648 597Q646 592 598 404Q557 235 548 205Q515 105 433 42T263 -22Q171 -22 116 34T60 167V183Q60 201 115 421Q164 622 164 628Q164 635 107 637Z"></path></g><g data-mml-node="mo" transform="translate(989.2,0)"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mn" transform="translate(1989.4,0)"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z" transform="translate(778,0)"></path></g></g></g><g data-mml-node="mtr" transform="translate(0,-1400)"><g data-mml-node="mtd"><g data-mml-node="mi"><path data-c="1D449" d="M52 648Q52 670 65 683H76Q118 680 181 680Q299 680 320 683H330Q336 677 336 674T334 656Q329 641 325 637H304Q282 635 274 635Q245 630 242 620Q242 618 271 369T301 118L374 235Q447 352 520 471T595 594Q599 601 599 609Q599 633 555 637Q537 637 537 648Q537 649 539 661Q542 675 545 679T558 683Q560 683 570 683T604 682T668 681Q737 681 755 683H762Q769 676 769 672Q769 655 760 640Q757 637 743 637Q730 636 719 635T698 630T682 623T670 615T660 608T652 599T645 592L452 282Q272 -9 266 -16Q263 -18 259 -21L241 -22H234Q216 -22 216 -15Q213 -9 177 305Q139 623 138 626Q133 637 76 637H59Q52 642 52 648Z"></path></g><g data-mml-node="mo" transform="translate(991.2,0)"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mn" transform="translate(1991.4,0)"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path><path data-c="2E" d="M78 60Q78 84 95 102T138 120Q162 120 180 104T199 61Q199 36 182 18T139 0T96 17T78 60Z" transform="translate(500,0)"></path><path data-c="35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z" transform="translate(778,0)"></path></g></g></g></g><g data-mml-node="mo" transform="translate(3936.4,0)"><path data-c="23A4" d="M0 1070V1154H347V-645H263V1070H0Z" transform="translate(0,996)"></path><path data-c="23A6" d="M263 -560V1155H347V-644H0V-560H263Z" transform="translate(0,-1006)"></path><svg width="667" height="402" y="49" x="0" viewBox="0 100.5 667 402"><path data-c="23A5" d="M263 0V602H347V0H263Z" transform="scale(1,1.002)"></path></svg></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p><strong>(Note: We subtract 0.5 from U and V because chrominance is signed, centered around 0.5 in the normalized range).</strong></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_the_nv12_multi_planar_challenge"><a class="anchor" href="#_advanced_the_nv12_multi_planar_challenge"></a>Advanced: The NV12 Multi-Planar Challenge</h3>
+<div class="paragraph">
+<p>While YUYV is common for USB cameras, high-performance MIPI CSI sensors often use <strong>NV12</strong>.</p>
+</div>
+<div class="paragraph">
+<p>In NV12, the image is split into two separate memory planes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Luma (Y) Plane</strong>: A full-resolution grayscale image.</p>
+</li>
+<li>
+<p><strong>Chroma (UV) Plane</strong>: A half-resolution (2x2 subsampled) plane where U and V are interleaved.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This format is even more efficient for the memory bus, but it requires that we import <strong>two separate DMA-BUFs</strong> (or one DMA-BUF with two offsets) into Vulkan.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Importing a multi-planar NV12 image
+vk::ExternalFormatANDROID externalFormat{ .externalFormat = 0 }; // Vendor specific
+
+vk::ImageCreateInfo imageInfo{
+    .pNext = &amp;externalFormat,
+    .imageType = vk::ImageType::e2D,
+    .format = vk::Format::eG8B8R8_2Plane420Unorm, // NV12
+    .extent = {1920, 1080, 1},
+    .usage = vk::ImageUsageFlagBits::eSampled
+};</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_vk_khr_sampler_ycbcr_conversion"><a class="anchor" href="#_using_vk_khr_sampler_ycbcr_conversion"></a>Using <code>VK_KHR_sampler_ycbcr_conversion</code></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Doing YUV conversion in a shader (as shown below) is portable, but many embedded GPUs (like ARM Mali) have <strong>Fixed-Function YUV Hardware</strong>. If you use the <code>VK_KHR_sampler_ycbcr_conversion</code> extension, the GPU hardware will perform the conversion during the texture fetch, costing <strong>zero</strong> shader instructions.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Create a Conversion Object</strong>: Define the color space (BT.601) and the chroma sitting.</p>
+</li>
+<li>
+<p><strong>Create a Sampler</strong>: Attach the conversion object to the sampler.</p>
+</li>
+<li>
+<p><strong>Sample in GLSL</strong>: Use <code>texture()</code> normally; the result is automatically RGB!</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// With Ycbcr conversion, this sampler returns RGB directly!
+layout(set = 0, binding = 0) uniform sampler2D cameraTexture;
+
+void main() {
+    vec3 rgb = texture(cameraTexture, uv).rgb;
+    // No manual math required!
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_all_in_one_preprocessing_shader"><a class="anchor" href="#_the_all_in_one_preprocessing_shader"></a>The "All-In-One" Preprocessing Shader</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The real power of Vulkan is that we can combine <strong>Format Conversion</strong>, <strong>Bilinear Resizing</strong>, and <strong>ImageNet Normalization</strong> into a single compute pass. This is significantly faster than doing them as separate steps.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#version 450
+layout(local_size_x = 16, local_size_y = 16) in;
+
+// Our dmabuf-backed camera frame
+layout(set = 0, binding = 0) uniform sampler2D cameraTexture;
+
+// The output tensor for ONNX Runtime
+layout(set = 0, binding = 1) writeonly buffer Output { float data[]; } mlTensor;
+
+void main() {
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    if (pos.x &gt;= targetWidth || pos.y &gt;= targetHeight) return;
+
+    // 1. Hardware-Accelerated Bilinear Sample
+    // We sample from the normalized UV coordinate.
+    // The GPU's fixed-function texture units handle the interpolation for us.
+    vec2 uv = (vec2(pos) + 0.5) / vec2(targetWidth, targetHeight);
+    vec3 yuv = texture(cameraTexture, uv).rgb;
+
+    // 2. Manual YUV -&gt; RGB
+    // We implement the math ourselves to avoid driver bugs with YCbCr extensions.
+    vec3 rgb;
+    rgb.r = yuv.x + 1.402 * (yuv.z - 0.5);
+    rgb.g = yuv.x - 0.344 * (yuv.y - 0.5) - 0.714 * (yuv.z - 0.5);
+    rgb.b = yuv.x + 1.772 * (yuv.y - 0.5);
+
+    // 3. Normalization (ImageNet constants)
+    // Most models expect pixels to be centered around zero with unit variance.
+    vec3 normalized = (rgb - vec3(0.485, 0.456, 0.406)) / vec3(0.229, 0.224, 0.225);
+
+    // 4. Planar NCHW Write
+    // ONNX Runtime expects Red plane, then Green plane, then Blue plane.
+    uint planeSize = targetWidth * targetHeight;
+    uint pixelIdx = pos.y * targetWidth + pos.x;
+    mlTensor.data[0 * planeSize + pixelIdx] = normalized.r;
+    mlTensor.data[1 * planeSize + pixelIdx] = normalized.g;
+    mlTensor.data[2 * planeSize + pixelIdx] = normalized.b;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cross_driver_synchronization_the_handshake"><a class="anchor" href="#_cross_driver_synchronization_the_handshake"></a>Cross-Driver Synchronization: The Handshake</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Camera sensor and the GPU are two independent processors working on the same "Desk" (Memory). If the GPU starts reading while the Camera is still writing, you get <strong>Tearing</strong> (top half of frame is new, bottom half is old).</p>
+</div>
+<div class="sect2">
+<h3 id="_using_dma_buf_sync"><a class="anchor" href="#_using_dma_buf_sync"></a>Using <code>dma_buf_sync</code></h3>
+<div class="paragraph">
+<p>On Linux, we use the <code>DMA_BUF_IOCTL_SYNC</code> to tell the kernel about our intentions. This flushes the CPU/Sensor caches so the GPU sees fresh data.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// 1. BEFORE GPU READS: Tell kernel to flush sensor caches
+// This is mandatory on ARM Mali and Adreno GPUs.
+struct dma_buf_sync sync_start = { .flags = DMA_BUF_SYNC_START | DMA_BUF_SYNC_READ };
+ioctl(sharedFd, DMA_BUF_IOCTL_SYNC, &amp;sync_start);
+
+// 2. EXECUTE VULKAN COMPUTE JOB
+// We use a timeline semaphore to signal when Vulkan is finished.
+submitVulkanInference(cameraImage);
+
+// 3. AFTER GPU FINISH: Tell kernel we are done
+struct dma_buf_sync sync_end = { .flags = DMA_BUF_SYNC_END | DMA_BUF_SYNC_READ };
+ioctl(sharedFd, DMA_BUF_IOCTL_SYNC, &amp;sync_end);</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_isp_vs_gpu_where_to_resize"><a class="anchor" href="#_isp_vs_gpu_where_to_resize"></a>ISP vs. GPU: Where to Resize?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Embedded SoCs often have an <strong>Image Signal Processor (ISP)</strong>. The ISP is a dedicated hardware block designed specifically for camera data. It can perform resizing, rotation, and color conversion using almost zero power.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ISP Pros</strong>: Zero GPU usage, extremely low power draw.</p>
+</li>
+<li>
+<p><strong>ISP Cons</strong>: ISP drivers are often proprietary (like Broadcom&#8217;s on the Pi) and can be difficult to integrate into a standard Vulkan flow.</p>
+</li>
+<li>
+<p><strong>The Professional Strategy</strong>: Use the ISP for the primary downscale (e.g., 4K sensor data down to a 1080p <code>dmabuf</code>) and use the Vulkan compute shader for the final ML-specific crop and normalization.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_troubleshooting_common_pitfalls"><a class="anchor" href="#_troubleshooting_common_pitfalls"></a>Troubleshooting: Common Pitfalls</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Cache Incoherency</strong>: If your ML model sees flickering artifacts, your <code>dma_buf_sync</code> calls are likely missing. Never assume the hardware is "unified" just because it shares a RAM stick—caches are often private to the CPU or GPU.</p>
+</li>
+<li>
+<p><strong>Handle Leakage</strong>: Every <code>VIDIOC_EXPBUF</code> call creates a new file descriptor in your process table. You <strong>must</strong> call <code>close(sharedFd)</code> when you are finished, or your application will eventually hit the process limit and crash.</p>
+</li>
+<li>
+<p><strong>Memory Alignment</strong>: Many camera drivers require that the width of the image be a multiple of 16 or 32. If your sensor is 1920 wide but the driver pads it to 1936, your Vulkan UV coordinates will be shifted, and your AI will see "diagonal streaks."</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary_the_zero_copy_checklist"><a class="anchor" href="#_summary_the_zero_copy_checklist"></a>Summary: The Zero-Copy Checklist</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>V4L2 MMAP</strong>: Request a pool of 4 buffers from the sensor driver.</p>
+</li>
+<li>
+<p><strong>dmabuf Export</strong>: Get a File Descriptor for each physical buffer.</p>
+</li>
+<li>
+<p><strong>Vulkan Import</strong>: Import those FDs into <code>VkDeviceMemory</code> using external memory extensions.</p>
+</li>
+<li>
+<p><strong>Fused Compute</strong>: Perform resize + color conversion + normalization in a single 1ms pass.</p>
+</li>
+<li>
+<p><strong>Sync IOCTL</strong>: Use <code>dma_buf_sync</code> before and after every frame to maintain cache coherency.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>By mastering the zero-copy pipeline, you&#8217;ve removed the primary performance bottleneck in embedded vision. Your application is now faster, cooler, and capable of real-time AI on low-power silicon.</p>
+</div>
+<div class="paragraph">
+<p>Next, we will look at how to manage the physical limits of our hardware using <strong>Power and Thermal Optimization</strong>.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_cross_compilation.html" class="xref page">Previous: Cross-Compilation</a> | <a href="04_power_optimization.html" class="xref page">Next: Power Optimization</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

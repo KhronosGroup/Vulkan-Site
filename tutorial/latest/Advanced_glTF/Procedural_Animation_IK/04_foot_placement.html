@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Foot Placement on Uneven Terrain :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Procedural_Animation_IK/04_foot_placement.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Procedural Animation &amp; IK</li>
+    <li><a href="04_foot_placement.html">Foot placement</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Foot Placement on Uneven Terrain</h1>
+<div class="sect1">
+<h2 id="_why_this_is_harder_than_it_sounds"><a class="anchor" href="#_why_this_is_harder_than_it_sounds"></a>Why This Is Harder Than It Sounds</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Foot placement is the first practical application most developers want from an IK system, and it reveals several subtleties that the algorithm descriptions above don&#8217;t fully prepare you for. Getting the feet to touch the ground sounds simple: cast a ray downward from each foot, find where it hits the terrain, and run IK to place the foot there. In practice, there are at least three additional problems you need to solve before this looks correct.</p>
+</div>
+<div class="paragraph">
+<p>The first problem is <strong>body height</strong>. If you push the feet down to meet the terrain, but the character&#8217;s body height (the position of the root joint, typically the pelvis or hips) doesn&#8217;t adjust, you will get a character whose feet are sinking into the floor on one side of a slope while floating in the air on the other. The pelvis needs to move down to accommodate the terrain&#8217;s lowest foot contact point.</p>
+</div>
+<div class="paragraph">
+<p>The second problem is <strong>foot rotation</strong>. Dropping the foot down to the terrain surface is only half the correction—the foot also needs to <strong>rotate</strong> to match the terrain normal. A foot planted on a slope should angle itself to conform to the slope, not remain horizontal as if standing on flat ground. This requires computing the terrain normal at the contact point and rotating the foot to align with it.</p>
+</div>
+<div class="paragraph">
+<p>The third problem is <strong>smoothing</strong>. If you apply IK corrections directly every frame, the feet will jump to the exact IK solution with no inertia. When the terrain surface changes rapidly—say, the character steps from a slope onto a flat area—the foot will snap instantly. In reality, a foot has momentum and should approach its target position over several frames. We need to smooth the IK targets in time, not just compute them.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_foot_placement_pipeline"><a class="anchor" href="#_the_foot_placement_pipeline"></a>The Foot Placement Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A complete foot placement system has four distinct stages that run in order every frame:</p>
+</div>
+<div class="paragraph">
+<p><strong>Stage 1 — Raycast.</strong> For each foot, fire a ray downward (in world space, along the gravity direction) from a position above the foot. The ray origin should be high enough to account for the character potentially being above the terrain—typically the character&#8217;s full height above the foot position. Record the hit point and the surface normal at each contact.</p>
+</div>
+<div class="paragraph">
+<p><strong>Stage 2 — Smooth the targets.</strong> Apply a low-pass filter to the hit positions and normals over time. A simple exponential moving average is sufficient: <code>smoothed = lerp(smoothed, raw, smoothing_factor * delta_time)</code>. The smoothing factor controls how quickly the foot "catches up" to the terrain—higher values mean faster response but more snapping. A value around 8 to 12 typically produces natural-looking results.</p>
+</div>
+<div class="paragraph">
+<p><strong>Stage 3 — Adjust the pelvis.</strong> Determine how much each foot needs to move vertically (down from its animated position to the smoothed terrain contact). Take the larger of the two vertical adjustments, and move the entire character&#8217;s root joint down by that amount. This ensures neither foot needs to extend more than necessary to reach the terrain.</p>
+</div>
+<div class="paragraph">
+<p><strong>Stage 4 — Solve IK.</strong> Run the IK solver (CCD or FABRIK) on each leg chain, with the smoothed hit point as the target. Then rotate the foot joint to align with the smoothed terrain normal.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_implementing_the_pelvis_adjustment"><a class="anchor" href="#_implementing_the_pelvis_adjustment"></a>Implementing the Pelvis Adjustment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The pelvis adjustment is handled before the IK solve. We query the desired foot positions and compute the necessary downward offset:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct FootPlacementData {
+    glm::vec3 target_position;  // Smoothed world-space target for the foot
+    glm::vec3 surface_normal;   // Smoothed terrain normal at the contact point
+    float     ik_weight;        // 0 = no IK, 1 = full IK (for blending)
+};
+
+struct FootPlacementState {
+    FootPlacementData left;
+    FootPlacementData right;
+    glm::vec3 smoothed_pelvis_offset; // Low-pass filtered pelvis height adjustment
+};
+
+void update_foot_targets(
+    const PhysicsWorld&amp;  world,
+    const glm::vec3&amp;     left_foot_world,
+    const glm::vec3&amp;     right_foot_world,
+    float                character_height,
+    float                delta_time,
+    FootPlacementState&amp;  state)
+{
+    const float SMOOTHING = 10.0f;
+
+    auto raycast_foot = [&amp;](const glm::vec3&amp; foot_world) -&gt; std::pair&lt;glm::vec3, glm::vec3&gt; {
+        glm::vec3 ray_origin = foot_world + glm::vec3(0, character_height, 0);
+        glm::vec3 ray_dir    = glm::vec3(0, -1, 0);
+        float     ray_length = character_height * 2.0f;
+
+        // Use the abstract PhysicsWorld::raycast() — keeps this code engine-agnostic.
+        float     out_distance;
+        glm::vec3 out_normal;
+        JPH::BodyID out_body_id;
+
+        if (world.raycast(ray_origin, ray_dir, ray_length,
+                          out_distance, out_normal, out_body_id))
+        {
+            glm::vec3 hit_point = ray_origin + ray_dir * out_distance;
+            return { hit_point, out_normal };
+        }
+        // No hit: keep the animated foot position, flat normal
+        return { foot_world, glm::vec3(0, 1, 0) };
+    };
+
+    auto [left_pos, left_normal]   = raycast_foot(left_foot_world);
+    auto [right_pos, right_normal] = raycast_foot(right_foot_world);
+
+    float t = glm::clamp(SMOOTHING * delta_time, 0.0f, 1.0f);
+
+    state.left.target_position  = glm::mix(state.left.target_position,  left_pos,    t);
+    state.left.surface_normal   = glm::normalize(glm::mix(state.left.surface_normal,   left_normal,  t));
+    state.right.target_position = glm::mix(state.right.target_position, right_pos,   t);
+    state.right.surface_normal  = glm::normalize(glm::mix(state.right.surface_normal,  right_normal, t));
+
+    // Pelvis adjustment: push the pelvis down by the maximum foot drop
+    float left_drop  = left_foot_world.y  - state.left.target_position.y;
+    float right_drop = right_foot_world.y - state.right.target_position.y;
+    float pelvis_drop = std::max(0.0f, std::max(left_drop, right_drop));
+
+    glm::vec3 desired_pelvis_offset(0, -pelvis_drop, 0);
+    state.smoothed_pelvis_offset = glm::mix(
+        state.smoothed_pelvis_offset, desired_pelvis_offset, t);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice the use of <code>std::max(0.0f, &#8230;&#8203;)</code> on the pelvis drop. We only push the pelvis <strong>down</strong>, never up. If the terrain is higher than the animated foot position (the character is about to step on a raised surface), the IK will bend the leg to handle it; we don&#8217;t want the pelvis being pushed skyward on slopes that rise quickly.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_applying_the_ik_and_foot_rotation"><a class="anchor" href="#_applying_the_ik_and_foot_rotation"></a>Applying the IK and Foot Rotation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After adjusting the pelvis, the leg chain has been repositioned slightly. We then run the IK solver on each leg, followed by the foot rotation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void apply_foot_ik(
+    std::vector&lt;Node&gt;&amp;          nodes,
+    const IKChain&amp;              leg_chain,
+    uint32_t                    foot_node_idx,
+    const FootPlacementData&amp;    foot_data,
+    const glm::vec3&amp;            up_axis)
+{
+    // Run the IK solver to place the foot at the target position
+    solve_ccd(nodes, leg_chain, foot_data.target_position);
+
+    // Now rotate the foot to align with the terrain normal.
+    // The foot's "up" direction in its local space needs to align with the surface normal.
+    Node&amp; foot = nodes[foot_node_idx];
+
+    // The foot's current world-space up direction
+    // (assuming the foot's local Y is the "up" direction—adjust for your rig)
+    glm::vec3 foot_current_up = glm::normalize(
+        glm::mat3(foot.world_matrix) * glm::vec3(0, 1, 0));
+
+    float dot = glm::clamp(glm::dot(foot_current_up, foot_data.surface_normal), -1.0f, 1.0f);
+    if (dot &lt; 0.9999f) {
+        float     angle = std::acos(dot);
+        glm::vec3 axis  = glm::normalize(glm::cross(foot_current_up, foot_data.surface_normal));
+
+        glm::quat world_correction = glm::angleAxis(angle, axis);
+        glm::quat new_world_rot    = world_correction * foot.get_world_rotation();
+
+        glm::quat parent_world_rot = (foot.parent_index != INVALID_NODE_INDEX)
+            ? nodes[foot.parent_index].get_world_rotation()
+            : glm::quat(1, 0, 0, 0);
+
+        foot.local_rotation = glm::inverse(parent_world_rot) * new_world_rot;
+        foot.mark_dirty();
+        update_world_matrices_subtree(nodes, foot_node_idx);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_blending_ik_in_and_out"><a class="anchor" href="#_blending_ik_in_and_out"></a>Blending IK In and Out</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There is one more thing we need to handle: the IK system must not fight the animation system when the character is in motion. Consider what happens when a character starts walking. Their feet are lifting off the ground constantly—the animated foot trajectory deliberately lifts each foot through the air during the swing phase. If we run foot placement IK during the swing, the IK system will immediately try to pull the foot back down to the ground, preventing it from lifting at all.</p>
+</div>
+<div class="paragraph">
+<p>The solution is to gate the IK correction with a <strong>plant weight</strong>: a per-foot value that is 1.0 when the foot should be firmly planted and 0.0 when the foot is in the air. The plant weight transitions smoothly between these extremes.</p>
+</div>
+<div class="paragraph">
+<p>The plant weight can be derived from the animation itself. Most animation systems annotate walk cycles with <strong>foot contact events</strong>—keyframe-triggered events that mark the moments when each foot makes and breaks contact with the ground. If your animation tool generates these events, listen for them to drive the plant weight.</p>
+</div>
+<div class="paragraph">
+<p>If foot contact events are not available, you can derive the plant weight heuristically: when the foot&#8217;s animated velocity (the rate of change of its world position across frames) drops below a threshold, treat the foot as planted. This works reasonably well for walk cycles but can fail for faster gaits.</p>
+</div>
+<div class="paragraph">
+<p>Once you have the plant weight, apply it as a blend between the animated position and the IK-corrected position:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// After computing the IK target position, blend it with the animated position
+// based on the plant weight. A weight of 1.0 uses full IK; 0.0 uses animation.
+glm::vec3 blended_target = glm::mix(
+    animated_foot_position,
+    foot_data.target_position,
+    foot_data.ik_weight
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This makes the foot placement system a layer that enhances the base animation rather than overriding it. When the foot is planted, IK brings it to precise contact with the terrain. When the foot is in the air, IK gracefully fades out, letting the animation play undisturbed.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_fabrik.html" class="xref page">Previous: FABRIK</a> | <a href="05_look_at.html" class="xref page">Next: Look-At Controllers</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

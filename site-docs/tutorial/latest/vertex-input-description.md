@@ -1,0 +1,186 @@
+# Vertex input description
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/04_Vertex_buffers/00_Vertex_input_description.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Vertex shader](#_vertex_shader)
+- [Vertex data](#_vertex_data)
+- [Binding descriptions](#_binding_descriptions)
+- [Attribute descriptions](#_attribute_descriptions)
+- [Pipeline vertex input](#_pipeline_vertex_input)
+- [Pipeline_vertex_input](#_pipeline_vertex_input)
+
+## Content
+
+In the next few chapters, we’re going to replace the hardcoded vertex data in the vertex shader with a vertex buffer in memory.
+We’ll start with the easiest approach of creating a CPU visible buffer and using `memcpy` to copy the vertex data into it directly, and after that we’ll see how to use a staging buffer to copy the vertex data to high performance memory.
+
+First, change the vertex shader to no longer include the vertex data in the shader code itself.
+The vertex shader takes input from a vertex buffer by being declared in a
+struct in the proper order.
+
+struct VSInput {
+    float2 inPosition;
+    float3 inColor;
+};
+
+struct VSOutput
+{
+    float4 pos : SV_Position;
+    float3 color;
+};
+
+[shader("vertex")]
+VSOutput vertMain(VSInput input) {
+    VSOutput output;
+    output.pos = float4(input.inPosition, 0.0, 1.0);
+    output.color = input.inColor;
+    return output;
+}
+
+[shader("fragment")]
+float4 fragMain(VSOutput vertIn) : SV_TARGET {
+    return float4(vertIn.color, 1.0);
+}
+
+The `inPosition` and `inColor` variables are *vertex attributes*.
+They’re properties that are specified per-vertex in the vertex buffer just like we manually specified a position and color per vertex using the two arrays.
+
+We’re moving the vertex data from the shader code to an array in the code of our program.
+Start by including the GLM library, which provides us with linear algebra related types like vectors and matrices.
+We’re going to use these types to specify the position and color vectors.
+
+#include 
+
+Create a new structure called `Vertex` with the two attributes that we’re going to use in the vertex shader inside it:
+
+struct Vertex
+{
+    glm::vec2 pos;
+    glm::vec3 color;
+};
+
+GLM conveniently provides us with C++ types that exactly match the vector types used in the shader language.
+
+const std::vector vertices = {
+    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
+Now use the `Vertex` structure to specify an array of vertex data.
+We’re using exactly the same position and color values as before, but now they’re combined into one array of vertices.
+This is known as *interleaving* vertex attributes.
+
+The next step is to tell Vulkan how to pass this data format to the vertex shader once it’s been uploaded into GPU memory.
+There are two types of structures needed to convey this information.
+
+The first structure is `vk::VertexInputBindingDescription` and we’ll add a member function to the `Vertex` struct to populate it with the right data.
+
+struct Vertex {
+    glm::vec2 pos;
+    glm::vec3 color;
+
+    static vk::VertexInputBindingDescription getBindingDescription()
+    {
+      return {.binding = 0, .stride = sizeof(Vertex), .inputRate = vk::VertexInputRate::eVertex};
+    }
+};
+
+A vertex binding describes at which rate to load data from memory throughout the vertices.
+It specifies the number of bytes between data entries and whether to move to the next data entry after each vertex or after each instance.
+
+All of our per-vertex data is packed together in one array, so we’re only going to have one binding.
+The `binding` parameter specifies the index of the binding in the array of bindings.
+The `stride` parameter specifies the number of bytes from one entry to the next, and the `inputRate` parameter can have one of the following values:
+
+* 
+`vk::VertexInputRate::eVertex`  : Move to the next data entry after each vertex
+
+* 
+`vk::VertexInputRate::eInstance`: Move to the next data entry after each instance
+
+We’re not going to use instanced rendering, so we’ll stick to per-vertex data.
+
+The second structure that describes how to handle vertex input is `vk::VertexInputAttributeDescription`.
+We’re going to add another helper function to `Vertex` to fill in these structs.
+
+#include 
+
+...
+
+    static std::array getAttributeDescriptions()
+    {
+      return {{{.location = 0, .binding = 0, .format = vk::Format::eR32G32Sfloat, .offset = offsetof(Vertex, pos)},
+               {.location = 1, .binding = 0, .format = vk::Format::eR32G32B32Sfloat, .offset = offsetof(Vertex, color)}}};
+    }
+}
+
+As the function prototype indicates, there are going to be two of these structures.
+An attribute description struct describes how to extract a vertex attribute from a chunk of vertex data originating from a binding description.
+We have two attributes, position and color, so we need two attribute description structs.
+
+The `location` parameter references the `location` directive of the input in the vertex shader.
+The input in the vertex shader with location `0` is the position, which has two 32-bit float components.
+The `binding` parameter tells Vulkan from which binding the per-vertex data comes.
+
+The `format` parameter describes the type of data for the attribute.
+A bit confusingly, the formats are specified using the same enumeration as color formats.
+The following shader types and formats are commonly used together:
+
+* 
+`float` : `vk::Format::eR32Sfloat`
+
+* 
+`float2`: `vk::Format::eR32G32Sfloat`
+
+* 
+`float3`: `vk::Format::eR32G32B32Sfloat`
+
+* 
+`float4`: `vk::Format::eR32G32B32A32Sfloat`
+
+As you can see, you should use the format where the amount of color channels matches the number of components in the shader data type.
+It is allowed to use more channels than the number of components in the shader, but they will be silently discarded.
+If the number of channels is lower than the number of components, then the BGA components will use default values of `(0, 0, 1)`.
+The color type (`Sfloat`, `Uint`, `Sint`) and bit width should also match the type of the shader input.
+See the following examples:
+
+* 
+`int2`  : `vk::Format::eR32G32Sint`, a 2-component vector of 32-bit signed integers
+
+* 
+`uint4` : `vk::Format::eR32G32B32A32Uint`, a 4-component vector of 32-bit unsigned integers
+
+* 
+`double`: `vk::Format::eR64Sfloat`, a double-precision (64-bit) float
+
+The `format` parameter implicitly defines the byte size of attribute data and the `offset` parameter has specified the number of bytes since the start of the per-vertex data to read from.
+The binding is loading one `Vertex` at a time and the position attribute (`pos`) is at an offset of `0` bytes from the beginning of this struct.
+This is automatically calculated using the `offsetof` macro.
+
+The color attribute is described in much the same way.
+
+We now need to set up the graphics pipeline to accept vertex data in this format by referencing the structures in `createGraphicsPipeline`.
+Find the `vertexInputInfo` struct and modify it to reference the two descriptions:
+
+auto                                     bindingDescription    = Vertex::getBindingDescription();
+auto                                     attributeDescriptions = Vertex::getAttributeDescriptions();
+vk::PipelineVertexInputStateCreateInfo   vertexInputInfo{.vertexBindingDescriptionCount   = 1,
+                                                         .pVertexBindingDescriptions      = &bindingDescription,
+                                                         .vertexAttributeDescriptionCount = static_cast(attributeDescriptions.size()),
+                                                         .pVertexAttributeDescriptions    = attributeDescriptions.data()};
+
+The pipeline is now ready to accept vertex data in the format of the `vertices` container and pass it on to our vertex shader.
+The [next step](01_Vertex_buffer_creation.html) is to create a vertex buffer and move the vertex data to it so the GPU is able to access it.
+
+[C++ code](../_attachments/19_vertex_buffer.cpp) /
+[slang shader](../_attachments/19_shader_vertexbuffer.slang) /
+[GLSL Vertex shader](../_attachments/19_shader_vertexbuffer.vert) /
+[GLSL Fragment shader](../_attachments/19_shader_vertexbuffer.frag)

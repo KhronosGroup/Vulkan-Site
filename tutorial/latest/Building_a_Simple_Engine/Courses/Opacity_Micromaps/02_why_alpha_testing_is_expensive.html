@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>What Your GPU Is Actually Doing :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../../");!function(){var f="../../../Building_a_Simple_Engine/Courses/Opacity_Micromaps/02_why_alpha_testing_is_expensive.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Extra Courses</li>
+    <li>Opacity Micromaps</li>
+    <li><a href="02_why_alpha_testing_is_expensive.html">Why alpha testing is expensive</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">What Your GPU Is Actually Doing</h1>
+<div class="sect1">
+<h2 id="_a_filing_cabinet_that_goes_all_the_way_down"><a class="anchor" href="#_a_filing_cabinet_that_goes_all_the_way_down"></a>A Filing Cabinet That Goes All The Way Down</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To understand why alpha testing is expensive, you need a mental model of how the GPU finds the triangles that a ray might hit. Checking every triangle in the scene for every ray would be catastrophically slow — a modern scene might have millions of triangles, and a 4K frame has millions of pixels, each casting shadow rays. The brute-force cost would be in the trillions of operations per frame.</p>
+</div>
+<div class="paragraph">
+<p>The GPU avoids this through a spatial data structure called a <strong>Bounding Volume Hierarchy</strong>, or <strong>BVH</strong>. Imagine a filing cabinet. The top-level drawer contains a single large box that encloses the entire scene. Inside that box are several smaller boxes, each enclosing a major region of the scene — perhaps the left half and the right half. Inside each of those are still smaller boxes, subdividing further. At the bottom of the hierarchy, each leaf node contains a small number of actual triangles.</p>
+</div>
+<div class="paragraph">
+<p>When a ray enters the BVH, it first tests the top-level bounding box. If it misses, done — the ray hits nothing in the entire scene. If it hits, it opens that box and tests the children. It follows the ones it hits and ignores the ones it misses. The traversal narrows geometrically: rather than testing a million triangles, the ray tests perhaps a few dozen bounding boxes and reaches perhaps a handful of candidate triangles. This is why ray traversal is feasible in real time.</p>
+</div>
+<div class="paragraph">
+<p>For fully <strong>opaque</strong> geometry, the story ends at the triangle level. When the traversal finds that a ray intersects a triangle, the hardware issues what is called a <strong>committed hit</strong> — it records the hit distance and surface data, and traversal can terminate (or continue looking for closer hits, depending on the mode). No shader code is involved. The fixed-function hardware handles it entirely.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_any_hit_shader_a_necessary_interruption"><a class="anchor" href="#_the_any_hit_shader_a_necessary_interruption"></a>The Any-Hit Shader: A Necessary Interruption</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Alpha-tested geometry breaks this clean story. When the BVH traversal finds a candidate triangle on an alpha-tested mesh, it cannot commit the hit without first checking whether the intersection point is actually solid. To do this, it must invoke a programmable shader — the <strong>any-hit shader</strong>.</p>
+</div>
+<div class="paragraph">
+<p>The any-hit shader receives the intersection data: specifically, the <strong>barycentric coordinates</strong> of the hit point within the triangle. Barycentric coordinates describe where exactly within the triangle the ray landed, expressed as a weighted combination of the three vertices. From the barycentric coordinates, the shader can interpolate the UV texture coordinates for the hit point. Then it samples the alpha texture at those UVs and examines the result. If the alpha value is above the material&#8217;s threshold, the hit is solid — the shader allows the default commit to proceed. If the alpha is below threshold, the shader calls the ignore function and traversal continues, hunting for the next candidate.</p>
+</div>
+<div class="paragraph">
+<p>This is several sequential operations — barycentric interpolation, UV interpolation, a texture sample, a comparison, and a decision — that must complete before traversal can proceed. And it must complete for every candidate hit.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_parallelism_problem_divergence"><a class="anchor" href="#_the_parallelism_problem_divergence"></a>The Parallelism Problem: Divergence</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The GPU is not a sequential machine. It executes shader code on hundreds or thousands of parallel execution units simultaneously. These units work in groups called <strong>warps</strong> (NVIDIA terminology) or <strong>wavefronts</strong> (AMD terminology) — typically 32 or 64 shader threads executing in lockstep, running the same instruction at the same time on different data. This massively parallel execution model is why the GPU can shade millions of pixels per frame.</p>
+</div>
+<div class="paragraph">
+<p>The lockstep model has a critical weakness: <strong>divergence</strong>. When different threads in a warp need to take different code paths — when some threads find an opaque hit and others find a transparent hit — the warp cannot stay in lockstep. It must execute both code paths, masking off the threads that aren&#8217;t active on each path. Half the warp waits while the other half runs its branch, then vice versa. The effective parallelism halves, or worse.</p>
+</div>
+<div class="paragraph">
+<p>Alpha testing is a divergence machine. Out of 32 shadow rays in a warp, some might hit opaque regions of leaf triangles, some might hit transparent regions, and some might not hit any leaf at all. The any-hit shader fires on different triangles for different threads. Some threads finish their alpha check quickly, others take longer due to cache behavior. The warp serializes. Execution units sit idle waiting for stragglers. The GPU&#8217;s parallel throughput advantage evaporates precisely where it hurts most.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_texture_cache_catastrophe"><a class="anchor" href="#_the_texture_cache_catastrophe"></a>The Texture Cache Catastrophe</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There is a second, related cost that compounds the first: <strong>texture cache misses</strong>. The GPU has dedicated caches for texture data, designed to serve texture samples efficiently. During rasterization, texture caching works beautifully because nearby screen pixels tend to sample nearby points in texture space — spatial coherence means neighboring threads read from the same cache lines, and the cache stays warm.</p>
+</div>
+<div class="paragraph">
+<p>During BVH traversal, rays come from arbitrary screen positions and can hit triangles at arbitrary UV coordinates. Seventeen shadow rays in the same warp might be testing seventeen completely different leaf triangles, each with different UV coordinates, scattered across the texture atlas. Each sample might land in a different region of texture memory. The cache serves up cold miss after cold miss. The texture unit — built for coherent rasterization access — stalls repeatedly while data is fetched from video memory.</p>
+</div>
+<div class="paragraph">
+<p>Texture memory bandwidth is finite and shared with other operations happening simultaneously on the GPU. Cache misses in the any-hit shader compete for that bandwidth. In a forest scene, the texture cache thrashing from any-hit shader invocations can account for a substantial fraction of the total frame time.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_counting_the_cost"><a class="anchor" href="#_counting_the_cost"></a>Counting the Cost</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s put concrete numbers on this to build intuition. Suppose a forest scene has 50,000 leaf triangles visible in the shadow view frustum. A shadow map approach would process these once per frame at low resolution. In our ray-traced system, we cast 16 shadow rays per pixel at 1080p, giving us roughly 33 million pixels times 16 rays — about 530 million shadow rays. Each shadow ray might pass through 3 to 5 leaf triangles on average before either finding an opaque hit or exiting the canopy. That is somewhere between 1.5 and 2.5 billion any-hit shader invocations per frame, each requiring a texture sample, all competing for cache, all introducing divergence.</p>
+</div>
+<div class="paragraph">
+<p>A modern GPU can execute perhaps 50 to 100 billion simple operations per second. But the any-hit shader is not a simple operation — it is a branching shader with a texture sample and a memory-dependent decision. Realistically, each invocation costs tens of nanoseconds. The math is uncomfortable.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_fundamental_insight"><a class="anchor" href="#_the_fundamental_insight"></a>The Fundamental Insight</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The waste here is not computational in the algorithmic sense — the any-hit shader is doing exactly what it must, given what the hardware knows. The waste is informational. The GPU is discovering, at runtime, information that was available at scene load time. The alpha texture does not change between frames. The relationship between each triangle and its alpha mask does not change. Every single any-hit shader invocation is re-discovering something that was knowable in advance.</p>
+</div>
+<div class="paragraph">
+<p>This is the root of the problem, and it points directly to the solution. If the GPU already knew, encoded directly in the acceleration structure, which sub-regions of each triangle are opaque and which are transparent, it could make traversal decisions without running any shader at all — except for the genuinely uncertain edge regions. The any-hit shader would become rare rather than universal.</p>
+</div>
+<div class="paragraph">
+<p>That is precisely what Opacity Micromaps provide.</p>
+</div>
+<hr>
+<div class="paragraph">
+<p><a href="01_the_shadow_problem.html" class="xref page">Previous: Shadows, Light, and the Trouble with Leaves</a> | <a href="03_what_are_micromaps.html" class="xref page">Next: Micromaps: Teaching the Hardware What It Already Should Know</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Ecosystem Utilities and GPU Compatibility :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("");!function(){var f="12_Ecosystem_Utilities_and_Compatibility.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="12_Ecosystem_Utilities_and_Compatibility.html">Ecosystem Utilities and GPU Compatibility</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Ecosystem Utilities and GPU Compatibility</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we&#8217;ll explore important ecosystem utilities for Vulkan development and learn how to adapt our code to support a wider range of GPUs. As Vulkan continues to evolve with new versions and features, it&#8217;s important to understand how to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Discover what features are supported by different GPUs</p>
+</li>
+<li>
+<p>Modify your code to maintain compatibility with older hardware</p>
+</li>
+<li>
+<p>Conditionally use advanced features when available</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This knowledge is essential for developing Vulkan applications that can run on a diverse range of hardware, from the latest high-end GPUs to older or more limited devices.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vulkan_hardware_database_gpuinfo_org"><a class="anchor" href="#_vulkan_hardware_database_gpuinfo_org"></a>Vulkan Hardware Database (GPUInfo.org)</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_introduction_to_gpuinfo_org"><a class="anchor" href="#_introduction_to_gpuinfo_org"></a>Introduction to GPUInfo.org</h3>
+<div class="paragraph">
+<p>The <a href="https://vulkan.gpuinfo.org/">Vulkan Hardware Database</a> (GPUInfo.org) is an invaluable resource for Vulkan developers. This community-driven database collects and presents information about Vulkan support across a wide range of GPUs and devices.</p>
+</div>
+<div class="paragraph">
+<p>GPUInfo.org provides detailed information about:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Supported Vulkan versions</p>
+</li>
+<li>
+<p>Available extensions</p>
+</li>
+<li>
+<p>Feature support</p>
+</li>
+<li>
+<p>Implementation limits</p>
+</li>
+<li>
+<p>Format properties</p>
+</li>
+<li>
+<p>Queue family properties</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This information is crowdsourced from users who run the Vulkan Hardware Capability Viewer tool, which reports their GPU&#8217;s capabilities to the database.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_gpuinfo_org_for_development"><a class="anchor" href="#_using_gpuinfo_org_for_development"></a>Using GPUInfo.org for Development</h3>
+<div class="paragraph">
+<p>When developing a Vulkan application, GPUInfo.org can help you:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Determine minimum requirements</strong>: Understand what Vulkan version and extensions you need to target to support your desired range of hardware.</p>
+</li>
+<li>
+<p><strong>Check feature availability</strong>: Verify if specific features like dynamic rendering, timeline semaphores, or ray tracing are widely supported.</p>
+</li>
+<li>
+<p><strong>Identify implementation limits</strong>: Discover the practical limits of various Vulkan features across different hardware.</p>
+</li>
+<li>
+<p><strong>Compare vendors and devices</strong>: Understand the differences in Vulkan support between NVIDIA, AMD, Intel, and mobile GPU vendors.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s look at some practical examples of using GPUInfo.org:</p>
+</div>
+<div class="sect3">
+<h4 id="_example_checking_vulkan_version_support"><a class="anchor" href="#_example_checking_vulkan_version_support"></a>Example: Checking Vulkan Version Support</h4>
+<div class="paragraph">
+<p>To determine how widely supported Vulkan 1.3 (which introduced dynamic rendering) is:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Visit <a href="https://vulkan.gpuinfo.org/">GPUInfo.org</a></p>
+</li>
+<li>
+<p>Navigate to "Core Version Support"</p>
+</li>
+<li>
+<p>Check the percentage of devices supporting Vulkan 1.3</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>You&#8217;ll find that while newer GPUs support Vulkan 1.3+, there are still many devices limited to Vulkan 1.0, 1.1, or 1.2.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_checking_extension_support"><a class="anchor" href="#_example_checking_extension_support"></a>Example: Checking Extension Support</h4>
+<div class="paragraph">
+<p>If you&#8217;re considering using a specific extension:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Visit the "Extensions" section</p>
+</li>
+<li>
+<p>Search for your extension of interest</p>
+</li>
+<li>
+<p>Check its support percentage across different vendors</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This helps you decide whether to require the extension or provide a fallback path.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_example_using_the_vulkan_configurator_tool"><a class="anchor" href="#_example_using_the_vulkan_configurator_tool"></a>Example: Using the Vulkan Configurator Tool</h4>
+<div class="paragraph">
+<p>The Vulkan Configurator tool (executable name <code>vkconfig</code> on all platforms) is included in the Vulkan SDK and provides a convenient way to configure Vulkan settings on your system. Here&#8217;s how to use it:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Launch the Vulkan Configurator</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>On Windows: It&#8217;s recommended to start "Vulkan Configurator" from the Start menu, as running <code>vkconfig.exe</code> from the command line only shows limited options</p>
+</li>
+<li>
+<p>On other platforms: Open a terminal and run <code>vkconfig</code></p>
+<div class="literalblock">
+<div class="content">
+<pre>Note that the executable is called `vkconfig` on all platforms.</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Configure Validation Layers</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Navigate to the "Layers" tab</p>
+</li>
+<li>
+<p>Enable or disable specific validation layers based on your debugging needs</p>
+</li>
+<li>
+<p>For example, enable <code>VK_LAYER_KHRONOS_validation</code> during development to catch API usage errors</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Manage Environment Variables</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Go to the "Settings" tab</p>
+</li>
+<li>
+<p>Set environment variables like <code>VK_LAYER_PATH</code> or <code>VK_ICD_FILENAMES</code></p>
+</li>
+<li>
+<p>These settings can be applied system-wide or for the current session</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Configure Driver-specific Options</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Some GPU vendors provide additional configuration options</p>
+</li>
+<li>
+<p>These can be accessed through the vendor-specific tabs</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Export Configuration</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Save your configuration for later use or to share with team members</p>
+</li>
+<li>
+<p>This ensures consistent Vulkan environments across development machines</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Using the Vulkan Configurator is particularly helpful when:
+- Debugging Vulkan applications with different validation layer configurations
+- Testing your application with different Vulkan settings without modifying code
+- Setting up a development environment with specific Vulkan requirements</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_using_vulkan_configurator_for_validation_layers_instead_of_code"><a class="anchor" href="#_using_vulkan_configurator_for_validation_layers_instead_of_code"></a>Using Vulkan Configurator for Validation Layers Instead of Code</h4>
+<div class="paragraph">
+<p>In many Vulkan applications, validation layers are enabled programmatically during instance creation, typically only in debug builds. Here&#8217;s how this is commonly done:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Define validation layers
+const std::vector&lt;char const*&gt; validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+// Enable only in debug builds
+#ifdef NDEBUG
+constexpr bool enableValidationLayers = false;
+#else
+constexpr bool enableValidationLayers = true;
+#endif
+
+void createInstance() {
+    // Check if validation layers are available
+    if (enableValidationLayers &amp;&amp; !checkValidationLayerSupport()) {
+        throw std::runtime_error("validation layers requested, but not available!");
+    }
+
+    // Application info...
+
+    // Enable validation layers if in debug mode
+    std::vector&lt;char const *&gt; enabledLayers;
+    if (enableValidationLayers) {
+        enabledLayers.assign(validationLayers.begin(), validationLayers.end());
+    }
+
+    // Create instance with validation layers
+    vk::InstanceCreateInfo createInfo{
+        .pApplicationInfo        = &amp;appInfo,
+        .enabledLayerCount       = static_cast&lt;uint32_t&gt;(enabledLayers.size()),
+        .ppEnabledLayerNames     = enabledLayers.data(),
+        // ... other parameters
+    };
+
+    instance = vk::raii::Instance(context, createInfo);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>While this approach works, it has several drawbacks:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>It requires modifying and recompiling code to enable/disable validation</p>
+</li>
+<li>
+<p>It&#8217;s harder to experiment with different validation layer configurations</p>
+</li>
+<li>
+<p>It adds complexity to your codebase</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>A better approach is to use the Vulkan Configurator to manage validation layers externally. Here&#8217;s how to modify your code to take advantage of this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createInstance() {
+    // Application info...
+
+    // Create instance without explicitly enabling validation layers
+    vk::InstanceCreateInfo createInfo{
+        .pApplicationInfo        = &amp;appInfo,
+        // ... other parameters
+    };
+
+    instance = vk::raii::Instance(context, createInfo);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With this approach:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>You remove all validation layer-specific code from your application</p>
+</li>
+<li>
+<p>You use the Vulkan Configurator to enable validation layers when needed</p>
+</li>
+<li>
+<p>You can switch validation configurations without recompiling</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>To enable validation layers with the Vulkan Configurator:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Launch the Vulkan Configurator (from the Start menu on Windows, or run <code>vkconfig</code> from the terminal - the executable is called <code>vkconfig</code> on all platforms)</p>
+</li>
+<li>
+<p>Go to the "Layers" tab</p>
+</li>
+<li>
+<p>Enable the <code>VK_LAYER_KHRONOS_validation</code> layer</p>
+</li>
+<li>
+<p>Apply the settings</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This configuration will apply to all Vulkan applications run in that environment, making it easy to toggle validation on and off without code changes.</p>
+</div>
+<div class="paragraph">
+<p>The benefits of this approach include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Cleaner code</strong>: Your application code doesn&#8217;t need to handle validation layers</p>
+</li>
+<li>
+<p><strong>Flexibility</strong>: Change validation settings without recompiling</p>
+</li>
+<li>
+<p><strong>Consistency</strong>: Apply the same validation settings across multiple applications</p>
+</li>
+<li>
+<p><strong>Experimentation</strong>: Easily try different validation configurations</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_other_useful_ecosystem_tools"><a class="anchor" href="#_other_useful_ecosystem_tools"></a>Other Useful Ecosystem Tools</h3>
+<div class="paragraph">
+<p>Besides GPUInfo.org, several other tools can help you develop and debug Vulkan applications:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Vulkan SDK Tools</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>vulkaninfo</code>: Displays Vulkan capabilities of your local system</p>
+</li>
+<li>
+<p><code>vkconfig</code> (Vulkan Configurator): A configuration tool for managing Vulkan settings (see <a href="#_example_using_the_vulkan_configurator_tool">Example: Using the Vulkan Configurator Tool</a> for details)</p>
+</li>
+<li>
+<p>Validation layers: Help identify API usage errors</p>
+</li>
+<li>
+<p>RenderDoc: Graphics debugging tool</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Vendor-specific Tools</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>NVIDIA Nsight Graphics</p>
+</li>
+<li>
+<p>AMD Radeon GPU Profiler</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_supporting_older_gpus"><a class="anchor" href="#_supporting_older_gpus"></a>Supporting Older GPUs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now that we understand how to discover GPU capabilities, let&#8217;s explore how to modify our code to support older GPUs that don&#8217;t have Vulkan 1.3/1.4 features like dynamic rendering.</p>
+</div>
+<div class="sect2">
+<h3 id="_detecting_available_features"><a class="anchor" href="#_detecting_available_features"></a>Detecting Available Features</h3>
+<div class="paragraph">
+<p>The first step is to detect what features are available on the user&#8217;s GPU. This is done during device creation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Check if dynamic rendering is supported
+bool dynamicRenderingSupported = false;
+
+// Check for Vulkan 1.3 support
+if (deviceProperties.apiVersion &gt;= VK_API_VERSION_1_3) {
+    dynamicRenderingSupported = true;
+} else {
+    // Check for the extension on older Vulkan versions
+    for (const auto&amp; extension : availableExtensions) {
+        if (strcmp(extension.extensionName, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME) == 0) {
+            dynamicRenderingSupported = true;
+            break;
+        }
+    }
+}
+
+// Store this information for later use
+appInfo.dynamicRenderingSupported = dynamicRenderingSupported;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_alternative_to_dynamic_rendering_traditional_render_passes"><a class="anchor" href="#_alternative_to_dynamic_rendering_traditional_render_passes"></a>Alternative to Dynamic Rendering: Traditional Render Passes</h3>
+<div class="paragraph">
+<p>If dynamic rendering isn&#8217;t available, we need to use traditional render passes and framebuffers. Here&#8217;s how to implement this alternative approach:</p>
+</div>
+<div class="sect3">
+<h4 id="_creating_a_render_pass"><a class="anchor" href="#_creating_a_render_pass"></a>Creating a Render Pass</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createRenderPass() {
+    if (appInfo.dynamicRenderingSupported) {
+        // No render pass needed with dynamic rendering
+        return;
+    }
+
+    // Color attachment description
+    vk::AttachmentDescription colorAttachment{
+        .format = swapChainImageFormat,
+        .samples = vk::SampleCountFlagBits::e1,
+        .loadOp = vk::AttachmentLoadOp::eClear,
+        .storeOp = vk::AttachmentStoreOp::eStore,
+        .stencilLoadOp = vk::AttachmentLoadOp::eDontCare,
+        .stencilStoreOp = vk::AttachmentStoreOp::eDontCare,
+        .initialLayout = vk::ImageLayout::eUndefined,
+        .finalLayout = vk::ImageLayout::ePresentSrcKHR
+    };
+
+    // Subpass reference to the color attachment
+    vk::AttachmentReference colorAttachmentRef{
+        .attachment = 0,
+        .layout = vk::ImageLayout::eColorAttachmentOptimal
+    };
+
+    // Subpass description
+    vk::SubpassDescription subpass{
+        .pipelineBindPoint = vk::PipelineBindPoint::eGraphics,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &amp;colorAttachmentRef
+    };
+
+    // Dependency to ensure proper image layout transitions
+    vk::SubpassDependency dependency{
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        .dstStageMask = vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        .srcAccessMask = vk::AccessFlagBits::eNone,
+        .dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite
+    };
+
+    // Create the render pass
+    vk::RenderPassCreateInfo renderPassInfo{
+        .attachmentCount = 1,
+        .pAttachments = &amp;colorAttachment,
+        .subpassCount = 1,
+        .pSubpasses = &amp;subpass,
+        .dependencyCount = 1,
+        .pDependencies = &amp;dependency
+    };
+
+    renderPass = device.createRenderPass(renderPassInfo);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_creating_framebuffers"><a class="anchor" href="#_creating_framebuffers"></a>Creating Framebuffers</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createFramebuffers() {
+    if (appInfo.dynamicRenderingSupported) {
+        // No framebuffers needed with dynamic rendering
+        return;
+    }
+
+    swapChainFramebuffers.resize(swapChainImageViews.size());
+
+    for (size_t i = 0; i &lt; swapChainImageViews.size(); i++) {
+        vk::ImageView attachments[] = {
+            swapChainImageViews[i]
+        };
+
+        vk::FramebufferCreateInfo framebufferInfo{
+            .renderPass = renderPass,
+            .attachmentCount = 1,
+            .pAttachments = attachments,
+            .width = swapChainExtent.width,
+            .height = swapChainExtent.height,
+            .layers = 1
+        };
+
+        swapChainFramebuffers[i] = device.createFramebuffer(framebufferInfo);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_modifying_pipeline_creation"><a class="anchor" href="#_modifying_pipeline_creation"></a>Modifying Pipeline Creation</h4>
+<div class="paragraph">
+<p>When creating the graphics pipeline, we need to specify the render pass if dynamic rendering isn&#8217;t available:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void createGraphicsPipeline() {
+    // ... existing shader stage and fixed function setup ...
+
+    vk::GraphicsPipelineCreateInfo pipelineInfo{};
+
+    if (appInfo.dynamicRenderingSupported) {
+        // Use dynamic rendering
+        vk::PipelineRenderingCreateInfo pipelineRenderingCreateInfo{
+            .colorAttachmentCount = 1,
+            .pColorAttachmentFormats = &amp;swapChainImageFormat
+        };
+
+        pipelineInfo.pNext = &amp;pipelineRenderingCreateInfo;
+        pipelineInfo.renderPass = nullptr;
+    } else {
+        // Use traditional render pass
+        pipelineInfo.pNext = nullptr;
+        pipelineInfo.renderPass = renderPass;
+        pipelineInfo.subpass = 0;
+    }
+
+    // ... rest of pipeline creation ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_adapting_command_buffer_recording"><a class="anchor" href="#_adapting_command_buffer_recording"></a>Adapting Command Buffer Recording</h4>
+<div class="paragraph">
+<p>Finally, we need to modify how we record command buffers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void recordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex) {
+    // ... begin command buffer ...
+
+    if (appInfo.dynamicRenderingSupported) {
+        // Begin dynamic rendering
+        vk::RenderingAttachmentInfo colorAttachment{
+            .imageView = swapChainImageViews[imageIndex],
+            .imageLayout = vk::ImageLayout::eAttachmentOptimal,
+            .loadOp = vk::AttachmentLoadOp::eClear,
+            .storeOp = vk::AttachmentStoreOp::eStore,
+            .clearValue = clearColor
+        };
+
+        vk::RenderingInfo renderingInfo{
+            .renderArea = {{0, 0}, swapChainExtent},
+            .layerCount = 1,
+            .colorAttachmentCount = 1,
+            .pColorAttachments = &amp;colorAttachment
+        };
+
+        commandBuffer.beginRendering(renderingInfo);
+    } else {
+        // Begin traditional render pass
+        vk::RenderPassBeginInfo renderPassInfo{
+            .renderPass = renderPass,
+            .framebuffer = swapChainFramebuffers[imageIndex],
+            .renderArea = {{0, 0}, swapChainExtent},
+            .clearValueCount = 1,
+            .pClearValues = &amp;clearColor
+        };
+
+        commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+    }
+
+    // ... bind pipeline and draw ...
+
+    if (appInfo.dynamicRenderingSupported) {
+        commandBuffer.endRendering();
+    } else {
+        commandBuffer.endRenderPass();
+    }
+
+    // ... end command buffer ...
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_handling_other_vulkan_1_31_4_features"><a class="anchor" href="#_handling_other_vulkan_1_31_4_features"></a>Handling Other Vulkan 1.3/1.4 Features</h3>
+<div class="paragraph">
+<p>Dynamic rendering is just one example of a feature that might not be available on older GPUs. Here are some other Vulkan 1.3/1.4 features you might need to provide alternatives for:</p>
+</div>
+<div class="sect3">
+<h4 id="_timeline_semaphores"><a class="anchor" href="#_timeline_semaphores"></a>Timeline Semaphores</h4>
+<div class="paragraph">
+<p>Timeline semaphores (introduced in Vulkan 1.2) provide a more flexible synchronization mechanism than binary semaphores. If they&#8217;re not available, you&#8217;ll need to use binary semaphores and fences:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">bool timelineSemaphoresSupported = false;
+
+// Check for Vulkan 1.2 support or extension
+if (deviceProperties.apiVersion &gt;= VK_API_VERSION_1_2) {
+    timelineSemaphoresSupported = true;
+} else {
+    // Check for extension
+    for (const auto&amp; extension : availableExtensions) {
+        if (strcmp(extension.extensionName, VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME) == 0) {
+            timelineSemaphoresSupported = true;
+            break;
+        }
+    }
+}
+
+// Create appropriate synchronization primitives
+if (timelineSemaphoresSupported) {
+    // Create timeline semaphore
+    vk::SemaphoreTypeCreateInfo timelineCreateInfo{
+        .semaphoreType = vk::SemaphoreType::eTimeline,
+        .initialValue = 0
+    };
+
+    vk::SemaphoreCreateInfo semaphoreInfo{
+        .pNext = &amp;timelineCreateInfo
+    };
+
+    timelineSemaphore = device.createSemaphore(semaphoreInfo);
+} else {
+    // Create binary semaphores and fences
+    vk::SemaphoreCreateInfo semaphoreInfo{};
+    vk::FenceCreateInfo fenceInfo{.flags = vk::FenceCreateFlagBits::eSignaled};
+
+    for (size_t i = 0; i &lt; swapChainImages.size(); i++)
+    {
+        renderFinishedSemaphores[i] = device.createSemaphore(semaphoreInfo);
+    }
+
+    for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        imageAvailableSemaphores[i] = device.createSemaphore(semaphoreInfo);
+        inFlightFences[i] = device.createFence(fenceInfo);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_synchronization2"><a class="anchor" href="#_synchronization2"></a>Synchronization2</h4>
+<div class="paragraph">
+<p>The Synchronization2 feature (Vulkan 1.3) simplifies pipeline barriers and memory dependencies. If it&#8217;s not available, use the original synchronization commands:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">bool synchronization2Supported = false;
+
+// Check for Vulkan 1.3 support or extension
+if (deviceProperties.apiVersion &gt;= VK_API_VERSION_1_3) {
+    synchronization2Supported = true;
+} else {
+    // Check for extension
+    for (const auto&amp; extension : availableExtensions) {
+        if (strcmp(extension.extensionName, VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME) == 0) {
+            synchronization2Supported = true;
+            break;
+        }
+    }
+}
+
+// Use appropriate barrier commands
+if (synchronization2Supported) {
+    // Use Synchronization2 API
+    vk::ImageMemoryBarrier2 barrier{
+        .srcStageMask = vk::PipelineStageFlagBits2::eTopOfPipe,
+        .srcAccessMask = vk::AccessFlagBits2::eNone,
+        .dstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        .dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+        .oldLayout = vk::ImageLayout::eUndefined,
+        .newLayout = vk::ImageLayout::eAttachmentOptimal,
+        .image = swapChainImages[i],
+        .subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
+    };
+
+    vk::DependencyInfo dependencyInfo{
+        .imageMemoryBarrierCount = 1,
+        .pImageMemoryBarriers = &amp;barrier
+    };
+
+    commandBuffer.pipelineBarrier2(dependencyInfo);
+} else {
+    // Use original synchronization API
+    vk::ImageMemoryBarrier barrier{
+        .srcAccessMask = vk::AccessFlagBits::eNone,
+        .dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+        .oldLayout = vk::ImageLayout::eUndefined,
+        .newLayout = vk::ImageLayout::eColorAttachmentOptimal,
+        .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+        .image = swapChainImages[i],
+        .subresourceRange = {vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}
+    };
+
+    commandBuffer.pipelineBarrier(
+        vk::PipelineStageFlagBits::eTopOfPipe,
+        vk::PipelineStageFlagBits::eColorAttachmentOutput,
+        vk::DependencyFlagBits::eByRegion,
+        {},
+        {},
+        { barrier }
+    );
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practices_for_cross_gpu_compatibility"><a class="anchor" href="#_best_practices_for_cross_gpu_compatibility"></a>Best Practices for Cross-GPU Compatibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Based on what we&#8217;ve learned, here are some best practices for developing Vulkan applications that work across a wide range of GPUs:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Check feature availability at runtime</strong>: Don&#8217;t assume features are available based on the Vulkan version alone. Always check for specific features and extensions.</p>
+</li>
+<li>
+<p><strong>Provide fallback paths</strong>: Implement alternative code paths for when modern features aren&#8217;t available.</p>
+</li>
+<li>
+<p><strong>Use feature structures</strong>: When creating a logical device, use the appropriate feature structures to enable only the features you need and that are available.</p>
+</li>
+<li>
+<p><strong>Test on various hardware</strong>: Use GPUInfo.org to identify common hardware configurations and test your application on a representative sample.</p>
+</li>
+<li>
+<p><strong>Graceful degradation</strong>: Design your application to gracefully reduce visual quality or functionality when running on less capable hardware.</p>
+</li>
+<li>
+<p><strong>Document requirements</strong>: Clearly document the minimum and recommended Vulkan version and extension requirements for your application.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Understanding Vulkan ecosystem utilities and knowing how to adapt your code for different GPU capabilities are essential skills for Vulkan developers. By following the approaches outlined in this chapter, you can create applications that run on a wide range of hardware while still taking advantage of the latest features when available.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/32_ecosystem_utilities.cpp">C&#43;&#43; code</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

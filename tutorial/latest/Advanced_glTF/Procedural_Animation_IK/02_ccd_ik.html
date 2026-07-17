@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Cyclic Coordinate Descent IK :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Procedural_Animation_IK/02_ccd_ik.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Procedural Animation &amp; IK</li>
+    <li><a href="02_ccd_ik.html">CCD IK</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Cyclic Coordinate Descent IK</h1>
+<div class="sect1">
+<h2 id="_understanding_the_problem_geometrically"><a class="anchor" href="#_understanding_the_problem_geometrically"></a>Understanding the Problem Geometrically</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we look at any algorithm, it helps to understand what we are actually asking the computer to solve. Imagine a three-link chain: a thigh connected to a shin connected to a foot. Each joint can rotate. The foot (the <strong>end effector</strong>) is currently somewhere in the air, and we want it to land exactly on a target point on the ground. The question is: what rotations do we need to apply to the thigh and shin joints to make that happen?</p>
+</div>
+<div class="paragraph">
+<p>If you have ever tried to solve this with a direct analytical formula, you quickly discover the problem. For a two-bone chain (think: a simple arm with a shoulder and elbow), there is a closed-form solution—it involves a bit of trigonometry and produces either two solutions (elbow up or elbow down) or no solution if the target is out of reach. But for a three-bone chain, or a five-bone spine, there is no clean closed form. The system becomes <strong>underdetermined</strong>: there are more degrees of freedom (rotation axes) than constraints (the three coordinates of the target), which means there are infinitely many poses that place the end effector at the target, and we need an algorithm to pick among them.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cyclic Coordinate Descent</strong>, or CCD, solves this with a beautifully simple heuristic: instead of trying to solve the whole chain at once, it rotates one joint at a time to bring the end effector as close as possible to the target, then moves to the next joint, then the next, cycling through the chain repeatedly until the end effector is close enough or we have run out of iterations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_ccd_algorithm_step_by_step"><a class="anchor" href="#_the_ccd_algorithm_step_by_step"></a>The CCD Algorithm Step by Step</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s trace through one iteration of CCD for a leg chain. Assume we have joints <code>[thigh, knee, ankle]</code> and a target position on the ground. CCD works from the end of the chain backward toward the root.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1 — Start at the joint closest to the end effector.</strong> For a leg chain, this is the ankle. Compute two vectors: one from the ankle to the current end effector position (the toe), and one from the ankle to the target position. Rotate the ankle joint so that the first vector aligns with the second. Because the ankle is the joint closest to the end effector, rotating it produces the most direct movement of the effector toward the target.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2 — Move to the next joint inward.</strong> Now consider the knee. Again, compute the vector from the knee to the end effector&#8217;s <strong>new</strong> position (it moved when we rotated the ankle), and the vector from the knee to the target. Rotate the knee to align them. The knee has a longer lever arm than the ankle—rotating it sweeps the end effector through a larger arc—so this step often produces a large correction.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3 — Move to the root joint.</strong> Repeat for the thigh. By now, the end effector may already be very close to the target—the algorithm&#8217;s convergence property means that each pass through the chain reduces the error.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4 — Check convergence.</strong> Compute the distance from the end effector to the target. If it is below some threshold (typically a millimeter or less in world space), stop. If not, start another pass from the ankle and repeat.</p>
+</div>
+<div class="paragraph">
+<p>The genius of CCD is that each individual rotation step is trivially computed: it is just the quaternion that rotates one vector onto another. The algorithm&#8217;s convergence is not guaranteed in the worst case, but in practice for humanoid skeletons with reasonable joint limits, it converges in two to five iterations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_implementing_ccd"><a class="anchor" href="#_implementing_ccd"></a>Implementing CCD</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s write a self-contained CCD solver. It takes the joint chain (as a list of node indices into our scene graph), the target world position, and the maximum number of iterations:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct IKChain {
+    std::vector&lt;uint32_t&gt; joints;  // Ordered from root to end effector
+    uint32_t effector_node;        // The node whose position we are trying to place
+    float    threshold;            // Convergence threshold in world-space units
+    int      max_iterations;       // Safety cap
+    glm::vec3 target_world;        // Target position
+    glm::vec3 pole_vector;         // For algorithms like FABRIK or constrained CCD
+};
+
+// Rotate joint 'node' so that the vector from the joint to the effector aligns
+// with the vector from the joint to the target. Updates the node's local rotation
+// and marks the subtree dirty so world matrices are recomputed.
+static void ccd_rotate_joint(
+    std::vector&lt;Node&gt;&amp; nodes,
+    uint32_t           joint_idx,
+    uint32_t           effector_idx,
+    const glm::vec3&amp;   target_world)
+{
+    Node&amp; joint = nodes[joint_idx];
+
+    // We need the world position of the joint. This assumes world matrices
+    // are up to date for this joint (but not necessarily for descendants).
+    glm::vec3 joint_world = glm::vec3(joint.world_matrix[3]);
+
+    // Vector from this joint to the current effector position
+    glm::vec3 to_effector = glm::normalize(
+        glm::vec3(nodes[effector_idx].world_matrix[3]) - joint_world);
+
+    // Vector from this joint to where we want the effector to be
+    glm::vec3 to_target = target_world - joint_world;
+    float dist = glm::length(to_target);
+    if (dist &lt; 1e-6f) return; // Effector is already at the joint; nothing to do
+    to_target /= dist;
+
+    // Compute the rotation that takes to_effector onto to_target
+    float dot = glm::clamp(glm::dot(to_effector, to_target), -1.0f, 1.0f);
+    if (dot &gt; 0.9999f) return; // Already aligned
+
+    float     angle = std::acos(dot);
+    glm::vec3 axis  = glm::cross(to_effector, to_target);
+    if (glm::length(axis) &lt; 1e-6f) return; // Parallel or anti-parallel vectors
+    axis = glm::normalize(axis);
+
+    glm::quat delta_rotation = glm::angleAxis(angle, axis);
+
+    // Apply this rotation in world space, then convert to local space.
+    // The joint's local rotation is relative to its parent's world rotation.
+    // parent_world_rotation * local_rotation = world_rotation
+    // Therefore: local_rotation = inverse(parent_world_rotation) * world_rotation
+
+    glm::quat world_rotation = delta_rotation * joint.get_world_rotation();
+    glm::quat parent_world_rotation = (joint.parent_index != INVALID_NODE_INDEX)
+        ? nodes[joint.parent_index].get_world_rotation()
+        : glm::quat(1,0,0,0);
+
+    joint.local_rotation = glm::inverse(parent_world_rotation) * world_rotation;
+    joint.mark_dirty();
+
+    // Recompute world matrices for this joint and all its descendants
+    // so that subsequent CCD steps see correct positions.
+    update_world_matrices_subtree(nodes, joint_idx);
+}
+
+void solve_ccd(std::vector&lt;Node&gt;&amp; nodes, const IKChain&amp; chain, const glm::vec3&amp; target_world)
+{
+    // Check reachability: if the target is farther than the total chain length,
+    // we can still run CCD but it will converge toward the direction of the target
+    // without reaching it. For foot placement, this is usually a sign that the
+    // character's body needs to be lowered, which we handle at a higher level.
+
+    for (int iter = 0; iter &lt; chain.max_iterations; ++iter) {
+        // Check if we are already close enough
+        glm::vec3 effector_pos = glm::vec3(nodes[chain.effector_node].world_matrix[3]);
+        if (glm::distance(effector_pos, target_world) &lt; chain.threshold) break;
+
+        // Iterate from the joint closest to the end effector toward the root.
+        // chain.joints is ordered root-to-tip, so we iterate it in reverse.
+        for (int j = static_cast&lt;int&gt;(chain.joints.size()) - 1; j &gt;= 0; --j) {
+            ccd_rotate_joint(nodes, chain.joints[j], chain.effector_node, target_world);
+        }
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>get_world_rotation</code> helper (which we added to our <code>Node</code> struct in Chapter 2) extracts the pure rotation quaternion from a world matrix by normalizing the basis columns to remove scale.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_adding_joint_limits_to_ccd"><a class="anchor" href="#_adding_joint_limits_to_ccd"></a>Adding Joint Limits to CCD</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The basic CCD implementation above has one critical problem: it applies rotations in any direction, without regard for anatomical constraints. The knee might bend sideways, the ankle might rotate in ways that look broken. We need to clamp the joint&#8217;s rotation to its allowed range after each CCD step.</p>
+</div>
+<div class="paragraph">
+<p>The cleanest way to integrate joint limits with CCD is to clamp the joint&#8217;s local rotation after each <code>ccd_rotate_joint</code> call. Since our joint limits are stored as part of the physics constraint definition (from Chapter 4), we can re-use that data:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// After computing joint.local_rotation in ccd_rotate_joint, apply limits:
+void apply_hinge_limit(Node&amp; joint, const ConstraintDef&amp; limits)
+{
+    // For a hinge joint, the local rotation should only have a component
+    // around the hinge axis. We extract the angle around that axis and clamp it.
+    glm::vec3 axis = limits.hinge_axis;
+    float angle = 2.0f * std::atan2(
+        glm::dot(glm::vec3(joint.local_rotation.x, joint.local_rotation.y, joint.local_rotation.z), axis),
+        joint.local_rotation.w
+    );
+    float clamped = glm::clamp(
+        glm::degrees(angle),
+        limits.hinge_min_deg,
+        limits.hinge_max_deg
+    );
+    joint.local_rotation = glm::angleAxis(glm::radians(clamped), axis);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For ball-and-socket joints, limiting the rotation is more involved. The swing limit is a cone constraint, and enforcing it requires clamping the swing component of the quaternion&#8217;s decomposition. Most physics engines provide a helper for this; if yours does not, you can implement it by decomposing the local rotation into swing-and-twist components relative to the joint&#8217;s rest pose.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_ccds_strengths_and_weaknesses"><a class="anchor" href="#_ccds_strengths_and_weaknesses"></a>CCD&#8217;s Strengths and Weaknesses</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>CCD is fast. Each iteration is a small number of vector operations and quaternion multiplications, and it converges quickly for most humanoid chains. It integrates naturally with joint limits and is straightforward to implement correctly. For these reasons, it was the dominant IK algorithm in real-time game development for many years and remains a good default choice for most applications.</p>
+</div>
+<div class="paragraph">
+<p>CCD&#8217;s main weakness is a visual artifact known as <strong>end-effector bias</strong>: because it processes joints from tip to root, the joints near the end effector tend to rotate more than joints near the root. For a leg, this means the ankle tends to be over-rotated while the thigh moves only slightly. This produces a characteristic stiff-thigh, ankle-bent look that becomes obvious when the character is reaching to extremes. For foot placement on gently uneven terrain, this artifact is generally not noticeable. For reaching animations where the arm extends far from the body, it can look wrong.</p>
+</div>
+<div class="paragraph">
+<p>The algorithm we will look at next, FABRIK, addresses this weakness with a different strategy.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_fabrik.html" class="xref page">Next: FABRIK</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

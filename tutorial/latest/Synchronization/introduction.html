@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Synchronization 2: Mastering the GPU/CPU Handshake :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../");!function(){var f="../Synchronization/introduction.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Synchronization 2</li>
+    <li><a href="introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Synchronization 2: Mastering the GPU/CPU Handshake</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Welcome to the <strong>Synchronization 2</strong> tutorial series! If you&#8217;ve spent any significant time with Vulkan, you&#8217;ve likely encountered the "Sync Wall." It&#8217;s that moment when your code runs perfectly on your development machine but flickers on another, or when you realize that your high-performance GPU is spending half its time waiting for a single, overly conservative barrier.</p>
+</div>
+<div class="paragraph">
+<p>Synchronization is arguably the most challenging part of Vulkan, but it’s also the most powerful. It is the language we use to tell the hardware exactly how data flows through the pipeline. In this series, we are going to move beyond the legacy Vulkan 1.0 synchronization systems—those fragmented bitmasks and binary semaphores—and embrace the modern standard: <strong>Synchronization 2</strong> and <strong>Timeline Semaphores</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_a_new_system"><a class="anchor" href="#_why_a_new_system"></a>Why a New System?</h3>
+<div class="paragraph">
+<p>Vulkan 1.0 synchronization was a breakthrough in control, but it was/is notoriously difficult to work with or understand. The original pipeline barriers were split across multiple structures, and the stage masks often felt like they were designed for the hardware of a decade ago; because well, it was a decade ago when it was designed.  Vulkan is 10 years old at the time of writing, and modern techniques along with modern hardware have enabled some better ways while maintaining the same level of control.</p>
+</div>
+<div class="paragraph">
+<p>Synchronization 2, which arrived as an extension and is now a core part of Vulkan 1.3, simplifies this landscape by unifying everything into the <code>vk::DependencyInfo</code> structure. It provides a clearer, more intuitive way to define dependencies, using 64-bit masks that can target modern hardware units—like task and mesh shaders—with surgical precision.</p>
+</div>
+<div class="paragraph">
+<p>When we combine this with <strong>Timeline Semaphores</strong>, we move from a world of "binary" signals (on or off) to a world of monotonic counters. This allows us to treat the entire GPU/CPU execution as a single, unified timeline, drastically simplifying how we manage multiple frames in flight and asynchronous work.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_youll_learn"><a class="anchor" href="#_what_youll_learn"></a>What You&#8217;ll Learn</h3>
+<div class="paragraph">
+<p>This isn&#8217;t just a list of API calls. We are going to build an engine-grade synchronization architecture. Throughout this series, we will:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Deconstruct the Dependency</strong>: We&#8217;ll look under the hood at how GPUs actually handle memory and why an "execution dependency" alone isn&#8217;t enough to prevent data corruption.</p>
+</li>
+<li>
+<p><strong>Master the New Barrier</strong>: You&#8217;ll learn how to use <code>vk::DependencyInfo</code> to replace legacy barriers, making your code cleaner and more performant.</p>
+</li>
+<li>
+<p><strong>Harness the Timeline</strong>: We&#8217;ll implement Timeline Semaphores as the "master clock" of our engine, replacing fences and binary semaphores with a more robust monotonic counter.</p>
+</li>
+<li>
+<p><strong>Architect for Concurrency</strong>: We&#8217;ll rebuild the main engine loop to handle multiple frames in flight and implement asynchronous compute and transfer operations that overlap with your main graphics work.</p>
+</li>
+<li>
+<p><strong>Leverage Modern Vulkan</strong>: We&#8217;ll dive into Vulkan 1.4 features, including <strong>Host Image Copies</strong> and tile-local reads in <strong>Dynamic Rendering</strong>, to stay on the cutting edge of the API.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h3>
+<div class="paragraph">
+<p>This series is designed as an "Advanced Topic" that builds directly on the foundations established in our main Vulkan tutorial. We assume you are comfortable with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The basic Vulkan rendering loop (Command Buffers, Pipelines, and Descriptor Sets).</p>
+</li>
+<li>
+<p>Modern c&#43;&#43; (RAII, smart pointers, and basic templates).</p>
+</li>
+<li>
+<p>The fundamental concepts of graphics pipelines (Vertex/Fragment stages).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you’re new to Vulkan, we strongly recommend completing the <a href="../00_Introduction.html" class="xref page">main tutorial</a> first. For those following along with our engine-building journey, this series perfectly complements the <a href="../Building_a_Simple_Engine/introduction.html" class="xref page">Building a Simple Engine</a> tutorial by providing the deep-dive synchronization knowledge required for a truly professional-grade renderer.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_a_note_on_tooling"><a class="anchor" href="#_a_note_on_tooling"></a>A Note on Tooling</h3>
+<div class="paragraph">
+<p>In this series, we will be using <strong>Slang</strong> for all our shader examples. Slang’s productivity features and its ability to target Vulkan spir-v naturally make it the perfect companion for modern synchronization. We’ll also lean heavily on the <strong>LunarG Synchronization Validation</strong> layer—your best friend when it comes to identifying the "Write-After-Read" (WAR) and "Read-After-Write" (RAW) hazards that can be so hard to track down manually.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s begin by tearing down a dependency to see what it&#8217;s really made of.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_chapters_in_this_series"><a class="anchor" href="#_chapters_in_this_series"></a>Chapters in this series</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="Anatomy_of_a_Dependency/01_introduction.html" class="xref page">The Anatomy of a Dependency</a> - Understanding the core mechanics of how data moves through the pipeline.</p>
+</li>
+<li>
+<p><a href="Pipeline_Barriers_Transitions/01_introduction.html" class="xref page">Pipeline Barriers and Image Layout Transitions</a> - Mastering the new barrier system.</p>
+</li>
+<li>
+<p><a href="Timeline_Semaphores/01_introduction.html" class="xref page">Timeline Semaphores: The Master Clock</a> - Moving to a monotonic world.</p>
+</li>
+<li>
+<p><a href="Frame_in_Flight/01_introduction.html" class="xref page">Frame-in-Flight Architecture</a> - Building the heartbeat of your engine.</p>
+</li>
+<li>
+<p><a href="Async_Compute_Overlap/01_introduction.html" class="xref page">Asynchronous Compute &amp; Execution Overlap</a> - Parallelizing your GPU work.</p>
+</li>
+<li>
+<p><a href="Transfer_Queues_Streaming/01_introduction.html" class="xref page">Transfer Queues &amp; Asset Streaming Sync</a> - Streaming assets without the stutter.</p>
+</li>
+<li>
+<p><a href="Dynamic_Rendering_Sync/01_introduction.html" class="xref page">Synchronization in Dynamic Rendering</a> - Modern sync in a pass-less world.</p>
+</li>
+<li>
+<p><a href="Host_Image_Copies_Memory_Sync/01_introduction.html" class="xref page">Host Image Copies &amp; Memory Mapped Sync</a> - Direct CPU-to-GPU memory management.</p>
+</li>
+<li>
+<p><a href="Synchronization_Validation/01_introduction.html" class="xref page">Debugging with Synchronization Validation</a> - Letting the tools find your hazards.</p>
+</li>
+<li>
+<p><a href="Profiling_Optimization/01_introduction.html" class="xref page">Profiling, Batching, and Optimization</a> - Squeezing out every last millisecond.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_navigation"><a class="anchor" href="#_navigation"></a>Navigation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Next: <a href="Anatomy_of_a_Dependency/01_introduction.html" class="xref page">The Anatomy of a Dependency</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

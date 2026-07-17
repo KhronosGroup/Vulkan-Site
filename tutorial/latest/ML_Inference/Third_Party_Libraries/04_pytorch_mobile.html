@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>PyTorch Mobile :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Third_Party_Libraries/04_pytorch_mobile.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Integrating Third-Party ML Libraries</li>
+    <li><a href="04_pytorch_mobile.html">PyTorch Mobile</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">PyTorch Mobile</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>PyTorch has become the framework of choice for many researchers and practitioners. Its dynamic computation graph, intuitive Python API, and strong ecosystem make it ideal for experimentation and development. But PyTorch was designed for research and training, not for deployment on resource-constrained devices.</p>
+</div>
+<div class="paragraph">
+<p>PyTorch Mobile bridges this gap. It&#8217;s Facebook&#8217;s (now Meta&#8217;s) solution for deploying PyTorch models on mobile and embedded devices. Unlike TensorFlow Lite, which requires converting models to a different framework&#8217;s format, PyTorch Mobile lets you deploy PyTorch models directly, maintaining the same model representation from training to deployment.</p>
+</div>
+<div class="paragraph">
+<p>This chapter explores PyTorch Mobile: what makes it different from desktop PyTorch, how it compares to TensorFlow Lite and ONNX Runtime, how to integrate it with Vulkan applications, and when it&#8217;s the right choice for your project.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_pytorch_advantage_one_framework_everywhere"><a class="anchor" href="#_the_pytorch_advantage_one_framework_everywhere"></a>The PyTorch Advantage: One Framework, Everywhere</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The core value proposition of PyTorch Mobile is continuity. You train in PyTorch, you deploy in PyTorch. No conversion to a different format, no worrying about whether operations will translate correctly, no debugging subtle differences between training and inference behavior.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_conversion_problem"><a class="anchor" href="#_the_conversion_problem"></a>The Conversion Problem</h3>
+<div class="paragraph">
+<p>If you&#8217;ve worked with TensorFlow Lite or ONNX, you&#8217;ve experienced the conversion problem. You train a model in one framework, then convert it to a deployment format. This conversion is a source of bugs and frustration.</p>
+</div>
+<div class="paragraph">
+<p>Operations might not convert correctly. Dynamic shapes might become fixed. Custom operations might not be supported. Numerical differences might appear between the training framework and the deployment runtime. You spend hours debugging why your model works perfectly in PyTorch but produces wrong results in TensorFlow Lite.</p>
+</div>
+<div class="paragraph">
+<p>PyTorch Mobile eliminates this problem. The model you train is the model you deploy. The same PyTorch runtime that executes your model during training executes it during inference. There&#8217;s no conversion step, no format translation, no opportunity for subtle bugs to creep in.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_developer_experience"><a class="anchor" href="#_the_developer_experience"></a>The Developer Experience</h3>
+<div class="paragraph">
+<p>This continuity extends to the developer experience. If you know PyTorch, you know PyTorch Mobile. The APIs are similar, the concepts are the same, the debugging tools work the same way.</p>
+</div>
+<div class="paragraph">
+<p>You can prototype on your desktop, test on your phone, and be confident that behavior will be identical. You can use the same model file for desktop inference, server deployment, and mobile deployment. This flexibility is powerful—it means you can iterate quickly without worrying about platform-specific issues.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_tradeoff_size_and_optimization"><a class="anchor" href="#_the_tradeoff_size_and_optimization"></a>The Tradeoff: Size and Optimization</h3>
+<div class="paragraph">
+<p>This continuity comes with a tradeoff. PyTorch Mobile is larger than TensorFlow Lite. The runtime is several megabytes instead of hundreds of kilobytes. Models are stored in PyTorch&#8217;s format, which is less aggressively optimized than TensorFlow Lite&#8217;s FlatBuffers.</p>
+</div>
+<div class="paragraph">
+<p>For many applications, this tradeoff is worth it. The development velocity and reduced debugging time outweigh the size cost. But for size-critical applications (apps with tight download size budgets, embedded systems with limited storage), TensorFlow Lite&#8217;s aggressive optimization might be necessary.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_architecture_desktop_pytorch_optimized_for_mobile"><a class="anchor" href="#_architecture_desktop_pytorch_optimized_for_mobile"></a>Architecture: Desktop PyTorch, Optimized for Mobile</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>PyTorch Mobile isn&#8217;t a complete rewrite—it&#8217;s desktop PyTorch, carefully pruned and optimized for mobile constraints.</p>
+</div>
+<div class="sect2">
+<h3 id="_selective_build_only_what_you_need"><a class="anchor" href="#_selective_build_only_what_you_need"></a>Selective Build: Only What You Need</h3>
+<div class="paragraph">
+<p>The key to PyTorch Mobile&#8217;s size management is selective builds. Desktop PyTorch includes hundreds of operations, support for training, automatic differentiation, and extensive debugging tools. PyTorch Mobile lets you build a custom runtime that includes only the operations your model actually uses.</p>
+</div>
+<div class="paragraph">
+<p>When you prepare a model for mobile deployment, you analyze which operations it uses. Then you build a PyTorch Mobile runtime that includes only those operations. A model that uses 50 operations gets a runtime with 50 operations, not 500.</p>
+</div>
+<div class="paragraph">
+<p>This selective build process can reduce the runtime from 50MB+ to 2-5MB, depending on your model&#8217;s complexity. It&#8217;s not as small as TensorFlow Lite, but it&#8217;s small enough for most mobile applications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_torchscript_the_deployment_format"><a class="anchor" href="#_torchscript_the_deployment_format"></a>TorchScript: The Deployment Format</h3>
+<div class="paragraph">
+<p>PyTorch models are typically defined as Python classes with a <code>forward</code> method. This works great for training but doesn&#8217;t work for mobile deployment—you can&#8217;t run Python on iOS, and running Python on Android is problematic.</p>
+</div>
+<div class="paragraph">
+<p>TorchScript solves this problem. It&#8217;s a subset of Python that can be compiled to a portable intermediate representation. You convert your PyTorch model to TorchScript, which produces a <code>.pt</code> or <code>.ptl</code> file that can be loaded and executed by the PyTorch Mobile runtime without Python.</p>
+</div>
+<div class="paragraph">
+<p>There are two ways to create TorchScript:</p>
+</div>
+<div class="paragraph">
+<p><strong>Tracing</strong>: You run your model with example inputs, and PyTorch records the operations that execute. This produces a TorchScript model that replicates the traced execution path.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+
+model = MyModel()
+example_input = torch.rand(1, 3, 224, 224)
+traced_model = torch.jit.trace(model, example_input)
+traced_model.save("model.pt")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Tracing is simple and works for most models, but it has limitations. If your model has control flow (if statements, loops) that depends on input data, tracing only captures one execution path. The traced model might not handle different inputs correctly.</p>
+</div>
+<div class="paragraph">
+<p><strong>Scripting</strong>: You annotate your model with type hints, and PyTorch compiles it to TorchScript directly from the Python source code. This preserves control flow and handles dynamic behavior correctly.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+
+class MyModel(torch.nn.Module):
+    def forward(self, x: torch.Tensor) -&gt; torch.Tensor:
+        if x.sum() &gt; 0:
+            return x * 2
+        else:
+            return x * 3
+
+model = MyModel()
+scripted_model = torch.jit.script(model)
+scripted_model.save("model.pt")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Scripting is more powerful but requires type annotations and has some limitations on which Python features you can use.</p>
+</div>
+<div class="paragraph">
+<p>For most models, tracing is sufficient. For models with complex control flow, scripting is necessary.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_quantization_catching_up_to_tensorflow_lite"><a class="anchor" href="#_quantization_catching_up_to_tensorflow_lite"></a>Quantization: Catching Up to TensorFlow Lite</h3>
+<div class="paragraph">
+<p>Historically, PyTorch&#8217;s quantization support lagged behind TensorFlow Lite. This has changed dramatically in recent years. PyTorch now has comprehensive quantization support that rivals TensorFlow Lite.</p>
+</div>
+<div class="paragraph">
+<p>PyTorch supports:</p>
+</div>
+<div class="paragraph">
+<p><strong>Dynamic Quantization</strong>: Weights are quantized to int8, activations remain float32. Simple to apply, provides model size reduction and some speedup.</p>
+</div>
+<div class="paragraph">
+<p><strong>Static Quantization</strong>: Both weights and activations are int8. Requires calibration with representative data, provides maximum performance.</p>
+</div>
+<div class="paragraph">
+<p><strong>Quantization-Aware Training (QAT)</strong>: Simulates quantization during training, allowing the model to learn to be robust to quantization. Provides the best accuracy for quantized models.</p>
+</div>
+<div class="paragraph">
+<p>The workflow is similar to TensorFlow Lite:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+from torch.quantization import quantize_dynamic, get_default_qconfig, prepare, convert
+
+# Dynamic quantization (simplest)
+model_dynamic = quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+
+# Static quantization (requires calibration)
+model.qconfig = get_default_qconfig('fbgemm')  # or 'qnnpack' for mobile
+model_prepared = prepare(model)
+# Run calibration data through model_prepared
+model_quantized = convert(model_prepared)
+
+# Convert to TorchScript for mobile
+traced = torch.jit.trace(model_quantized, example_input)
+traced.save("model_quantized.pt")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>PyTorch&#8217;s quantization is powerful, but the tooling and documentation are less mature than TensorFlow Lite&#8217;s. You might need to experiment more to get good results.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mobile_optimization_operator_fusion_and_graph_optimization"><a class="anchor" href="#_mobile_optimization_operator_fusion_and_graph_optimization"></a>Mobile Optimization: Operator Fusion and Graph Optimization</h3>
+<div class="paragraph">
+<p>Beyond quantization, PyTorch Mobile applies various optimizations to improve inference performance:</p>
+</div>
+<div class="paragraph">
+<p><strong>Operator Fusion</strong>: Combines multiple operations into single, optimized kernels. For example, convolution followed by batch normalization and ReLU can be fused into a single operation, reducing memory traffic and overhead.</p>
+</div>
+<div class="paragraph">
+<p><strong>Constant Folding</strong>: Evaluates operations with constant inputs at compile time, eliminating runtime computation.</p>
+</div>
+<div class="paragraph">
+<p><strong>Dead Code Elimination</strong>: Removes operations that don&#8217;t contribute to the final output.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory Planning</strong>: Analyzes the model graph to reuse memory for intermediate tensors, reducing peak memory usage.</p>
+</div>
+<div class="paragraph">
+<p>These optimizations happen automatically when you prepare a model for mobile deployment. You don&#8217;t need to do anything special—just use the mobile optimization APIs.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integration_with_vulkan_applications"><a class="anchor" href="#_integration_with_vulkan_applications"></a>Integration with Vulkan Applications</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Integrating PyTorch Mobile with Vulkan applications follows similar patterns to TensorFlow Lite, but with some PyTorch-specific considerations.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_basic_approach_separate_contexts"><a class="anchor" href="#_the_basic_approach_separate_contexts"></a>The Basic Approach: Separate Contexts</h3>
+<div class="paragraph">
+<p>Like TensorFlow Lite, the simplest integration treats PyTorch Mobile and Vulkan as separate systems:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Your Vulkan application renders frames and manages GPU resources</p>
+</li>
+<li>
+<p>When inference is needed, copy data from GPU to CPU memory</p>
+</li>
+<li>
+<p>Run PyTorch Mobile inference (which might use GPU internally)</p>
+</li>
+<li>
+<p>Process results on CPU</p>
+</li>
+<li>
+<p>Copy results back to GPU if needed</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This approach is straightforward and works well for most applications. The overhead is acceptable if inference doesn&#8217;t happen every frame.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gpu_acceleration_the_vulkan_backend"><a class="anchor" href="#_gpu_acceleration_the_vulkan_backend"></a>GPU Acceleration: The Vulkan Backend</h3>
+<div class="paragraph">
+<p>PyTorch Mobile supports GPU acceleration through multiple backends:</p>
+</div>
+<div class="paragraph">
+<p><strong>Metal</strong> (iOS): Uses Apple&#8217;s Metal API for GPU acceleration. This is the recommended approach on iOS, providing excellent performance on Apple GPUs.</p>
+</div>
+<div class="paragraph">
+<p><strong>Vulkan</strong> (Android): PyTorch Mobile has experimental Vulkan backend support for Android. This is particularly interesting for Vulkan-based applications because both your rendering and ML inference can use Vulkan.</p>
+</div>
+<div class="paragraph">
+<p><strong>OpenGL ES</strong> (Android): Fallback option for devices without Vulkan support.</p>
+</div>
+<div class="paragraph">
+<p>The Vulkan backend is still experimental and has limitations. Not all operations are supported, and performance might not match the Metal backend on iOS or TensorFlow Lite&#8217;s GPU delegate on Android. But it&#8217;s improving rapidly, and for Vulkan-based applications, it offers the potential for tighter integration.</p>
+</div>
+<div class="paragraph">
+<p>To use the Vulkan backend:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">#include &lt;torch/script.h&gt;
+
+// Load model
+torch::jit::script::Module module = torch::jit::load("model.pt");
+
+// Enable Vulkan backend (Android)
+module.to(torch::kVulkan);
+
+// Run inference
+std::vector&lt;torch::jit::IValue&gt; inputs;
+inputs.push_back(torch::rand({1, 3, 224, 224}).to(torch::kVulkan));
+auto output = module.forward(inputs).toTensor();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The key is the <code>.to(torch::kVulkan)</code> call, which moves the model and tensors to Vulkan-backed memory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_sharing_possible_but_complex"><a class="anchor" href="#_memory_sharing_possible_but_complex"></a>Memory Sharing: Possible but Complex</h3>
+<div class="paragraph">
+<p>Unlike TensorFlow Lite, PyTorch Mobile&#8217;s Vulkan backend is designed with the possibility of memory sharing in mind. In theory, you could share Vulkan memory between your rendering context and PyTorch Mobile&#8217;s inference context.</p>
+</div>
+<div class="paragraph">
+<p>In practice, this is complex and not well-documented. The Vulkan backend is experimental, and the APIs for memory sharing aren&#8217;t stable. For production applications, the separate-contexts approach is more reliable.</p>
+</div>
+<div class="paragraph">
+<p>If you need tight integration, consider:</p>
+</div>
+<div class="paragraph">
+<p><strong>Custom Operators</strong>: Implement critical operations as custom PyTorch operators that directly use your Vulkan context. This gives you full control but requires significant implementation effort.</p>
+</div>
+<div class="paragraph">
+<p><strong>Hybrid Approach</strong>: Use PyTorch Mobile for most operations, but implement performance-critical or tightly-integrated operations as custom Vulkan compute shaders. This balances convenience and performance.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cross_platform_considerations"><a class="anchor" href="#_cross_platform_considerations"></a>Cross-Platform Considerations</h3>
+<div class="paragraph">
+<p>PyTorch Mobile&#8217;s cross-platform story is strong:</p>
+</div>
+<div class="paragraph">
+<p><strong>iOS</strong>: Excellent support. Use the Metal backend for GPU acceleration. The runtime integrates well with iOS apps, and the tooling is mature.</p>
+</div>
+<div class="paragraph">
+<p><strong>Android</strong>: Good support. Use the Vulkan or OpenGL ES backend for GPU acceleration. The runtime works well, though the Vulkan backend is still experimental.</p>
+</div>
+<div class="paragraph">
+<p><strong>Desktop</strong>: Full PyTorch works on desktop, so you can use the same model for desktop and mobile deployment. This is useful for testing and development.</p>
+</div>
+<div class="paragraph">
+<p>The ability to use the same model across all platforms is a major advantage. You can develop on desktop, test on mobile, and deploy everywhere with confidence that behavior will be consistent.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_practical_example_real_time_style_transfer"><a class="anchor" href="#_practical_example_real_time_style_transfer"></a>Practical Example: Real-Time Style Transfer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s walk through a complete example: integrating PyTorch Mobile style transfer into a Vulkan-based mobile app.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_scenario"><a class="anchor" href="#_the_scenario"></a>The Scenario</h3>
+<div class="paragraph">
+<p>You&#8217;re building a mobile app that applies artistic style transfer to camera frames in real-time. Users see their camera feed transformed into the style of famous paintings. You need to process frames at 15+ FPS on mid-range devices.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_model_selection_and_training"><a class="anchor" href="#_model_selection_and_training"></a>Model Selection and Training</h3>
+<div class="paragraph">
+<p>You start with a fast style transfer model based on the Johnson et al. architecture. You train it in PyTorch on a desktop GPU:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+import torch.nn as nn
+
+class StyleTransferNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Encoder
+        self.conv1 = nn.Conv2d(3, 32, 9, stride=1, padding=4)
+        self.conv2 = nn.Conv2d(32, 64, 3, stride=2, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, 3, stride=2, padding=1)
+
+        # Residual blocks
+        self.res1 = ResidualBlock(128)
+        self.res2 = ResidualBlock(128)
+        self.res3 = ResidualBlock(128)
+
+        # Decoder
+        self.deconv1 = nn.ConvTranspose2d(128, 64, 3, stride=2, padding=1, output_padding=1)
+        self.deconv2 = nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1)
+        self.conv4 = nn.Conv2d(32, 3, 9, stride=1, padding=4)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.relu(self.conv3(x))
+        x = self.res1(x)
+        x = self.res2(x)
+        x = self.res3(x)
+        x = F.relu(self.deconv1(x))
+        x = F.relu(self.deconv2(x))
+        x = torch.tanh(self.conv4(x))
+        return x
+
+# Train the model
+model = StyleTransferNet()
+# ... training code ...</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After training, you convert to TorchScript for mobile deployment:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python"># Convert to TorchScript
+model.eval()
+example_input = torch.rand(1, 3, 360, 640)
+traced_model = torch.jit.trace(model, example_input)
+
+# Optimize for mobile
+from torch.utils.mobile_optimizer import optimize_for_mobile
+optimized_model = optimize_for_mobile(traced_model)
+optimized_model._save_for_lite_interpreter("style_transfer.ptl")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>.ptl</code> format is optimized for mobile, with reduced file size and faster loading.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_android_integration"><a class="anchor" href="#_android_integration"></a>Android Integration</h3>
+<div class="paragraph">
+<p>In your Android app, you integrate PyTorch Mobile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">import org.pytorch.IValue;
+import org.pytorch.Module;
+import org.pytorch.Tensor;
+
+// Load model
+Module module = Module.load(assetFilePath(this, "style_transfer.ptl"));
+
+// Prepare input tensor (360x640x3 image, normalized to [-1, 1])
+float[] inputData = preprocessImage(cameraFrame);
+Tensor inputTensor = Tensor.fromBlob(inputData, new long[]{1, 3, 360, 640});
+
+// Run inference
+Tensor outputTensor = module.forward(IValue.from(inputTensor)).toTensor();
+
+// Process output
+float[] outputData = outputTensor.getDataAsFloatArray();
+Bitmap styledImage = postprocessImage(outputData, 360, 640);</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_integration"><a class="anchor" href="#_vulkan_integration"></a>Vulkan Integration</h3>
+<div class="paragraph">
+<p>Your Vulkan rendering pipeline captures camera frames. To integrate style transfer:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Capture Frame</strong>: Vulkan renders the camera feed to a texture</p>
+</li>
+<li>
+<p><strong>Read Back</strong>: Copy the texture to a staging buffer using <code>vkCmdCopyImageToBuffer</code></p>
+</li>
+<li>
+<p><strong>Map Memory</strong>: Map the staging buffer to CPU memory</p>
+</li>
+<li>
+<p><strong>Preprocess</strong>: Resize to 360×640, normalize to [-1, 1]</p>
+</li>
+<li>
+<p><strong>Inference</strong>: Run PyTorch Mobile inference on a background thread</p>
+</li>
+<li>
+<p><strong>Display</strong>: When inference completes, upload the styled image to a Vulkan texture and render it</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The key is asynchronous execution. While the GPU renders the current frame, the CPU processes the previous frame&#8217;s style transfer. This maintains smooth frame rates.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_optimization"><a class="anchor" href="#_performance_optimization"></a>Performance Optimization</h3>
+<div class="paragraph">
+<p>Initial testing shows 80ms inference time—12.5 FPS, not quite meeting the 15 FPS target. You optimize:</p>
+</div>
+<div class="paragraph">
+<p><strong>Reduce Resolution</strong>: Using 270×480 instead of 360×640 reduces inference to 45ms (22 FPS) with acceptable quality loss.</p>
+</div>
+<div class="paragraph">
+<p><strong>Quantization</strong>: Applying dynamic quantization reduces inference to 35ms (28 FPS) and model size from 6.5MB to 1.7MB.</p>
+</div>
+<div class="paragraph">
+<p><strong>Operator Fusion</strong>: The mobile optimizer already fuses operations, but you manually fuse batch normalization into convolutions during training, providing another 10% speedup (32ms, 31 FPS).</p>
+</div>
+<div class="paragraph">
+<p><strong>GPU Acceleration</strong>: Enabling the Vulkan backend (experimental) reduces inference to 25ms (40 FPS) on devices with good Vulkan support.</p>
+</div>
+<div class="paragraph">
+<p>The final implementation runs smoothly at 30+ FPS on mid-range devices, providing real-time style transfer with minimal latency.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comparing_pytorch_mobile_to_alternatives"><a class="anchor" href="#_comparing_pytorch_mobile_to_alternatives"></a>Comparing PyTorch Mobile to Alternatives</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>How does PyTorch Mobile stack up against TensorFlow Lite and ONNX Runtime?</p>
+</div>
+<div class="sect2">
+<h3 id="_pytorch_mobile_vs_tensorflow_lite"><a class="anchor" href="#_pytorch_mobile_vs_tensorflow_lite"></a>PyTorch Mobile vs TensorFlow Lite</h3>
+<div class="paragraph">
+<p><strong>Advantages of PyTorch Mobile</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>No conversion step—train and deploy in the same framework</p>
+</li>
+<li>
+<p>Better support for dynamic models and control flow</p>
+</li>
+<li>
+<p>Easier debugging—same tools work for training and inference</p>
+</li>
+<li>
+<p>Strong iOS support with Metal backend</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Advantages of TensorFlow Lite</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Smaller runtime size (300KB vs 2-5MB)</p>
+</li>
+<li>
+<p>More mature quantization tooling</p>
+</li>
+<li>
+<p>Better Android GPU support (GPU delegate is more stable than PyTorch&#8217;s Vulkan backend)</p>
+</li>
+<li>
+<p>Larger ecosystem of pre-trained models</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>When to choose PyTorch Mobile</strong>: You&#8217;re already using PyTorch for training, you value development velocity over size optimization, or you need dynamic model behavior.</p>
+</div>
+<div class="paragraph">
+<p><strong>When to choose TensorFlow Lite</strong>: Size is critical, you need the most mature mobile ML solution, or you&#8217;re already in the TensorFlow ecosystem.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pytorch_mobile_vs_onnx_runtime"><a class="anchor" href="#_pytorch_mobile_vs_onnx_runtime"></a>PyTorch Mobile vs ONNX Runtime</h3>
+<div class="paragraph">
+<p><strong>Advantages of PyTorch Mobile</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Direct PyTorch deployment—no conversion</p>
+</li>
+<li>
+<p>Better support for PyTorch-specific features</p>
+</li>
+<li>
+<p>Simpler workflow for PyTorch users</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Advantages of ONNX Runtime</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Framework-agnostic—works with models from any framework</p>
+</li>
+<li>
+<p>Better desktop/server performance</p>
+</li>
+<li>
+<p>More execution providers (WebGPU, DirectML, CUDA, etc.)</p>
+</li>
+<li>
+<p>Smaller size for mobile deployment</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>When to choose PyTorch Mobile</strong>: You&#8217;re committed to PyTorch and want the simplest deployment path.</p>
+</div>
+<div class="paragraph">
+<p><strong>When to choose ONNX Runtime</strong>: You need cross-framework compatibility, you&#8217;re deploying on desktop/server, or you want maximum flexibility.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_hybrid_approach"><a class="anchor" href="#_the_hybrid_approach"></a>The Hybrid Approach</h3>
+<div class="paragraph">
+<p>Many applications use multiple runtimes:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>PyTorch Mobile for models trained in PyTorch that need dynamic behavior</p>
+</li>
+<li>
+<p>TensorFlow Lite for models where size is critical</p>
+</li>
+<li>
+<p>ONNX Runtime for desktop deployment</p>
+</li>
+<li>
+<p>Custom Vulkan shaders for performance-critical operations</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This hybrid approach gives you the best of all worlds, at the cost of additional complexity.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_when_pytorch_mobile_makes_sense"><a class="anchor" href="#_when_pytorch_mobile_makes_sense"></a>When PyTorch Mobile Makes Sense</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>PyTorch Mobile isn&#8217;t always the right choice. Here&#8217;s when it shines and when to consider alternatives.</p>
+</div>
+<div class="sect2">
+<h3 id="_ideal_use_cases"><a class="anchor" href="#_ideal_use_cases"></a>Ideal Use Cases</h3>
+<div class="paragraph">
+<p><strong>PyTorch-First Development</strong>: If your team uses PyTorch for training and you want to minimize friction in deployment, PyTorch Mobile is the natural choice.</p>
+</div>
+<div class="paragraph">
+<p><strong>Dynamic Models</strong>: Models with control flow, dynamic shapes, or complex logic that&#8217;s hard to convert to other formats benefit from PyTorch Mobile&#8217;s direct deployment.</p>
+</div>
+<div class="paragraph">
+<p><strong>Rapid Iteration</strong>: When you&#8217;re iterating quickly on model architecture and don&#8217;t want conversion issues to slow you down, PyTorch Mobile&#8217;s seamless workflow is valuable.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cross-Platform Deployment</strong>: The same model works on iOS, Android, and desktop, simplifying multi-platform development.</p>
+</div>
+<div class="paragraph">
+<p><strong>Research to Production</strong>: When you want to quickly move from research prototypes to production deployment without reimplementing in a different framework.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_when_to_consider_alternatives"><a class="anchor" href="#_when_to_consider_alternatives"></a>When to Consider Alternatives</h3>
+<div class="paragraph">
+<p><strong>Size-Critical Applications</strong>: If every megabyte of app size matters, TensorFlow Lite&#8217;s smaller runtime is a better choice.</p>
+</div>
+<div class="paragraph">
+<p><strong>Maximum Performance on Android</strong>: TensorFlow Lite&#8217;s GPU delegate is more mature and often faster than PyTorch Mobile&#8217;s Vulkan backend on Android.</p>
+</div>
+<div class="paragraph">
+<p><strong>TensorFlow Ecosystem</strong>: If you&#8217;re already using TensorFlow, TensorFlow Lite is the natural choice.</p>
+</div>
+<div class="paragraph">
+<p><strong>Framework-Agnostic Deployment</strong>: If you need to deploy models from multiple frameworks, ONNX Runtime provides better cross-framework support.</p>
+</div>
+<div class="paragraph">
+<p><strong>Embedded Systems</strong>: For very resource-constrained embedded systems, TensorFlow Lite&#8217;s aggressive optimization might be necessary.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>PyTorch Mobile brings PyTorch to mobile and embedded devices, maintaining the same framework from training to deployment. This continuity eliminates conversion issues and provides a seamless developer experience, at the cost of larger runtime size compared to TensorFlow Lite.</p>
+</div>
+<div class="paragraph">
+<p>The architecture is desktop PyTorch, optimized for mobile through selective builds, TorchScript compilation, quantization, and operator fusion. The result is a runtime that&#8217;s 2-5MB (larger than TensorFlow Lite but acceptable for most apps) with performance that&#8217;s competitive for many use cases.</p>
+</div>
+<div class="paragraph">
+<p>Integration with Vulkan applications follows similar patterns to TensorFlow Lite, with the added benefit of experimental Vulkan backend support that could enable tighter integration in the future. The cross-platform story is strong, with excellent iOS support via Metal and good Android support via Vulkan or OpenGL ES.</p>
+</div>
+<div class="paragraph">
+<p>PyTorch Mobile excels when you&#8217;re already using PyTorch, need dynamic model behavior, or value development velocity over size optimization. For size-critical applications or maximum Android performance, TensorFlow Lite might be a better choice.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_tensorflow_lite.html" class="xref page">Previous: TensorFlow Lite</a> | <a href="05_directml.html" class="xref page">Next: DirectML</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Optimizing for Mobile GPUs :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_Vulkan_Compute/12_Mobile_and_Embedded_Compute/03_mobile_optimization.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced Vulkan Compute</li>
+    <li>Mobile and Embedded Compute</li>
+    <li><a href="03_mobile_optimization.html">Optimizing for Mobile GPUs</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Optimizing for Mobile GPUs</h1>
+<div class="sect1">
+<h2 id="_a_different_objective_function"><a class="anchor" href="#_a_different_objective_function"></a>A Different Objective Function</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>On the desktop we optimize almost exclusively for <strong>time</strong>: how many milliseconds does the dispatch take? On mobile and embedded devices the objective function gains two more terms that are often <strong>more</strong> important than raw latency:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Energy</strong> — every joule spent is battery drained and heat generated.</p>
+</li>
+<li>
+<p><strong>Sustained performance</strong> — a kernel that runs fast for one second but triggers <strong>thermal throttling</strong> is slower, on average, than one that runs steadily within the power envelope.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>This reframes everything from the previous chapters. The fastest kernel is frequently the one that touches DRAM the least.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_minimize_dram_traffic_above_all"><a class="anchor" href="#_minimize_dram_traffic_above_all"></a>Minimize DRAM Traffic Above All</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Because external memory bandwidth dominates the mobile power budget, your primary optimization lever is <strong>data movement</strong>, not arithmetic.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Fuse passes.</strong> Two kernels that each read and write a full-resolution buffer cost two round-trips to DRAM. Fusing them into a single kernel that keeps the intermediate in registers or shared memory can halve your bandwidth.</p>
+</li>
+<li>
+<p><strong>Use shared memory and subgroups aggressively.</strong> The LDS tiling (Chapter 3) and subgroup shuffles (Chapter 4) we used for <strong>speed</strong> on desktop are, on mobile, primarily <strong>power</strong> optimizations — keeping data on-chip avoids the expensive DRAM hop.</p>
+</li>
+<li>
+<p><strong>Compress and pack.</strong> Store intermediates at the smallest precision that is correct (see below), and pack multiple values per word to reduce the number of transactions.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_a_worked_example_fusing_a_blur_and_a_tone_map"><a class="anchor" href="#_a_worked_example_fusing_a_blur_and_a_tone_map"></a>A Worked Example: Fusing a Blur and a Tone-Map</h3>
+<div class="paragraph">
+<p>Suppose a photography pipeline blurs an image and then applies a tone-map curve. The naive approach is two dispatches:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Pass 1: read src (R), write blurred (W) -&gt; one full-image read + one full-image write
+// Pass 2: read blurred (R), write final (W) -&gt; another full read + full write</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For a 12-megapixel image at FP16 (2 bytes/channel, 4 channels) that is roughly 96 MB <strong>each</strong> way, four times over: about 384 MB of DRAM traffic. On a phone where every megabyte moved costs measurable battery and heat, that is the dominant cost — the arithmetic is almost free by comparison.</p>
+</div>
+<div class="paragraph">
+<p>Fusing the two stages into a single kernel keeps the blurred pixel in a register and applies the tone-map immediately, eliminating the intermediate buffer&#8217;s write <strong>and</strong> read:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">[numthreads(8, 8, 1)]   // 64 invocations: safe under a 128-invocation limit
+void fusedBlurToneMap(uint3 id : SV_DispatchThreadID)
+{
+    if (any(id.xy &gt;= imageSize)) return;        // bounds check, see Chapter 2
+
+    half4 blurred = boxBlur(srcImage, id.xy);   // gather happens via texture cache
+    half4 mapped  = toneMap(blurred);           // stays in registers, no DRAM hop
+    dstImage[id.xy] = mapped;                    // single write to DRAM
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This halves the round-trips (about 192 MB instead of 384 MB) and removes one full-size allocation. On mobile this is frequently the single biggest win available, and it costs nothing in arithmetic.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exploit_16_bit_precision"><a class="anchor" href="#_exploit_16_bit_precision"></a>Exploit 16-bit Precision</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Most modern mobile GPUs execute <strong>FP16</strong> at twice the rate of FP32 and, critically, move half as many bytes. For workloads tolerant of reduced precision — image processing, many ML inference kernels, audio — switching storage and arithmetic to 16-bit is often a near-free 2x.</p>
+</div>
+<div class="paragraph">
+<p>Because this tutorial is Slang-first, here is the half-precision kernel in Slang, where <code>half</code> maps directly to a 16-bit float and the compiler emits the 16-bit SPIR-V capabilities for you:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">RWStructuredBuffer&lt;half&gt; values;
+
+[numthreads(64, 1, 1)]
+void scale(uint3 id : SV_DispatchThreadID)
+{
+    // Half-precision math: half the bytes moved, less power, often 2x throughput.
+    values[id.x] = values[id.x] * half(1.5);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The equivalent GLSL makes the required extensions explicit, which is useful to know when reading vendor samples:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#extension GL_EXT_shader_16bit_storage    : require
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : require
+
+layout(set = 0, binding = 0) buffer Data { float16_t values[]; };
+
+void main() {
+    uint i = gl_GlobalInvocationID.x;
+    values[i] = values[i] * float16_t(1.5);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Either way, you must enable <code>VkPhysicalDeviceShaderFloat16Int8Features::shaderFloat16</code> and the matching 16-bit storage feature at device creation (see the defensive feature-enabling code in the previous section), and <strong>always</strong> verify the values remain numerically acceptable for your use case. A useful trick is to keep accumulation in FP32 while storing inputs and outputs in FP16 — the same mixed-precision idea from the Cooperative Matrices chapter, applied for bandwidth rather than for tensor units.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_right_size_the_workgroup"><a class="anchor" href="#_right_size_the_workgroup"></a>Right-Size the Workgroup</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The desktop habit of "just use 256 or 1024 invocations" is actively harmful on mobile:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Respect <code>maxComputeWorkGroupInvocations</code> (can be 128) and <code>maxComputeSharedMemorySize</code> (can be 16 KB), queried in the previous section.</p>
+</li>
+<li>
+<p>Prefer workgroup sizes that are a multiple of the device&#8217;s reported <code>subgroupSize</code> so that no lanes are wasted.</p>
+</li>
+<li>
+<p>Smaller workgroups can improve <strong>occupancy</strong> on the narrow mobile cores and reduce shared-memory pressure. Profile, don&#8217;t assume.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_manage_thermals_and_frequency"><a class="anchor" href="#_manage_thermals_and_frequency"></a>Manage Thermals and Frequency</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A phone cannot sustain its peak GPU clock. After a few seconds of heavy load the governor reduces frequency to stay within the thermal envelope, and your measured throughput drops. Practical strategies:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Measure sustained, not peak.</strong> Benchmark over tens of seconds, not a single dispatch, to see the throttled steady state.</p>
+</li>
+<li>
+<p><strong>Amortize, don&#8217;t burst.</strong> For background or periodic work, spreading compute across frames at a lower clock can deliver more total work per joule than a flat-out burst followed by throttling.</p>
+</li>
+<li>
+<p><strong>Use <code>VK_EXT_global_priority</code> carefully.</strong> Elevated queue priority can starve the rest of the system and worsen the thermal/UX trade-off.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_profile_on_the_real_device"><a class="anchor" href="#_profile_on_the_real_device"></a>Profile on the Real Device</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Emulators and desktop GPUs will lie to you about mobile performance. Use vendor tools on the actual hardware:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://developer.arm.com/Tools%20and%20Software/Arm%20Performance%20Studio"><strong>Arm Performance Studio</strong> (formerly Streamline)</a> (<a href="https://developer.arm.com/Tools%20and%20Software/Arm%20Performance%20Studio" class="bare">https://developer.arm.com/Tools%20and%20Software/Arm%20Performance%20Studio</a>) — the primary profiling suite for Mali and Immortalis GPUs. It includes <strong>Arm Streamline</strong> for timeline-level CPU/GPU counters, <strong>Mali Offline Compiler</strong> for per-shader register and throughput estimates, and <strong>Mali Texture Compression Tool</strong>. Free download, Windows/Linux/macOS host.</p>
+</li>
+<li>
+<p><a href="https://developer.qualcomm.com/software/snapdragon-profiler"><strong>Qualcomm Snapdragon Profiler</strong></a> (<a href="https://developer.qualcomm.com/software/snapdragon-profiler" class="bare">https://developer.qualcomm.com/software/snapdragon-profiler</a>) — captures GPU counters, memory bandwidth, and a Vulkan command-buffer trace on Adreno devices. Also bundles the <strong>Adreno GPU Profiler</strong> for lower-level shader analysis. Requires a Qualcomm developer account (free).</p>
+</li>
+<li>
+<p><a href="https://developer.imaginationtech.com/pvrtune/"><strong>Imagination PVRTune</strong></a> (<a href="https://developer.imaginationtech.com/pvrtune/" class="bare">https://developer.imaginationtech.com/pvrtune/</a>) — GPU counter capture and timeline viewer for PowerVR/BXT/IMG parts. Pairs with <strong>PVRShaderEditor</strong> (offline shader analysis) and <strong>PowerVR SDK</strong> tools. Free download.</p>
+</li>
+<li>
+<p><a href="https://gpuinspector.dev/"><strong>Android GPU Inspector (AGI)</strong></a> (<a href="https://gpuinspector.dev/" class="bare">https://gpuinspector.dev/</a>) — Google&#8217;s open-source, vendor-neutral profiler. Captures a full <strong>frame trace</strong> including all Vulkan API calls, resource lifetimes, and — on supported devices — hardware performance counters. Best starting point when you are unsure which vendor&#8217;s tool to reach for first; it works on Mali, Adreno, and other drivers that expose the <code>VK_LAYER_performance_counters</code> layer.</p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_reading_what_the_profilers_tell_you"><a class="anchor" href="#_reading_what_the_profilers_tell_you"></a>Reading What the Profilers Tell You</h3>
+<div class="paragraph">
+<p>These expose the metric that matters most here — external memory <strong>read/write bytes</strong> — alongside ALU utilization and occupancy. A good habit is to compute the <strong>theoretical</strong> minimum traffic for your kernel (input bytes + output bytes), then compare it to the measured external read/write bytes the profiler reports. If you are moving 3–4x the theoretical minimum, you have redundant DRAM traffic to fuse or cache away. This is the mobile equivalent of the Roofline analysis from the Performance Auditing chapter, but with <strong>bytes and joules</strong> on the axes instead of FLOPS.</p>
+</div>
+<div class="paragraph">
+<p>For <code>clvk</code>-based workloads the Vulkan-level capture in AGI is especially useful: because <code>clvk</code> translates your OpenCL calls into Vulkan commands, AGI shows you exactly which <code>vkCmdDispatch</code> calls were generated and where the barriers and memory traffic landed.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Optimizing mobile compute is about <strong>bandwidth and watts</strong> first, arithmetic second. Fuse passes, keep data on-chip with shared memory and subgroups, drop to FP16 where correctness allows, right-size workgroups to the device&#8217;s real limits, and validate sustained performance on hardware with vendor profilers. With those habits, the same kernels you wrote for the desktop become well-behaved citizens of a battery-powered device.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_android_compute.html" class="xref page">Previous: Compute on Android</a> | <a href="04_embedded_beyond_mobile.html" class="xref page">Next: Beyond Mobile: Embedded and Headless Compute</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

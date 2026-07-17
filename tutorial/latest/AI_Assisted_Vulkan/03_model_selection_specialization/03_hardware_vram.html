@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Hardware &amp; VRAM Budgeting :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../AI_Assisted_Vulkan/03_model_selection_specialization/03_hardware_vram.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>AI-Assisted Vulkan Development</li>
+    <li>Model Selection &amp; Specialization</li>
+    <li><a href="03_hardware_vram.html">Hardware &amp; VRAM budgeting</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Hardware &amp; VRAM Budgeting</h1>
+<div class="sect1">
+<h2 id="_vram_is_a_shared_resource"><a class="anchor" href="#_vram_is_a_shared_resource"></a>VRAM is a shared resource</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once you introduce a local AI assistant, you&#8217;re no longer only competing with other applications for CPU time — you&#8217;re competing with your own engine for VRAM. Treating this seriously means working out a budget rather than assuming things will fit.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vram_contention_and_swapping_to_system_ram"><a class="anchor" href="#_vram_contention_and_swapping_to_system_ram"></a>VRAM contention and swapping to system RAM</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>VRAM isn&#8217;t a static bucket you fill once. With a local model running, your GPU is regularly switching between two demanding workloads:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>The LLM inference engine</strong>, holding the model&#8217;s weights in memory to generate output.</p>
+</li>
+<li>
+<p><strong>The Vulkan application</strong>, holding textures, buffers, and render targets.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>If the combined requirement exceeds your physical VRAM, the OS starts moving AI weights or Vulkan resources into much slower system RAM. This is bad for both sides: token generation can drop from ~50/s to single digits, and your application&#8217;s frame rate can fall into the single digits too.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_calculating_your_actual_budget"><a class="anchor" href="#_calculating_your_actual_budget"></a>Calculating your actual budget</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The model-size number on a download page isn&#8217;t the whole picture — you also need to account for the KV cache, the model&#8217;s short-term memory for the current conversation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-text hljs" data-lang="text">Total VRAM - (OS/Desktop + Vulkan Peak + (Model Size * Quantization) + KV Cache) = Safety Margin</code></pre>
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>OS/Desktop:</strong> typically 1.5–2GB on Windows/Linux.</p>
+</li>
+<li>
+<p><strong>Vulkan peak:</strong> the maximum VRAM your engine uses during a heavy debug session.</p>
+</li>
+<li>
+<p><strong>Model size × quantization:</strong> a 30B model (e.g. Qwen 3-Coder) at 4-bit (Q4_K_M) is roughly 18GB; a 12B model (e.g. Mistral-Nemo) is roughly 8GB.</p>
+</li>
+<li>
+<p><strong>KV cache:</strong> easy to overlook. At a 16k context window, this can add another 1–2GB.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Example: a 24GB card.</strong> On an RTX 4090 (24GB), with 6GB going to OS + Vulkan app and 18GB to Qwen 3-Coder (30B) at Q4_K_M, that&#8217;s <code>24 - (6 + 18) = 0GB</code> of margin. Any long conversation that grows the KV cache will push you into swapping. The fix is either a smaller model (Mistral-Nemo 12B or Llama 4 17B) or reducing the context window to something like 4,096 tokens to free up that 1–2GB.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quantization"><a class="anchor" href="#_quantization"></a>Quantization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Running a model at full precision (FP16) usually isn&#8217;t necessary. Quantization reduces the bits used per weight — similar in spirit to texture compression (BC7, ASTC): you trade some precision for a large reduction in memory.</p>
+</div>
+<div class="paragraph">
+<p>4-bit (Q4_K_M) or 5-bit (Q5_K_M) is a reasonable default. At 4-bit, size drops by about 75% while reasoning ability on C&#43;&#43; code stays close to its original level. Going below 4-bit (e.g. 2-bit) tends to cause real degradation — the model starts making mistakes on the finer details of Vulkan&#8217;s state machine because the weights no longer encode them precisely enough.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quantizing_a_model_yourself"><a class="anchor" href="#_quantizing_a_model_yourself"></a>Quantizing a model yourself</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Most people download pre-quantized models from HuggingFace, but it&#8217;s worth knowing how to do this yourself so you can take a freshly released FP16 model and fit it to your hardware.</p>
+</div>
+<div class="paragraph">
+<p>The main tool is <strong>llama.cpp</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Clone and build:</strong></p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">git clone https://github.com/ggerganov/llama.cpp
+cd llama.cpp
+make -j  # Builds the quantize and convert binaries</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Convert to GGUF.</strong> Most models ship in HuggingFace <code>SafeTensors</code> format and need converting to GGUF for local inference:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">python3 convert_hf_to_gguf.py models/my_vulkan_model/</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Quantize.</strong> <code>Q4_K_M</code> is a reasonable balance of speed and accuracy:</p>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./quantize models/my_vulkan_model/model-f16.gguf models/my_vulkan_model/model-Q4_K_M.gguf Q4_K_M</code></pre>
+</div>
+</div>
+</li>
+<li>
+<p><strong>Verify.</strong> A 32GB FP16 model should come out to roughly 18GB. Load it into Ollama or LM Studio and check the VRAM headroom for your swapchain.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_if_vram_is_still_tight"><a class="anchor" href="#_if_vram_is_still_tight"></a>If VRAM is still tight</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A few concrete options if your hardware is limited:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Limit the context window.</strong> Set <code>context_length</code> to something like 8192 in Ollama/LM Studio — usually enough for a few files of Vulkan code, and it saves 1.5GB or so versus the default.</p>
+</li>
+<li>
+<p><strong>Offload layers to CPU.</strong> With GGUF, you can move some layers off the GPU — e.g. 10 of 60 layers — trading roughly 20% inference speed for a few GB of VRAM back.</p>
+</li>
+<li>
+<p><strong>Use a second GPU.</strong> If you have a spare 8–12GB card, put it in a second PCIe slot and point Ollama at it exclusively, keeping your primary GPU dedicated to the Vulkan application.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Hardware budgeting is the unglamorous part of running a local AI setup, but understanding your VRAM footprint — and actively managing the KV cache and quantization — is what keeps the assistant from competing with your renderer for memory.</p>
+</div>
+<div class="paragraph">
+<p>Next: <a href="04_rag_mcp_specialization.html" class="xref page">MCP &amp; RAG Specialization</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

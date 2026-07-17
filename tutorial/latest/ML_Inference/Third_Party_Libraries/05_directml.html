@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>DirectML :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Third_Party_Libraries/05_directml.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Integrating Third-Party ML Libraries</li>
+    <li><a href="05_directml.html">DirectML</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">DirectML</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Windows has always been the dominant platform for PC gaming and graphics development. Yet for years, machine learning on Windows lagged behind Linux. CUDA worked best on Linux, TensorFlow was optimized for Linux, and Windows developers often felt like second-class citizens in the ML world.</p>
+</div>
+<div class="paragraph">
+<p>DirectML changes this. It&#8217;s Microsoft&#8217;s solution for hardware-accelerated machine learning on Windows, designed to work with any GPU—NVIDIA, AMD, Intel, or Qualcomm. It&#8217;s built on DirectX 12, making it a natural fit for Windows graphics applications, and it integrates seamlessly with the Windows ecosystem.</p>
+</div>
+<div class="paragraph">
+<p>This chapter explores DirectML: what makes it unique, how it compares to CUDA and other ML acceleration APIs, how to integrate it with Vulkan applications on Windows, and when it&#8217;s the right choice for your project.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_windows_first_philosophy"><a class="anchor" href="#_the_windows_first_philosophy"></a>The Windows-First Philosophy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>DirectML is unapologetically Windows-centric. While other ML frameworks aim for cross-platform compatibility, DirectML focuses on being the best solution for Windows. This focus brings significant advantages for Windows developers.</p>
+</div>
+<div class="sect2">
+<h3 id="_vendor_agnostic_gpu_acceleration"><a class="anchor" href="#_vendor_agnostic_gpu_acceleration"></a>Vendor-Agnostic GPU Acceleration</h3>
+<div class="paragraph">
+<p>The PC gaming market is diverse. NVIDIA dominates the high end, but AMD has significant market share, and Intel&#8217;s Arc GPUs are gaining traction. Qualcomm is entering the Windows ARM market. If you&#8217;re building a Windows application, you can&#8217;t assume your users have NVIDIA GPUs.</p>
+</div>
+<div class="paragraph">
+<p>CUDA only works on NVIDIA GPUs. If your application uses CUDA for ML acceleration, users with AMD or Intel GPUs get no acceleration. They&#8217;re stuck with slow CPU inference, leading to poor user experience and negative reviews.</p>
+</div>
+<div class="paragraph">
+<p>DirectML solves this problem. It&#8217;s vendor-agnostic, working with any DirectX 12-capable GPU. Your application automatically leverages whatever GPU the user has—NVIDIA, AMD, Intel, or Qualcomm. One codebase, universal acceleration.</p>
+</div>
+<div class="paragraph">
+<p>This vendor neutrality is DirectML&#8217;s killer feature for Windows applications. You write your ML code once, and it works well on all hardware. No vendor-specific code paths, no performance cliffs for users with "the wrong" GPU.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_directx_12_integration"><a class="anchor" href="#_directx_12_integration"></a>DirectX 12 Integration</h3>
+<div class="paragraph">
+<p>DirectML is built on DirectX 12, Microsoft&#8217;s modern graphics API. If you&#8217;re building a Windows graphics application, you&#8217;re likely already using DirectX 12 for rendering. DirectML integrates seamlessly with your existing DirectX 12 code.</p>
+</div>
+<div class="paragraph">
+<p>You can share command queues between rendering and ML inference. You can share memory between graphics resources and ML tensors. You can synchronize operations using DirectX 12&#8217;s fence mechanism. This tight integration eliminates the overhead of bridging between separate graphics and ML contexts.</p>
+</div>
+<div class="paragraph">
+<p>For Vulkan developers, this creates an interesting situation. DirectML is DirectX 12-based, but Vulkan and DirectX 12 can interoperate on Windows through shared resources. We&#8217;ll explore this integration later in the chapter.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_windows_ecosystem_integration"><a class="anchor" href="#_windows_ecosystem_integration"></a>Windows Ecosystem Integration</h3>
+<div class="paragraph">
+<p>DirectML integrates deeply with the Windows ecosystem:</p>
+</div>
+<div class="paragraph">
+<p><strong>Windows ML</strong>: A high-level API built on DirectML that provides easy model loading and inference. It&#8217;s designed for application developers who want ML features without deep ML expertise.</p>
+</div>
+<div class="paragraph">
+<p><strong>ONNX Runtime</strong>: Has a DirectML execution provider, allowing ONNX models to leverage DirectML acceleration automatically.</p>
+</div>
+<div class="paragraph">
+<p><strong>Visual Studio</strong>: Full debugging and profiling support for DirectML applications.</p>
+</div>
+<div class="paragraph">
+<p><strong>PIX</strong>: Microsoft&#8217;s GPU profiler works with DirectML, letting you analyze ML inference performance alongside graphics rendering.</p>
+</div>
+<div class="paragraph">
+<p>This ecosystem integration makes DirectML a natural choice for Windows developers. The tools you already use for graphics development work for ML development too.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_cross_platform_question"><a class="anchor" href="#_the_cross_platform_question"></a>The Cross-Platform Question</h3>
+<div class="paragraph">
+<p>DirectML is Windows-only. If you need to deploy on Linux, macOS, Android, or iOS, DirectML isn&#8217;t an option. This is a significant limitation compared to the WebGPU execution provider, which works across all platforms.</p>
+</div>
+<div class="paragraph">
+<p>For Windows-exclusive applications (many PC games, Windows-specific tools), targeting DirectML directly or via its specific ONNX Runtime provider is a great choice. For cross-platform applications, you should use <strong>WebGPU</strong>. WebGPU will automatically use DirectML behind the scenes on Windows, giving you the same hardware acceleration while maintaining a single codebase that also runs on Linux and Android via Vulkan.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_architecture_directx_12_for_machine_learning"><a class="anchor" href="#_architecture_directx_12_for_machine_learning"></a>Architecture: DirectX 12 for Machine Learning</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>DirectML&#8217;s architecture mirrors DirectX 12&#8217;s design philosophy: explicit control, low overhead, and close-to-metal performance.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_operator_model"><a class="anchor" href="#_the_operator_model"></a>The Operator Model</h3>
+<div class="paragraph">
+<p>DirectML provides a library of ML operators—convolution, pooling, activation functions, normalization, etc. Each operator is implemented as a highly optimized GPU kernel that works across all DirectX 12-capable hardware.</p>
+</div>
+<div class="paragraph">
+<p>Unlike OpenCL, where you write custom kernels for each operation, DirectML provides pre-built operators. This is both a strength and a limitation. The strength: operators are highly optimized and work on all hardware. The limitation: you&#8217;re constrained to the operators DirectML provides.</p>
+</div>
+<div class="paragraph">
+<p>The operator set is comprehensive, covering most common ML operations:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Convolutions (2D, 3D, depthwise, grouped, transposed)</p>
+</li>
+<li>
+<p>Pooling (max, average, global, adaptive)</p>
+</li>
+<li>
+<p>Activation functions (ReLU, Leaky ReLU, ELU, Sigmoid, Tanh, Softmax, etc.)</p>
+</li>
+<li>
+<p>Normalization (batch, layer, instance, local response)</p>
+</li>
+<li>
+<p>Element-wise operations (add, multiply, etc.)</p>
+</li>
+<li>
+<p>Reduction operations (sum, mean, max, min)</p>
+</li>
+<li>
+<p>Matrix operations (GEMM, matrix multiply)</p>
+</li>
+<li>
+<p>And many more</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For most models, these operators are sufficient. For cutting-edge research models with exotic operations, you might need to implement custom operators or use a different framework.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_execution_model"><a class="anchor" href="#_the_execution_model"></a>The Execution Model</h3>
+<div class="paragraph">
+<p>DirectML uses DirectX 12&#8217;s command list model. You build a graph of operators, compile it, then record commands to execute the graph. This is similar to how you record rendering commands in DirectX 12.</p>
+</div>
+<div class="paragraph">
+<p>The workflow:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create a DirectML device (tied to a DirectX 12 device)</p>
+</li>
+<li>
+<p>Create operator descriptors for each operation in your model</p>
+</li>
+<li>
+<p>Compile operators into an execution graph</p>
+</li>
+<li>
+<p>Allocate GPU memory for inputs, outputs, and intermediate tensors</p>
+</li>
+<li>
+<p>Record commands to execute the graph</p>
+</li>
+<li>
+<p>Submit the command list to the GPU</p>
+</li>
+<li>
+<p>Wait for completion or synchronize with other work</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This explicit model gives you fine-grained control over execution and synchronization, at the cost of more complex code compared to high-level frameworks.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_management"><a class="anchor" href="#_memory_management"></a>Memory Management</h3>
+<div class="paragraph">
+<p>DirectML uses DirectX 12&#8217;s resource model. Tensors are stored in DirectX 12 buffers or textures. You manage memory allocation, binding, and lifetime explicitly.</p>
+</div>
+<div class="paragraph">
+<p>This explicit memory management is powerful but requires care. You&#8217;re responsible for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Allocating buffers large enough for your tensors</p>
+</li>
+<li>
+<p>Ensuring proper alignment (DirectML has specific alignment requirements)</p>
+</li>
+<li>
+<p>Managing buffer lifetimes (buffers must remain valid during execution)</p>
+</li>
+<li>
+<p>Handling memory reuse (to minimize allocation overhead)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The benefit is efficiency. You can reuse buffers across multiple inferences, share memory between rendering and ML, and optimize memory layout for your specific use case.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_metacommands_hardware_specific_optimization"><a class="anchor" href="#_metacommands_hardware_specific_optimization"></a>Metacommands: Hardware-Specific Optimization</h3>
+<div class="paragraph">
+<p>DirectML supports "metacommands"—hardware-specific implementations of common operations that can be significantly faster than the standard operators.</p>
+</div>
+<div class="paragraph">
+<p>GPU vendors can provide metacommands for operations like convolution or matrix multiplication that leverage hardware-specific features. When available, DirectML automatically uses metacommands instead of standard operators, providing better performance without code changes.</p>
+</div>
+<div class="paragraph">
+<p>This is how DirectML achieves competitive performance with OpenCL despite being vendor-agnostic. Vendors optimize metacommands for their hardware, and applications benefit automatically.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integration_with_vulkan_applications"><a class="anchor" href="#_integration_with_vulkan_applications"></a>Integration with Vulkan Applications</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Integrating DirectML with Vulkan applications on Windows requires bridging between two different graphics APIs. This is possible but requires careful handling.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_challenge_two_graphics_apis"><a class="anchor" href="#_the_challenge_two_graphics_apis"></a>The Challenge: Two Graphics APIs</h3>
+<div class="paragraph">
+<p>Your Vulkan application uses Vulkan for rendering. DirectML uses DirectX 12 for ML inference. These are separate APIs with separate device contexts, separate command queues, and separate memory pools.</p>
+</div>
+<div class="paragraph">
+<p>The naive approach—treating them as completely separate—works but is inefficient. You&#8217;d copy data from Vulkan memory to CPU memory, then to DirectX 12 memory for inference, then back through CPU memory to Vulkan memory. These copies are expensive and hurt performance.</p>
+</div>
+<div class="paragraph">
+<p>The better approach is to share resources between Vulkan and DirectX 12, eliminating unnecessary copies.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_shared_resources_the_bridge"><a class="anchor" href="#_shared_resources_the_bridge"></a>Shared Resources: The Bridge</h3>
+<div class="paragraph">
+<p>Windows provides mechanisms for sharing resources between Vulkan and DirectX 12:</p>
+</div>
+<div class="paragraph">
+<p><strong>Shared Handles</strong>: Both Vulkan and DirectX 12 support exporting and importing memory using Windows handles. You can allocate memory in Vulkan, export a handle, and import it into DirectX 12 (or vice versa).</p>
+</div>
+<div class="paragraph">
+<p><strong>Shared Fences</strong>: Similarly, you can share synchronization primitives (fences/semaphores) between Vulkan and DirectX 12, allowing proper synchronization without CPU involvement.</p>
+</div>
+<div class="paragraph">
+<p>The workflow for shared memory:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Allocate memory in Vulkan using <code>VK_KHR_external_memory_win32</code></p>
+</li>
+<li>
+<p>Export a Windows handle to the memory</p>
+</li>
+<li>
+<p>Import the handle into DirectX 12 using <code>ID3D12Device::OpenSharedHandle</code></p>
+</li>
+<li>
+<p>Both APIs can now access the same physical memory</p>
+</li>
+<li>
+<p>Use shared fences to synchronize access</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This eliminates data copies. Your Vulkan rendering writes to a texture, DirectML reads from the same memory for inference, and writes results back to shared memory that Vulkan can read.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_practical_integration_pattern"><a class="anchor" href="#_practical_integration_pattern"></a>Practical Integration Pattern</h3>
+<div class="paragraph">
+<p>Here&#8217;s a practical pattern for integrating DirectML with Vulkan:</p>
+</div>
+<div class="paragraph">
+<p><strong>Setup Phase</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create Vulkan device and DirectX 12 device (on the same physical GPU)</p>
+</li>
+<li>
+<p>Allocate shared memory for input and output tensors</p>
+</li>
+<li>
+<p>Create DirectML operators and compile the inference graph</p>
+</li>
+<li>
+<p>Create shared fences for synchronization</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Per-Frame Execution</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Vulkan renders to a shared texture</p>
+</li>
+<li>
+<p>Signal a shared fence from Vulkan</p>
+</li>
+<li>
+<p>DirectX 12 waits on the fence</p>
+</li>
+<li>
+<p>DirectML executes inference, reading from the shared texture</p>
+</li>
+<li>
+<p>DirectML writes results to shared memory</p>
+</li>
+<li>
+<p>Signal another shared fence from DirectX 12</p>
+</li>
+<li>
+<p>Vulkan waits on the fence</p>
+</li>
+<li>
+<p>Vulkan reads inference results and continues rendering</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This pattern minimizes overhead while maintaining correct synchronization.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_code_example_shared_memory_setup"><a class="anchor" href="#_code_example_shared_memory_setup"></a>Code Example: Shared Memory Setup</h3>
+<div class="paragraph">
+<p>Here&#8217;s how you set up shared memory between Vulkan and DirectX 12:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Vulkan side: Allocate exportable memory
+VkExternalMemoryBufferCreateInfo externalInfo = {};
+externalInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO;
+externalInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+
+VkBufferCreateInfo bufferInfo = {};
+bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+bufferInfo.pNext = &amp;externalInfo;
+bufferInfo.size = tensorSize;
+bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+
+VkBuffer buffer;
+vkCreateBuffer(device, &amp;bufferInfo, nullptr, &amp;buffer);
+
+// Allocate and bind memory
+VkMemoryAllocateInfo allocInfo = {};
+allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+allocInfo.allocationSize = memRequirements.size;
+allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits);
+
+VkExportMemoryAllocateInfo exportInfo = {};
+exportInfo.sType = VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO;
+exportInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+allocInfo.pNext = &amp;exportInfo;
+
+VkDeviceMemory memory;
+vkAllocateMemory(device, &amp;allocInfo, nullptr, &amp;memory);
+vkBindBufferMemory(device, buffer, memory, 0);
+
+// Export handle
+VkMemoryGetWin32HandleInfoKHR handleInfo = {};
+handleInfo.sType = VK_STRUCTURE_TYPE_MEMORY_GET_WIN32_HANDLE_INFO_KHR;
+handleInfo.memory = memory;
+handleInfo.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT;
+
+HANDLE sharedHandle;
+vkGetMemoryWin32HandleKHR(device, &amp;handleInfo, &amp;sharedHandle);
+
+// DirectX 12 side: Import the handle
+ID3D12Resource* d3d12Resource;
+d3d12Device-&gt;OpenSharedHandle(sharedHandle, IID_PPV_ARGS(&amp;d3d12Resource));
+
+// Now both Vulkan and DirectX 12 can access the same memory</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This is complex, but it&#8217;s a one-time setup cost. Once established, the shared memory can be used for many inference operations with no copying overhead.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>Performance Considerations</h3>
+<div class="paragraph">
+<p>Shared resource integration has overhead:</p>
+</div>
+<div class="paragraph">
+<p><strong>Synchronization Cost</strong>: Waiting on fences has some CPU overhead. Minimize the number of synchronization points.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory Layout</strong>: Vulkan and DirectX 12 might have different optimal memory layouts for the same data. You might need to choose a layout that&#8217;s acceptable for both, even if it&#8217;s not optimal for either.</p>
+</div>
+<div class="paragraph">
+<p><strong>Driver Overhead</strong>: Sharing resources between APIs involves driver coordination, which has some overhead. This is usually small but can add up if you&#8217;re sharing many resources.</p>
+</div>
+<div class="paragraph">
+<p>For most applications, these costs are outweighed by eliminating data copies. But for very high-frequency inference (every frame at 120+ FPS), you might need to carefully profile and optimize.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_directml_through_onnx_runtime"><a class="anchor" href="#_using_directml_through_onnx_runtime"></a>Using DirectML Through ONNX Runtime</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While you can use DirectML directly, most applications use it through ONNX Runtime&#8217;s DirectML execution provider. This provides a higher-level API while still leveraging DirectML&#8217;s performance.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_use_onnx_runtime"><a class="anchor" href="#_why_use_onnx_runtime"></a>Why Use ONNX Runtime?</h3>
+<div class="paragraph">
+<p>ONNX Runtime provides several advantages over direct DirectML usage:</p>
+</div>
+<div class="paragraph">
+<p><strong>Simpler API</strong>: ONNX Runtime handles operator creation, graph compilation, and memory management. You just load a model and run inference.</p>
+</div>
+<div class="paragraph">
+<p><strong>Model Format Support</strong>: ONNX Runtime loads ONNX models directly. With direct DirectML, you&#8217;d need to parse the model format yourself and create operators manually.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cross-Platform</strong>: ONNX Runtime works on all platforms. You select which execution provider to use.  You may use WebGPU on all platforms as a default for GPU acceleration as this translates to being backed by DirectML in Windows and Vulkan in Linux/Android.  However, there&#8217;s some capabilites that might occur in more specific execution providers so adjust to your needs.  It is reasonable to target CPU as a standard on all platforms, then expect WebGPU, and then use CUDA or similar on NVIDIA or Metal on Apple as an example.</p>
+</div>
+<div class="paragraph">
+<p><strong>Optimization</strong>: ONNX Runtime applies graph optimizations automatically—operator fusion, constant folding, memory planning, etc.</p>
+</div>
+<div class="paragraph">
+<p>For most applications, ONNX Runtime with DirectML execution provider is the right choice. Use direct DirectML only if you need fine-grained control or have specific requirements that ONNX Runtime doesn&#8217;t meet.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_the_directml_execution_provider"><a class="anchor" href="#_using_the_directml_execution_provider"></a>Using the DirectML Execution Provider</h3>
+<div class="paragraph">
+<p>Enabling DirectML in ONNX Runtime is simple:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">#include &lt;onnxruntime_cxx_api.h&gt;
+
+// Create session options
+Ort::SessionOptions sessionOptions;
+
+// Enable DirectML execution provider
+Ort::ThrowOnError(OrtSessionOptionsAppendExecutionProvider_DML(sessionOptions, 0));
+
+// Create session
+Ort::Session session(env, modelPath, sessionOptions);
+
+// Run inference (same as any ONNX Runtime session)
+auto outputTensors = session.Run(runOptions, inputNames, inputTensors,
+                                   inputCount, outputNames, outputCount);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That&#8217;s it. ONNX Runtime handles all DirectML setup, operator creation, and execution. Your inference automatically uses DirectML acceleration on Windows.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_integration_with_vulkan_via_onnx_runtime"><a class="anchor" href="#_integration_with_vulkan_via_onnx_runtime"></a>Integration with Vulkan via ONNX Runtime</h3>
+<div class="paragraph">
+<p>When using ONNX Runtime with DirectML, integration with Vulkan follows the same pattern as direct DirectML usage:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Create shared memory between Vulkan and DirectX 12</p>
+</li>
+<li>
+<p>Copy input data to shared memory (or render directly to it)</p>
+</li>
+<li>
+<p>Run ONNX Runtime inference (which uses DirectML internally)</p>
+</li>
+<li>
+<p>Read results from shared memory</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The difference is that ONNX Runtime handles the DirectML details. You don&#8217;t need to create operators or compile graphs—ONNX Runtime does that for you.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_performance_how_directml_compares"><a class="anchor" href="#_performance_how_directml_compares"></a>Performance: How DirectML Compares</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>How does DirectML performance compare to CUDA, TensorFlow Lite, and other options?</p>
+</div>
+<div class="sect2">
+<h3 id="_directml_vs_cuda"><a class="anchor" href="#_directml_vs_cuda"></a>DirectML vs CUDA</h3>
+<div class="paragraph">
+<p>On NVIDIA GPUs, CUDA is typically faster than DirectML. CUDA has more mature optimization, better compiler technology, and direct hardware access. For NVIDIA-specific applications, CUDA is the performance king.</p>
+</div>
+<div class="paragraph">
+<p>But the gap is narrowing. DirectML&#8217;s metacommands allow vendors to provide highly optimized implementations. On recent NVIDIA GPUs with good DirectML metacommand support, the performance difference is often 10-20%, not 2-3x.</p>
+</div>
+<div class="paragraph">
+<p>On AMD and Intel GPUs, DirectML is the only option for GPU acceleration since CUDA doesn&#8217;t work on non-NVIDIA hardware. DirectML is optimized for these GPUs and provides excellent performance.</p>
+</div>
+<div class="paragraph">
+<p>For cross-vendor Windows applications, DirectML&#8217;s universal acceleration usually outweighs CUDA&#8217;s peak performance on NVIDIA hardware.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_directml_vs_tensorflow_lite"><a class="anchor" href="#_directml_vs_tensorflow_lite"></a>DirectML vs TensorFlow Lite</h3>
+<div class="paragraph">
+<p>TensorFlow Lite is mobile-focused and not optimized for desktop GPUs. On Windows desktop, DirectML is significantly faster than TensorFlow Lite for most models.</p>
+</div>
+<div class="paragraph">
+<p>TensorFlow Lite&#8217;s strength is mobile deployment, where its aggressive optimization and small size matter. On Windows desktop, these advantages are less relevant, and DirectML&#8217;s better desktop GPU utilization wins.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_directml_vs_onnx_runtime_generic_backends"><a class="anchor" href="#_directml_vs_onnx_runtime_generic_backends"></a>DirectML vs ONNX Runtime (Generic Backends)</h3>
+<div class="paragraph">
+<p>ONNX Runtime with the <strong>WebGPU</strong> execution provider is the generic way to run everywhere. On Windows platforms, WebGPU will use DirectML behind the scenes to achieve its acceleration.</p>
+</div>
+<div class="paragraph">
+<p>DirectML provides a 5-50x speedup compared to CPU-only inference. While targeting DirectML explicitly provides the best possible integration for Windows-only software, the performance gain from using the generic WebGPU provider is virtually identical on Windows, making WebGPU the better choice for most cross-platform developers.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_when_directml_makes_sense"><a class="anchor" href="#_when_directml_makes_sense"></a>When DirectML Makes Sense</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>DirectML isn&#8217;t always the right choice. Here&#8217;s when it shines and when to consider alternatives.</p>
+</div>
+<div class="sect2">
+<h3 id="_ideal_use_cases"><a class="anchor" href="#_ideal_use_cases"></a>Ideal Use Cases</h3>
+<div class="paragraph">
+<p><strong>Windows-Exclusive Applications</strong>: If you&#8217;re building for Windows only (many PC games, Windows-specific tools), DirectML is the natural choice.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cross-Vendor GPU Support</strong>: If your users have diverse GPUs (NVIDIA, AMD, Intel), DirectML ensures everyone gets acceleration.</p>
+</div>
+<div class="paragraph">
+<p><strong>DirectX 12 Applications</strong>: If you&#8217;re already using DirectX 12 for rendering, DirectML integrates seamlessly.</p>
+</div>
+<div class="paragraph">
+<p><strong>Vulkan on Windows</strong>: If you&#8217;re using Vulkan on Windows and want GPU-accelerated ML, DirectML is a strong option (with shared resource integration).</p>
+</div>
+<div class="paragraph">
+<p><strong>ONNX Runtime Users</strong>: If you&#8217;re using ONNX Runtime for cross-platform deployment, enabling DirectML on Windows is trivial and provides significant speedup.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_when_to_consider_alternatives"><a class="anchor" href="#_when_to_consider_alternatives"></a>When to Consider Alternatives</h3>
+<div class="paragraph">
+<p><strong>Cross-Platform Deployment</strong>: If you need to deploy on Linux, macOS, or mobile, DirectML doesn&#8217;t help. Use ONNX Runtime with the <strong>WebGPU</strong> backend for generic cross-platform acceleration.</p>
+</div>
+<div class="paragraph">
+<p><strong>NVIDIA-Only Applications</strong>: If you know all your users have NVIDIA GPUs, using the specific <strong>CUDA</strong> or <strong>TensorRT</strong> providers might provide better performance for your specific hardware target.</p>
+</div>
+<div class="paragraph">
+<p><strong>Mobile Deployment</strong>: DirectML is desktop-only. For mobile, use TensorFlow Lite, PyTorch Mobile, or platform-specific solutions.</p>
+</div>
+<div class="paragraph">
+<p><strong>Linux Development</strong>: DirectML is Windows-only. On Linux, use the <strong>WebGPU</strong> backend for generic cross-vendor acceleration, as it will automatically leverage <strong>Vulkan</strong> for performance.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>DirectML is Microsoft&#8217;s solution for hardware-accelerated machine learning on Windows, built on DirectX 12 and designed to work with any GPU. Its vendor-agnostic approach ensures universal acceleration across NVIDIA, AMD, Intel, and Qualcomm hardware, making it ideal for Windows applications with diverse user hardware.</p>
+</div>
+<div class="paragraph">
+<p>The architecture mirrors DirectX 12&#8217;s explicit control model, providing a comprehensive operator library, command list-based execution, and explicit memory management. Metacommands enable hardware-specific optimization while maintaining vendor neutrality.</p>
+</div>
+<div class="paragraph">
+<p>Integration with Vulkan applications is possible through shared resources (memory and fences), eliminating data copies while maintaining proper synchronization. Most applications use DirectML through ONNX Runtime&#8217;s DirectML execution provider, which provides a simpler API while retaining DirectML&#8217;s performance benefits.</p>
+</div>
+<div class="paragraph">
+<p>DirectML excels for Windows-exclusive applications, cross-vendor GPU support, and DirectX 12 or Vulkan applications on Windows. For cross-platform deployment or mobile applications, consider ONNX Runtime with platform-appropriate backends or TensorFlow Lite.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_pytorch_mobile.html" class="xref page">Previous: PyTorch Mobile</a> | <a href="06_integration_patterns.html" class="xref page">Next: Integration Patterns</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

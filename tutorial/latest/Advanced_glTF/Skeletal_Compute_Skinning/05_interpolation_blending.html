@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Interpolation &amp; Blending :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Skeletal_Compute_Skinning/05_interpolation_blending.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Skeletal &amp; Compute Skinning</li>
+    <li><a href="05_interpolation_blending.html">Interpolation &amp; blending</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Interpolation &amp; Blending</h1>
+<div class="sect1">
+<h2 id="_why_interpolation_quality_matters"><a class="anchor" href="#_why_interpolation_quality_matters"></a>Why Interpolation Quality Matters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the "Building a Simple Engine" series, we implemented <strong>linear interpolation</strong> for animation keyframes, which is sometimes called <strong>LERP</strong> for positions and <strong>SLERP</strong> for rotations. Linear interpolation is simple and fast: given two keyframe values and a normalized time factor <code>t</code> (between 0 and 1), the result is a straight-line blend between them.</p>
+</div>
+<div class="paragraph">
+<p>For many applications, this is perfectly adequate. But if you have ever watched a game character whose arm snaps to a different speed at each keyframe, or whose movement feels stiff and mechanical despite clearly having smooth animation curves in the authoring tool, you have witnessed the visual consequence of linear-only interpolation. The velocity of the motion is constant within each keyframe interval but jumps abruptly at the boundary. Animators spend significant time crafting <strong>easing</strong>—the way a motion accelerates into and decelerates out of a pose—and linear interpolation discards all of that work.</p>
+</div>
+<div class="paragraph">
+<p>glTF supports three interpolation modes in its animation samplers: <code>LINEAR</code>, <code>STEP</code>, and <code>CUBICSPLINE</code>. We already handle <code>LINEAR</code> and <code>STEP</code> (which is simply "hold the previous value with no transition"). <code>CUBICSPLINE</code> is the mode that preserves the animator&#8217;s easing, and it is what we need to implement to achieve professional-quality character animation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_understanding_cubic_spline_interpolation"><a class="anchor" href="#_understanding_cubic_spline_interpolation"></a>Understanding Cubic Spline Interpolation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <strong>Cubic Hermite Spline</strong> is a mathematical curve that passes through a set of control points (our keyframes) while also respecting <strong>tangent vectors</strong> at each control point. These tangents define the slope—the velocity—of the curve as it approaches and leaves each keyframe.</p>
+</div>
+<div class="paragraph">
+<p>In glTF&#8217;s cubic spline format, each keyframe stores three values instead of one:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>An <strong>in-tangent</strong>: the tangent vector as the curve <strong>arrives at</strong> this keyframe</p>
+</li>
+<li>
+<p>A <strong>value</strong>: the actual pose value at this keyframe</p>
+</li>
+<li>
+<p>An <strong>out-tangent</strong>: the tangent vector as the curve <strong>departs from</strong> this keyframe</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These tangents are set by the artist in their animation software (Blender, Maya, etc.) to control the shape of the motion curves. When the animator says "I want this arm to ease in slowly and snap out quickly," those intentions are encoded in the tangent values.</p>
+</div>
+<div class="paragraph">
+<p>The cubic Hermite interpolation formula for a value at time <code>t</code> between keyframes <code>p0</code> (with out-tangent <code>m0</code>) and <code>p1</code> (with in-tangent <code>m1</code>) is:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>h00 = 2t³ - 3t² + 1       (basis function for p0)
+h10 = t³ - 2t² + t        (basis function for m0)
+h01 = -2t³ + 3t²          (basis function for p1)
+h11 = t³ - t²             (basis function for m1)
+
+result = h00 * p0 + h10 * delta_time * m0 + h01 * p1 + h11 * delta_time * m1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>delta_time</code> here is the duration of the keyframe interval (the time difference between <code>p0</code> and <code>p1</code>). It is necessary to scale the tangents correctly—without it, the curve&#8217;s shape depends on the keyframe timing in an uncontrolled way.</p>
+</div>
+<div class="paragraph">
+<p>In C&#43;&#43;, the implementation for a <code>glm::vec3</code> translation channel looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">glm::vec3 cubic_spline_interpolate_vec3(
+    float t,              // Normalized time in [0, 1]
+    float dt,             // Duration of the keyframe interval
+    glm::vec3 p0,         // Previous keyframe value
+    glm::vec3 out_tan0,   // Out-tangent of previous keyframe
+    glm::vec3 p1,         // Next keyframe value
+    glm::vec3 in_tan1)    // In-tangent of next keyframe
+{
+    // Compute the four Hermite basis polynomials
+    float t2 = t * t;
+    float t3 = t2 * t;
+
+    float h00 =  2.0f * t3 - 3.0f * t2 + 1.0f;
+    float h10 =           t3 - 2.0f * t2 + t;
+    float h01 = -2.0f * t3 + 3.0f * t2;
+    float h11 =           t3 -        t2;
+
+    // Combine: value is the weighted sum of the four components
+    return h00 * p0 + h10 * dt * out_tan0
+         + h01 * p1 + h11 * dt * in_tan1;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For rotations, the process is slightly different. Quaternions cannot be blended by direct arithmetic the way vectors can—you must use <strong>Squad</strong> (Spherical Quadrangle interpolation) or, more commonly in game engines, you blend the tangents as vectors and then normalize the resulting quaternion. The glTF specification recommends normalizing the result after the Hermite blend:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">glm::quat cubic_spline_interpolate_quat(
+    float t,
+    float dt,
+    glm::quat p0, glm::quat out_tan0,
+    glm::quat p1, glm::quat in_tan1)
+{
+    float t2 = t * t;
+    float t3 = t2 * t;
+
+    float h00 =  2.0f * t3 - 3.0f * t2 + 1.0f;
+    float h10 =           t3 - 2.0f * t2 + t;
+    float h01 = -2.0f * t3 + 3.0f * t2;
+    float h11 =           t3 -        t2;
+
+    // Blend the quaternion components as if they were 4-component vectors
+    glm::vec4 blended =
+          h00 * glm::vec4(p0.x,       p0.y,       p0.z,       p0.w)
+        + h10 * dt * glm::vec4(out_tan0.x, out_tan0.y, out_tan0.z, out_tan0.w)
+        + h01 * glm::vec4(p1.x,       p1.y,       p1.z,       p1.w)
+        + h11 * dt * glm::vec4(in_tan1.x,  in_tan1.y,  in_tan1.z,  in_tan1.w);
+
+    // The glTF spec requires normalization after the cubic blend
+    return glm::normalize(glm::quat(blended.w, blended.x, blended.y, blended.z));
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_integrating_cubic_splines_into_the_animation_system"><a class="anchor" href="#_integrating_cubic_splines_into_the_animation_system"></a>Integrating Cubic Splines Into the Animation System</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To support cubic splines, our <code>AnimationSampler</code> data structure needs to store three values per keyframe instead of one. When the sampler&#8217;s interpolation type is <code>CUBICSPLINE</code>, each keyframe in the glTF binary buffer contains <code>[in_tangent, value, out_tangent]</code> in that order.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">enum InterpolationMode {
+    STEP,
+    LINEAR,
+    CUBICSPLINE
+};
+
+struct AnimationSampler {
+    InterpolationMode interpolation = LINEAR;
+    std::vector&lt;float&gt; inputs;              // Timestamps in seconds
+    std::vector&lt;glm::vec4&gt; outputs_raw;     // Packed: for CUBICSPLINE stores in_tan/value/out_tan triples
+
+    // For CUBICSPLINE, we split the raw data for easier interpolation
+    std::vector&lt;glm::vec4&gt; in_tangents;
+    std::vector&lt;glm::vec4&gt; values;
+    std::vector&lt;glm::vec4&gt; out_tangents;
+};
+
+struct AnimationChannel {
+    enum PathType { TRANSLATION, ROTATION, SCALE, WEIGHTS };
+    PathType path;
+    uint32_t node_index;
+    uint32_t sampler_index;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Our updated sampler loading code must handle this layout:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void load_animation_sampler(
+    const tinygltf::AnimationSampler&amp; gltf_sampler,
+    const tinygltf::Model&amp; model,
+    AnimationSampler&amp; out_sampler)
+{
+    // Parse the interpolation type from the glTF string
+    if (gltf_sampler.interpolation == "LINEAR")           out_sampler.interpolation = LINEAR;
+    else if (gltf_sampler.interpolation == "STEP")        out_sampler.interpolation = STEP;
+    else if (gltf_sampler.interpolation == "CUBICSPLINE") out_sampler.interpolation = CUBICSPLINE;
+
+    // Load the input timestamps (these are always plain floats, no tangents)
+    load_accessor_float(model, gltf_sampler.input, out_sampler.inputs);
+
+    // For CUBICSPLINE, the output accessor contains 3 values per timestamp:
+    // [in_tangent, value, out_tangent]. The total count is 3 * keyframe_count.
+    // For LINEAR/STEP, the output count equals the keyframe count.
+    load_accessor_vec4(model, gltf_sampler.output, out_sampler.outputs_raw);
+
+    if (out_sampler.interpolation == CUBICSPLINE) {
+        // Split the interleaved data into separate arrays
+        size_t keyframe_count = out_sampler.inputs.size();
+        out_sampler.in_tangents.resize(keyframe_count);
+        out_sampler.values.resize(keyframe_count);
+        out_sampler.out_tangents.resize(keyframe_count);
+
+        for (size_t i = 0; i &lt; keyframe_count; ++i) {
+            out_sampler.in_tangents[i]  = out_sampler.outputs_raw[i * 3 + 0];
+            out_sampler.values[i]       = out_sampler.outputs_raw[i * 3 + 1];
+            out_sampler.out_tangents[i] = out_sampler.outputs_raw[i * 3 + 2];
+        }
+    } else {
+        out_sampler.values = out_sampler.outputs_raw;
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_animation_blending_cross_fading_between_clips"><a class="anchor" href="#_animation_blending_cross_fading_between_clips"></a>Animation Blending: Cross-Fading Between Clips</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Interpolation improves the quality of motion <strong>within</strong> a single animation clip. But a real character engine needs to transition <strong>between</strong> clips—from a walk to a run, from an idle to an attack, or most critically for our purposes, from a scripted animation to a physics-driven ragdoll.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cross-fading</strong> is the most common technique. When a transition is triggered, we don&#8217;t immediately switch to the new clip. Instead, we play both clips simultaneously and blend their output poses together over a short transition period (typically 0.1 to 0.3 seconds). At the start of the transition, the old clip has weight 1.0 and the new clip has weight 0.0. By the end, the weights have reversed. During the transition, both are non-zero and their poses are blended.</p>
+</div>
+<div class="paragraph">
+<p>The core of this system is a <strong>Pose Blend</strong> function that takes two poses (sets of joint transforms) and a blend factor, and returns a weighted combination:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// A Pose is a snapshot of all joint local transforms for a single frame
+struct Pose {
+    std::vector&lt;glm::vec3&gt; translations;
+    std::vector&lt;glm::quat&gt; rotations;
+    std::vector&lt;glm::vec3&gt; scales;
+};
+
+// Blend two poses together: result = (1-t) * pose_a + t * pose_b
+void blend_poses(const Pose&amp; pose_a, const Pose&amp; pose_b, float t, Pose&amp; out)
+{
+    assert(pose_a.translations.size() == pose_b.translations.size());
+    size_t joint_count = pose_a.translations.size();
+
+    out.translations.resize(joint_count);
+    out.rotations.resize(joint_count);
+    out.scales.resize(joint_count);
+
+    for (size_t i = 0; i &lt; joint_count; ++i) {
+        // Translation and scale use standard linear interpolation
+        out.translations[i] = glm::mix(pose_a.translations[i], pose_b.translations[i], t);
+        out.scales[i]       = glm::mix(pose_a.scales[i],       pose_b.scales[i],       t);
+
+        // Rotation uses spherical linear interpolation (SLERP) for shortest path
+        out.rotations[i] = glm::slerp(pose_a.rotations[i], pose_b.rotations[i], t);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A cross-fade controller manages the transition state:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct CrossFadeState {
+    uint32_t  from_clip_index;
+    uint32_t  to_clip_index;
+    float     blend_factor;   // 0.0 = fully from_clip, 1.0 = fully to_clip
+    float     transition_duration;
+    bool      active = false;
+};
+
+void update_cross_fade(CrossFadeState&amp; fade, float delta_time)
+{
+    if (!fade.active) return;
+
+    fade.blend_factor += delta_time / fade.transition_duration;
+    if (fade.blend_factor &gt;= 1.0f) {
+        // Transition complete - snap to the destination clip
+        fade.blend_factor = 1.0f;
+        fade.active = false;
+        // The caller should now update the "current clip" to to_clip_index
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_ragdoll_blend_from_animation_to_physics"><a class="anchor" href="#_the_ragdoll_blend_from_animation_to_physics"></a>The Ragdoll Blend: From Animation to Physics</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The cross-fade system becomes especially important for the animation-to-ragdoll handoff. This is not merely a cross-fade between two animation clips—it is a transition between the animation system driving the skeleton and the physics system driving it.</p>
+</div>
+<div class="paragraph">
+<p>Doing this as an abrupt switch creates a jarring visual artifact: the character instantly snaps from their animated pose into whatever pose the physics engine calculated as its initial state. Even if the physics engine starts from the correct pose, the absence of a smooth transition makes the transition look wrong.</p>
+</div>
+<div class="paragraph">
+<p>Instead, we implement a <strong>Physics Blend Weight</strong>. The animation system continues to calculate its pose. The physics system also calculates its pose (ragdoll). We blend between them based on a <code>ragdoll_weight</code> value that we ramp from 0.0 to 1.0 over the transition period.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct CharacterAnimationState {
+    Pose    animation_pose;  // Pose from the current animation clip
+    Pose    physics_pose;    // Pose from the ragdoll physics simulation
+    float   ragdoll_weight;  // 0.0 = fully animated, 1.0 = fully ragdoll
+    bool    ragdoll_active;  // Is the physics simulation enabled?
+};
+
+void update_character_pose(
+    CharacterAnimationState&amp; state,
+    float delta_time,
+    std::vector&lt;Node&gt;&amp; nodes,
+    const Skin&amp; skin)
+{
+    // Sample the animation clip to get animation_pose (as before)
+    sample_animation(state.animation_pose, delta_time);
+
+    if (state.ragdoll_active) {
+        // Read the physics simulation results into physics_pose
+        read_physics_pose(state.physics_pose, nodes, skin);
+
+        // Ramp the ragdoll weight up to 1.0 over the transition duration
+        state.ragdoll_weight = glm::min(state.ragdoll_weight + delta_time * 5.0f, 1.0f);
+
+        // Blend between animation and physics poses
+        Pose blended_pose;
+        blend_poses(state.animation_pose, state.physics_pose, state.ragdoll_weight, blended_pose);
+
+        // Apply the blended pose to the scene graph nodes
+        apply_pose_to_scene_graph(nodes, blended_pose, skin.joints);
+    } else {
+        // Fully animation-driven: apply directly without blending
+        apply_pose_to_scene_graph(nodes, state.animation_pose, skin.joints);
+    }
+}
+
+// Applies a Pose to the Scene Graph.
+// Parameter order: nodes first, pose second, then the joint index list.
+// (Canonical signature from animation.h.)
+void apply_pose_to_scene_graph(
+    std::vector&lt;Node&gt;&amp;           nodes,
+    const Pose&amp;                  pose,
+    const std::vector&lt;uint32_t&gt;&amp; joint_indices)
+{
+    for (size_t i = 0; i &lt; joint_indices.size(); ++i) {
+        Node&amp; node = nodes[joint_indices[i]];
+
+        node.translation    = pose.translations[i];
+        node.local_rotation = pose.rotations[i];
+        node.scale          = pose.scales[i];
+
+        node.mark_dirty();
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>ragdoll_weight * 5.0f</code> multiplier means the transition completes in 0.2 seconds (<code>1.0 / 5.0</code>). You can tune this constant to taste—faster transitions look more like a sudden "drop," while slower transitions make the character look like they are being gently handed off to gravity.</p>
+</div>
+<div class="paragraph">
+<p>One critical implementation detail: when <code>ragdoll_active</code> becomes true, we must immediately set the physics body&#8217;s initial state to match the current animation pose. If the physics simulation starts from an arbitrary or zero pose, the blend will look wrong for the first few frames as the physics system "snaps" to the right starting position. By initializing the physics bodies from the animation pose at the moment of the handoff, the blend begins from a state of near-zero difference, ensuring a seamless transition.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With cubic spline interpolation, our animation system now faithfully reproduces the subtle easing and velocity curves that animators craft in their authoring tools. Characters no longer feel like they are driven by mechanical, constant-velocity keyframes.</p>
+</div>
+<div class="paragraph">
+<p>With cross-fade blending, we can transition smoothly between any two animation clips, and most importantly, we can blend from a scripted animation into a full physics ragdoll simulation in a way that looks natural and responsive.</p>
+</div>
+<div class="paragraph">
+<p>These two systems—interpolation quality and blending—are what separate animation that merely "works" from animation that <strong>feels alive</strong>.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_shared_vertex_buffer.html" class="xref page">Previous: Skin Once, Use Everywhere</a> | <a href="06_conclusion.html" class="xref page">Next: Chapter Conclusion</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Vulkan Compute Pipeline Review :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Vulkan_Compute_for_ML/02_compute_pipeline_review.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Vulkan Compute for ML</li>
+    <li><a href="02_compute_pipeline_review.html">Compute Pipeline Review</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Vulkan Compute Pipeline Review</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You&#8217;ve worked with Vulkan compute pipelines before. You know how to create compute shaders, dispatch work groups, and synchronize operations. But ML inference has specific patterns and requirements that differ from typical compute workloads. This chapter reviews Vulkan compute pipelines with an ML focus, highlighting the aspects that matter most for neural network operations.</p>
+</div>
+<div class="paragraph">
+<p>Think of this as a focused refresher. We&#8217;re not teaching Vulkan compute from scratch—we&#8217;re showing you how to think about compute pipelines when your goal is running ML inference. The patterns you learn here will apply to every ML operation you implement.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_ml_compute_workload"><a class="anchor" href="#_the_ml_compute_workload"></a>The ML Compute Workload</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into Vulkan specifics, let&#8217;s understand what makes ML inference different from other compute workloads.</p>
+</div>
+<div class="sect2">
+<h3 id="_characteristics_of_ml_operations"><a class="anchor" href="#_characteristics_of_ml_operations"></a>Characteristics of ML Operations</h3>
+<div class="paragraph">
+<p>ML inference has distinctive characteristics that shape how we use Vulkan compute:</p>
+</div>
+<div class="paragraph">
+<p><strong>Large, Regular Data</strong>: Neural networks operate on tensors—multi-dimensional arrays of numbers. A single 224×224×3 image is 150,528 floats. Intermediate activations can be much larger. This data is highly regular and structured, which is perfect for GPU parallelism.</p>
+</div>
+<div class="paragraph">
+<p><strong>Embarrassingly Parallel Operations</strong>: Many ML operations are element-wise or have minimal dependencies between elements. ReLU activation applies the same function to every element independently. Matrix multiplication has well-understood parallelization patterns. This parallelism is what makes GPUs so effective for ML.</p>
+</div>
+<div class="paragraph">
+<p><strong>Sequential Dependencies</strong>: Despite the parallelism within operations, neural networks are sequences of dependent operations. Layer 2 can&#8217;t start until layer 1 completes. This creates a tension between maximizing parallelism within operations and managing dependencies between operations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory-Intensive</strong>: ML inference moves a lot of data. Weights are loaded from memory, inputs are read, intermediate results are written, outputs are produced. Memory bandwidth often becomes the bottleneck, not compute. Efficient memory access patterns matter enormously.</p>
+</div>
+<div class="paragraph">
+<p><strong>Predictable Access Patterns</strong>: Unlike some compute workloads with irregular memory access, ML operations typically have predictable, structured access patterns. Convolutions read from regular windows, matrix multiplications access rows and columns systematically. This predictability allows for effective optimization.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_implications_for_vulkan_implementation"><a class="anchor" href="#_implications_for_vulkan_implementation"></a>Implications for Vulkan Implementation</h3>
+<div class="paragraph">
+<p>These characteristics guide our Vulkan implementation decisions:</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll use large work groups to maximize parallelism within operations. We&#8217;ll carefully manage memory layout to ensure coalesced access. We&#8217;ll use pipeline barriers to enforce dependencies between operations while allowing parallelism within them. We&#8217;ll reuse memory aggressively to minimize footprint.</p>
+</div>
+<div class="paragraph">
+<p>Understanding these patterns helps you make informed decisions as we implement specific operations.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_descriptor_set_layouts_for_tensors"><a class="anchor" href="#_descriptor_set_layouts_for_tensors"></a>Descriptor Set Layouts for Tensors</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Descriptor sets are how shaders access GPU memory. For ML inference, we need descriptor layouts that efficiently represent tensors and weights.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_basic_pattern"><a class="anchor" href="#_the_basic_pattern"></a>The Basic Pattern</h3>
+<div class="paragraph">
+<p>A typical ML operation reads input tensors, reads weights, and writes output tensors. The descriptor set layout reflects this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">vk::DescriptorSetLayoutBinding bindings[] = {
+    // Binding 0: Input tensor (read-only)
+    {
+        .binding = 0,
+        .descriptorType = vk::DescriptorType::eStorageBuffer,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eCompute
+    },
+    // Binding 1: Weights (read-only)
+    {
+        .binding = 1,
+        .descriptorType = vk::DescriptorType::eStorageBuffer,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eCompute
+    },
+    // Binding 2: Output tensor (write)
+    {
+        .binding = 2,
+        .descriptorType = vk::DescriptorType::eStorageBuffer,
+        .descriptorCount = 1,
+        .stageFlags = vk::ShaderStageFlagBits::eCompute
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We use storage buffers rather than uniform buffers because tensors are large—often megabytes. Uniform buffers have size limits (typically 64KB), while storage buffers can be gigabytes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_multiple_inputs_and_outputs"><a class="anchor" href="#_multiple_inputs_and_outputs"></a>Multiple Inputs and Outputs</h3>
+<div class="paragraph">
+<p>Some operations have multiple inputs or outputs. Batch normalization reads input, weights, biases, running mean, and running variance. Residual connections add two tensors. Your descriptor layout needs to accommodate these patterns:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// For operations with multiple inputs (e.g., residual add)
+vk::DescriptorSetLayoutBinding bindings[] = {
+    {.binding = 0, ...},  // Input tensor 1
+    {.binding = 1, ...},  // Input tensor 2
+    {.binding = 2, ...}   // Output tensor
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The key insight: descriptor layouts should match the operation&#8217;s data flow. Each input tensor gets a binding, each output tensor gets a binding, weights get bindings. Keep it simple and explicit.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_push_constants_for_metadata"><a class="anchor" href="#_push_constants_for_metadata"></a>Push Constants for Metadata</h3>
+<div class="paragraph">
+<p>Tensors have shapes—dimensions that define their structure. A 224×224×3 image has height=224, width=224, channels=3. Your shader needs this information to index into the tensor correctly.</p>
+</div>
+<div class="paragraph">
+<p>Push constants are perfect for this metadata:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct TensorMetadata {
+    uint32_t height;
+    uint32_t width;
+    uint32_t channels;
+    uint32_t batch_size;
+};
+
+vk::PushConstantRange pushConstantRange = {
+    .stageFlags = vk::ShaderStageFlagBits::eCompute,
+    .offset = 0,
+    .size = sizeof(TensorMetadata)
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Push constants are fast—they&#8217;re embedded directly in the command buffer. For small amounts of data like tensor shapes, they&#8217;re ideal.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_work_group_sizing"><a class="anchor" href="#_work_group_sizing"></a>Work Group Sizing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Work group size is one of the most important performance decisions you&#8217;ll make. It affects parallelism, resource usage, and memory access patterns.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_basics"><a class="anchor" href="#_the_basics"></a>The Basics</h3>
+<div class="paragraph">
+<p>A work group is a collection of shader invocations that execute together and can share data through shared memory. When you dispatch a compute shader, you specify how many work groups to launch and how many invocations are in each work group.</p>
+</div>
+<div class="paragraph">
+<p>For ML operations, you typically want each invocation to compute one or more output elements. The work group size determines how many invocations run together.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_typical_sizes_for_ml_operations"><a class="anchor" href="#_typical_sizes_for_ml_operations"></a>Typical Sizes for ML Operations</h3>
+<div class="paragraph">
+<p>For element-wise operations (ReLU, sigmoid, etc.), a common pattern is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates work groups of 256 invocations. Why 256? It&#8217;s a good balance:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Large enough to keep the GPU busy (modern GPUs can run thousands of invocations concurrently)</p>
+</li>
+<li>
+<p>Small enough to fit within hardware limits (most GPUs support at least 1024 invocations per work group)</p>
+</li>
+<li>
+<p>A power of 2, which often aligns well with hardware architecture</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>For 2D operations like convolutions, you might use:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates 16×16 = 256 invocations per work group, organized in a 2D pattern that matches the 2D structure of images.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dispatch_sizing"><a class="anchor" href="#_dispatch_sizing"></a>Dispatch Sizing</h3>
+<div class="paragraph">
+<p>When you dispatch work, you specify how many work groups to launch. For a tensor with N elements and work groups of size 256, you need:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uint32_t numWorkGroups = (N + 255) / 256;  // Round up
+commandBuffer.dispatch(numWorkGroups, 1, 1);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The rounding up ensures you have enough invocations to cover all elements. Your shader needs to check bounds to avoid processing beyond the tensor size:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">uint globalID = gl_GlobalInvocationID.x;
+if (globalID &gt;= tensorSize) return;  // Bounds check</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_optimizing_work_group_size"><a class="anchor" href="#_optimizing_work_group_size"></a>Optimizing Work Group Size</h3>
+<div class="paragraph">
+<p>The optimal work group size depends on your operation and hardware. General guidelines:</p>
+</div>
+<div class="paragraph">
+<p><strong>For element-wise operations</strong>: 128-256 invocations works well. These operations are simple, so you want many invocations to keep the GPU busy.</p>
+</div>
+<div class="paragraph">
+<p><strong>For operations using shared memory</strong>: Size depends on how much shared memory you need. If each invocation needs 4 bytes of shared memory and you have 48KB available, you can have up to 12,288 invocations per work group. But practical limits are lower—1024 is a common maximum.</p>
+</div>
+<div class="paragraph">
+<p><strong>For 2D operations</strong>: 16×16 or 32×32 work well. They match the 2D structure of images and provide good parallelism (256 or 1024 invocations).</p>
+</div>
+<div class="paragraph">
+<p>Profiling is essential. Try different sizes and measure performance. The optimal size varies by GPU architecture and operation complexity.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_memory_access_patterns"><a class="anchor" href="#_memory_access_patterns"></a>Memory Access Patterns</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>How you access memory dramatically affects performance. GPUs are designed for coalesced access—adjacent threads accessing adjacent memory locations. Violating this pattern can reduce performance by 10x or more.</p>
+</div>
+<div class="sect2">
+<h3 id="_coalesced_access"><a class="anchor" href="#_coalesced_access"></a>Coalesced Access</h3>
+<div class="paragraph">
+<p>Imagine 32 threads (a warp on NVIDIA GPUs, a wavefront on AMD) executing together. If thread 0 reads address 0, thread 1 reads address 4, thread 2 reads address 8, etc., the GPU can coalesce these into a single memory transaction. This is fast.</p>
+</div>
+<div class="paragraph">
+<p>If threads access random addresses, each becomes a separate transaction. This is slow.</p>
+</div>
+<div class="paragraph">
+<p>For ML operations, coalesced access usually means:</p>
+</div>
+<div class="paragraph">
+<p><strong>Element-wise operations</strong>: Each thread processes one element, and threads process consecutive elements:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">uint idx = gl_GlobalInvocationID.x;
+float value = inputBuffer[idx];  // Coalesced: consecutive threads read consecutive addresses
+float result = relu(value);
+outputBuffer[idx] = result;      // Coalesced: consecutive threads write consecutive addresses</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>Matrix operations</strong>: Access patterns depend on layout. Row-major matrices have consecutive elements in rows, column-major in columns. Your access pattern should match the layout.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tensor_layouts"><a class="anchor" href="#_tensor_layouts"></a>Tensor Layouts</h3>
+<div class="paragraph">
+<p>Tensors can be stored in different layouts. For a 4D tensor (batch, channels, height, width), common layouts are:</p>
+</div>
+<div class="paragraph">
+<p><strong>NCHW (channels first)</strong>: Elements are ordered as batch, then channels, then height, then width. All values for channel 0 come first, then all values for channel 1, etc.</p>
+</div>
+<div class="paragraph">
+<p><strong>NHWC (channels last)</strong>: Elements are ordered as batch, then height, then width, then channels. All channels for position (0,0) come first, then all channels for position (0,1), etc.</p>
+</div>
+<div class="paragraph">
+<p>The layout affects access patterns. For convolutions, NCHW often works better because you&#8217;re reading all channels at each spatial position. For element-wise operations, layout matters less.</p>
+</div>
+<div class="paragraph">
+<p>Choose a layout and stick with it throughout your inference pipeline. Converting between layouts is expensive.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_shared_memory_for_reuse"><a class="anchor" href="#_shared_memory_for_reuse"></a>Shared Memory for Reuse</h3>
+<div class="paragraph">
+<p>Some operations read the same data multiple times. Convolutions read overlapping windows—the same input pixel contributes to multiple output pixels. Loading data into shared memory once and reusing it is much faster than reading from global memory repeatedly.</p>
+</div>
+<div class="paragraph">
+<p>Shared memory is fast (on-chip) but limited (typically 48-96KB per work group). Use it for data that&#8217;s reused within a work group:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">shared float sharedData[256];
+
+// Load data into shared memory
+uint localID = gl_LocalInvocationID.x;
+sharedData[localID] = inputBuffer[globalID];
+
+// Synchronize to ensure all threads have loaded
+barrier();
+
+// Now all threads can access sharedData quickly
+float value = sharedData[someIndex];</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll see concrete examples when we implement convolutions.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pipeline_creation"><a class="anchor" href="#_pipeline_creation"></a>Pipeline Creation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Creating compute pipelines for ML operations follows the standard Vulkan pattern, but with ML-specific considerations.</p>
+</div>
+<div class="sect2">
+<h3 id="_pipeline_cache"><a class="anchor" href="#_pipeline_cache"></a>Pipeline Cache</h3>
+<div class="paragraph">
+<p>ML inference often uses many different operations, each with its own pipeline. Creating pipelines is expensive. Use a pipeline cache to amortize this cost:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">vk::PipelineCacheCreateInfo cacheInfo{};
+vk::raii::PipelineCache pipelineCache(device, cacheInfo);
+
+// Create all pipelines with the cache
+vk::ComputePipelineCreateInfo pipelineInfo{
+    // ... pipeline configuration ...
+};
+vk::raii::Pipeline pipeline(device, *pipelineCache, pipelineInfo);
+// RAII handles cleanup automatically</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can even save the cache to disk and load it on subsequent runs, making startup faster.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_specialization_constants"><a class="anchor" href="#_specialization_constants"></a>Specialization Constants</h3>
+<div class="paragraph">
+<p>Some shader parameters are known at pipeline creation time but vary between pipelines. Specialization constants let you parameterize shaders without recompiling:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">layout(constant_id = 0) const uint WORK_GROUP_SIZE = 256;
+layout(local_size_x_id = 0) in;  // Use specialization constant for work group size</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">vk::SpecializationMapEntry entry = {
+    .constantID = 0,
+    .offset = 0,
+    .size = sizeof(uint32_t)
+};
+
+uint32_t workGroupSize = 256;
+vk::SpecializationInfo specInfo = {
+    .mapEntryCount = 1,
+    .pMapEntries = &amp;entry,
+    .dataSize = sizeof(uint32_t),
+    .pData = &amp;workGroupSize
+};
+
+vk::ComputePipelineCreateInfo pipelineInfo{
+    // ...
+    .stage = {
+        // ...
+        .pSpecializationInfo = &amp;specInfo
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This lets you create multiple pipelines with different work group sizes from the same shader, without recompiling.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_command_buffer_recording"><a class="anchor" href="#_command_buffer_recording"></a>Command Buffer Recording</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Recording commands for ML inference follows a pattern: bind pipeline, bind descriptor sets, push constants, dispatch, barrier, repeat.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_basic_pattern_2"><a class="anchor" href="#_the_basic_pattern_2"></a>The Basic Pattern</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Begin command buffer
+vk::CommandBufferBeginInfo beginInfo{
+    .flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
+};
+commandBuffer.begin(beginInfo);
+
+// Layer 1: Convolution
+commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, *convPipeline);
+commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                                 *pipelineLayout, 0, *convDescriptorSet, nullptr);
+commandBuffer.pushConstants(*pipelineLayout, vk::ShaderStageFlagBits::eCompute,
+                           0, sizeof(metadata), &amp;metadata);
+commandBuffer.dispatch(numWorkGroupsX, numWorkGroupsY, 1);
+
+// Barrier: ensure convolution completes before activation
+vk::MemoryBarrier barrier{
+    .srcAccessMask = vk::AccessFlagBits::eShaderWrite,
+    .dstAccessMask = vk::AccessFlagBits::eShaderRead
+};
+commandBuffer.pipelineBarrier(
+    vk::PipelineStageFlagBits::eComputeShader,
+    vk::PipelineStageFlagBits::eComputeShader,
+    {}, barrier, nullptr, nullptr);
+
+// Layer 2: ReLU activation
+commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, *reluPipeline);
+commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                                 *pipelineLayout, 0, *reluDescriptorSet, nullptr);
+commandBuffer.dispatch(numWorkGroupsX, 1, 1);
+
+// ... more layers ...
+
+commandBuffer.end();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This pattern repeats for each layer: bind, dispatch, barrier, next layer.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_minimizing_overhead"><a class="anchor" href="#_minimizing_overhead"></a>Minimizing Overhead</h3>
+<div class="paragraph">
+<p>Command buffer recording has overhead. For inference, you typically record once and replay many times:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Record once
+vk::raii::CommandBuffer inferenceCommandBuffer = recordInferencePipeline();
+
+// Execute many times
+for (int frame = 0; frame &lt; numFrames; frame++) {
+    // Update input data
+    updateInputTensor(inputData[frame]);
+
+    // Submit the same command buffer
+    vk::SubmitInfo submitInfo{
+        .commandBufferCount = 1,
+        .pCommandBuffers = &amp;*inferenceCommandBuffer
+    };
+    computeQueue.submit(submitInfo, *fence);
+    auto result = device.waitForFences(*fence, VK_TRUE, UINT64_MAX);
+
+    // Read output
+    readOutputTensor(outputData[frame]);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This amortizes recording overhead across many inferences.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter reviewed Vulkan compute pipelines with an ML focus. Key takeaways:</p>
+</div>
+<div class="paragraph">
+<p>ML operations are characterized by large regular data, embarrassing parallelism within operations, sequential dependencies between operations, memory-intensive access patterns, and predictable access. These characteristics guide our Vulkan implementation.</p>
+</div>
+<div class="paragraph">
+<p>Descriptor sets for ML typically have bindings for input tensors, weights, and output tensors, using storage buffers for large data and push constants for metadata like tensor shapes.</p>
+</div>
+<div class="paragraph">
+<p>Work group sizing matters enormously for performance. Typical sizes are 128-256 for element-wise operations, 16×16 or 32×32 for 2D operations. Profiling is essential to find optimal sizes.</p>
+</div>
+<div class="paragraph">
+<p>Memory access patterns determine performance. Coalesced access (adjacent threads accessing adjacent memory) is critical. Tensor layout (NCHW vs NHWC) affects access patterns. Shared memory enables reuse of frequently accessed data.</p>
+</div>
+<div class="paragraph">
+<p>Pipeline creation follows standard Vulkan patterns but benefits from pipeline caches and specialization constants. Command buffer recording follows a bind-dispatch-barrier pattern that repeats for each layer.</p>
+</div>
+<div class="paragraph">
+<p>With this foundation, we&#8217;re ready to implement specific ML operations. The next chapter covers element-wise operations—the simplest ML operations and a good starting point for implementation.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_element_wise_operations.html" class="xref page">Next: Element-Wise Operations</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

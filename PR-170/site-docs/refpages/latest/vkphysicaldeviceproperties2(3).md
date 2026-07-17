@@ -1,0 +1,73 @@
+# VkPhysicalDeviceProperties2(3)
+
+## Metadata
+
+- **Component**: refpages
+- **Version**: latest
+- **URL**: /refpages/latest/refpages/source/VkPhysicalDeviceProperties2.html
+
+## Table of Contents
+
+- [Name](#_name)
+- [C Specification](#_c_specification)
+- [Members](#_members)
+- [Description](#_description)
+- [See Also](#_see_also)
+- [Document Notes](#_document_notes)
+
+## Content
+
+VkPhysicalDeviceProperties2 - Structure specifying physical device properties
+
+The `VkPhysicalDeviceProperties2` structure is defined as:
+
+// Provided by VK_VERSION_1_1
+typedef struct VkPhysicalDeviceProperties2 {
+    VkStructureType               sType;
+    void*                         pNext;
+    VkPhysicalDeviceProperties    properties;
+} VkPhysicalDeviceProperties2;
+
+// Provided by VK_KHR_get_physical_device_properties2
+// Equivalent to VkPhysicalDeviceProperties2
+typedef VkPhysicalDeviceProperties2 VkPhysicalDeviceProperties2KHR;
+
+* 
+`sType` is a [VkStructureType](VkStructureType.html) value identifying this structure.
+
+* 
+`pNext` is `NULL` or a pointer to a structure extending this
+structure.
+
+* 
+`properties` is a [VkPhysicalDeviceProperties](VkPhysicalDeviceProperties.html) structure
+describing properties of the physical device.
+This structure is written with the same values as if it were written by
+[vkGetPhysicalDeviceProperties](vkGetPhysicalDeviceProperties.html).
+
+The `pNext` chain of this structure is used to extend the structure with
+properties defined by extensions.
+
+Valid Usage (Implicit)
+
+* 
+[](#VUID-VkPhysicalDeviceProperties2-sType-sType) VUID-VkPhysicalDeviceProperties2-sType-sType
+
+ `sType` **must** be [VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2](VkStructureType.html)
+
+* 
+[](#VUID-VkPhysicalDeviceProperties2-pNext-pNext) VUID-VkPhysicalDeviceProperties2-pNext-pNext
+
+ Each `pNext` member of any structure (including this one) in the `pNext` chain **must** be either `NULL` or a pointer to a valid instance of [VkPhysicalDeviceAccelerationStructurePropertiesKHR](VkPhysicalDeviceAccelerationStructurePropertiesKHR.html), [VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT](VkPhysicalDeviceBlendOperationAdvancedPropertiesEXT.html), [VkPhysicalDeviceClusterAccelerationStructurePropertiesNV](VkPhysicalDeviceClusterAccelerationStructurePropertiesNV.html), [VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI](VkPhysicalDeviceClusterCullingShaderPropertiesHUAWEI.html), [VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR](VkPhysicalDeviceComputeShaderDerivativesPropertiesKHR.html), [VkPhysicalDeviceConservativeRasterizationPropertiesEXT](VkPhysicalDeviceConservativeRasterizationPropertiesEXT.html), [VkPhysicalDeviceCooperativeMatrix2PropertiesNV](VkPhysicalDeviceCooperativeMatrix2PropertiesNV.html), [VkPhysicalDeviceCooperativeMatrixPropertiesKHR](VkPhysicalDeviceCooperativeMatrixPropertiesKHR.html), [VkPhysicalDeviceCooperativeMatrixPropertiesNV](VkPhysicalDeviceCooperativeMatrixPropertiesNV.html), [VkPhysicalDeviceCooperativeVectorPropertiesNV](VkPhysicalDeviceCooperativeVectorPropertiesNV.html), [VkPhysicalDeviceCopyMemoryIndirectPropertiesKHR](VkPhysicalDeviceCopyMemoryIndirectPropertiesKHR.html), [VkPhysicalDeviceCudaKernelLaunchPropertiesNV](VkPhysicalDeviceCudaKernelLaunchPropertiesNV.html), [VkPhysicalDeviceCustomBorderColorPropertiesEXT](VkPhysicalDeviceCustomBorderColorPropertiesEXT.html), [VkPhysicalDeviceDepthStencilResolveProperties](VkPhysicalDeviceDepthStencilResolveProperties.html), [VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT](VkPhysicalDeviceDescriptorBufferDensityMapPropertiesEXT.html), [VkPhysicalDeviceDescriptorBufferPropertiesEXT](VkPhysicalDeviceDescriptorBufferPropertiesEXT.html), [VkPhysicalDeviceDescriptorBufferTensorPropertiesARM](VkPhysicalDeviceDescriptorBufferTensorPropertiesARM.html), [VkPhysicalDeviceDescriptorHeapPropertiesEXT](VkPhysicalDeviceDescriptorHeapPropertiesEXT.html), [VkPhysicalDeviceDescriptorHeapTensorPropertiesARM](VkPhysicalDeviceDescriptorHeapTensorPropertiesARM.html), [VkPhysicalDeviceDescriptorIndexingProperties](VkPhysicalDeviceDescriptorIndexingProperties.html), [VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT](VkPhysicalDeviceDeviceGeneratedCommandsPropertiesEXT.html), [VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV](VkPhysicalDeviceDeviceGeneratedCommandsPropertiesNV.html), [VkPhysicalDeviceDiscardRectanglePropertiesEXT](VkPhysicalDeviceDiscardRectanglePropertiesEXT.html), [VkPhysicalDeviceDisplacementMicromapPropertiesNV](VkPhysicalDeviceDisplacementMicromapPropertiesNV.html), [VkPhysicalDeviceDriverProperties](VkPhysicalDeviceDriverProperties.html), [VkPhysicalDeviceDrmPropertiesEXT](VkPhysicalDeviceDrmPropertiesEXT.html), [VkPhysicalDeviceExtendedDynamicState3PropertiesEXT](VkPhysicalDeviceExtendedDynamicState3PropertiesEXT.html), [VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV](VkPhysicalDeviceExtendedSparseAddressSpacePropertiesNV.html), [VkPhysicalDeviceExternalComputeQueuePropertiesNV](VkPhysicalDeviceExternalComputeQueuePropertiesNV.html), [VkPhysicalDeviceExternalFormatResolvePropertiesANDROID](VkPhysicalDeviceExternalFormatResolvePropertiesANDROID.html), [VkPhysicalDeviceExternalMemoryHostPropertiesEXT](VkPhysicalDeviceExternalMemoryHostPropertiesEXT.html), [VkPhysicalDeviceFloatControlsProperties](VkPhysicalDeviceFloatControlsProperties.html), [VkPhysicalDeviceFragmentDensityMap2PropertiesEXT](VkPhysicalDeviceFragmentDensityMap2PropertiesEXT.html), [VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE](VkPhysicalDeviceFragmentDensityMapLayeredPropertiesVALVE.html), [VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT](VkPhysicalDeviceFragmentDensityMapOffsetPropertiesEXT.html), [VkPhysicalDeviceFragmentDensityMapPropertiesEXT](VkPhysicalDeviceFragmentDensityMapPropertiesEXT.html), [VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR](VkPhysicalDeviceFragmentShaderBarycentricPropertiesKHR.html), [VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV](VkPhysicalDeviceFragmentShadingRateEnumsPropertiesNV.html), [VkPhysicalDeviceFragmentShadingRatePropertiesKHR](VkPhysicalDeviceFragmentShadingRatePropertiesKHR.html), [VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT](VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT.html), [VkPhysicalDeviceHostImageCopyProperties](VkPhysicalDeviceHostImageCopyProperties.html), [VkPhysicalDeviceIDProperties](VkPhysicalDeviceIDProperties.html), [VkPhysicalDeviceImageAlignmentControlPropertiesMESA](VkPhysicalDeviceImageAlignmentControlPropertiesMESA.html), [VkPhysicalDeviceImageProcessing2PropertiesQCOM](VkPhysicalDeviceImageProcessing2PropertiesQCOM.html), [VkPhysicalDeviceImageProcessingPropertiesQCOM](VkPhysicalDeviceImageProcessingPropertiesQCOM.html), [VkPhysicalDeviceInlineUniformBlockProperties](VkPhysicalDeviceInlineUniformBlockProperties.html), [VkPhysicalDeviceLayeredApiPropertiesListKHR](VkPhysicalDeviceLayeredApiPropertiesListKHR.html), [VkPhysicalDeviceLayeredDriverPropertiesMSFT](VkPhysicalDeviceLayeredDriverPropertiesMSFT.html), [VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT](VkPhysicalDeviceLegacyVertexAttributesPropertiesEXT.html), [VkPhysicalDeviceLineRasterizationProperties](VkPhysicalDeviceLineRasterizationProperties.html), [VkPhysicalDeviceMaintenance10PropertiesKHR](VkPhysicalDeviceMaintenance10PropertiesKHR.html), [VkPhysicalDeviceMaintenance3Properties](VkPhysicalDeviceMaintenance3Properties.html), [VkPhysicalDeviceMaintenance4Properties](VkPhysicalDeviceMaintenance4Properties.html), [VkPhysicalDeviceMaintenance5Properties](VkPhysicalDeviceMaintenance5Properties.html), [VkPhysicalDeviceMaintenance6Properties](VkPhysicalDeviceMaintenance6Properties.html), [VkPhysicalDeviceMaintenance7PropertiesKHR](VkPhysicalDeviceMaintenance7PropertiesKHR.html), [VkPhysicalDeviceMaintenance9PropertiesKHR](VkPhysicalDeviceMaintenance9PropertiesKHR.html), [VkPhysicalDeviceMapMemoryPlacedPropertiesEXT](VkPhysicalDeviceMapMemoryPlacedPropertiesEXT.html), [VkPhysicalDeviceMemoryDecompressionPropertiesEXT](VkPhysicalDeviceMemoryDecompressionPropertiesEXT.html), [VkPhysicalDeviceMeshShaderPropertiesEXT](VkPhysicalDeviceMeshShaderPropertiesEXT.html), [VkPhysicalDeviceMeshShaderPropertiesNV](VkPhysicalDeviceMeshShaderPropertiesNV.html), [VkPhysicalDeviceMultiDrawPropertiesEXT](VkPhysicalDeviceMultiDrawPropertiesEXT.html), [VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX](VkPhysicalDeviceMultiviewPerViewAttributesPropertiesNVX.html), [VkPhysicalDeviceMultiviewProperties](VkPhysicalDeviceMultiviewProperties.html), [VkPhysicalDeviceNestedCommandBufferPropertiesEXT](VkPhysicalDeviceNestedCommandBufferPropertiesEXT.html), [VkPhysicalDeviceOpacityMicromapPropertiesEXT](VkPhysicalDeviceOpacityMicromapPropertiesEXT.html), [VkPhysicalDeviceOpticalFlowPropertiesNV](VkPhysicalDeviceOpticalFlowPropertiesNV.html), [VkPhysicalDevicePCIBusInfoPropertiesEXT](VkPhysicalDevicePCIBusInfoPropertiesEXT.html), [VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV](VkPhysicalDevicePartitionedAccelerationStructurePropertiesNV.html), [VkPhysicalDevicePerformanceCountersByRegionPropertiesARM](VkPhysicalDevicePerformanceCountersByRegionPropertiesARM.html), [VkPhysicalDevicePerformanceQueryPropertiesKHR](VkPhysicalDevicePerformanceQueryPropertiesKHR.html), [VkPhysicalDevicePipelineBinaryPropertiesKHR](VkPhysicalDevicePipelineBinaryPropertiesKHR.html), [VkPhysicalDevicePipelineRobustnessProperties](VkPhysicalDevicePipelineRobustnessProperties.html), [VkPhysicalDevicePointClippingProperties](VkPhysicalDevicePointClippingProperties.html), [VkPhysicalDevicePortabilitySubsetPropertiesKHR](VkPhysicalDevicePortabilitySubsetPropertiesKHR.html), [VkPhysicalDeviceProtectedMemoryProperties](VkPhysicalDeviceProtectedMemoryProperties.html), [VkPhysicalDeviceProvokingVertexPropertiesEXT](VkPhysicalDeviceProvokingVertexPropertiesEXT.html), [VkPhysicalDevicePushConstantBankPropertiesNV](VkPhysicalDevicePushConstantBankPropertiesNV.html), [VkPhysicalDevicePushDescriptorProperties](VkPhysicalDevicePushDescriptorProperties.html), [VkPhysicalDeviceRayTracingInvocationReorderPropertiesEXT](VkPhysicalDeviceRayTracingInvocationReorderPropertiesEXT.html), [VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV](VkPhysicalDeviceRayTracingInvocationReorderPropertiesNV.html), [VkPhysicalDeviceRayTracingPipelinePropertiesKHR](VkPhysicalDeviceRayTracingPipelinePropertiesKHR.html), [VkPhysicalDeviceRayTracingPropertiesNV](VkPhysicalDeviceRayTracingPropertiesNV.html), [VkPhysicalDeviceRenderPassStripedPropertiesARM](VkPhysicalDeviceRenderPassStripedPropertiesARM.html), [VkPhysicalDeviceRobustness2PropertiesKHR](VkPhysicalDeviceRobustness2PropertiesKHR.html), [VkPhysicalDeviceSampleLocationsPropertiesEXT](VkPhysicalDeviceSampleLocationsPropertiesEXT.html), [VkPhysicalDeviceSamplerFilterMinmaxProperties](VkPhysicalDeviceSamplerFilterMinmaxProperties.html), [VkPhysicalDeviceSchedulingControlsPropertiesARM](VkPhysicalDeviceSchedulingControlsPropertiesARM.html), [VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM](VkPhysicalDeviceShaderCoreBuiltinsPropertiesARM.html), [VkPhysicalDeviceShaderCoreProperties2AMD](VkPhysicalDeviceShaderCoreProperties2AMD.html), [VkPhysicalDeviceShaderCorePropertiesAMD](VkPhysicalDeviceShaderCorePropertiesAMD.html), [VkPhysicalDeviceShaderCorePropertiesARM](VkPhysicalDeviceShaderCorePropertiesARM.html), [VkPhysicalDeviceShaderEnqueuePropertiesAMDX](VkPhysicalDeviceShaderEnqueuePropertiesAMDX.html), [VkPhysicalDeviceShaderInstrumentationPropertiesARM](VkPhysicalDeviceShaderInstrumentationPropertiesARM.html), [VkPhysicalDeviceShaderIntegerDotProductProperties](VkPhysicalDeviceShaderIntegerDotProductProperties.html), [VkPhysicalDeviceShaderLongVectorPropertiesEXT](VkPhysicalDeviceShaderLongVectorPropertiesEXT.html), [VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT](VkPhysicalDeviceShaderModuleIdentifierPropertiesEXT.html), [VkPhysicalDeviceShaderObjectPropertiesEXT](VkPhysicalDeviceShaderObjectPropertiesEXT.html), [VkPhysicalDeviceShaderSMBuiltinsPropertiesNV](VkPhysicalDeviceShaderSMBuiltinsPropertiesNV.html), [VkPhysicalDeviceShaderTileImagePropertiesEXT](VkPhysicalDeviceShaderTileImagePropertiesEXT.html), [VkPhysicalDeviceShadingRateImagePropertiesNV](VkPhysicalDeviceShadingRateImagePropertiesNV.html), [VkPhysicalDeviceSubgroupProperties](VkPhysicalDeviceSubgroupProperties.html), [VkPhysicalDeviceSubgroupSizeControlProperties](VkPhysicalDeviceSubgroupSizeControlProperties.html), [VkPhysicalDeviceSubpassShadingPropertiesHUAWEI](VkPhysicalDeviceSubpassShadingPropertiesHUAWEI.html), [VkPhysicalDeviceTensorPropertiesARM](VkPhysicalDeviceTensorPropertiesARM.html), [VkPhysicalDeviceTexelBufferAlignmentProperties](VkPhysicalDeviceTexelBufferAlignmentProperties.html), [VkPhysicalDeviceTileMemoryHeapPropertiesQCOM](VkPhysicalDeviceTileMemoryHeapPropertiesQCOM.html), [VkPhysicalDeviceTileShadingPropertiesQCOM](VkPhysicalDeviceTileShadingPropertiesQCOM.html), [VkPhysicalDeviceTimelineSemaphoreProperties](VkPhysicalDeviceTimelineSemaphoreProperties.html), [VkPhysicalDeviceTransformFeedbackPropertiesEXT](VkPhysicalDeviceTransformFeedbackPropertiesEXT.html), [VkPhysicalDeviceVertexAttributeDivisorProperties](VkPhysicalDeviceVertexAttributeDivisorProperties.html), [VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT](VkPhysicalDeviceVertexAttributeDivisorPropertiesEXT.html), [VkPhysicalDeviceVulkan11Properties](VkPhysicalDeviceVulkan11Properties.html), [VkPhysicalDeviceVulkan12Properties](VkPhysicalDeviceVulkan12Properties.html), [VkPhysicalDeviceVulkan13Properties](VkPhysicalDeviceVulkan13Properties.html), or [VkPhysicalDeviceVulkan14Properties](VkPhysicalDeviceVulkan14Properties.html)
+
+* 
+[](#VUID-VkPhysicalDeviceProperties2-sType-unique) VUID-VkPhysicalDeviceProperties2-sType-unique
+
+ The `sType` value of each structure in the `pNext` chain **must** be unique
+
+[VK_KHR_get_physical_device_properties2](VK_KHR_get_physical_device_properties2.html), [VK_VERSION_1_1](VK_VERSION_1_1.html), [VkPhysicalDeviceLayeredApiVulkanPropertiesKHR](VkPhysicalDeviceLayeredApiVulkanPropertiesKHR.html), [VkPhysicalDeviceProperties](VkPhysicalDeviceProperties.html), [VkStructureType](VkStructureType.html), [vkGetPhysicalDeviceProperties2](vkGetPhysicalDeviceProperties2.html), [vkGetPhysicalDeviceProperties2](vkGetPhysicalDeviceProperties2.html)
+
+For more information, see the [Vulkan Specification](../../../../spec/latest/chapters/devsandqueues.html#VkPhysicalDeviceProperties2).
+
+This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.

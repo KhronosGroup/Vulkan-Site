@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Micromaps: Teaching the Hardware What It Already Should Know :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../../");!function(){var f="../../../Building_a_Simple_Engine/Courses/Opacity_Micromaps/03_what_are_micromaps.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Extra Courses</li>
+    <li>Opacity Micromaps</li>
+    <li><a href="03_what_are_micromaps.html">What are micromaps</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Micromaps: Teaching the Hardware What It Already Should Know</h1>
+<div class="sect1">
+<h2 id="_the_central_idea"><a class="anchor" href="#_the_central_idea"></a>The Central Idea</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Everything we have discussed so far converges on a single insight: the GPU is doing expensive runtime work to discover information that is fully knowable ahead of time. The alpha texture of a leaf does not animate. The opacity distribution of a fence mesh does not change from frame to frame. If we could bake this information into the acceleration structure itself — the same data structure the hardware uses for BVH traversal — the hardware could make opacity decisions without invoking any shader at all.</p>
+</div>
+<div class="paragraph">
+<p>This is the complete description of an <strong>Opacity Micromap</strong>: a data structure, attached to a triangle mesh in the GPU&#8217;s acceleration structure, that subdivides each triangle into a regular grid of smaller triangles and assigns each one a pre-computed opacity state. The word "micro" is used precisely: these are not additional geometric triangles that the ray tracer has to traverse. They are sub-triangle classifications that the traversal hardware reads as metadata, using them to accelerate the decision of whether a given ray-triangle intersection represents an actual hit.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_two_formats_2_state_and_4_state"><a class="anchor" href="#_two_formats_2_state_and_4_state"></a>Two Formats: 2-State and 4-State</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><code>VK_KHR_opacity_micromap</code> defines two opacity micromap formats. Which format you choose depends on how much precision your alpha content requires at boundaries.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>2-state format</strong> (<code>VK_OPACITY_MICROMAP_FORMAT_2_STATE_EXT</code>) stores one bit per micro-triangle. Each micro-triangle is either Transparent (0) or Opaque (1). This binary classification is the simplest possible model: no shader is ever invoked — hardware immediately commits or discards every hit based on the stored bit. The 2-state format is ideal when you have full control over alpha content and can guarantee that no micro-triangle genuinely straddles an alpha boundary, or when you are willing to accept the small visual error that comes from forced binary classification.</p>
+</div>
+<div class="paragraph">
+<p>The <strong>4-state format</strong> (<code>VK_OPACITY_MICROMAP_FORMAT_4_STATE_EXT</code>) stores two bits per micro-triangle and supports four distinct states:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Transparent (0)</strong>: the hit is discarded immediately without running any shader. Zero cost.</p>
+</li>
+<li>
+<p><strong>Unknown-Transparent (1)</strong>: the any-hit shader is invoked; if the shader does not explicitly make a decision, traversal defaults to treating the hit as transparent.</p>
+</li>
+<li>
+<p><strong>Unknown-Opaque (2)</strong>: the any-hit shader is invoked; if the shader does not explicitly make a decision, traversal defaults to treating the hit as opaque.</p>
+</li>
+<li>
+<p><strong>Opaque (3)</strong>: the hit is committed immediately without running any shader. Zero cost.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The two Unknown states are the key to making the 4-state scheme both correct and practical. Instead of trying to perfectly classify every pixel of every triangle in advance — which would require infinite subdivision — we can be conservative. Where the alpha texture is clearly solid across the entire micro-triangle, we encode Opaque (3). Where it is clearly empty, we encode Transparent (0). Only in the boundary regions, where a single micro-triangle straddles the alpha cutoff edge, do we admit uncertainty and fall back to the any-hit shader using one of the two Unknown states. Unknown-Transparent is the typical choice for foliage: the hint biases the driver toward transparency, which matches the statistical expectation at an alpha boundary.</p>
+</div>
+<div class="paragraph">
+<p>For a well-designed leaf texture, the Opaque and Transparent regions dominate. The boundary between them is a thin perimeter. If the micro-triangle grid is fine enough, that perimeter region corresponds to perhaps five or ten percent of all micro-triangles. The other ninety to ninety-five percent are classified definitively, and the any-hit shader never fires for them. The cost reduction is proportional.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_visualizing_the_subdivision"><a class="anchor" href="#_visualizing_the_subdivision"></a>Visualizing the Subdivision</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/images/omm_triangle_subdivision.svg" alt="Diagram showing a leaf-shaped triangle subdivided into a regular grid of micro-triangles; center micro-triangles colored green for opaque" width="outer micro-triangles colored red for transparent" height="and a thin ring at the leaf edge colored yellow for unknown">
+</div>
+</div>
+<div class="paragraph">
+<p>Consider a single leaf triangle — a flat quadrilateral whose alpha texture shows a maple leaf. The micromap subdivision overlays a regular grid on this triangle. In the center of the leaf, the alpha is solidly 1.0. Every micro-triangle in that region is sampled and found to be fully opaque. They are colored green in our mental model — hardware will commit any hit that falls here, instantly.</p>
+</div>
+<div class="paragraph">
+<p>At the edges of the quad far from the leaf shape, the alpha is solidly 0.0. Every micro-triangle in that region is sampled and found to be fully transparent. They are colored red — hardware will skip any hit that falls here, instantly.</p>
+</div>
+<div class="paragraph">
+<p>At the precise boundary of the leaf silhouette, where the texture designer blended the alpha from 1.0 to 0.0 to avoid harsh edges, some micro-triangles straddle both values. These are colored yellow — unknown. They are the only ones that will trigger the any-hit shader during traversal. This yellow ring is thin, perhaps one or two micro-triangles wide, and it represents a small fraction of the triangle&#8217;s area.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_subdivision_levels_precision_at_a_cost"><a class="anchor" href="#_subdivision_levels_precision_at_a_cost"></a>Subdivision Levels: Precision at a Cost</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <strong>subdivision level</strong> controls how fine the micro-triangle grid is. At level 0, the entire triangle receives a single classification — one state for the whole thing. This is only useful for geometry that is genuinely uniform (entirely opaque or entirely transparent), which is unusual for alpha-tested content.</p>
+</div>
+<div class="paragraph">
+<p>At level 1, each original triangle is subdivided into 4 micro-triangles. At level 2, it becomes 16. At level 3, it becomes 64. At level 4, it becomes 256. Each increase in level roughly quadruples the number of micro-triangles, improving the accuracy of the classification at the cost of more storage and more upfront computation.</p>
+</div>
+<div class="paragraph">
+<p>For typical foliage textures, level 2 or level 3 provides a good balance. A level-3 micromap for a single leaf triangle contains 64 micro-triangles. The leaf shape is approximated reasonably well at this resolution — most of the leaf body is classified Opaque, most of the empty space is classified Transparent, and the unknown ring is narrow. Going to level 4 would improve accuracy slightly but quadruple the memory footprint for likely marginal runtime benefit.</p>
+</div>
+<div class="paragraph">
+<p>The right choice depends on the texture content and the performance targets of the application. Content with sharp, high-contrast alpha masks (like a chain-link fence with near-binary alpha) benefits greatly from even low subdivision levels because the boundaries are crisp. Content with soft, gradual alpha transitions (like hair cards or feathers) may require higher subdivision levels to keep the unknown fraction small.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building_the_micromap_a_one_time_investment"><a class="anchor" href="#_building_the_micromap_a_one_time_investment"></a>Building the Micromap: A One-Time Investment</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The micromap build process has two conceptually distinct phases that can be separated in time:</p>
+</div>
+<div class="paragraph">
+<p><strong>Phase 1 — Classification (CPU, one-time per asset):</strong> For each triangle in an alpha-tested mesh, and for each micro-triangle at the chosen subdivision level, the builder samples the alpha texture at several points within the micro-triangle — typically at the centroid or at multiple jittered positions. It averages those samples and compares against a threshold. If the average alpha is above the upper threshold (close to 1.0), the micro-triangle is classified Opaque. If it is below the lower threshold (close to 0.0), it is classified Transparent. If it falls between the thresholds, it is classified Unknown (specifically Unknown-Transparent or Unknown-Opaque, depending on application policy). The output is a compact 2-bit-per-micro-triangle array — a few hundred kilobytes for a typical mesh.</p>
+</div>
+<div class="paragraph">
+<p><strong>Phase 2 — GPU Build (device-only, runs at load time):</strong> The classified 2-bit data is uploaded to GPU memory. A <code>vkCmdBuildAccelerationStructuresKHR</code> command is recorded and submitted to the device queue. The driver performs internal layout transformation and compaction, producing the micromap <code>VkAccelerationStructureKHR</code> in the hardware&#8217;s native traversal format. <code>VK_KHR_opacity_micromap</code> provides no host-side build path — this GPU submission step is always required.</p>
+</div>
+<div class="paragraph">
+<p>The two phases can be combined at load time (<strong>online mode</strong>) or separated (<strong>offline mode</strong>). In online mode, both classification and GPU build run when the scene is first loaded — useful during development but adds startup cost proportional to mesh and texture complexity. In offline mode, Phase 1 runs as a pre-process during content authoring; the resulting 2-bit arrays are saved to disk and shipped with the application. At runtime only Phase 2 executes, keeping startup cost minimal. The GPU build cannot itself be pre-baked: the driver needs to run it on the target hardware to produce its native internal representation.</p>
+</div>
+<div class="paragraph">
+<p>This is a one-time operation per mesh, per texture, per subdivision level. For a shipping game or visualization application, the payoff ratio is enormous — the classification cost is paid once during authoring, and the benefit accumulates over every frame the application renders.</p>
+</div>
+<div class="paragraph">
+<p>The output of this process is a compact array of 2-bit values (for the 4-state format): one per micro-triangle. Opaque is encoded as 3, Transparent as 0, Unknown-Transparent as 1, and Unknown-Opaque as 2. For most foliage, Unknown-Transparent (1) is used for boundary micro-triangles: it lets the any-hit shader make the final call while hinting that the outcome is more likely transparent. For a mesh with 10,000 leaf triangles at subdivision level 3, the micromap data is 10,000 times 64 micro-triangles times 2 bits, which is about 160 kilobytes. Using the 2-state format halves this to approximately 80 kilobytes, at the cost of eliminating the any-hit fallback entirely. This memory footprint is negligible compared to the mesh data itself.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_where_the_data_lives"><a class="anchor" href="#_where_the_data_lives"></a>Where the Data Lives</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The classified micro-triangle data is uploaded to the GPU and used to construct a <strong><code>VkAccelerationStructureKHR</code></strong> whose type is set to <code>VK_ACCELERATION_STRUCTURE_TYPE_OPACITY_MICROMAP_KHR</code>. This is a deliberate unification in the KHR API: rather than introducing a separate object type for micromap data, <code>VK_KHR_opacity_micromap</code> folds the micromap directly into the existing acceleration structure abstraction. The same <code>VkAccelerationStructureKHR</code> handle you use for BLASes and TLASes is also the handle for a micromap — the <code>type</code> field at creation time is what distinguishes them. The micromap acceleration structure is allocated via <code>vkCreateAccelerationStructureKHR</code> (from <code>VK_KHR_acceleration_structure</code>), passing <code>VK_ACCELERATION_STRUCTURE_TYPE_OPACITY_MICROMAP_KHR</code> as the type. Building the micromap uses <code>vkCmdBuildAccelerationStructuresKHR</code> with <code>geometryType</code> set to <code>VK_GEOMETRY_TYPE_MICROMAP_KHR</code> — the same device-side command used for all acceleration structure builds. There is no separate host-side build path for micromaps in the KHR API; all micromap construction is GPU-driven.</p>
+</div>
+<div class="paragraph">
+<p>Once the micromap acceleration structure is built, it is attached to the corresponding BLAS during the BLAS build or rebuild. The attachment is specified through the <code>VkAccelerationStructureTrianglesOpacityMicromapKHR</code> structure, which is chained into the geometry description passed to the acceleration structure build. The <code>micromap</code> field in this structure is the <code>VkAccelerationStructureKHR</code> handle of the micromap you just built. The <code>indexBuffer</code> field, which maps original triangles to their micromap entries, is a plain <code>VkDeviceAddress</code> — there is no host address variant in the KHR API, reflecting the device-only design philosophy. At that point, the micromap data becomes part of the acceleration structure itself — stored in GPU memory in the hardware&#8217;s native format for traversal.</p>
+</div>
+<div class="paragraph">
+<p>The traversal hardware reads the micromap data during BVH traversal as part of its normal operation. There is no additional API call, no shader modification, no synchronization primitive to manage on a per-frame basis. Once the BLAS is built with the micromap attached, the hardware simply uses it, every frame, for every ray that touches the mesh — automatically, transparently, at hardware speed. Ray query shaders do require the <code>OpacityMicromapKHR</code> SPIR-V execution mode, declared via the <code>SPV_KHR_opacity_micromap</code> extension, to inform the compiler that opacity micromap data may influence traversal results; this is a one-line declaration in your GLSL or HLSL source and carries no runtime cost.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_lossy_builds_trading_perfection_for_higher_precision"><a class="anchor" href="#_lossy_builds_trading_perfection_for_higher_precision"></a>Lossy Builds: Trading Perfection for Higher Precision</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_KHR_opacity_micromap</code> API offers one additional degree of freedom: the <strong>lossy build flag</strong>, <code>VK_BUILD_ACCELERATION_STRUCTURE_MICROMAP_LOSSY_BIT_KHR</code>. When this flag is set during the micromap build, the driver is permitted to apply lossy compression to the micromap data. In exchange for that freedom, the driver may be able to support higher effective subdivision levels — pushing the micro-triangle grid finer than would otherwise fit in the available memory budget. Subdivision levels that exceed the standard <code>maxOpacity4StateSubdivisionLevel</code> cap may become available, up to the value reported in <code>maxOpacityLossy4StateSubdivisionLevel</code>.</p>
+</div>
+<div class="paragraph">
+<p>The practical implication is nuanced. A lossy build may occasionally promote a micro-triangle from Unknown to either Opaque or Transparent based on compressed state, which means the any-hit shader will not fire for that micro-triangle even though the uncompressed classification was ambiguous. For most foliage and most viewing distances, this is visually imperceptible. For content where precision at the alpha boundary is critical — fine hair, feathers, or close-up leaf geometry — you may prefer to avoid the lossy flag and accept slightly coarser subdivision. The choice belongs to the application.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_profound_simplicity"><a class="anchor" href="#_the_profound_simplicity"></a>The Profound Simplicity</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Step back and appreciate what has happened. We have moved the most expensive part of alpha-tested ray traversal — the per-hit, per-frame shader invocation for opacity discovery — out of the hot path entirely. We replaced it with a pre-baked data structure that the hardware reads at fixed-function speed. We did not change the visual result: the any-hit shader still fires for Unknown micro-triangles, ensuring correctness at the boundaries. We did not change the application&#8217;s API footprint significantly. We added one build step and one attachment structure.</p>
+</div>
+<div class="paragraph">
+<p>For most foliage, this means that perhaps 95% of all shadow ray interactions with leaf geometry now cost nothing in shader terms — they are handled entirely by hardware, in the same cycle budget as opaque geometry traversal. Only that thin ring of edge pixels — the 5% that genuinely straddles the alpha boundary — still pays the any-hit shader cost. The improvement is not a rounding error. It is a qualitative change in the nature of the workload.</p>
+</div>
+<hr>
+<div class="paragraph">
+<p><a href="02_why_alpha_testing_is_expensive.html" class="xref page">Previous: What Your GPU Is Actually Doing</a> | <a href="04_hardware_traversal_with_omm.html" class="xref page">Next: Inside the Traversal: How the GPU Uses Your Micromap</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

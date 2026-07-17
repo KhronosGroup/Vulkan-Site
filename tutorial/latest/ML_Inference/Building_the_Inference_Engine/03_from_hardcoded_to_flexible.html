@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>From Hardcoded to Flexible :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Building_the_Inference_Engine/03_from_hardcoded_to_flexible.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Building the Inference Engine</li>
+    <li><a href="03_from_hardcoded_to_flexible.html">From Hardcoded to Flexible</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">From Hardcoded to Flexible</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Look at the hardcoded implementation from the previous chapter. Three dense layers, nearly identical code repeated three times. Change the descriptors, update the push constants, dispatch. Barrier. Repeat.</p>
+</div>
+<div class="paragraph">
+<p>This works, but it&#8217;s brittle. Want to add a fourth layer? Copy-paste more code. Want to try a different architecture? Rewrite everything. Want to support convolution layers? Figure out where to insert them in the hardcoded sequence.</p>
+</div>
+<div class="paragraph">
+<p>The code is screaming at us: there&#8217;s a pattern here. Let&#8217;s extract it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_the_same_whats_different"><a class="anchor" href="#_whats_the_same_whats_different"></a>What&#8217;s the Same, What&#8217;s Different?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Every layer execution follows this structure:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Bind the pipeline (compute shader)</p>
+</li>
+<li>
+<p>Bind descriptor set (input/output buffers, weights)</p>
+</li>
+<li>
+<p>Set push constants (dimensions, parameters)</p>
+</li>
+<li>
+<p>Dispatch (workgroup count)</p>
+</li>
+<li>
+<p>Insert barrier for next layer</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The structure is identical. What changes?</p>
+</div>
+<div class="paragraph">
+<p><strong>Pipeline</strong>: Dense layer uses dense.spv shader. Convolution would use conv2d.spv. ReLU uses relu.spv.</p>
+</div>
+<div class="paragraph">
+<p><strong>Descriptors</strong>: Different buffers for input/output, different weight tensors. But the binding pattern is the same—input, weights, output.</p>
+</div>
+<div class="paragraph">
+<p><strong>Push constants</strong>: Dimensions vary (128 outputs vs 64 outputs), but the mechanism is identical.</p>
+</div>
+<div class="paragraph">
+<p><strong>Dispatch size</strong>: Calculated from output size, but the formula is predictable.</p>
+</div>
+<div class="paragraph">
+<p>If we can parameterize these differences, we can write the execution code once and reuse it for every layer.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_layer_abstraction"><a class="anchor" href="#_the_layer_abstraction"></a>The Layer Abstraction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>What if each layer was an object that knew how to execute itself? Something like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class Layer {
+public:
+    virtual void execute(
+        vk::raii::CommandBuffer&amp; cmdBuffer,
+        const vk::raii::Buffer&amp; inputBuffer,
+        const vk::raii::Buffer&amp; outputBuffer
+    ) = 0;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then our forward pass becomes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">for (auto&amp; layer : layers) {
+    layer-&gt;execute(cmdBuffer, currentBuffer, nextBuffer);
+    insertBarrier(cmdBuffer);
+    std::swap(currentBuffer, nextBuffer);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Much cleaner. Each layer encapsulates its specific behavior—which shader to use, how to calculate dispatch size, what parameters to set. The execution loop doesn&#8217;t care about those details.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_a_concrete_example_denselayer"><a class="anchor" href="#_a_concrete_example_denselayer"></a>A Concrete Example: DenseLayer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s make this concrete with the dense layer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class DenseLayer : public Layer {
+public:
+    DenseLayer(
+        vk::raii::Device&amp; device,
+        uint32_t inputSize,
+        uint32_t outputSize,
+        const std::vector&lt;float&gt;&amp; weights,
+        const std::vector&lt;float&gt;&amp; bias
+    ) : inputSize_(inputSize), outputSize_(outputSize) {
+        // Create weight and bias buffers
+        createWeightBuffer(device, weights);
+        createBiasBuffer(device, bias);
+
+        // Load shader and create pipeline
+        createPipeline(device, "shaders/dense.spv");
+    }
+
+    void execute(
+        vk::raii::CommandBuffer&amp; cmdBuffer,
+        const vk::raii::Buffer&amp; input,
+        const vk::raii::Buffer&amp; output
+    ) override {
+        // Bind our pipeline
+        cmdBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, *pipeline_);
+
+        // Bind descriptors (input, weights, bias, output)
+        cmdBuffer.bindDescriptorSets(/*...*/);
+
+        // Push constants
+        struct { uint32_t inSize, outSize; } params = {inputSize_, outputSize_};
+        cmdBuffer.pushConstants(/*...*/, params);
+
+        // Dispatch
+        uint32_t workgroups = (outputSize_ + 63) / 64;
+        cmdBuffer.dispatch(workgroups, 1, 1);
+    }
+
+private:
+    uint32_t inputSize_, outputSize_;
+    vk::raii::Buffer weightBuffer_;
+    vk::raii::Buffer biasBuffer_;
+    vk::raii::Pipeline pipeline_;
+    // ... memory, descriptors, etc.
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now creating our three-layer network is simple:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::vector&lt;std::unique_ptr&lt;Layer&gt;&gt; layers;
+
+layers.push_back(std::make_unique&lt;DenseLayer&gt;(
+    device, 784, 128, weights.fc1_weights, weights.fc1_bias
+));
+
+layers.push_back(std::make_unique&lt;DenseLayer&gt;(
+    device, 128, 64, weights.fc2_weights, weights.fc2_bias
+));
+
+layers.push_back(std::make_unique&lt;DenseLayer&gt;(
+    device, 64, 10, weights.fc3_weights, weights.fc3_bias
+));</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Much better. Want a four-layer network? Add another push_back. Want to insert a ReLU layer between dense layers? Create a ReLULayer class and insert it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_buffer_management"><a class="anchor" href="#_buffer_management"></a>Buffer Management</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Notice a problem with the execute signature? We&#8217;re passing input and output buffers, but what about the intermediate results between layers?</p>
+</div>
+<div class="paragraph">
+<p>Layer 1 outputs to some buffer. Layer 2 needs that as input. Layer 3 needs layer 2&#8217;s output. We need a way to manage these intermediate tensors.</p>
+</div>
+<div class="paragraph">
+<p>One approach: pre-allocate buffers and pass them explicitly. But this gets messy with branching architectures (skip connections, multiple outputs, etc.).</p>
+</div>
+<div class="paragraph">
+<p>Better approach: let each layer own its output buffer. During construction, layers allocate their output buffers. During execution, each layer writes to its own output buffer, and the next layer reads from it.</p>
+</div>
+<div class="paragraph">
+<p>This means layers need to know about each other&#8217;s buffers. That&#8217;s where a graph representation comes in—but we&#8217;re not there yet. For now, we&#8217;ll keep it simple with sequential execution and explicit buffer passing.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_about_convolution"><a class="anchor" href="#_what_about_convolution"></a>What About Convolution?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Dense layers are straightforward. Convolution is more complex—it needs kernel size, stride, padding parameters. How does that fit our abstraction?</p>
+</div>
+<div class="paragraph">
+<p>Same pattern, more parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class Conv2DLayer : public Layer {
+public:
+    Conv2DLayer(
+        vk::raii::Device&amp; device,
+        uint32_t inputChannels,
+        uint32_t outputChannels,
+        uint32_t kernelHeight,
+        uint32_t kernelWidth,
+        uint32_t stride,
+        uint32_t padding,
+        const std::vector&lt;float&gt;&amp; weights,
+        const std::vector&lt;float&gt;&amp; bias
+    ) { /* ... */ }
+
+    void execute(/*...*/) override {
+        // Bind conv2d.spv shader
+        // Push constants include kernel size, stride, padding
+        // Dispatch with 2D workgroups for spatial dimensions
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Different parameters, different shader, different dispatch pattern. But the same interface—execute() does its job, the caller doesn&#8217;t need to know the details.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_activation_functions"><a class="anchor" href="#_activation_functions"></a>Activation Functions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Activation functions like ReLU are even simpler—they&#8217;re element-wise operations with no learned parameters:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class ReLULayer : public Layer {
+public:
+    ReLULayer(vk::raii::Device&amp; device, uint32_t elementCount)
+        : elementCount_(elementCount) {
+        createPipeline(device, "shaders/relu.spv");
+    }
+
+    void execute(/*...*/) override {
+        // Bind relu.spv
+        // Push element count
+        // Dispatch ((elementCount + 255) / 256) workgroups
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>No weights, no bias, just element count. The shader is trivial—<code>output[i] = max(0, input[i])</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_pattern_emerges"><a class="anchor" href="#_the_pattern_emerges"></a>The Pattern Emerges</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Every layer type implements the same interface but with different internals:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>DenseLayer</strong>: Matrix multiply, needs weight matrix and bias vector</p>
+</li>
+<li>
+<p><strong>Conv2DLayer</strong>: Convolution, needs kernels with spatial parameters</p>
+</li>
+<li>
+<p><strong>ReLULayer</strong>: Element-wise max, no parameters</p>
+</li>
+<li>
+<p><strong>MaxPoolLayer</strong>: Spatial pooling, needs pool size and stride</p>
+</li>
+<li>
+<p><strong>BatchNormLayer</strong>: Normalization, needs mean/variance/scale/shift</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>They all execute the same way from the caller&#8217;s perspective. The abstraction hides the complexity.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_weve_gained"><a class="anchor" href="#_what_weve_gained"></a>What We&#8217;ve Gained</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This abstraction gives us:</p>
+</div>
+<div class="paragraph">
+<p><strong>Flexibility</strong>: Easy to add new layer types—implement the interface, done.</p>
+</div>
+<div class="paragraph">
+<p><strong>Reusability</strong>: The execution loop works for any sequence of layers.</p>
+</div>
+<div class="paragraph">
+<p><strong>Testability</strong>: Can test each layer type in isolation.</p>
+</div>
+<div class="paragraph">
+<p><strong>Clarity</strong>: The forward pass is now obviously "execute each layer in sequence" instead of pages of nearly-identical code.</p>
+</div>
+<div class="paragraph">
+<p>But we&#8217;ve only solved part of the problem. We still have to manually instantiate layers, manage buffer connections, and know the execution order. For a three-layer network, that&#8217;s fine. For ResNet-50 with skip connections and 50 layers? We need more structure.</p>
+</div>
+<div class="paragraph">
+<p>That&#8217;s where the graph representation comes in. Instead of a flat list of layers, we represent the network as a directed acyclic graph where nodes are operations and edges are data dependencies.</p>
+</div>
+<div class="paragraph">
+<p>Next chapter: building that graph representation.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_hardcoded_forward_prop.html" class="xref page">Previous: Hardcoded Forward Propagation</a> | <a href="04_model_representation.html" class="xref page">Next: Model Representation</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

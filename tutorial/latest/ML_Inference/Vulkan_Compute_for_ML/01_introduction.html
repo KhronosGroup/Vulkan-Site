@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Vulkan Compute for ML: Introduction :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Vulkan_Compute_for_ML/01_introduction.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Vulkan Compute for ML</li>
+    <li><a href="01_introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Vulkan Compute for ML: Introduction</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You&#8217;ve learned what machine learning inference is, how neural networks work, and how to integrate third-party ML libraries with your Vulkan applications. Now it&#8217;s time to dive deeper: implementing ML inference operations yourself using Vulkan compute shaders.</p>
+</div>
+<div class="paragraph">
+<p>This chapter bridges the gap between ML concepts and GPU implementation. We&#8217;ll review Vulkan compute pipelines with an ML focus, implement fundamental operations as compute shaders, build a complete working example, and establish patterns you&#8217;ll use throughout the rest of the tutorial.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_this_chapter_covers"><a class="anchor" href="#_what_this_chapter_covers"></a>What This Chapter Covers</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter is structured to build your understanding progressively, from Vulkan compute fundamentals to complete ML operations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Vulkan Compute Pipeline Review</strong>: We&#8217;ll start by reviewing Vulkan&#8217;s compute pipeline, but with a specific focus on ML workloads. You already know how to create compute pipelines from the main tutorial, but ML inference has specific patterns and requirements. We&#8217;ll discuss descriptor set layouts for tensor data, work group sizing for different operations, and memory access patterns that matter for ML.</p>
+</div>
+<div class="paragraph">
+<p><strong>Compute Shaders for ML Operations</strong>: The heart of this chapter is implementing ML operations as compute shaders. We&#8217;ll start simple—element-wise operations like ReLU activation—and build up to more complex operations like matrix multiplication and convolution. Each operation will be explained both mathematically (what it does) and computationally (how to implement it efficiently on the GPU).</p>
+</div>
+<div class="paragraph">
+<p><strong>Data Management</strong>: ML inference involves moving large amounts of data—input tensors, weights, intermediate activations, outputs. We&#8217;ll cover how to organize this data in GPU memory, how to transfer it efficiently, and how to reuse memory to minimize footprint. This is where theory meets practice: understanding tensor layouts, alignment requirements, and buffer management.</p>
+</div>
+<div class="paragraph">
+<p><strong>Synchronization</strong>: Neural networks are sequences of dependent operations. Layer 2 can&#8217;t start until layer 1 finishes. We&#8217;ll cover how to use pipeline barriers, memory barriers, and execution dependencies to ensure correct ordering while maximizing parallelism where possible.</p>
+</div>
+<div class="paragraph">
+<p><strong>Complete Working Example</strong>: Theory without practice is hollow. We&#8217;ll build a complete, runnable example: vector addition. This might seem trivial compared to neural networks, but it demonstrates the entire pipeline—loading data, dispatching compute work, synchronizing, reading results—in a form simple enough to understand completely. Once you grasp this pattern, scaling to more complex operations is straightforward.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter assumes you&#8217;re comfortable with Vulkan compute pipelines. Specifically, you should understand:</p>
+</div>
+<div class="paragraph">
+<p><strong>Compute Pipeline Basics</strong>: Creating compute pipelines, binding descriptor sets, dispatching work groups. If you need a refresher, revisit the Compute Shader chapters in the main Vulkan tutorial.</p>
+</div>
+<div class="paragraph">
+<p><strong>Slang Compute Shaders</strong>: Writing compute shaders in Slang, understanding work group organization, using shared memory. We&#8217;ll write several compute shaders in this chapter, and you need to be comfortable with the basics.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory Management</strong>: Allocating buffers, managing device memory, transferring data between host and device. ML inference involves significant memory management, and you need to understand Vulkan&#8217;s memory model.</p>
+</div>
+<div class="paragraph">
+<p><strong>Synchronization Primitives</strong>: Pipeline barriers, memory barriers, execution dependencies. We&#8217;ll use these extensively to coordinate ML operations.</p>
+</div>
+<div class="paragraph">
+<p>Throughout this chapter, we use vk::raii (Vulkan HPP RAII wrappers) for resource management, consistent with the Building a Simple Engine tutorial. This provides automatic resource cleanup and cleaner code compared to C-style Vulkan API.</p>
+</div>
+<div class="paragraph">
+<p>You should also understand the ML concepts from the previous chapters—what tensors are, how neural network layers work, what operations like convolution and activation functions do. We&#8217;ll implement these operations, so you need to know what they&#8217;re supposed to compute.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_this_chapter_matters"><a class="anchor" href="#_why_this_chapter_matters"></a>Why This Chapter Matters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The previous chapter covered when to use third-party libraries versus custom implementation. As a reminder: for most production applications, use established libraries like ONNX Runtime or TensorFlow Lite. They&#8217;re battle-tested, optimized, and maintained.</p>
+</div>
+<div class="paragraph">
+<p>This chapter takes the "custom implementation" path for two reasons. First, understanding how ML operations map to GPU compute makes you better at using libraries—you&#8217;ll understand performance characteristics, debug issues more effectively, and make informed optimization decisions. Second, there are specialized scenarios (tight graphics integration, rendering AI, novel operations, embedded constraints) where custom implementation is the right choice.</p>
+</div>
+<div class="paragraph">
+<p>Even if you never deploy custom implementations in production, the knowledge you gain here is valuable. Let&#8217;s dive into the technical details.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_youll_build"><a class="anchor" href="#_what_youll_build"></a>What You&#8217;ll Build</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>By the end of this chapter, you&#8217;ll have implemented:</p>
+</div>
+<div class="paragraph">
+<p><strong>A complete Vulkan compute infrastructure for ML operations</strong>: Descriptor set layouts, pipeline creation, memory management, and synchronization patterns that work for ML workloads.</p>
+</div>
+<div class="paragraph">
+<p><strong>Several fundamental ML operations as compute shaders</strong>: Element-wise operations (ReLU, sigmoid), matrix operations (matrix-vector multiply, matrix-matrix multiply), and the foundation for more complex operations like convolution.</p>
+</div>
+<div class="paragraph">
+<p><strong>A working vector addition example</strong>: A complete, runnable application that demonstrates the entire pipeline from data loading to result verification. This serves as a template for more complex operations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Patterns and techniques you&#8217;ll use throughout the tutorial</strong>: Memory management strategies, synchronization patterns, debugging approaches, and optimization techniques that apply to all ML operations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_to_use_this_chapter"><a class="anchor" href="#_how_to_use_this_chapter"></a>How to Use This Chapter</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This chapter is hands-on. We&#8217;ll explain concepts, then implement them. You should follow along, writing and running the code yourself. Don&#8217;t just read—type the code, compile it, run it, experiment with it.</p>
+</div>
+<div class="paragraph">
+<p>Start with the Vulkan compute review even if you think you know it. The ML-specific focus will highlight aspects you might not have considered. Then work through the operations in order—each builds on the previous ones.</p>
+</div>
+<div class="paragraph">
+<p>When we implement operations, we&#8217;ll show both the mathematical definition and the compute shader implementation. Make sure you understand both. The math tells you what the operation should compute; the shader tells you how to compute it efficiently on the GPU.</p>
+</div>
+<div class="paragraph">
+<p>The vector addition example is crucial. It&#8217;s simple enough to understand completely, but complete enough to demonstrate all the patterns you&#8217;ll use for more complex operations. Study it carefully, make sure you understand every line, and use it as a template for your own implementations.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_inside"><a class="anchor" href="#_whats_inside"></a>What&#8217;s Inside</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here&#8217;s what we&#8217;ll cover in the following sections:</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="02_compute_pipeline_review.html" class="xref page">Vulkan Compute Pipeline Review</a></strong> - A focused review of Vulkan compute pipelines with emphasis on ML-specific requirements: descriptor layouts for tensors, work group sizing strategies, memory access patterns, and pipeline creation patterns that work well for ML operations.</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="03_element_wise_operations.html" class="xref page">Element-Wise Operations</a></strong> - The simplest ML operations: ReLU, sigmoid, tanh, and other activation functions. We&#8217;ll implement these as compute shaders, discussing parallelization strategies, numerical stability, and performance considerations.</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="04_matrix_operations.html" class="xref page">Matrix Operations</a></strong> - Matrix-vector and matrix-matrix multiplication, the workhorses of neural networks. We&#8217;ll cover naive implementations, tiled implementations using shared memory, and optimization techniques for different matrix sizes.</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="05_data_management.html" class="xref page">Data Management</a></strong> - How to organize tensor data in GPU memory, transfer data efficiently, manage memory allocation and reuse, and handle different tensor layouts (NCHW vs NHWC, row-major vs column-major).</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="06_synchronization.html" class="xref page">Synchronization</a></strong> - Using pipeline barriers, memory barriers, and execution dependencies to coordinate ML operations. We&#8217;ll cover synchronization patterns for sequential operations, parallel branches, and memory reuse.</p>
+</div>
+<div class="paragraph">
+<p><strong><a href="07_vector_addition_example.html" class="xref page">Vector Addition Example</a></strong> - A complete, working example that demonstrates the entire pipeline: setting up Vulkan compute, loading data, dispatching work, synchronizing, and verifying results. This serves as a template for more complex operations.</p>
+</div>
+<div class="paragraph">
+<p>Each section builds on the previous ones, creating a complete picture of how to implement ML inference with Vulkan compute shaders. By the end of this chapter, you&#8217;ll have both the understanding and the practical code to implement neural network operations on the GPU.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s begin by reviewing Vulkan compute pipelines with an ML focus.</p>
+</div>
+<div class="paragraph">
+<p><a href="../Third_Party_Libraries/16_choosing_compiler.html" class="xref page">Previous: Choosing the Right ML Compiler</a> | <a href="02_compute_pipeline_review.html" class="xref page">Next: Vulkan Compute Pipeline Review</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

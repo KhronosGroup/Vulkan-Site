@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>GPU Resource Sharing :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Third_Party_Libraries/07_gpu_resource_sharing.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Integrating Third-Party ML Libraries</li>
+    <li><a href="07_gpu_resource_sharing.html">GPU Resource Sharing</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">GPU Resource Sharing</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here&#8217;s a scenario that comes up constantly when integrating ML inference with Vulkan rendering: you&#8217;ve rendered a frame to a texture, and now you want to run ML inference on that texture—maybe for object detection, style transfer, or some other analysis. The naive approach is to read the texture back to CPU memory, pass it to your ML library, wait for inference to complete, and continue. But this approach is painfully slow. You&#8217;re stalling the GPU, waiting for data transfers, and completely losing the performance benefits of GPU acceleration.</p>
+</div>
+<div class="paragraph">
+<p>There&#8217;s a better way: <strong>GPU resource sharing</strong>. Instead of copying data back and forth between CPU and GPU, you share GPU memory directly between Vulkan and your ML inference library. The texture lives on the GPU, Vulkan renders to it, the ML library reads from it, and no expensive CPU roundtrips are involved. This is the key to real-time ML inference in graphics applications.</p>
+</div>
+<div class="paragraph">
+<p>This chapter explores how to implement GPU resource sharing between Vulkan and ML inference libraries. We&#8217;ll cover the Vulkan extensions that enable external memory sharing, the platform-specific mechanisms for different operating systems, how to import shared memory into various ML libraries, and the synchronization primitives needed to ensure correctness.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_gpu_resource_sharing_matters"><a class="anchor" href="#_why_gpu_resource_sharing_matters"></a>Why GPU Resource Sharing Matters</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into the technical details, let&#8217;s understand why this matters and what performance gains you can expect.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_cost_of_cpu_roundtrips"><a class="anchor" href="#_the_cost_of_cpu_roundtrips"></a>The Cost of CPU Roundtrips</h3>
+<div class="paragraph">
+<p>Consider a typical frame in a game or graphics application running at 60 FPS. You have 16.67 milliseconds to render the frame and run any ML inference. Let&#8217;s trace through what happens without GPU resource sharing:</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1: Render to texture</strong> (2ms) - Vulkan renders your scene to a texture. This is fast—the GPU is doing what it does best.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2: Read texture to CPU</strong> (3-5ms) - You issue a vkCmdCopyImageToBuffer command, insert a pipeline barrier, and wait for the transfer to complete. For a 1920×1080 RGBA texture, that&#8217;s 8.3MB of data. Even with PCIe 3.0&#8217;s theoretical 16 GB/s bandwidth, real-world transfers are slower due to overhead, synchronization, and other bus traffic.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3: ML inference on CPU or separate GPU context</strong> (5-10ms) - Your ML library processes the data. If it&#8217;s using the GPU, it has to upload the data again—another transfer.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4: Read results back</strong> (1-2ms) - If the ML library produced GPU results, you need to read them back to CPU, then potentially upload to Vulkan again.</p>
+</div>
+<div class="paragraph">
+<p>Total: 11-19ms. You&#8217;ve already blown your 16.67ms frame budget, and we haven&#8217;t even accounted for the actual rendering work or other game logic. The result? Dropped frames, stuttering, poor user experience.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_zero_copy_alternative"><a class="anchor" href="#_the_zero_copy_alternative"></a>The Zero-Copy Alternative</h3>
+<div class="paragraph">
+<p>With GPU resource sharing, the same workflow looks like this:</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1: Render to shared texture</strong> (2ms) - Vulkan renders to a texture that&#8217;s allocated with external memory support.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2: Synchronize</strong> (&lt;0.1ms) - Signal a semaphore or fence to indicate rendering is complete.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3: ML inference on shared memory</strong> (5-10ms) - The ML library reads directly from the shared GPU memory. No transfer needed.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4: Synchronize</strong> (&lt;0.1ms) - Wait for inference to complete before using results.</p>
+</div>
+<div class="paragraph">
+<p>Total: 7-12ms. You&#8217;ve eliminated 4-7ms of transfer overhead—enough to make the difference between hitting your frame budget and missing it. For real-time applications, this is the difference between feasible and infeasible.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_beyond_performance_memory_efficiency"><a class="anchor" href="#_beyond_performance_memory_efficiency"></a>Beyond Performance: Memory Efficiency</h3>
+<div class="paragraph">
+<p>GPU resource sharing also reduces memory usage. Without sharing, you need:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Vulkan texture memory (8.3MB for 1080p RGBA)</p>
+</li>
+<li>
+<p>CPU staging buffer (8.3MB)</p>
+</li>
+<li>
+<p>ML library input buffer (8.3MB)</p>
+</li>
+<li>
+<p>Potentially ML library output buffer (varies)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>That&#8217;s at least 25MB for a single frame&#8217;s worth of data. With sharing, you need only the Vulkan texture memory—the ML library uses the same memory. For applications processing multiple frames in flight or working with higher resolutions, the memory savings multiply.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vulkan_external_memory_extensions"><a class="anchor" href="#_vulkan_external_memory_extensions"></a>Vulkan External Memory Extensions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan&#8217;s external memory extensions provide the foundation for GPU resource sharing. These extensions allow Vulkan to allocate memory that can be shared with other APIs and processes.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_extension_family"><a class="anchor" href="#_the_extension_family"></a>The Extension Family</h3>
+<div class="paragraph">
+<p>Several extensions work together to enable external memory:</p>
+</div>
+<div class="paragraph">
+<p><strong>VK_KHR_external_memory_capabilities</strong> - Queries what types of external memory the device supports. You use this during device selection to ensure your target platform supports the sharing mechanisms you need.</p>
+</div>
+<div class="paragraph">
+<p><strong>VK_KHR_external_memory</strong> - Core extension that defines the structures and concepts for external memory. This is the base that other extensions build on.</p>
+</div>
+<div class="paragraph">
+<p><strong>VK_KHR_external_memory_fd</strong> (Linux) - Enables sharing via POSIX file descriptors. This is the standard mechanism on Linux and Android.</p>
+</div>
+<div class="paragraph">
+<p><strong>VK_KHR_external_memory_win32</strong> (Windows) - Enables sharing via Windows NT handles. This is the standard mechanism on Windows.</p>
+</div>
+<div class="paragraph">
+<p><strong>VK_EXT_external_memory_dma_buf</strong> (Linux) - Enables sharing via DMA-BUF, a Linux kernel mechanism for sharing buffers between devices. Particularly useful for embedded systems and when working with hardware video decoders.</p>
+</div>
+<div class="paragraph">
+<p><strong>VK_KHR_external_semaphore</strong> and <strong>VK_KHR_external_fence</strong> - Enable sharing synchronization primitives, which we&#8217;ll discuss later.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_checking_for_support"><a class="anchor" href="#_checking_for_support"></a>Checking for Support</h3>
+<div class="paragraph">
+<p>Before attempting to use external memory, you need to verify that your device supports it. This happens during device selection:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">vk::PhysicalDeviceExternalMemoryHostPropertiesEXT externalMemoryProps;
+
+vk::PhysicalDeviceProperties2 deviceProps2;
+deviceProps2.pNext = &amp;externalMemoryProps;
+
+deviceProps2 = physicalDevice.getProperties2();
+
+// Check if external memory is supported
+vk::ExternalMemoryHandleTypeFlagsKHR supportedHandleTypes;
+
+#ifdef _WIN32
+    supportedHandleTypes = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR;
+#else
+    supportedHandleTypes = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd;
+#endif
+
+// Query if this handle type is supported for images
+vk::PhysicalDeviceExternalImageFormatInfo externalImageFormatInfo{
+    .handleType = static_cast&lt;vk::ExternalMemoryHandleTypeFlagBits&gt;(supportedHandleTypes)
+};
+
+vk::PhysicalDeviceImageFormatInfo2 imageFormatInfo{
+    .pNext = &amp;externalImageFormatInfo,
+    .format = vk::Format::eR8G8B8A8Unorm,
+    .type = vk::ImageType::e2D,
+    .tiling = vk::ImageTiling::eOptimal,
+    .usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled
+};
+
+vk::ExternalImageFormatProperties externalImageFormatProps;
+
+vk::ImageFormatProperties2 imageFormatProps2;
+imageFormatProps2.pNext = &amp;externalImageFormatProps;
+
+auto result = physicalDevice.getImageFormatProperties2(&amp;imageFormatInfo, &amp;imageFormatProps2);
+
+if (result == vk::Result::eSuccess) {
+    // Check what operations are supported
+    bool canExport = static_cast&lt;bool&gt;(externalImageFormatProps.externalMemoryProperties.externalMemoryFeatures &amp;
+                     vk::ExternalMemoryFeatureFlagBits::eExportable);
+    bool canImport = static_cast&lt;bool&gt;(externalImageFormatProps.externalMemoryProperties.externalMemoryFeatures &amp;
+                     vk::ExternalMemoryFeatureFlagBits::eImportable);
+
+    if (canExport) {
+        // This device can export memory for sharing
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This query tells you whether the device supports exporting memory in the format and usage you need. Different devices have different capabilities—some might support external memory for images but not buffers, or support certain formats but not others.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_allocating_exportable_memory"><a class="anchor" href="#_allocating_exportable_memory"></a>Allocating Exportable Memory</h3>
+<div class="paragraph">
+<p>Once you&#8217;ve confirmed support, you allocate memory with external memory support enabled. The key is adding VkExportMemoryAllocateInfo to the pNext chain when allocating memory:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create image with external memory support
+vk::ExternalMemoryImageCreateInfo externalMemoryImageInfo;
+#ifdef _WIN32
+    externalMemoryImageInfo.handleTypes = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR;
+#else
+    externalMemoryImageInfo.handleTypes = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd;
+#endif
+
+vk::ImageCreateInfo imageInfo{
+    .pNext = &amp;externalMemoryImageInfo,
+    .imageType = vk::ImageType::e2D,
+    .format = vk::Format::eR8G8B8A8Unorm,
+    .extent = {1920, 1080, 1},
+    .mipLevels = 1,
+    .arrayLayers = 1,
+    .samples = vk::SampleCountFlagBits::e1,
+    .tiling = vk::ImageTiling::eOptimal,
+    .usage = vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eSampled,
+    .sharingMode = vk::SharingMode::eExclusive,
+    .initialLayout = vk::ImageLayout::eUndefined
+};
+
+vk::raii::Image image(device, imageInfo);
+
+// Get memory requirements
+auto memReqs = image.getMemoryRequirements();
+
+// Allocate memory with export support
+vk::ExportMemoryAllocateInfo exportInfo{
+    .handleTypes = externalMemoryImageInfo.handleTypes
+};
+
+vk::MemoryAllocateInfo allocInfo{
+    .pNext = &amp;exportInfo,
+    .allocationSize = memReqs.size,
+    .memoryTypeIndex = findMemoryType(memReqs.memoryTypeBits,
+                                       vk::MemoryPropertyFlagBits::eDeviceLocal)
+};
+
+vk::raii::DeviceMemory memory(device, allocInfo);
+
+// Bind memory to image
+image.bindMemory(*memory, 0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The critical addition is VkExternalMemoryImageCreateInfo in the image creation and VkExportMemoryAllocateInfo in the memory allocation. These tell Vulkan that this memory needs to be shareable with external APIs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_exporting_memory_handles"><a class="anchor" href="#_exporting_memory_handles"></a>Exporting Memory Handles</h3>
+<div class="paragraph">
+<p>After allocating exportable memory, you export a handle that other APIs can import:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">#ifdef _WIN32
+    // Windows: Export as NT handle
+    vk::MemoryGetWin32HandleInfoKHR handleInfo{
+        .memory = *memory,
+        .handleType = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueWin32KHR
+    };
+
+    HANDLE win32Handle = device.getMemoryWin32HandleKHR(handleInfo);
+
+    // This handle can now be passed to DirectML, OpenCL, or other APIs
+#else
+    // Linux: Export as file descriptor
+    vk::MemoryGetFdInfoKHR fdInfo{
+        .memory = *memory,
+        .handleType = vk::ExternalMemoryHandleTypeFlagBits::eOpaqueFd
+    };
+
+    int fd = device.getMemoryFdKHR(fdInfo);
+
+    // This file descriptor can now be passed to OpenCL or other APIs
+#endif</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The handle (NT handle on Windows, file descriptor on Linux) is an opaque reference to the GPU memory. You pass this handle to your ML library, which imports it into its own memory management system.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_platform_specific_handle_types"><a class="anchor" href="#_platform_specific_handle_types"></a>Platform-Specific Handle Types</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Different operating systems use different mechanisms for sharing resources between processes and APIs. Understanding these platform-specific details is essential for robust cross-platform support.</p>
+</div>
+<div class="sect2">
+<h3 id="_linux_file_descriptors_and_dma_buf"><a class="anchor" href="#_linux_file_descriptors_and_dma_buf"></a>Linux: File Descriptors and DMA-BUF</h3>
+<div class="paragraph">
+<p>On Linux, the primary mechanism for sharing GPU memory is POSIX file descriptors. Vulkan exports memory as a file descriptor, which other APIs can import.</p>
+</div>
+<div class="paragraph">
+<p><strong>POSIX File Descriptors</strong> - The standard mechanism. File descriptors are integers that reference kernel objects. When you export Vulkan memory as a file descriptor, you&#8217;re getting a reference to the underlying kernel memory object. This works with OpenCL and most other GPU APIs on Linux.</p>
+</div>
+<div class="paragraph">
+<p><strong>DMA-BUF</strong> - A Linux kernel framework specifically designed for sharing buffers between devices. DMA-BUF is particularly important for embedded systems and when working with hardware video encoders/decoders. Vulkan supports DMA-BUF through VK_EXT_external_memory_dma_buf.</p>
+</div>
+<div class="paragraph">
+<p>The key consideration on Linux is file descriptor ownership. File descriptors are reference-counted by the kernel—the memory isn&#8217;t freed until all file descriptors referencing it are closed. When you export a file descriptor from Vulkan, you&#8217;re responsible for closing it when you&#8217;re done (or passing that responsibility to the importing API).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_windows_nt_handles"><a class="anchor" href="#_windows_nt_handles"></a>Windows: NT Handles</h3>
+<div class="paragraph">
+<p>On Windows, the mechanism is NT handles (also called Win32 handles). These are similar in concept to file descriptors but with Windows-specific semantics.</p>
+</div>
+<div class="paragraph">
+<p><strong>Opaque Handles</strong> - The most common type. These are handles that don&#8217;t expose the underlying memory directly—they&#8217;re references managed by the graphics driver. Use VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT_KHR.</p>
+</div>
+<div class="paragraph">
+<p><strong>Named Handles</strong> - Handles that have a name, allowing them to be shared across processes by name. Useful for inter-process communication but less common for ML inference scenarios.</p>
+</div>
+<div class="paragraph">
+<p>Windows handles have different lifetime semantics than Linux file descriptors. When you export a handle, you can specify whether it should be duplicated (creating a new reference) or transferred (moving ownership). For most ML inference scenarios, you want duplication—both Vulkan and the ML library maintain references, and the memory is freed when both release their references.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_macos_and_ios_iosurface"><a class="anchor" href="#_macos_and_ios_iosurface"></a>macOS and iOS: IOSurface</h3>
+<div class="paragraph">
+<p>On Apple platforms, the mechanism is IOSurface, a macOS/iOS framework for sharing surfaces between processes and APIs.</p>
+</div>
+<div class="paragraph">
+<p>IOSurface is specifically designed for image data and provides efficient sharing between Metal (Apple&#8217;s graphics API), Core Image, Core Video, and other frameworks. While Vulkan on macOS/iOS (via MoltenVK) can work with IOSurface, the integration is more complex because you&#8217;re bridging between Vulkan and Metal under the hood.</p>
+</div>
+<div class="paragraph">
+<p>For ML inference on Apple platforms, the typical approach is to use Core ML, which integrates naturally with IOSurface. If you&#8217;re using ONNX Runtime with Core ML execution provider, the runtime handles the IOSurface integration for you.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_android_hardware_buffers"><a class="anchor" href="#_android_hardware_buffers"></a>Android: Hardware Buffers</h3>
+<div class="paragraph">
+<p>Android uses AHardwareBuffer, a framework for sharing buffers between different Android subsystems. AHardwareBuffer is built on top of Linux&#8217;s DMA-BUF but provides a higher-level, Android-specific API.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan on Android supports importing and exporting AHardwareBuffer through VK_ANDROID_external_memory_android_hardware_buffer. This is the standard mechanism for sharing GPU memory with Android&#8217;s ML frameworks (TensorFlow Lite with GPU delegate, NNAPI, etc.).</p>
+</div>
+<div class="paragraph">
+<p>The key advantage of AHardwareBuffer is that it&#8217;s the native Android mechanism—all Android GPU APIs understand it, and the Android framework handles the platform-specific details.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_importing_memory_into_ml_libraries"><a class="anchor" href="#_importing_memory_into_ml_libraries"></a>Importing Memory into ML Libraries</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once you&#8217;ve exported memory from Vulkan, you need to import it into your ML inference library. Each library has its own API for this, but the concepts are similar.</p>
+</div>
+<div class="sect2">
+<h3 id="_onnx_runtime_with_opencl_execution_provider"><a class="anchor" href="#_onnx_runtime_with_opencl_execution_provider"></a>ONNX Runtime with OpenCL Execution Provider</h3>
+<div class="paragraph">
+<p>ONNX Runtime&#8217;s OpenCL execution provider can import external memory using OpenCL&#8217;s external memory extensions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Get OpenCL context and device
+cl_context clContext;
+cl_device_id clDevice;
+// ... initialize OpenCL context and device ...
+
+#ifdef _WIN32
+    // Windows: Import NT handle using cl_khr_external_memory_win32
+    cl_mem_properties_khr props[] = {
+        CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR,
+        (cl_mem_properties_khr)win32Handle,
+        0
+    };
+#else
+    // Linux: Import file descriptor using cl_khr_external_memory_opaque_fd
+    cl_mem_properties_khr props[] = {
+        CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_FD_KHR,
+        (cl_mem_properties_khr)fd,
+        0
+    };
+#endif
+
+// Create OpenCL buffer from external memory
+cl_int err;
+cl_mem clBuffer = clCreateBufferWithProperties(
+    clContext, props, CL_MEM_READ_WRITE, memorySize, nullptr, &amp;err);
+
+// Now clBuffer references the same GPU memory as your Vulkan image
+// You can pass this buffer to ONNX Runtime as input</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Once you have the OpenCL buffer, you can create an ONNX Runtime tensor that wraps it:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create ONNX Runtime tensor from OpenCL memory
+std::vector&lt;int64_t&gt; shape = {1, 3, 1080, 1920}; // NCHW format
+Ort::MemoryInfo memoryInfo("OpenCL", OrtDeviceAllocator, 0, OrtMemTypeDefault);
+Ort::Value inputTensor = Ort::Value::CreateTensor(
+    memoryInfo, clBuffer, memorySize, shape.data(), shape.size(),
+    ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+
+// Run inference with the shared memory tensor</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The key insight: ONNX Runtime doesn&#8217;t copy the data. It runs inference directly on the shared GPU memory.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tensorflow_lite_with_gpu_delegate"><a class="anchor" href="#_tensorflow_lite_with_gpu_delegate"></a>TensorFlow Lite with GPU Delegate</h3>
+<div class="paragraph">
+<p>TensorFlow Lite&#8217;s GPU delegate can work with external memory on Android using AHardwareBuffer:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Export Vulkan memory as AHardwareBuffer (Android-specific)
+vk::AndroidHardwareBufferPropertiesANDROID bufferProperties;
+
+bufferProperties = device.getAndroidHardwareBufferPropertiesANDROID(hardwareBuffer);
+
+// Create TFLite GPU delegate with external memory support
+TfLiteGpuDelegateOptionsV2 options = TfLiteGpuDelegateOptionsV2Default();
+options.experimental_flags |= TFLITE_GPU_EXPERIMENTAL_FLAGS_ENABLE_SERIALIZATION;
+
+TfLiteDelegate* delegate = TfLiteGpuDelegateV2Create(&amp;options);
+
+// Import the hardware buffer into TFLite
+// (This is typically handled by TFLite's GPU delegate automatically when you
+//  provide the buffer through the appropriate API)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>On desktop platforms, TensorFlow Lite&#8217;s GPU delegate integration is more limited. You might need to use OpenCL interop or fall back to CPU-GPU transfers.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_directml_windows"><a class="anchor" href="#_directml_windows"></a>DirectML (Windows)</h3>
+<div class="paragraph">
+<p>DirectML, being a DirectX 12 API, integrates naturally with Vulkan on Windows through shared NT handles:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create DirectML device
+IDMLDevice* dmlDevice;
+DMLCreateDevice(d3d12Device, DML_CREATE_DEVICE_FLAG_NONE, IID_PPV_ARGS(&amp;dmlDevice));
+
+// Import the Vulkan memory as a D3D12 resource
+D3D12_HEAP_PROPERTIES heapProps = {};
+heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+D3D12_RESOURCE_DESC resourceDesc = {};
+resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+resourceDesc.Width = 1920;
+resourceDesc.Height = 1080;
+resourceDesc.DepthOrArraySize = 1;
+resourceDesc.MipLevels = 1;
+resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+resourceDesc.SampleDesc.Count = 1;
+resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+
+ID3D12Resource* sharedResource;
+d3d12Device-&gt;OpenSharedHandle(win32Handle, IID_PPV_ARGS(&amp;sharedResource));
+
+// Create DirectML tensor descriptor wrapping the shared resource
+DML_BUFFER_TENSOR_DESC bufferTensorDesc = {};
+bufferTensorDesc.DataType = DML_TENSOR_DATA_TYPE_FLOAT32;
+bufferTensorDesc.Flags = DML_TENSOR_FLAG_NONE;
+bufferTensorDesc.DimensionCount = 4;
+uint32_t sizes[] = {1, 3, 1080, 1920};
+bufferTensorDesc.Sizes = sizes;
+// ... (additional setup)
+
+// Bind the shared resource to DirectML operators</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>DirectML&#8217;s integration is particularly clean on Windows because both Vulkan and DirectML are built on top of the same underlying Windows graphics infrastructure.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_synchronization_ensuring_correctness"><a class="anchor" href="#_synchronization_ensuring_correctness"></a>Synchronization: Ensuring Correctness</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Sharing memory is only half the battle. You also need to ensure that operations happen in the correct order—Vulkan finishes rendering before ML inference starts reading, and inference finishes before Vulkan uses the results. This requires synchronization.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_synchronization_problem"><a class="anchor" href="#_the_synchronization_problem"></a>The Synchronization Problem</h3>
+<div class="paragraph">
+<p>GPUs are asynchronous. When you submit a command buffer to Vulkan, it returns immediately—the GPU executes the commands later. Similarly, when you launch an OpenCL kernel or DirectML operation, it returns immediately. Without synchronization, you have race conditions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ML inference might start reading before Vulkan finishes rendering (reading incomplete data)</p>
+</li>
+<li>
+<p>Vulkan might start rendering the next frame before ML inference finishes (overwriting data that&#8217;s still being read)</p>
+</li>
+<li>
+<p>Results might not be visible when you expect them (cache coherency issues)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Synchronization primitives solve these problems by providing explicit control over execution order and memory visibility.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_semaphores_and_fences"><a class="anchor" href="#_vulkan_semaphores_and_fences"></a>Vulkan Semaphores and Fences</h3>
+<div class="paragraph">
+<p>Vulkan provides two main synchronization primitives:</p>
+</div>
+<div class="paragraph">
+<p><strong>Semaphores</strong> - GPU-GPU synchronization. Semaphores coordinate work between queues. One queue signals a semaphore when work completes, another queue waits on that semaphore before starting work.</p>
+</div>
+<div class="paragraph">
+<p><strong>Fences</strong> - GPU-CPU synchronization. Fences allow the CPU to wait for GPU work to complete. You signal a fence from the GPU, then wait on it from the CPU.</p>
+</div>
+<div class="paragraph">
+<p>For external synchronization, you need <strong>external semaphores</strong> and <strong>external fences</strong>—versions that can be shared with other APIs.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_external_semaphores"><a class="anchor" href="#_external_semaphores"></a>External Semaphores</h3>
+<div class="paragraph">
+<p>External semaphores work similarly to external memory:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Create exportable semaphore
+vk::ExportSemaphoreCreateInfo exportSemaphoreInfo;
+#ifdef _WIN32
+    exportSemaphoreInfo.handleTypes = vk::ExternalSemaphoreHandleTypeFlagBits::eOpaqueWin32;
+#else
+    exportSemaphoreInfo.handleTypes = vk::ExternalSemaphoreHandleTypeFlagBits::eOpaqueFd;
+#endif
+
+vk::SemaphoreCreateInfo semaphoreInfo{
+    .pNext = &amp;exportSemaphoreInfo
+};
+
+vk::raii::Semaphore renderCompleteSemaphore(device, semaphoreInfo);
+
+// Export the semaphore handle
+#ifdef _WIN32
+    vk::SemaphoreGetWin32HandleInfoKHR handleInfo{
+        .semaphore = *renderCompleteSemaphore,
+        .handleType = vk::ExternalSemaphoreHandleTypeFlagBits::eOpaqueWin32
+    };
+
+    HANDLE semaphoreHandle = device.getSemaphoreWin32HandleKHR(handleInfo);
+#else
+    vk::SemaphoreGetFdInfoKHR fdInfo{
+        .semaphore = *renderCompleteSemaphore,
+        .handleType = vk::ExternalSemaphoreHandleTypeFlagBits::eOpaqueFd
+    };
+
+    int semaphoreFd = device.getSemaphoreFdKHR(fdInfo);
+#endif</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You then import this semaphore into your ML library (e.g., OpenCL):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Import semaphore into OpenCL using cl_khr_semaphore extension
+cl_semaphore_properties_khr props[] = {
+#ifdef _WIN32
+    CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR,
+    CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KHR,
+    (cl_semaphore_properties_khr)semaphoreHandle,
+#else
+    CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR,
+    CL_SEMAPHORE_HANDLE_OPAQUE_FD_KHR,
+    (cl_semaphore_properties_khr)semaphoreFd,
+#endif
+    0
+};
+
+cl_int err;
+cl_semaphore_khr clSemaphore = clCreateSemaphoreWithPropertiesKHR(
+    clContext, props, &amp;err);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now you can coordinate between Vulkan and OpenCL:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Vulkan: Render and signal semaphore
+vk::SubmitInfo submitInfo{
+    .commandBufferCount = 1,
+    .pCommandBuffers = &amp;*renderCommandBuffer,
+    .signalSemaphoreCount = 1,
+    .pSignalSemaphores = &amp;*renderCompleteSemaphore
+};
+
+graphicsQueue.submit(submitInfo);
+
+// OpenCL: Wait on semaphore, then run inference
+clEnqueueWaitSemaphoresKHR(clQueue, 1, &amp;clSemaphore, nullptr, 0, nullptr, nullptr);
+
+// Launch OpenCL kernels (or ONNX Runtime inference) on clQueue
+// They will wait for the semaphore before executing
+
+// OpenCL: Signal another semaphore when inference completes
+clEnqueueSignalSemaphoresKHR(clQueue, 1, &amp;inferenceCompleteSemaphore,
+                             nullptr, 0, nullptr, nullptr);
+
+// Vulkan: Wait on inference complete semaphore before using results
+vk::PipelineStageFlags waitStage = vk::PipelineStageFlagBits::eAllCommands;
+
+vk::SubmitInfo submitInfo2{
+    .waitSemaphoreCount = 1,
+    .pWaitSemaphores = &amp;*inferenceCompleteSemaphore,
+    .pWaitDstStageMask = &amp;waitStage,
+    .commandBufferCount = 1,
+    .pCommandBuffers = &amp;*postProcessCommandBuffer
+};
+
+graphicsQueue.submit(submitInfo2);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This creates a dependency chain: Vulkan renders → signals semaphore → OpenCL waits → OpenCL runs inference → signals semaphore → Vulkan waits → Vulkan uses results. All GPU-side, no CPU involvement, maximum performance.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_timeline_semaphores"><a class="anchor" href="#_timeline_semaphores"></a>Timeline Semaphores</h3>
+<div class="paragraph">
+<p>Vulkan 1.2 introduced timeline semaphores, which are even more powerful. Unlike binary semaphores (signaled or unsignaled), timeline semaphores have a 64-bit counter value. You can wait for specific values and signal specific values, enabling more complex synchronization patterns.</p>
+</div>
+<div class="paragraph">
+<p>Timeline semaphores are particularly useful for pipelining—running multiple frames in flight with ML inference on each frame, where you need to track which frame each operation corresponds to.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_practical_considerations"><a class="anchor" href="#_practical_considerations"></a>Practical Considerations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>GPU resource sharing is powerful but comes with practical challenges. Here are key considerations for robust implementations.</p>
+</div>
+<div class="sect2">
+<h3 id="_memory_layout_and_format_compatibility"><a class="anchor" href="#_memory_layout_and_format_compatibility"></a>Memory Layout and Format Compatibility</h3>
+<div class="paragraph">
+<p>Vulkan and your ML library might have different expectations about memory layout. Vulkan images use implementation-defined tiling for optimal performance, while ML libraries often expect linear layouts (row-major, tightly packed).</p>
+</div>
+<div class="paragraph">
+<p>For sharing to work, you typically need to use VK_IMAGE_TILING_LINEAR, which forces a linear layout that ML libraries can understand. The tradeoff is performance—linear tiling is slower for rendering than optimal tiling.</p>
+</div>
+<div class="paragraph">
+<p>Alternatively, you can use optimal tiling for rendering and insert a layout transition + copy to a linear staging image before ML inference. This adds overhead but might be faster overall if the rendering performance gain outweighs the copy cost.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_format_conversions"><a class="anchor" href="#_format_conversions"></a>Format Conversions</h3>
+<div class="paragraph">
+<p>Vulkan and ML libraries might use different pixel formats. Vulkan commonly uses VK_FORMAT_B8G8R8A8_UNORM (BGRA), while ML models often expect RGB or planar YUV formats. You need to handle these conversions, either in a compute shader before inference or in preprocessing code.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_driver_and_platform_limitations"><a class="anchor" href="#_driver_and_platform_limitations"></a>Driver and Platform Limitations</h3>
+<div class="paragraph">
+<p>Not all drivers support all external memory features. Some older drivers might not support external semaphores, or might support them only for certain memory types. Always check capabilities at runtime and have fallback paths.</p>
+</div>
+<div class="paragraph">
+<p>Mobile platforms, in particular, have more limitations. Android&#8217;s AHardwareBuffer support varies by device and Android version. iOS&#8217;s IOSurface integration through MoltenVK has quirks.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_debugging"><a class="anchor" href="#_debugging"></a>Debugging</h3>
+<div class="paragraph">
+<p>When GPU resource sharing goes wrong, it&#8217;s often hard to debug. Symptoms include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Corruption (reading stale or incomplete data)</p>
+</li>
+<li>
+<p>Crashes (accessing memory that&#8217;s been freed)</p>
+</li>
+<li>
+<p>Hangs (deadlocks from incorrect synchronization)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Use validation layers aggressively. Enable Vulkan validation layers, OpenCL&#8217;s built-in error checking, and any debugging tools your ML library provides. Insert explicit synchronization (fences, clFinish) during debugging to isolate timing issues.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>GPU resource sharing is the key to efficient ML inference in Vulkan applications. By sharing memory directly between Vulkan and ML libraries, you eliminate expensive CPU roundtrips and reduce memory usage.</p>
+</div>
+<div class="paragraph">
+<p>The foundation is Vulkan&#8217;s external memory extensions, which allow allocating memory that can be exported to other APIs. Platform-specific mechanisms (file descriptors on Linux, NT handles on Windows, IOSurface on macOS, AHardwareBuffer on Android) enable the actual sharing.</p>
+</div>
+<div class="paragraph">
+<p>Each ML library has its own API for importing external memory—OpenCL&#8217;s external memory extensions for ONNX Runtime, AHardwareBuffer for TensorFlow Lite on Android, D3D12 resource sharing for DirectML. The concepts are similar across libraries: export from Vulkan, import into the ML library, synchronize with external semaphores.</p>
+</div>
+<div class="paragraph">
+<p>The result is zero-copy, GPU-to-GPU data flow that makes real-time ML inference feasible in graphics applications. The implementation complexity is significant, but the performance gains are essential for demanding use cases.</p>
+</div>
+<div class="paragraph">
+<p><a href="06_integration_patterns.html" class="xref page">Previous: Integration Patterns</a> | <a href="08_data_transfer_optimization.html" class="xref page">Next: Data Transfer Optimization</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

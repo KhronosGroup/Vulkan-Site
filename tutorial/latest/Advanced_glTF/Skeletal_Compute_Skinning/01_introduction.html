@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Advanced Skeletal &amp; Compute Skinning :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Skeletal_Compute_Skinning/01_introduction.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Skeletal &amp; Compute Skinning</li>
+    <li><a href="01_introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Advanced Skeletal &amp; Compute Skinning</h1>
+<div class="sect1">
+<h2 id="_what_skinning_actually_is"><a class="anchor" href="#_what_skinning_actually_is"></a>What Skinning Actually Is</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you have worked through the "Building a Simple Engine" series, you have already seen skeletal animation in action. We loaded a glTF file, parsed its animation channels, and updated the bone matrices each frame to move the model&#8217;s joints. But in that tutorial, we deliberately kept things straightforward: the mesh deformation—the actual process of making the vertices <strong>follow</strong> the bones—happened in the vertex shader, one vertex at a time, as part of the normal rasterization pipeline.</p>
+</div>
+<div class="paragraph">
+<p>That approach works. For simple scenes with a handful of animated characters, it is perfectly acceptable. But it carries a hidden cost that only becomes apparent at scale: every system that needs access to the deformed mesh has to do the math itself, in isolation.</p>
+</div>
+<div class="paragraph">
+<p>Think about what happens when you add physics to your scene. Your character&#8217;s ragdoll needs to know where the mesh surface is so that environmental objects collide with the <strong>animated</strong> body, not with the original T-pose. But your physics engine doesn&#8217;t know about your vertex shader. It can&#8217;t see the deformed positions. So either you run an entire second skinning calculation on the CPU for the physics system, or you accept that your physics colliders will be in the wrong place—an approximation that looks increasingly bad the more dramatic the animation.</p>
+</div>
+<div class="paragraph">
+<p>Add ray tracing to that picture and the problem compounds. A Vulkan Ray Tracing Acceleration Structure—the data structure that enables effects like reflections, ambient occlusion, and ray-traced shadows—is built from the mesh&#8217;s vertex positions. If those positions are still in T-pose because the skinning only happens in the rasterization vertex shader, then your shadows and reflections will be cast by a lifeless mannequin instead of your animated character.</p>
+</div>
+<div class="paragraph">
+<p>The solution to all of these problems is a strategy we call <strong>"Skin Once, Use Everywhere."</strong> Instead of skinning the mesh as a side effect of rendering it, we skin the mesh <strong>first</strong>, as a dedicated step, and store the resulting deformed vertex positions in a GPU buffer. The rasterizer, the ray tracer, and the physics system all then read from that <strong>same</strong> buffer. Every system sees the correct, animated mesh, and we only do the expensive deformation math once per frame.</p>
+</div>
+<div class="paragraph">
+<p>Implementing this strategy requires moving the skinning work from the vertex shader into a <strong>Vulkan Compute Shader</strong>. This chapter is about building that compute-based skinning pipeline from the ground up.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_you_need_to_know_first"><a class="anchor" href="#_what_you_need_to_know_first"></a>What You Need to Know First</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into the implementation, it is worth being explicit about what this chapter assumes you already understand, and what it will teach you from scratch.</p>
+</div>
+<div class="paragraph">
+<p>You should be comfortable with the basics of glTF skeletal animation from the "Building a Simple Engine" series. Specifically, you should understand what <strong>joints</strong> and <strong>skins</strong> are in a glTF file, how animation channels drive bone transformations over time, and how the <code>AnimationSampler</code> and <code>AnimationChannel</code> structures work together to produce a pose. If any of those terms are unfamiliar, you should revisit that material before continuing here.</p>
+</div>
+<div class="paragraph">
+<p>You should also have a solid grasp of the <strong>Scene Graph</strong> system we built in the previous chapter of this series. The skinning system we are about to build is deeply integrated with that hierarchy. We will be reading joint world matrices directly from our <code>Node</code> array, so understanding how those matrices are calculated and cached using the Dirty Flag pattern is essential.</p>
+</div>
+<div class="paragraph">
+<p>What this chapter <strong>will</strong> teach you is the mathematical relationship between a vertex&#8217;s rest position and its animated position—specifically, the role of the <strong>Inverse Bind Matrix</strong> and how it anchors the skinning calculation to the original T-pose. It will then show you how to encode that math in a Vulkan Compute shader, how to manage the input and output buffers, and how to structure the pipeline so that the output can be consumed by multiple downstream systems simultaneously.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_plan_for_this_chapter"><a class="anchor" href="#_the_plan_for_this_chapter"></a>The Plan for This Chapter</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We will build this system in layers. First, we will establish the mathematical foundation—exactly what computation we need to perform on each vertex, and why. Without understanding the math, the shader code is just a sequence of matrix multiplications that produce magic. With it, every line of the shader becomes a deliberate, principled step.</p>
+</div>
+<div class="paragraph">
+<p>Second, we will design and implement the Vulkan Compute pipeline. This involves creating shader storage buffers for the input vertices, the joint matrices, and the output vertices, writing the compute shader in Slang, and dispatching it correctly each frame.</p>
+</div>
+<div class="paragraph">
+<p>Third, we will wire up the output buffer as a shared resource. We will show how the rasterization pipeline reads from it instead of the original vertex buffer, how to use it as the geometry source for a ray tracing Bottom-Level Acceleration Structure (BLAS), and how to expose it to a physics system for accurate collision queries.</p>
+</div>
+<div class="paragraph">
+<p>Finally, we will tackle the more sophisticated aspects of animation: <strong>cubic spline interpolation</strong> for smooth, natural movement, and <strong>cross-fade blending</strong> for transitioning between animation clips—including the critical case of blending from a scripted animation into a physics-driven ragdoll.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_skinning_math.html" class="xref page">Next: The Mathematics of Skinning</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

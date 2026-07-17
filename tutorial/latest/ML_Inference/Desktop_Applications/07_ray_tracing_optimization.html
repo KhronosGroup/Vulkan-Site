@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Ray Tracing Optimization: Denoising and Adaptive Sampling :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Desktop_Applications/07_ray_tracing_optimization.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Desktop Applications</li>
+    <li><a href="07_ray_tracing_optimization.html">Ray Tracing Optimization</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Ray Tracing Optimization: Denoising and Adaptive Sampling</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Ray tracing is the "holy grail" of graphics, but it&#8217;s computationally expensive. Even with modern Vulkan Ray Tracing extensions (<code>VK_KHR_ray_tracing_pipeline</code>), rendering a scene with enough samples to be noise-free in real-time is often impossible on current hardware.</p>
+</div>
+<div class="paragraph">
+<p>If you cast only 1 or 2 rays per pixel, your render will look like "salt and pepper" noise. To get a clean image, you might need 1000+ rays per pixel, which would take seconds or even minutes per frame. In this chapter, we&#8217;re going to use ML to bridge that gap, taking a "noisy" 1-sample-per-pixel (1spp) render and using AI to turn it into a production-quality image.</p>
+</div>
+<div class="paragraph">
+<p>This isn&#8217;t just about "faking" it. We are using the laws of probability and neural networks to intelligently reconstruct the physics that our hardware doesn&#8217;t have time to calculate. By the end of this chapter, you&#8217;ll understand how to build a pipeline that makes a single ray work like a thousand.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_physics_of_noise_why_ray_tracing_is_hard"><a class="anchor" href="#_the_physics_of_noise_why_ray_tracing_is_hard"></a>The Physics of Noise: Why Ray Tracing is Hard</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To understand why we need AI, we first have to understand why Ray Tracing is so noisy.</p>
+</div>
+<div class="paragraph">
+<p>In a traditional rasterizer, you draw a triangle, and you know exactly what color every pixel should be because the math is deterministic. You project the 3D coordinates to 2D screen space, interpolate the vertex attributes, and run a fragment shader. The result is "sharp" but often lacks the subtle interplay of light—reflections, soft shadows, and global illumination.</p>
+</div>
+<div class="paragraph">
+<p>In Ray Tracing, we move from deterministic projection to <strong>Monte Carlo integration</strong>. We are trying to solve a complex integral called the <strong>Rendering Equation</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_rendering_equation_a_quick_primer"><a class="anchor" href="#_the_rendering_equation_a_quick_primer"></a>The Rendering Equation: A Quick Primer</h3>
+<div class="paragraph">
+<p>The Rendering Equation is the mathematical heart of graphics. It states that the light leaving a point is the sum of the light it emits itself, plus all the light hitting that point from the surrounding environment that reflects toward your eye.</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -2.028ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="56.289ex" height="5.107ex" role="img" focusable="false" viewBox="0 -1361 24879.9 2257.4"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D43F" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></g><g data-mml-node="mi" transform="translate(714,-150) scale(0.707)"><path data-c="1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path></g></g><g data-mml-node="mo" transform="translate(1106.9,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(1495.9,0)"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mo" transform="translate(1998.9,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(2443.6,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path></g></g><g data-mml-node="mo" transform="translate(3491.6,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="mo" transform="translate(4158.3,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="msub" transform="translate(5214.1,0)"><g data-mml-node="mi"><path data-c="1D43F" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></g><g data-mml-node="mi" transform="translate(714,-150) scale(0.707)"><path data-c="1D452" d="M39 168Q39 225 58 272T107 350T174 402T244 433T307 442H310Q355 442 388 420T421 355Q421 265 310 237Q261 224 176 223Q139 223 138 221Q138 219 132 186T125 128Q125 81 146 54T209 26T302 45T394 111Q403 121 406 121Q410 121 419 112T429 98T420 82T390 55T344 24T281 -1T205 -11Q126 -11 83 42T39 168ZM373 353Q367 405 305 405Q272 405 244 391T199 357T170 316T154 280T149 261Q149 260 169 260Q282 260 327 284T373 353Z"></path></g></g><g data-mml-node="mo" transform="translate(6307.6,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(6696.6,0)"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mo" transform="translate(7199.6,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(7644.3,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path></g></g><g data-mml-node="mo" transform="translate(8692.2,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="mo" transform="translate(9303.5,0)"><path data-c="2B" d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path></g><g data-mml-node="msub" transform="translate(10303.7,0)"><g data-mml-node="mo" transform="translate(0 1)"><path data-c="222B" d="M114 -798Q132 -824 165 -824H167Q195 -824 223 -764T275 -600T320 -391T362 -164Q365 -143 367 -133Q439 292 523 655T645 1127Q651 1145 655 1157T672 1201T699 1257T733 1306T777 1346T828 1360Q884 1360 912 1325T944 1245Q944 1220 932 1205T909 1186T887 1183Q866 1183 849 1198T832 1239Q832 1287 885 1296L882 1300Q879 1303 874 1307T866 1313Q851 1323 833 1323Q819 1323 807 1311T775 1255T736 1139T689 936T633 628Q574 293 510 -5T410 -437T355 -629Q278 -862 165 -862Q125 -862 92 -831T55 -746Q55 -711 74 -698T112 -685Q133 -685 150 -700T167 -741Q167 -789 114 -798Z"></path></g><g data-mml-node="TeXAtom" transform="translate(589,-896.4) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mi"><path data-c="3A9" d="M55 454Q55 503 75 546T127 617T197 665T272 695T337 704H352Q396 704 404 703Q527 687 596 615T666 454Q666 392 635 330T559 200T499 83V80H543Q589 81 600 83T617 93Q622 102 629 135T636 172L637 177H677V175L660 89Q645 3 644 2V0H552H488Q461 0 456 3T451 20Q451 89 499 235T548 455Q548 512 530 555T483 622T424 656T361 668Q332 668 303 658T243 626T193 560T174 456Q174 380 222 233T270 20Q270 7 263 0H77V2Q76 3 61 89L44 175V177H84L85 172Q85 171 88 155T96 119T104 93Q109 86 120 84T178 80H222V83Q206 132 162 199T87 329T55 454Z"></path></g></g></g><g data-mml-node="msub" transform="translate(11619.9,0)"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><path data-c="1D45F" d="M21 287Q22 290 23 295T28 317T38 348T53 381T73 411T99 433T132 442Q161 442 183 430T214 408T225 388Q227 382 228 382T236 389Q284 441 347 441H350Q398 441 422 400Q430 381 430 363Q430 333 417 315T391 292T366 288Q346 288 334 299T322 328Q322 376 378 392Q356 405 342 405Q286 405 239 331Q229 315 224 298T190 165Q156 25 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 114 189T154 366Q154 405 128 405Q107 405 92 377T68 316T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mo" transform="translate(12511.8,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(12900.8,0)"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mo" transform="translate(13403.8,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(13848.5,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mo" transform="translate(14797.4,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(15242.1,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path></g></g><g data-mml-node="mo" transform="translate(16290,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="msub" transform="translate(16679,0)"><g data-mml-node="mi"><path data-c="1D43F" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></g><g data-mml-node="mi" transform="translate(714,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mo" transform="translate(17687,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(18076,0)"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g><g data-mml-node="mo" transform="translate(18579,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="msub" transform="translate(19023.6,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mo" transform="translate(19972.6,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="mo" transform="translate(20361.6,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="msub" transform="translate(20750.6,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mo" transform="translate(21921.8,0)"><path data-c="22C5" d="M78 250Q78 274 95 292T138 310Q162 310 180 294T199 251Q199 226 182 208T139 190T96 207T78 250Z"></path></g><g data-mml-node="mi" transform="translate(22422,0)"><path data-c="1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path></g><g data-mml-node="mo" transform="translate(23022,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="mi" transform="translate(23411,0)"><path data-c="1D451" d="M366 683Q367 683 438 688T511 694Q523 694 523 686Q523 679 450 384T375 83T374 68Q374 26 402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487H491Q506 153 506 145Q506 140 503 129Q490 79 473 48T445 8T417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157Q33 205 53 255T101 341Q148 398 195 420T280 442Q336 442 364 400Q369 394 369 396Q370 400 396 505T424 616Q424 629 417 632T378 637H357Q351 643 351 645T353 664Q358 683 366 683ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g><g data-mml-node="msub" transform="translate(23931,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p>Don&#8217;t let the math scare you. Here&#8217;s the human translation:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><span class="steminline"> <svg style="vertical-align: -0.357ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.504ex" height="1.902ex" role="img" focusable="false" viewBox="0 -683 1106.9 840.8"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D43F" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></g><g data-mml-node="mi" transform="translate(714,-150) scale(0.707)"><path data-c="1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path></g></g></g></g></svg> </span></strong>: The light leaving point <span class="steminline"> <svg style="vertical-align: -0.439ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.138ex" height="1.439ex" role="img" focusable="false" viewBox="0 -442 503 636"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D45D" d="M23 287Q24 290 25 295T30 317T40 348T55 381T75 411T101 433T134 442Q209 442 230 378L240 387Q302 442 358 442Q423 442 460 395T497 281Q497 173 421 82T249 -10Q227 -10 210 -4Q199 1 187 11T168 28L161 36Q160 35 139 -51T118 -138Q118 -144 126 -145T163 -148H188Q194 -155 194 -157T191 -175Q188 -187 185 -190T172 -194Q170 -194 161 -194T127 -193T65 -192Q-5 -192 -24 -194H-32Q-39 -187 -39 -183Q-37 -156 -26 -148H-6Q28 -147 33 -136Q36 -130 94 103T155 350Q156 355 156 364Q156 405 131 405Q109 405 94 377T71 316T59 280Q57 278 43 278H29Q23 284 23 287ZM178 102Q200 26 252 26Q282 26 310 49T356 107Q374 141 392 215T411 325V331Q411 405 350 405Q339 405 328 402T306 393T286 380T269 365T254 350T243 336T235 326L232 322Q232 321 229 308T218 264T204 212Q178 106 178 102Z"></path></g></g></g></svg> </span> toward your eye (<span class="steminline"> <svg style="vertical-align: -0.357ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.371ex" height="1.359ex" role="img" focusable="false" viewBox="0 -443 1047.9 600.8"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D45C" d="M201 -11Q126 -11 80 38T34 156Q34 221 64 279T146 380Q222 441 301 441Q333 441 341 440Q354 437 367 433T402 417T438 387T464 338T476 268Q476 161 390 75T201 -11ZM121 120Q121 70 147 48T206 26Q250 26 289 58T351 142Q360 163 374 216T388 308Q388 352 370 375Q346 405 306 405Q243 405 195 347Q158 303 140 230T121 120Z"></path></g></g></g></g></svg> </span>).</p>
+</li>
+<li>
+<p><strong><span class="steminline"> <svg style="vertical-align: -0.357ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.474ex" height="1.902ex" role="img" focusable="false" viewBox="0 -683 1093.5 840.8"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D43F" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></g><g data-mml-node="mi" transform="translate(714,-150) scale(0.707)"><path data-c="1D452" d="M39 168Q39 225 58 272T107 350T174 402T244 433T307 442H310Q355 442 388 420T421 355Q421 265 310 237Q261 224 176 223Q139 223 138 221Q138 219 132 186T125 128Q125 81 146 54T209 26T302 45T394 111Q403 121 406 121Q410 121 419 112T429 98T420 82T390 55T344 24T281 -1T205 -11Q126 -11 83 42T39 168ZM373 353Q367 405 305 405Q272 405 244 391T199 357T170 316T154 280T149 261Q149 260 169 260Q282 260 327 284T373 353Z"></path></g></g></g></g></svg> </span></strong>: The light the surface emits (like a neon sign).</p>
+</li>
+<li>
+<p><strong>The Integral (<span class="steminline"> <svg style="vertical-align: -0.691ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.38ex" height="2.514ex" role="img" focusable="false" viewBox="0 -805.5 610 1111"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo" transform="translate(0 0.5)"><path data-c="222B" d="M113 -244Q113 -246 119 -251T139 -263T167 -269Q186 -269 199 -260Q220 -247 232 -218T251 -133T262 -15T276 155T297 367Q300 390 305 438T314 512T325 580T340 647T361 703T390 751T428 784T479 804Q481 804 488 804T501 805Q552 802 581 769T610 695Q610 669 594 657T561 645Q542 645 527 658T512 694Q512 705 516 714T526 729T538 737T548 742L552 743Q552 745 545 751T525 762T498 768Q475 768 460 756T434 716T418 652T407 559T398 444T387 300T369 133Q349 -38 337 -102T303 -207Q256 -306 169 -306Q119 -306 87 -272T55 -196Q55 -170 71 -158T104 -146Q123 -146 138 -159T153 -195Q153 -206 149 -215T139 -230T127 -238T117 -242L113 -244Z"></path></g></g></g></svg> </span>)</strong>: This is the hard part. It says "look at every possible direction (<span class="steminline"> <svg style="vertical-align: 0; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.633ex" height="1.593ex" role="img" focusable="false" viewBox="0 -704 722 704"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="3A9" d="M55 454Q55 503 75 546T127 617T197 665T272 695T337 704H352Q396 704 404 703Q527 687 596 615T666 454Q666 392 635 330T559 200T499 83V80H543Q589 81 600 83T617 93Q622 102 629 135T636 172L637 177H677V175L660 89Q645 3 644 2V0H552H488Q461 0 456 3T451 20Q451 89 499 235T548 455Q548 512 530 555T483 622T424 656T361 668Q332 668 303 658T243 626T193 560T174 456Q174 380 222 233T270 20Q270 7 263 0H77V2Q76 3 61 89L44 175V177H84L85 172Q85 171 88 155T96 119T104 93Q109 86 120 84T178 80H222V83Q206 132 162 199T87 329T55 454Z"></path></g></g></g></svg> </span>) that light could be coming from."</p>
+</li>
+<li>
+<p><strong><span class="steminline"> <svg style="vertical-align: -0.464ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.018ex" height="2.059ex" role="img" focusable="false" viewBox="0 -705 891.9 910"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><path data-c="1D45F" d="M21 287Q22 290 23 295T28 317T38 348T53 381T73 411T99 433T132 442Q161 442 183 430T214 408T225 388Q227 382 228 382T236 389Q284 441 347 441H350Q398 441 422 400Q430 381 430 363Q430 333 417 315T391 292T366 288Q346 288 334 299T322 328Q322 376 378 392Q356 405 342 405Q286 405 239 331Q229 315 224 298T190 165Q156 25 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 114 189T154 366Q154 405 128 405Q107 405 92 377T68 316T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g></g></g></svg> </span></strong>: The material&#8217;s property (BRDF). Is it shiny? Is it matte?</p>
+</li>
+<li>
+<p><strong><span class="steminline"> <svg style="vertical-align: -0.357ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.28ex" height="1.902ex" role="img" focusable="false" viewBox="0 -683 1008 840.8"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D43F" d="M228 637Q194 637 192 641Q191 643 191 649Q191 673 202 682Q204 683 217 683Q271 680 344 680Q485 680 506 683H518Q524 677 524 674T522 656Q517 641 513 637H475Q406 636 394 628Q387 624 380 600T313 336Q297 271 279 198T252 88L243 52Q243 48 252 48T311 46H328Q360 46 379 47T428 54T478 72T522 106T564 161Q580 191 594 228T611 270Q616 273 628 273H641Q647 264 647 262T627 203T583 83T557 9Q555 4 553 3T537 0T494 -1Q483 -1 418 -1T294 0H116Q32 0 32 10Q32 17 34 24Q39 43 44 45Q48 46 59 46H65Q92 46 125 49Q139 52 144 61Q147 65 216 339T285 628Q285 635 228 637Z"></path></g><g data-mml-node="mi" transform="translate(714,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g></g></g></svg> </span></strong>: The light coming <strong>in</strong> from that direction.</p>
+</li>
+<li>
+<p><strong><span class="steminline"> <svg style="vertical-align: -0.566ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="6.899ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 3049.4 1000"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="msub" transform="translate(389,0)"><g data-mml-node="mi"><path data-c="1D714" d="M495 384Q495 406 514 424T555 443Q574 443 589 425T604 364Q604 334 592 278T555 155T483 38T377 -11Q297 -11 267 66Q266 68 260 61Q201 -11 125 -11Q15 -11 15 139Q15 230 56 325T123 434Q135 441 147 436Q160 429 160 418Q160 406 140 379T94 306T62 208Q61 202 61 187Q61 124 85 100T143 76Q201 76 245 129L253 137V156Q258 297 317 297Q348 297 348 261Q348 243 338 213T318 158L308 135Q309 133 310 129T318 115T334 97T358 83T393 76Q456 76 501 148T546 274Q546 305 533 325T508 357T495 384Z"></path></g><g data-mml-node="mi" transform="translate(655,-150) scale(0.707)"><path data-c="1D456" d="M184 600Q184 624 203 642T247 661Q265 661 277 649T290 619Q290 596 270 577T226 557Q211 557 198 567T184 600ZM21 287Q21 295 30 318T54 369T98 420T158 442Q197 442 223 419T250 357Q250 340 236 301T196 196T154 83Q149 61 149 51Q149 26 166 26Q175 26 185 29T208 43T235 78T260 137Q263 149 265 151T282 153Q302 153 302 143Q302 135 293 112T268 61T223 11T161 -11Q129 -11 102 10T74 74Q74 91 79 106T122 220Q160 321 166 341T173 380Q173 404 156 404H154Q124 404 99 371T61 287Q60 286 59 284T58 281T56 279T53 278T49 278T41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mo" transform="translate(1560.2,0)"><path data-c="22C5" d="M78 250Q78 274 95 292T138 310Q162 310 180 294T199 251Q199 226 182 208T139 190T96 207T78 250Z"></path></g><g data-mml-node="mi" transform="translate(2060.4,0)"><path data-c="1D45B" d="M21 287Q22 293 24 303T36 341T56 388T89 425T135 442Q171 442 195 424T225 390T231 369Q231 367 232 367L243 378Q304 442 382 442Q436 442 469 415T503 336T465 179T427 52Q427 26 444 26Q450 26 453 27Q482 32 505 65T540 145Q542 153 560 153Q580 153 580 145Q580 144 576 130Q568 101 554 73T508 17T439 -10Q392 -10 371 17T350 73Q350 92 386 193T423 345Q423 404 379 404H374Q288 404 229 303L222 291L189 157Q156 26 151 16Q138 -11 108 -11Q95 -11 87 -5T76 7T74 17Q74 30 112 180T152 343Q153 348 153 366Q153 405 129 405Q91 405 66 305Q60 285 60 284Q58 278 41 278H27Q21 284 21 287Z"></path></g><g data-mml-node="mo" transform="translate(2660.4,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g></g></g></svg> </span></strong>: A correction factor for the angle of the light.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In a perfect world, we would solve this integral by checking every single photon. In a computer, we use <strong>Monte Carlo sampling</strong>. We pick a few random directions, see what color they are, and average them.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_disco_ball_problem_visualizing_variance"><a class="anchor" href="#_the_disco_ball_problem_visualizing_variance"></a>The Disco Ball Problem: Visualizing Variance</h3>
+<div class="paragraph">
+<p>Imagine you&#8217;re trying to figure out the average color of a disco ball in a dark room with a single spotlight.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>You shoot a single ray at the ball.</p>
+</li>
+<li>
+<p>It hits a tiny mirror.</p>
+</li>
+<li>
+<p>If that mirror happens to reflect the spotlight, the pixel is <strong>pure white (10,000.0 brightness)</strong>.</p>
+</li>
+<li>
+<p>If it reflects a dark wall, the pixel is <strong>pure black (0.0 brightness)</strong>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>At 1 Sample Per Pixel (1spp), your image is a mess of black and white dots. This is called <strong>Variance</strong>. Mathematically, variance is the average of the squared differences from the mean. In graphics, it’s the "salt and pepper" noise that ruins your render.</p>
+</div>
+<div class="paragraph">
+<p>In graphics, the noise you see is literally the mathematical "error" of your guess. As you increase the number of rays (samples), the noise decreases according to the <strong>Law of Large Numbers</strong>, but it happens slowly—the error decreases by the square root of the number of samples (<span class="steminline"> <svg style="vertical-align: -0.566ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="6.201ex" height="2.758ex" role="img" focusable="false" viewBox="0 -969 2741 1219"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path></g><g data-mml-node="TeXAtom" data-mjx-texclass="ORD" transform="translate(500,0)"><g data-mml-node="mo"><path data-c="2F" d="M423 750Q432 750 438 744T444 730Q444 725 271 248T92 -240Q85 -250 75 -250Q68 -250 62 -245T56 -231Q56 -221 230 257T407 740Q411 750 423 750Z"></path></g></g><g data-mml-node="msqrt" transform="translate(1000,0)"><g transform="translate(853,0)"><g data-mml-node="mi"><path data-c="1D441" d="M234 637Q231 637 226 637Q201 637 196 638T191 649Q191 676 202 682Q204 683 299 683Q376 683 387 683T401 677Q612 181 616 168L670 381Q723 592 723 606Q723 633 659 637Q635 637 635 648Q635 650 637 660Q641 676 643 679T653 683Q656 683 684 682T767 680Q817 680 843 681T873 682Q888 682 888 672Q888 650 880 642Q878 637 858 637Q787 633 769 597L620 7Q618 0 599 0Q585 0 582 2Q579 5 453 305L326 604L261 344Q196 88 196 79Q201 46 268 46H278Q284 41 284 38T282 19Q278 6 272 0H259Q228 2 151 2Q123 2 100 2T63 2T46 1Q31 1 31 10Q31 14 34 26T39 40Q41 46 62 46Q130 49 150 85Q154 91 221 362L289 634Q287 635 234 637Z"></path></g></g><g data-mml-node="mo" transform="translate(0,109)"><path data-c="221A" d="M95 178Q89 178 81 186T72 200T103 230T169 280T207 309Q209 311 212 311H213Q219 311 227 294T281 177Q300 134 312 108L397 -77Q398 -77 501 136T707 565T814 786Q820 800 834 800Q841 800 846 794T853 782V776L620 293L385 -193Q381 -200 366 -200Q357 -200 354 -197Q352 -195 256 15L160 225L144 214Q129 202 113 190T95 178Z"></path></g><rect width="888" height="60" x="853" y="849"></rect></g></g></g></svg> </span>). To cut the noise in half, you need <span class="steminline"> <svg style="vertical-align: 0; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.891ex" height="1.532ex" role="img" focusable="false" viewBox="0 -677 1278 677"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path></g><g data-mml-node="mo" transform="translate(500,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> more rays. To cut it by <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="4.023ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 1778 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path></g><g data-mml-node="mo" transform="translate(1000,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span>, you need <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="5.154ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 2278 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(1000,0)"></path></g><g data-mml-node="mo" transform="translate(1500,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> more rays!</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_traditional_filters_fail"><a class="anchor" href="#_why_traditional_filters_fail"></a>Why Traditional Filters Fail</h3>
+<div class="paragraph">
+<p>Simple blurs (like Gaussian or Bilinear filters) try to fix this by averaging nearby pixels. But a blur is a "dumb" operator—it doesn&#8217;t know the difference between "noise" and "a sharp edge."</p>
+</div>
+<div class="paragraph">
+<p>If you have a sharp black-to-white edge (like a shadow) and you blur it, you get a grey smudge. You&#8217;ve removed the noise, but you&#8217;ve also destroyed the geometry of the scene.</p>
+</div>
+<div class="paragraph">
+<p>We use AI to solve this because a Neural Network can be trained to recognize the <strong>patterns</strong> of noise and separate them from the <strong>patterns</strong> of geometry. It learns that a "dot" of bright light on a curved surface is likely a specular highlight, not a random artifact. It "sees" the context.</p>
+</div>
+<div class="paragraph">
+<p>To solve this without waiting for 1,000 rays per frame, we use a three-stage AI pipeline:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Denoising</strong>: Reconstructing the missing detail from a noisy 1spp frame by learning from millions of high-quality examples.</p>
+</li>
+<li>
+<p><strong>Adaptive Sampling</strong>: Using a second, tiny AI to predict which pixels are "difficult" (high variance) and need more rays <strong>before</strong> we render them.</p>
+</li>
+<li>
+<p><strong>Temporal Stability</strong>: Blending multiple frames together over time using motion vectors and AI to eliminate "ghosting" artifacts.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_technique_1_ai_denoising_the_u_net"><a class="anchor" href="#_technique_1_ai_denoising_the_u_net"></a>Technique 1: AI Denoising (The U-Net)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>AI Denoising is a <strong>reconstruction</strong> task. We aren&#8217;t just smoothing pixels; we are asking a neural network to look at a noisy patch and "hallucinate" the clean version based on millions of examples it has seen during training.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_vocabulary_tensors_and_channels"><a class="anchor" href="#_the_vocabulary_tensors_and_channels"></a>The Vocabulary: Tensors and Channels</h3>
+<div class="paragraph">
+<p>Before we look at the architecture, we need to speak the same language. In machine learning, we don&#8217;t just talk about "images"; we talk about <strong>Tensors</strong>.</p>
+</div>
+<div class="paragraph">
+<p>A Tensor is just a multi-dimensional array. A standard color pixel in your Vulkan swapchain has three <strong>Channels</strong>: Red, Green, and Blue (RGB). You can think of these as three separate "sheets" of data stacked on top of each other.</p>
+</div>
+<div class="paragraph">
+<p>In AI-enhanced graphics, we extend this concept. We can stack any data we want into these "sheets." If we add a sheet for <strong>Depth</strong> and three sheets for <strong>Surface Normals</strong> (X, Y, Z), we now have a 7-channel tensor. The AI treats these extra channels as "hints" or "auxiliary buffers." These buffers are noise-free because they come from the first hit of the ray (the G-Buffer), giving the AI a stable "skeleton" to rebuild the noisy lighting on top of.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_architecture_how_the_u_net_sees_detail"><a class="anchor" href="#_the_architecture_how_the_u_net_sees_detail"></a>The Architecture: How the U-Net Sees Detail</h3>
+<div class="paragraph">
+<p>The industry standard for reconstruction is the <strong>U-Net</strong>. It was originally designed for medical imaging (finding tumors in noisy X-rays), but it turns out to be perfect for finding "clean pixels" in noisy renders.</p>
+</div>
+<div class="paragraph">
+<p>The U-Net is designed specifically to handle the <strong>Scale Problem</strong> in images.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/ML_Inference/Desktop_Applications/rt_denoising_diagram.svg" alt="U-Net diagram showing Encoder" width="Decoder" height="and Skip Connections">
+</div>
+<div class="title">Figure 1. AI Denoising Architecture (U-Net)</div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s break down the three parts of the "U" in detail:</p>
+</div>
+<div class="sect3">
+<h4 id="_1_the_encoder_compression_and_context"><a class="anchor" href="#_1_the_encoder_compression_and_context"></a>1. The Encoder: Compression and Context</h4>
+<div class="paragraph">
+<p>The first half of the "U" is a series of downsampling steps. Each step consists of a <strong>Double Convolution</strong> followed by a <strong>MaxPooling</strong> layer.</p>
+</div>
+<div class="sect4">
+<h5 id="_the_mathematics_of_a_3x3_convolution"><a class="anchor" href="#_the_mathematics_of_a_3x3_convolution"></a>The Mathematics of a 3x3 Convolution</h5>
+<div class="paragraph">
+<p>What actually happens inside that <code>nn.Conv2d(3, 32, 3)</code> call?</p>
+</div>
+<div class="paragraph">
+<p>Imagine a 3x3 grid of weights (the <strong>Kernel</strong>). As this kernel slides across your image, it performs a "Weighted Sum" of the pixels it currently covers.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Conceptual Convolution in C++
+float kernel[3][3] = {
+    {-1, -1, -1},
+    {-1,  8, -1},
+    {-1, -1, -1}
+}; // This is a simple edge-detection kernel
+
+float output_pixel = 0;
+for(int i = -1; i &lt;= 1; i++) {
+    for(int j = -1; j &lt;= 1; j++) {
+        output_pixel += input_image[y+i][x+j] * kernel[i+1][j+1];
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the kernel covers a flat area (all pixels same color), the output is zero. If it covers an edge, the output is a high number. In a denoiser, the AI doesn&#8217;t just have one kernel; it has <strong>32 or 64 kernels</strong> per layer. Some learn to find horizontal edges, some find "firefly" noise patterns, and some find texture gradients.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_why_double_convolutions"><a class="anchor" href="#_why_double_convolutions"></a>Why Double Convolutions?</h5>
+<div class="paragraph">
+<p>We apply two 3x3 filters back-to-back. The first layer finds "primitive" features (edges). The second layer sees the output of the first and finds "complex" features (curves, corners, or noise clusters). This increases the <strong>Effective Receptive Field</strong> without requiring expensive large filters (like 7x7).</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_maxpooling_2x2_the_scale_shift"><a class="anchor" href="#_maxpooling_2x2_the_scale_shift"></a>MaxPooling (2x2): The Scale Shift</h5>
+<div class="paragraph">
+<p>After the convolutions, we reduce the resolution by half.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Mechanism</strong>: We look at every 2x2 block of pixels and keep only the largest value.</p>
+</li>
+<li>
+<p><strong>The Intuition</strong>: A 3x3 convolution filter on a 1080p image only sees a tiny 3-pixel area. It has no context. It can&#8217;t tell if a white pixel is a "firefly" (a bright noise artifact) or a small light bulb.</p>
+</li>
+<li>
+<p>By shrinking the image to 1/2, 1/4, and 1/8 size, those same 3x3 filters suddenly see a much larger portion of the scene. At the lowest resolution, a 3x3 filter might be looking at what used to be a 64x64 area of the original image. This gives the AI <strong>Global Context</strong>—it can see that a cluster of noisy pixels is actually part of a large, smooth shadow cast by a building.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_the_bottleneck_the_latent_representation"><a class="anchor" href="#_2_the_bottleneck_the_latent_representation"></a>2. The Bottleneck: The Latent Representation</h4>
+<div class="paragraph">
+<p>At the bottom of the "U," the network has a very "low resolution" but "high semantic" understanding of the scene. It has squeezed the image through a "bottleneck," forcing it to keep only the most important information. At this stage, the AI doesn&#8217;t see "pixels" anymore; it sees "features." It knows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>"There is a metallic sphere in the center."</p>
+</li>
+<li>
+<p>"The primary light source is an area light on the ceiling."</p>
+</li>
+<li>
+<p>"The background is a matte wall with soft indirect bounce light."</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_3_the_decoder_reconstruction_and_refinement"><a class="anchor" href="#_3_the_decoder_reconstruction_and_refinement"></a>3. The Decoder: Reconstruction and Refinement</h4>
+<div class="paragraph">
+<p>The second half of the "U" upsamples the image back to its original 1080p size using <strong>Transpose Convolutions</strong>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Transpose Convolution</strong>: This is the opposite of pooling. It takes a small image and "smears" it out into a larger one, using learned weights to decide how to fill in the new pixels.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_skip_connections_preserving_geometric_sharpness"><a class="anchor" href="#_4_skip_connections_preserving_geometric_sharpness"></a>4. Skip Connections: Preserving Geometric Sharpness</h4>
+<div class="paragraph">
+<p>This is the most critical part of the U-Net. As the Decoder grows the image, it "reaches across" the U and grabs the high-resolution features from the corresponding layer in the Encoder.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Problem</strong>: When the image was shrunk in the Encoder, we lost the exact location of edges. We know there&#8217;s a "sphere," but the precise, pixel-perfect outline was lost in the pooling layers.</p>
+</li>
+<li>
+<p><strong>The Solution</strong>: Skip connections act like "cheat sheets." They feed the sharp, geometric edges from the early layers (before they were shrunk) directly into the final reconstruction layers.</p>
+</li>
+<li>
+<p>This allows the network to combine its <strong>High-Level Understanding</strong> (from the bottleneck) with <strong>Pixel-Perfect Detail</strong> (from the encoder). This is why U-Net denoisers are so good at keeping edges sharp while smoothing out the flat, noisy areas.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+import torch.nn as nn
+
+class DenoisingUNet(nn.Module):
+    def __init__(self, in_channels=10):
+        super().__init__()
+        # Input: Noisy RGB (3) + Albedo (3) + Normals (3) + Depth (1) = 10 channels
+
+        # Encoder Stage 1 (Full Res -&gt; Half Res)
+        # We start with 10 channels and expand to 32 internal 'feature' channels
+        self.enc1 = self.double_conv(in_channels, 32)
+        self.pool1 = nn.MaxPool2d(2)
+
+        # Encoder Stage 2 (Half Res -&gt; Quarter Res)
+        self.enc2 = self.double_conv(32, 64)
+        self.pool2 = nn.MaxPool2d(2)
+
+        # Bottleneck (Quarter Res)
+        # This is where the AI understands the 'meaning' of the noise
+        self.bottleneck = self.double_conv(64, 128)
+
+        # Decoder Stage 2 (Quarter -&gt; Half)
+        # We use a Transpose Convolution to upsample
+        self.up2 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2)
+        # We concatenate the upsampled data (64) with the skip connection (64)
+        self.dec2 = self.double_conv(128, 64)
+
+        # Decoder Stage 1 (Half -&gt; Full)
+        self.up1 = nn.ConvTranspose2d(64, 32, kernel_size=2, stride=2)
+        self.dec1 = self.double_conv(64, 32) # 32 (up) + 32 (skip)
+
+        # Final Layer: Map the 32 feature channels back to 3-channel RGB
+        self.final = nn.Conv2d(32, 3, kernel_size=1)
+
+    def double_conv(self, in_c, out_c):
+        """A helper that applies two convolutions back-to-back with ReLU"""
+        return nn.Sequential(
+            nn.Conv2d(in_c, out_c, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(out_c, out_c, 3, padding=1), nn.ReLU()
+        )
+
+    def forward(self, x):
+        # Encoder Path
+        # We save 's1' and 's2' to use as Skip Connections later
+        s1 = self.enc1(x)
+        p1 = self.pool1(s1)
+        s2 = self.enc2(p1)
+        p2 = self.pool2(s2)
+
+        # Bottleneck
+        b = self.bottleneck(p2)
+
+        # Decoder Path with Skip Connections (torch.cat)
+        d2 = self.up2(b)
+        # Concatenate along the 'channel' dimension
+        d2 = torch.cat([d2, s2], dim=1)
+        d2 = self.dec2(d2)
+
+        d1 = self.up1(d2)
+        d1 = torch.cat([d1, s1], dim=1)
+        d1 = self.dec1(d1)
+
+        return self.final(d1)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_structural_anchors_the_g_buffer_advantage"><a class="anchor" href="#_structural_anchors_the_g_buffer_advantage"></a>Structural Anchors: The G-Buffer Advantage</h3>
+<div class="paragraph">
+<p>A denoiser that only sees a noisy color image is working blind. It has to guess where an object ends and the background begins. In a Vulkan Ray Tracer, we don&#8217;t have to guess. We have access to <strong>G-Buffers</strong> (Geometry Buffers).</p>
+</div>
+<div class="paragraph">
+<p>G-Buffers are the data generated by the very first hit of the ray. Because they don&#8217;t depend on light bouncing around the room, they are <strong>mathematically perfect</strong>—no noise, no variance.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>World Normals (3 Channels)</strong>: These provide the exact orientation (XYZ) of every surface. If two neighboring pixels have drastically different normals, the AI knows there is a geometric edge (like a corner) there. It will refuse to "leak" color across that edge, preventing the "smudge" look of traditional blurs.</p>
+</li>
+<li>
+<p><strong>Albedo / Base Color (3 Channels)</strong>: This provides the raw texture of the object (e.g., the wood grain or the stone pattern) without any shadows or lighting. This allows the AI to distinguish between "noise" and "texture detail." If it sees a pattern in the albedo, it knows to preserve it.</p>
+</li>
+<li>
+<p><strong>Depth (1 Channel)</strong>: This provides the distance from the camera. It helps the AI separate overlapping objects and understand the scale of the scene.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>By feeding these 10 channels (Noisy RGB + Albedo + Normals + Depth) into our U-Net, we give the AI a high-resolution "skeleton." Its job is no longer to "invent" an image, but to "paint" the light on top of a perfectly understood 3D model.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_data_layout_why_nchw_matters_for_vulkan"><a class="anchor" href="#_data_layout_why_nchw_matters_for_vulkan"></a>Data Layout: Why NCHW Matters for Vulkan</h3>
+<div class="paragraph">
+<p>Wait, how do we "feed" 10 channels into a network that usually takes 3 (RGB)? This is where the <strong>Input Tensor Layout</strong> becomes a performance bottleneck.</p>
+</div>
+<div class="paragraph">
+<p>Most graphics programmers are used to <strong>Interleaved</strong> data (RGBA, RGBA, RGBA). In ML, this is called <strong>NHWC</strong> layout.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>N</strong>: Batch size</p>
+</li>
+<li>
+<p><strong>H</strong>: Height</p>
+</li>
+<li>
+<p><strong>W</strong>: Width</p>
+</li>
+<li>
+<p><strong>C</strong>: Channels (the RGB values are next to each other in memory)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>However, GPUs are much faster at processing <strong>Planar</strong> data, called <strong>NCHW</strong>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>In NCHW, we store all Red values for the entire image first, then all Green values, then all Blue, then all Normals, etc.</p>
+</li>
+<li>
+<p><strong>Why?</strong> When a convolution filter runs, it wants to read many pixels from the same "channel" at once. If the data is planar, the GPU can "coalesce" these memory reads, fetching 32 or 64 pixels in a single memory cycle. If the data is interleaved, the GPU has to jump over the G and B values to get to the next R value, wasting bandwidth.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In your Vulkan preprocessing compute shader, you must transform your interleaved G-Buffers into a single planar NCHW buffer before sending it to ONNX Runtime.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stability_the_hdr_log_scaling_problem"><a class="anchor" href="#_stability_the_hdr_log_scaling_problem"></a>Stability: The HDR Log-Scaling Problem</h3>
+<div class="paragraph">
+<p>Vulkan Ray Tracers usually output in 16-bit or 32-bit floating point (HDR). A sun-lamp might have a brightness value of <strong>50,000.0</strong>, while a dark shadow is <strong>0.0001</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Neural networks hate this. Their mathematical foundations (like weight initializations and activation functions like ReLU) are tuned for values between 0.0 and 1.0. If you feed 50,000.0 into a network, it&#8217;s like screaming in someone&#8217;s ear—the gradients will "explode," the weights will become <code>NaN</code>, and the AI will never learn.</p>
+</div>
+<div class="paragraph">
+<p>The solution is <strong>Logarithmic Compression</strong>. Before sending the image to the AI, we "squash" the range in our compute shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Preprocessing Compute Shader
+// Squash HDR range [0, infinity] to a manageable [0, ~12]
+vec3 compressed = log(1.0 + noisyColor.rgb);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After the AI gives us the "clean" output, we expand it back to the original HDR range:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Postprocessing Compute Shader
+// Expand [0, ~12] back to [0, infinity]
+vec3 cleanHDR = exp(aiOutput.rgb) - 1.0;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This ensures the AI only ever sees "manageable" numbers, leading to much more stable training and a dramatic reduction in "fireflies" (those single bright pixels that ruin many renders).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_training_strategy_how_to_teach_denoising"><a class="anchor" href="#_training_strategy_how_to_teach_denoising"></a>Training Strategy: How to "Teach" Denoising</h3>
+<div class="paragraph">
+<p>To train this network, you need a "Reference Path Tracer." This is a version of your renderer that is allowed to be slow.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Scene Selection</strong>: Take a complex scene in your Vulkan engine—something with many different materials (metals, glass, wood), complex lighting (point lights, area lights), and deep shadows.</p>
+</li>
+<li>
+<p><strong>Render Noisy (The Input)</strong>: Render a frame at 1spp (1 sample per pixel). This will be the input to your AI. Save the RGB color and all the G-Buffers (Albedo, Normals, Depth).</p>
+</li>
+<li>
+<p><strong>Render Gold (The Truth)</strong>: Stay on the same frame, but render at 4096spp. This might take several minutes per frame, but the result is a "ground truth" image—a noise-free reference of what the 1spp frame <strong>should</strong> have looked like.</p>
+</li>
+<li>
+<p><strong>Repeat</strong>: Move the camera a tiny amount and repeat the process. To train a robust denoiser, you usually need at least 1,000 to 5,000 such pairs from varied scenes.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>The Loss Function</strong>:
+How do we tell the AI it did a good job? We compare its output to the "Gold Reference" using a <strong>Loss Function</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Don&#8217;t just use <strong>Mean Squared Error (MSE)</strong>. MSE calculates the average of the squared difference between pixels. It’s mathematically simple, but it’s terrible for graphics. If the AI shifts a sharp edge by just one pixel, the MSE will be huge, even though it looks fine to a human. Worse, MSE tends to "average out" high frequencies, resulting in blurry, "plastic-looking" renders.</p>
+</div>
+<div class="paragraph">
+<p>Instead, use a weighted combination:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>L1 Loss (Mean Absolute Error)</strong>: For general color accuracy. It’s more robust than MSE and doesn&#8217;t over-penalize small differences.</p>
+</li>
+<li>
+<p><strong>SSIM (Structural Similarity Index)</strong>: This is the most important component. SSIM looks at local patterns of contrast and structure. It forces the AI to preserve the sharp edges and fine textures that define high-quality graphics.</p>
+</li>
+<li>
+<p><strong>LPIPS (Learned Perceptual Image Patch Similarity)</strong>: As we learned in the CI validation chapter, LPIPS uses another neural network to judge if the images "look" similar to a human. This helps the AI capture the "feel" of the lighting correctly.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A common industry "recipe" for training denoisers is:
+<strong>Loss = 0.8 * SSIM + 0.2 * L1</strong></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_technique_2_ai_guided_adaptive_sampling"><a class="anchor" href="#_technique_2_ai_guided_adaptive_sampling"></a>Technique 2: AI-Guided Adaptive Sampling</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In a naive renderer, every pixel gets the same number of rays. But in a real scene, light isn&#8217;t distributed evenly. A flat white wall might be "solved" (noise-free) in just 1 or 2 samples. However, a complex glass chandelier with multiple reflections and refractions might still look like "salt and pepper" noise even at 100 samples.</p>
+</div>
+<div class="paragraph">
+<p><strong>Adaptive Sampling</strong> is the art of spending your computation budget only where the noise is "stubborn." Instead of casting 8 rays per pixel everywhere, we aim to cast 1 ray on the flat wall and 64 rays on the chandelier. This ensures that every part of the image reaches the same level of quality at the same time.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/ML_Inference/Desktop_Applications/adaptive_sampling_diagram.svg" alt="Diagram showing Probe Pass" width="Heatmap Generation" height="and Targeted Pass">
+</div>
+<div class="title">Figure 2. Adaptive Sampling Workflow</div>
+</div>
+<div class="sect2">
+<h3 id="_the_theory_of_variance_where_does_noise_hide"><a class="anchor" href="#_the_theory_of_variance_where_does_noise_hide"></a>The Theory of Variance: Where Does Noise Hide?</h3>
+<div class="paragraph">
+<p>In Monte Carlo integration, <strong>Variance</strong> is a measure of how much our samples differ from each other. In graphics, high variance equals high noise.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Low Variance</strong>: If you shoot 10 rays at a pixel and they all return nearly the same brightness (e.g., they all hit a dimly lit wall), we are confident that the average is correct. The pixel is "solved."</p>
+</li>
+<li>
+<p><strong>High Variance</strong>: If 5 rays return "black" and 5 rays return "bright white" (e.g., the pixel is near a sharp shadow edge or a small light source), the average is 0.5—but that&#8217;s just a guess. The 11th ray could change the average significantly. This pixel is "noisy" and needs more samples.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The problem? Calculating variance traditionally requires shooting multiple rays first (at least 4-8) just to see if we <strong>need</strong> more rays. This is a waste of time. AI allows us to <strong>predict</strong> the variance from a single 1spp probe by looking for visual patterns that always lead to noise.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_error_predictor_a_tiny_ai_for_budgeting"><a class="anchor" href="#_the_error_predictor_a_tiny_ai_for_budgeting"></a>The Error Predictor: A Tiny AI for Budgeting</h3>
+<div class="paragraph">
+<p>To drive our adaptive sampler, we build a secondary, extremely lightweight CNN called the <strong>Error Predictor</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Unlike the Denoiser (which is a heavy U-Net that tries to fix the image), the Error Predictor is a "Specialist" designed for extreme speed. It usually consists of only 4 or 5 convolutional layers and no expensive decoder. Its only job is to look at a noisy 1spp frame and say, "That area looks like it&#8217;s going to be difficult."</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Input</strong>: The initial 1spp noisy render.</p>
+</li>
+<li>
+<p><strong>Target during Training</strong>: The absolute error between the 1spp frame and the 4096spp Gold Reference (<code>abs(1spp - Gold)</code>).</p>
+</li>
+<li>
+<p><strong>The Goal</strong>: The AI learns that high-contrast shadow edges, specular highlights on metal, and refractive glass are "dangerous" areas that always result in high error. It also learns that smooth gradients on walls are "easy" and don&#8217;t need many rays.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_heatmap_managing_the_ray_budget"><a class="anchor" href="#_the_heatmap_managing_the_ray_budget"></a>The Heatmap: Managing the Ray Budget</h3>
+<div class="paragraph">
+<p>The output of this tiny AI is a <strong>Heatmap</strong>—a single-channel texture (think of it as a greyscale image) where 1.0 means "High Noise Expected" and 0.0 means "Low Noise Expected."</p>
+</div>
+<div class="paragraph">
+<p>We use this Heatmap as a <strong>Ray Budget Map</strong>. This is where we bridge the gap between AI prediction and the Vulkan Ray Tracing hardware.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_mathematical_scaling_function"><a class="anchor" href="#_the_mathematical_scaling_function"></a>The Mathematical Scaling Function</h4>
+<div class="paragraph">
+<p>We don&#8217;t just use the Heatmap value directly as a ray count. We use a <strong>Non-Linear Scaling Function</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Why? Because the human eye is much more sensitive to noise in shadows than in bright areas. Also, we want to prevent "Ray Spikes"—where one pixel suddenly shoots 1000 rays and stalls the whole GPU.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Inside the Ray Generation Shader
+float heat = texture(heatmap, uv).r;
+
+// We use a Power Function to create a steep ramp.
+// Most pixels (heat &lt; 0.2) stay at 1 ray.
+// Difficult pixels (heat &gt; 0.8) scale up rapidly.
+float scaledHeat = pow(heat, 3.0);
+
+int maxExtraRays = 31;
+int extraRays = int(scaledHeat * float(maxExtraRays));</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_vulkan_integration_the_multi_pass_strategy"><a class="anchor" href="#_vulkan_integration_the_multi_pass_strategy"></a>Vulkan Integration: The Multi-Pass Strategy</h4>
+<div class="paragraph">
+<p>To implement this in Vulkan, you need to coordinate your command buffers across three distinct passes:</p>
+</div>
+<div class="paragraph">
+<p><strong>Pass 1: The Probe Pass (1spp)</strong>
+We shoot exactly 1 ray per pixel using <code>vkCmdTraceRaysKHR</code>.
+*   <strong>Input</strong>: Scene TLAS, Camera UBO.
+*   <strong>Output</strong>: <code>probeColorImage</code> (1spp Noisy).</p>
+</div>
+<div class="paragraph">
+<p><strong>Pass 2: AI Variance Prediction</strong>
+We run our Error Predictor ONNX model.
+*   <strong>Input</strong>: <code>probeColorImage</code>.
+*   <strong>Output</strong>: <code>heatmapImage</code>.
+*   <strong>Optimization</strong>: Since the model is tiny, we can run this using <strong>Compute-Queue Async</strong> while the GPU is finishing other tasks.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pass 3: The Targeted Pass (Variable spp)</strong>
+We run a second Ray Generation shader that reads both the <code>probeColorImage</code> and the <code>heatmapImage</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Ray Generation Shader (Targeted Pass)
+void main() {
+    // 1. Fetch the 'Heat' value for this pixel
+    float heat = texture(heatmap, uv).r;
+
+    // 2. Decide the extra ray budget
+    int extraRays = int(pow(heat, 2.0) * 31.0);
+
+    // 3. Retrieve the color from our first (probe) pass
+    vec3 accumulatedColor = texelFetch(probePassBuffer, ivec2(gl_LaunchIDEXT.xy), 0).rgb;
+
+    // 4. Cast the additional rays only where needed
+    for(int i = 0; i &lt; extraRays; i++) {
+        // We use the 'i' as an offset to our Blue Noise texture
+        // to ensure we don't sample the same direction twice.
+        uint seed = initRandom(gl_LaunchIDEXT.xy, frameCount, i);
+        vec3 sample = traceIndirectRay(seed);
+        accumulatedColor += sample;
+    }
+
+    // 5. Compute the final average (Total samples = 1 probe + extraRays)
+    finalOutput = accumulatedColor / (1.0 + float(extraRays));
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By spending 32 rays on the chandelier and 1 ray on the wall, we achieve the same visual quality as if we had spent 32 rays <strong>everywhere</strong>, but at a fraction of the cost. This technique typically provides a <strong>3-5x speedup</strong> in overall render time.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_adaptive_sampling_probability_and_blue_noise"><a class="anchor" href="#_advanced_adaptive_sampling_probability_and_blue_noise"></a>Advanced Adaptive Sampling: Probability and Blue Noise</h3>
+<div class="paragraph">
+<p>To make adaptive sampling truly shine, you need to combine your AI&#8217;s predictions with high-quality <strong>Sampling Distributions</strong>.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_monte_carlo_pdf"><a class="anchor" href="#_the_monte_carlo_pdf"></a>The Monte Carlo PDF</h4>
+<div class="paragraph">
+<p>When the RayGen shader reads the Heatmap and sees a "Hot" pixel (Heat = 1.0), it doesn&#8217;t just shoot 32 rays in random directions. It uses a <strong>Probability Density Function (PDF)</strong> to bias the rays toward the light sources. The AI heatmap essentially acts as a "Secondary PDF" that tells the hardware where the most complex interactions are happening.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_blue_noise_vs_white_noise"><a class="anchor" href="#_blue_noise_vs_white_noise"></a>Blue Noise vs. White Noise</h4>
+<div class="paragraph">
+<p>If you use standard random numbers (<code>rand()</code>) for your ray directions, you will get "clumping"—where many rays go in the same direction, leaving other areas dark. This creates "dirty" noise.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Blue Noise</strong>: This is a specialized type of noise where the samples are distributed as evenly as possible.</p>
+</li>
+<li>
+<p><strong>The AI Connection</strong>: AI denoisers are much better at cleaning up "Blue Noise" than "White Noise" because blue noise has a very specific mathematical frequency that the U-Net can easily identify and subtract.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Implementation Tip</strong>: Load a 64x64 Blue Noise texture into your Vulkan Ray Tracing pipeline. Use the pixel coordinate and the current sample index to offset into this texture. This ensures that even with a low ray budget (like the 1-32 rays we discussed), your samples cover the hemisphere as efficiently as possible.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_technique_3_temporal_stability_the_anti_ghosting_ai"><a class="anchor" href="#_technique_3_temporal_stability_the_anti_ghosting_ai"></a>Technique 3: Temporal Stability (The Anti-Ghosting AI)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Even with AI-guided sampling, a single frame might still have some noise. To reach "cinema-quality" smoothness, we need to use information from <strong>previous frames</strong>. If the camera isn&#8217;t moving, we can simply average the last 60 frames together to get a perfect, 1000-ray result.</p>
+</div>
+<div class="paragraph">
+<p>However, in a game, things move. The camera rotates, characters run, and lights flicker. If we naively average frames, we get <strong>Ghosting</strong>—a blurry trail of "old" colors following moving objects.</p>
+</div>
+<div class="paragraph">
+<p>To solve this, we use a technique called <strong>Temporal Reprojection</strong> combined with an <strong>AI Confidence Model</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_reprojection_math_looking_into_the_past"><a class="anchor" href="#_reprojection_math_looking_into_the_past"></a>Reprojection Math: Looking into the Past</h3>
+<div class="paragraph">
+<p>To use the previous frame, we have to know where the current pixel <strong>was</strong> in the last frame. This is a coordinate transformation problem.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_mathematical_journey_of_a_pixel"><a class="anchor" href="#_the_mathematical_journey_of_a_pixel"></a>The Mathematical Journey of a Pixel</h4>
+<div class="paragraph">
+<p>Think about what happens to a point in your 3D world as it moves through your Vulkan pipeline:
+1.  <strong>World Space</strong>: The point has coordinates like <code>(10.0, 5.0, -2.0)</code>.
+2.  <strong>View Space</strong>: We multiply by the <strong>View Matrix</strong> (the camera&#8217;s position/rotation).
+3.  <strong>Clip Space</strong>: We multiply by the <strong>Projection Matrix</strong> (the lens properties).
+4.  <strong>Screen Space</strong>: We divide by <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.371ex" height="1.595ex" role="img" focusable="false" viewBox="0 -683 1048 705"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D44A" d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g></g></g></svg> </span> and map to your monitor&#8217;s pixel grid (e.g., 1920x1080).</p>
+</div>
+<div class="paragraph">
+<p>To "look back," we reverse this journey. We take the current pixel, use the Depth buffer to find its 3D world position, and then re-project that world position using the <strong>Previous Frame&#8217;s matrices</strong>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Reprojection Logic in C++ (Conceptual)
+// This is what you would implement in your Motion Vector shader
+vec4 current_clip_pos = vec4(pixel_x / width * 2 - 1, pixel_y / height * 2 - 1, depth, 1.0);
+vec4 world_pos = inv_current_view_proj * current_clip_pos;
+world_pos /= world_pos.w;
+
+// Now, where was this world position in the previous frame's screen?
+vec4 prev_clip_pos = prev_view_proj * world_pos;
+prev_clip_pos /= prev_clip_pos.w;
+
+vec2 prev_screen_uv = (prev_clip_pos.xy + 1.0) / 2.0;
+vec2 motion_vector = current_uv - prev_screen_uv;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_handling_character_animation"><a class="anchor" href="#_handling_character_animation"></a>Handling Character Animation</h4>
+<div class="paragraph">
+<p>Wait, what if the camera is static, but a character is running? The camera matrices only account for the camera&#8217;s movement. To handle moving objects, you must also store the <strong>Model Matrix</strong> from the previous frame for each object. In your vertex shader, you calculate the position twice: once for "now" and once for "then," passing the difference down to the pixel shader as a motion vector.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Motion Vector Calculation in Vertex Shader
+void main() {
+    vec4 currentPos = ubo.viewProj * ubo.model * vec4(inPos, 1.0);
+    vec4 previousPos = ubo.prevViewProj * ubo.prevModel * vec4(inPos, 1.0);
+
+    // Pass these to the fragment shader
+    outCurrentPos = currentPos;
+    outPreviousPos = previousPos;
+    gl_Position = currentPos;
+}
+
+// Fragment Shader
+void main() {
+    vec2 curUV = (outCurrentPos.xy / outCurrentPos.w) * 0.5 + 0.5;
+    vec2 prevUV = (outPreviousPos.xy / outPreviousPos.w) * 0.5 + 0.5;
+    outMotionVector = curUV - prevUV;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you get these motion vectors wrong, your AI will see "smearing" even in simple scenes. <strong>Pro Tip</strong>: Visualize your motion vectors as colors (Red for X movement, Green for Y). If the colors don&#8217;t match the direction objects are moving, your temporal stability will fail.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_the_vectors_in_the_shader"><a class="anchor" href="#_using_the_vectors_in_the_shader"></a>Using the Vectors in the Shader</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// In the Temporal Accumulation Shader
+vec2 velocity = texture(motionVectorBuffer, uv).xy;
+vec2 historyUV = uv - velocity;
+
+// Fetch the color we rendered in the previous frame
+vec3 historyColor = texture(previousFrameResult, historyUV).rgb;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If the math is perfect and nothing has changed, <code>historyColor</code> should be exactly what our current pixel looked like one frame ago. We can then blend them: <code>finalColor = mix(historyColor, currentColor, 0.05)</code>. This is an <strong>Exponential Moving Average (EMA)</strong>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_problem_occlusions_and_lighting_shifts"><a class="anchor" href="#_the_problem_occlusions_and_lighting_shifts"></a>The Problem: Occlusions and Lighting Shifts</h3>
+<div class="paragraph">
+<p>Reprojection fails in two common scenarios:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Occlusion/Disocclusion</strong>: Imagine a character walks in front of a wall. When they move away, the wall is "revealed." The previous frame only saw the character at that position, not the wall. If we use the history, we&#8217;ll "smear" the character&#8217;s color onto the wall.</p>
+</li>
+<li>
+<p><strong>Dynamic Lighting</strong>: If an explosion happens, the current frame is suddenly bright, but the history is dark. Blending them will cause the light to "ramp up" slowly and look sluggish.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_ai_confidence_model_intelligent_blending"><a class="anchor" href="#_the_ai_confidence_model_intelligent_blending"></a>The AI Confidence Model: Intelligent Blending</h3>
+<div class="paragraph">
+<p>To handle these "bad" history cases, we train a third AI model: the <strong>Confidence Predictor</strong>. This is a small CNN that looks at the current frame and the reprojected history and decides, pixel-by-pixel, how much to trust the past.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_logic_of_rejection"><a class="anchor" href="#_the_logic_of_rejection"></a>The Logic of Rejection</h4>
+<div class="paragraph">
+<p>The AI is trained to detect when the history is "stale" or "occluded." It looks for specific "Warning Signs":</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Depth Discrepancy</strong>: It compares the current Depth to the Reprojected Depth from the previous frame. If they differ significantly (e.g., more than 5%), it means an object has moved in front of (or away from) this pixel. The history is invalid.</p>
+</li>
+<li>
+<p><strong>Normal Alignment</strong>: It calculates the Dot Product between the current normal and the previous normal. If the dot product is low (e.g., &lt; 0.9), it means the surface has rotated drastically, and its orientation to the light has changed.</p>
+</li>
+<li>
+<p><strong>Luma Difference</strong>: It compares the brightness (Luminance) of the reprojected history to the current noisy probe. Large jumps often indicate a sudden lighting change or a disocclusion that the geometric signals missed.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_training_the_confidence_model"><a class="anchor" href="#_training_the_confidence_model"></a>Training the Confidence Model</h4>
+<div class="paragraph">
+<p>This model is trained differently from the denoiser. Its target isn&#8217;t a "Gold" image, but rather a <strong>Binary Mask</strong> of where reprojection failed.
+1. We take two frames of 4096spp "Gold" data.
+2. We warp the first into the second using perfect motion vectors.
+3. Anywhere they don&#8217;t match is a "Disocclusion" or "Lighting Shift."
+4. The AI learns to predict this difference mask using only the noisy 1spp inputs.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_intelligent_blending_the_ema_logic"><a class="anchor" href="#_intelligent_blending_the_ema_logic"></a>Intelligent Blending: The EMA logic</h3>
+<div class="paragraph">
+<p>The AI outputs a <strong>Confidence Score</strong> from 0.0 (Reject History) to 1.0 (Keep History). We use this score to drive our <strong>Exponential Moving Average (EMA)</strong> blending:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">float confidence = predictConfidence(current_buffers, history_buffers);
+
+// 'Alpha' is our blending factor.
+// If confidence is 1.0 (Static), alpha is 0.01 (99% history, 1% new).
+// If confidence is 0.0 (Moving), alpha is 1.0 (0% history, 100% new).
+float alpha = mix(1.0, 0.01, confidence);
+
+// We also cap the accumulation to prevent 'Forever Smearing'
+alpha = max(alpha, 1.0 / float(maxFramesAccumulated));
+
+vec3 finalColor = mix(historyColor, currentNoisyColor, alpha);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By using this AI-driven approach, we can accumulate <strong>hundreds of rays</strong> over time for static areas (making them perfectly clean), while instantly switching to new data the moment something moves, eliminating ghosting entirely.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_temporal_clamping_the_mathematical_safety_net"><a class="anchor" href="#_temporal_clamping_the_mathematical_safety_net"></a>Temporal Clamping: The Mathematical Safety Net</h3>
+<div class="paragraph">
+<p>Even the best AI can sometimes make mistakes. To prevent mathematical "leakage" or "infinite trails," professional renderers use a technique called <strong>Color Box Clamping</strong> (or Neighborhood Clipping).</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Find the Neighborhood</strong>: We look at a 3x3 neighborhood of pixels around the current pixel in the <strong>current</strong> frame.</p>
+</li>
+<li>
+<p><strong>Calculate Statistics</strong>: We find the <strong>Minimum</strong>, <strong>Maximum</strong>, and <strong>Average</strong> color in that 3x3 box.</p>
+</li>
+<li>
+<p><strong>Clamp the History</strong>: If our <code>historyColor</code> is outside the [Min, Max] range of the current neighborhood, we "clip" it to the edge of the box.</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Simple Color Box Clamping logic
+vec3 minColor = vec3(10000.0);
+vec3 maxColor = vec3(-10000.0);
+
+for(int y = -1; j &lt;= 1; y++) {
+    for(int x = -1; x &lt;= 1; x++) {
+        vec3 neighbor = texelFetch(currentFrame, pos + ivec2(x, y), 0).rgb;
+        minColor = min(minColor, neighbor);
+        maxColor = max(maxColor, neighbor);
+    }
+}
+
+// Ensure history stays within the bounds of current reality
+vec3 clampedHistory = clamp(historyColor, minColor, maxColor);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This provides a guarantee that our history will never deviate too far from current reality, acting as a final safeguard against ghosting artifacts even if the AI confidence model is temporarily confused.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_advanced_temporal_stability_variance_rectification"><a class="anchor" href="#_advanced_temporal_stability_variance_rectification"></a>Advanced Temporal Stability: Variance Rectification</h3>
+<div class="paragraph">
+<p>While Color Box Clamping works well for sharp images, it can be too aggressive for noisy ray-traced frames. If the current frame is very noisy, the "Box" will be huge, and history won&#8217;t be clamped at all. If the current frame is clean, the box will be tiny, and history will be destroyed.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_variance_logic"><a class="anchor" href="#_the_variance_logic"></a>The Variance logic</h4>
+<div class="paragraph">
+<p>Instead of a simple Min/Max box, high-end temporal filters use <strong>Variance Rectification</strong>:
+1.  Calculate the <strong>Mean</strong> (<span class="steminline"> <svg style="vertical-align: -0.489ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.364ex" height="1.489ex" role="img" focusable="false" viewBox="0 -442 603 658"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D707" d="M58 -216Q44 -216 34 -208T23 -186Q23 -176 96 116T173 414Q186 442 219 442Q231 441 239 435T249 423T251 413Q251 401 220 279T187 142Q185 131 185 107V99Q185 26 252 26Q261 26 270 27T287 31T302 38T315 45T327 55T338 65T348 77T356 88T365 100L372 110L408 253Q444 395 448 404Q461 431 491 431Q504 431 512 424T523 412T525 402L449 84Q448 79 448 68Q448 43 455 35T476 26Q485 27 496 35Q517 55 537 131Q543 151 547 152Q549 153 557 153H561Q580 153 580 144Q580 138 575 117T555 63T523 13Q510 0 491 -8Q483 -10 467 -10Q446 -10 429 -4T402 11T385 29T376 44T374 51L368 45Q362 39 350 30T324 12T288 -4T246 -11Q199 -11 153 12L129 -85Q108 -167 104 -180T92 -202Q76 -216 58 -216Z"></path></g></g></g></svg> </span>) and <strong>Standard Deviation</strong> (<span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.292ex" height="1ex" role="img" focusable="false" viewBox="0 -431 571 442"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D70E" d="M184 -11Q116 -11 74 34T31 147Q31 247 104 333T274 430Q275 431 414 431H552Q553 430 555 429T559 427T562 425T565 422T567 420T569 416T570 412T571 407T572 401Q572 357 507 357Q500 357 490 357T476 358H416L421 348Q439 310 439 263Q439 153 359 71T184 -11ZM361 278Q361 358 276 358Q152 358 115 184Q114 180 114 178Q106 141 106 117Q106 67 131 47T188 26Q242 26 287 73Q316 103 334 153T356 233T361 278Z"></path></g></g></g></svg> </span>) of the current 3x3 neighborhood.
+2.  Set the valid range to be <span class="steminline"> <svg style="vertical-align: -0.566ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="14.836ex" height="2.262ex" role="img" focusable="false" viewBox="0 -750 6557.6 1000"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="5B" d="M118 -250V750H255V710H158V-210H255V-250H118Z"></path></g><g data-mml-node="mi" transform="translate(278,0)"><path data-c="1D707" d="M58 -216Q44 -216 34 -208T23 -186Q23 -176 96 116T173 414Q186 442 219 442Q231 441 239 435T249 423T251 413Q251 401 220 279T187 142Q185 131 185 107V99Q185 26 252 26Q261 26 270 27T287 31T302 38T315 45T327 55T338 65T348 77T356 88T365 100L372 110L408 253Q444 395 448 404Q461 431 491 431Q504 431 512 424T523 412T525 402L449 84Q448 79 448 68Q448 43 455 35T476 26Q485 27 496 35Q517 55 537 131Q543 151 547 152Q549 153 557 153H561Q580 153 580 144Q580 138 575 117T555 63T523 13Q510 0 491 -8Q483 -10 467 -10Q446 -10 429 -4T402 11T385 29T376 44T374 51L368 45Q362 39 350 30T324 12T288 -4T246 -11Q199 -11 153 12L129 -85Q108 -167 104 -180T92 -202Q76 -216 58 -216Z"></path></g><g data-mml-node="mo" transform="translate(1103.2,0)"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mi" transform="translate(2103.4,0)"><path data-c="1D458" d="M121 647Q121 657 125 670T137 683Q138 683 209 688T282 694Q294 694 294 686Q294 679 244 477Q194 279 194 272Q213 282 223 291Q247 309 292 354T362 415Q402 442 438 442Q468 442 485 423T503 369Q503 344 496 327T477 302T456 291T438 288Q418 288 406 299T394 328Q394 353 410 369T442 390L458 393Q446 405 434 405H430Q398 402 367 380T294 316T228 255Q230 254 243 252T267 246T293 238T320 224T342 206T359 180T365 147Q365 130 360 106T354 66Q354 26 381 26Q429 26 459 145Q461 153 479 153H483Q499 153 499 144Q499 139 496 130Q455 -11 378 -11Q333 -11 305 15T277 90Q277 108 280 121T283 145Q283 167 269 183T234 206T200 217T182 220H180Q168 178 159 139T145 81T136 44T129 20T122 7T111 -2Q98 -11 83 -11Q66 -11 57 -1T48 16Q48 26 85 176T158 471L195 616Q196 629 188 632T149 637H144Q134 637 131 637T124 640T121 647Z"></path></g><g data-mml-node="mi" transform="translate(2624.4,0)"><path data-c="1D70E" d="M184 -11Q116 -11 74 34T31 147Q31 247 104 333T274 430Q275 431 414 431H552Q553 430 555 429T559 427T562 425T565 422T567 420T569 416T570 412T571 407T572 401Q572 357 507 357Q500 357 490 357T476 358H416L421 348Q439 310 439 263Q439 153 359 71T184 -11ZM361 278Q361 358 276 358Q152 358 115 184Q114 180 114 178Q106 141 106 117Q106 67 131 47T188 26Q242 26 287 73Q316 103 334 153T356 233T361 278Z"></path></g><g data-mml-node="mo" transform="translate(3195.4,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(3640.1,0)"><path data-c="1D707" d="M58 -216Q44 -216 34 -208T23 -186Q23 -176 96 116T173 414Q186 442 219 442Q231 441 239 435T249 423T251 413Q251 401 220 279T187 142Q185 131 185 107V99Q185 26 252 26Q261 26 270 27T287 31T302 38T315 45T327 55T338 65T348 77T356 88T365 100L372 110L408 253Q444 395 448 404Q461 431 491 431Q504 431 512 424T523 412T525 402L449 84Q448 79 448 68Q448 43 455 35T476 26Q485 27 496 35Q517 55 537 131Q543 151 547 152Q549 153 557 153H561Q580 153 580 144Q580 138 575 117T555 63T523 13Q510 0 491 -8Q483 -10 467 -10Q446 -10 429 -4T402 11T385 29T376 44T374 51L368 45Q362 39 350 30T324 12T288 -4T246 -11Q199 -11 153 12L129 -85Q108 -167 104 -180T92 -202Q76 -216 58 -216Z"></path></g><g data-mml-node="mo" transform="translate(4465.3,0)"><path data-c="2B" d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path></g><g data-mml-node="mi" transform="translate(5465.6,0)"><path data-c="1D458" d="M121 647Q121 657 125 670T137 683Q138 683 209 688T282 694Q294 694 294 686Q294 679 244 477Q194 279 194 272Q213 282 223 291Q247 309 292 354T362 415Q402 442 438 442Q468 442 485 423T503 369Q503 344 496 327T477 302T456 291T438 288Q418 288 406 299T394 328Q394 353 410 369T442 390L458 393Q446 405 434 405H430Q398 402 367 380T294 316T228 255Q230 254 243 252T267 246T293 238T320 224T342 206T359 180T365 147Q365 130 360 106T354 66Q354 26 381 26Q429 26 459 145Q461 153 479 153H483Q499 153 499 144Q499 139 496 130Q455 -11 378 -11Q333 -11 305 15T277 90Q277 108 280 121T283 145Q283 167 269 183T234 206T200 217T182 220H180Q168 178 159 139T145 81T136 44T129 20T122 7T111 -2Q98 -11 83 -11Q66 -11 57 -1T48 16Q48 26 85 176T158 471L195 616Q196 629 188 632T149 637H144Q134 637 131 637T124 640T121 647Z"></path></g><g data-mml-node="mi" transform="translate(5986.6,0)"><path data-c="1D70E" d="M184 -11Q116 -11 74 34T31 147Q31 247 104 333T274 430Q275 431 414 431H552Q553 430 555 429T559 427T562 425T565 422T567 420T569 416T570 412T571 407T572 401Q572 357 507 357Q500 357 490 357T476 358H416L421 348Q439 310 439 263Q439 153 359 71T184 -11ZM361 278Q361 358 276 358Q152 358 115 184Q114 180 114 178Q106 141 106 117Q106 67 131 47T188 26Q242 26 287 73Q316 103 334 153T356 233T361 278Z"></path></g></g></g></svg> </span>], where <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.179ex" height="1.595ex" role="img" focusable="false" viewBox="0 -694 521 705"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D458" d="M121 647Q121 657 125 670T137 683Q138 683 209 688T282 694Q294 694 294 686Q294 679 244 477Q194 279 194 272Q213 282 223 291Q247 309 292 354T362 415Q402 442 438 442Q468 442 485 423T503 369Q503 344 496 327T477 302T456 291T438 288Q418 288 406 299T394 328Q394 353 410 369T442 390L458 393Q446 405 434 405H430Q398 402 367 380T294 316T228 255Q230 254 243 252T267 246T293 238T320 224T342 206T359 180T365 147Q365 130 360 106T354 66Q354 26 381 26Q429 26 459 145Q461 153 479 153H483Q499 153 499 144Q499 139 496 130Q455 -11 378 -11Q333 -11 305 15T277 90Q277 108 280 121T283 145Q283 167 269 183T234 206T200 217T182 220H180Q168 178 159 139T145 81T136 44T129 20T122 7T111 -2Q98 -11 83 -11Q66 -11 57 -1T48 16Q48 26 85 176T158 471L195 616Q196 629 188 632T149 637H144Q134 637 131 637T124 640T121 647Z"></path></g></g></g></svg> </span> is usually between 1.0 and 2.0.
+3.  This creates a "Fuzzy Box" that accounts for the statistical noise in the current frame.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Variance Rectification Snippet
+vec3 m1 = vec3(0.0); // First moment (Sum)
+vec3 m2 = vec3(0.0); // Second moment (Sum of squares)
+
+for(int i = -1; i &lt;= 1; i++) {
+    for(int j = -1; j &lt;= 1; j++) {
+        vec3 color = texelFetch(current, pos + ivec2(i, j), 0).rgb;
+        m1 += color;
+        m2 += color * color;
+    }
+}
+
+vec3 mean = m1 / 9.0;
+vec3 stddev = sqrt(max(vec3(0.0), (m2 / 9.0) - (mean * mean)));
+
+// Clamp history to Mean +/- 1.5 * StdDev
+vec3 rectifiedHistory = clamp(historyColor, mean - 1.5 * stddev, mean + 1.5 * stddev);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By combining this statistical approach with the AI&#8217;s high-level confidence score, you get a temporal filter that is both incredibly smooth and perfectly sharp.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_data_harvesting_and_training_building_your_own_ai"><a class="anchor" href="#_data_harvesting_and_training_building_your_own_ai"></a>Data Harvesting and Training: Building Your Own AI</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To build these models, you need a training pipeline that can generate millions of pairs of "Noisy" and "Clean" data. This is where the "educational path" of this tutorial pays off—since you control the Vulkan renderer, you can automate this process.</p>
+</div>
+<div class="sect2">
+<h3 id="_step_1_scripting_the_truth_engine"><a class="anchor" href="#_step_1_scripting_the_truth_engine"></a>Step 1: Scripting the "Truth Engine"</h3>
+<div class="paragraph">
+<p>Modify your Vulkan application to include a specialized <strong>Dataset Mode</strong>. In this mode, the application doesn&#8217;t run in real-time. Instead, it acts as a "Truth Engine" that generates training data:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Freeze the World</strong>: Disable all physics, particle systems, and time-based animations. We want to render the exact same state twice.</p>
+</li>
+<li>
+<p><strong>Render the Input (Noisy)</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Set your ray tracer to 1spp.</p>
+</li>
+<li>
+<p>Capture the final color buffer.</p>
+</li>
+<li>
+<p>Capture the G-Buffers: Albedo, World-Space Normals, and Linear Depth.</p>
+</li>
+<li>
+<p>Save these as high-precision <code>.exr</code> or <code>.hdr</code> files.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Render the Truth (Gold)</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Switch your ray tracer to 4,096spp (or even 16,384spp for complex scenes).</p>
+</li>
+<li>
+<p>Wait for the render to finish (it might take 5-10 minutes).</p>
+</li>
+<li>
+<p>Save this as your "Ground Truth" target.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Move and Repeat</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Automate the camera to fly through the scene on a spline, or teleport to random locations.</p>
+</li>
+<li>
+<p>Change the lighting conditions—render some frames at noon, some at sunset, and some with only a flickering candle.</p>
+</li>
+<li>
+<p>Vary the materials—add more metal, more glass, or more complex textures to different areas.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>A diverse dataset is the only way to prevent the AI from "overfitting"—where it works perfectly on your development scene but fails on a new level.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_training_in_pytorch"><a class="anchor" href="#_step_2_training_in_pytorch"></a>Step 2: Training in PyTorch</h3>
+<div class="paragraph">
+<p>Once you have your folders full of <code>.exr</code> files, you use PyTorch to train the neural networks.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pro Tip: Training on Patches</strong>
+Don&#8217;t train on full 1080p or 4K images. It’s too slow and memory-intensive. Instead, your data loader should take a random <strong>256x256 pixel crop</strong> (a "patch") from the high-resolution images. This forces the AI to learn local texture and noise patterns rather than memorizing the global layout of your level.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_advanced_training_recipes"><a class="anchor" href="#_step_3_advanced_training_recipes"></a>Step 3: Advanced Training Recipes</h3>
+<div class="paragraph">
+<p>If you want your denoiser to look "Triple-A," you need to go beyond a simple training loop. Here are the secrets used by production studios:</p>
+</div>
+<div class="sect3">
+<h4 id="_data_augmentation_making_the_ai_robust"><a class="anchor" href="#_data_augmentation_making_the_ai_robust"></a>Data Augmentation: Making the AI Robust</h4>
+<div class="paragraph">
+<p>If you only train on "perfect" G-Buffers, your AI will be fragile. Real hardware has rounding errors, and sometimes your motion vectors might be slightly off. You should "mess with" your training data to make the AI tougher:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Gaussian Noise injection</strong>: Add a tiny bit of random noise to your "perfect" Albedo and Normals during training. This teaches the AI not to rely <strong>too</strong> much on perfect inputs.</p>
+</li>
+<li>
+<p><strong>Color Jittering</strong>: Randomly adjust the brightness and contrast of your images during training. This ensures the denoiser works just as well in a dark dungeon as it does in a bright sunny field.</p>
+</li>
+<li>
+<p><strong>Rotation and Flipping</strong>: Flip your training patches horizontally and vertically. A shadow edge is still a shadow edge, no matter the orientation.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_curriculum_learning_learning_to_crawl_before_running"><a class="anchor" href="#_curriculum_learning_learning_to_crawl_before_running"></a>Curriculum Learning: Learning to Crawl Before Running</h4>
+<div class="paragraph">
+<p>Don&#8217;t start training at 1spp immediately. The AI might get overwhelmed by the noise.
+*   <strong>Stage 1</strong>: Train the AI to clean up 16spp images (moderate noise).
+*   <strong>Stage 2</strong>: Once it&#8217;s good at that, move to 4spp.
+*   <strong>Stage 3</strong>: Finally, train it on 1spp.
+This "Curriculum" helps the AI gradually build an internal model of how light behaves before it tackles the most difficult, chaotic data.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_loss_weighting_the_firefly_penalty"><a class="anchor" href="#_loss_weighting_the_firefly_penalty"></a>Loss Weighting: The "Firefly" Penalty</h4>
+<div class="paragraph">
+<p>In Ray Tracing, a "Firefly" is a single pixel that is <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="6.285ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 2778 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(1000,0)"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(1500,0)"></path></g><g data-mml-node="mo" transform="translate(2000,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> brighter than its neighbors because it happened to hit a light source. Standard loss functions will prioritize these pixels above all else, often causing the AI to over-blur the rest of the image to compensate.
+*   <strong>Solution</strong>: Use a <strong>Robust Loss</strong> like Charbonnier loss, or simply clamp your gradients during training so that a single bright pixel doesn&#8217;t "hijack" the entire training session.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python"># Example of Robust Training Loop snippet
+def train_step(noisy, clean):
+    output = model(noisy)
+
+    # SSIM captures structural edges
+    ssim_loss = 1 - ssim(output, clean)
+
+    # L1 captures color accuracy
+    l1_loss = torch.abs(output - clean).mean()
+
+    # Combined Loss with a bias toward structure
+    total_loss = 0.8 * ssim_loss + 0.2 * l1_loss
+
+    total_loss.backward()
+
+    # Gradient Clamping to prevent Fireflies from ruining weights
+    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+    optimizer.step()</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+import torch.optim as optim
+from torch.utils.data import DataLoader
+from my_vulkan_dataset import RayTracingDataset
+
+def train_model():
+    # 1. Initialize our U-Net
+    # Input is 10 channels (RGB, Albedo, Normals, Depth)
+    model = DenoisingUNet(in_channels=10).cuda()
+
+    # 2. Setup optimizer and loss
+    # We use Adam, the industry standard for neural network optimization
+    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    criterion = CombinedLoss() # SSIM + L1
+
+    # 3. Load the data captured from Vulkan
+    dataset = RayTracingDataset("path/to/vulkan_data/")
+    loader = DataLoader(dataset, batch_size=16, shuffle=True)
+
+    # 4. The Training Loop
+    for epoch in range(100):
+        for noisy_patch, clean_patch in loader:
+            optimizer.zero_grad()
+
+            # AI tries to clean the noisy patch
+            output = model(noisy_patch.cuda())
+
+            # Compare output to the 'Gold' reference
+            loss = criterion(output, clean_patch.cuda())
+
+            # Update the AI's weights
+            loss.backward()
+            optimizer.step()
+
+        print(f"Epoch {epoch} complete. Loss: {loss.item()}")
+
+    # 5. Export for Vulkan use
+    # We export to ONNX format so we can load it in our C++ application
+    dummy_input = torch.randn(1, 10, 256, 256).cuda()
+    torch.onnx.export(model, dummy_input, "denoiser.onnx")
+
+train_model()</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_implementation_roadmap_your_integration_guide"><a class="anchor" href="#_implementation_roadmap_your_integration_guide"></a>Implementation Roadmap: Your Integration Guide</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you were to implement this from scratch in a Vulkan project, here is your concrete 5-stage pipeline. This roadmap moves from the GPU&#8217;s fixed-function units to the AI&#8217;s learned weights.</p>
+</div>
+<div class="sect2">
+<h3 id="_stage_1_the_anchor_pass_g_buffers"><a class="anchor" href="#_stage_1_the_anchor_pass_g_buffers"></a>Stage 1: The Anchor Pass (G-Buffers)</h3>
+<div class="paragraph">
+<p>Before you cast a single indirect light ray, you need your "Anchor" data. You can get this using a fast rasterization pass or a simple "Primary Ray" hit pass. This data must be noise-free.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Goal</strong>: Generate Albedo (RGB), World Normals (XYZ), Linear Depth (Z), and Motion Vectors (XY).</p>
+</li>
+<li>
+<p><strong>Precision Matters</strong>: Use <code>VK_FORMAT_R16G16B16A16_SFLOAT</code> for normals and motion vectors. Standard 8-bit <code>UNORM</code> formats (like <code>R8G8B8A8</code>) aren&#8217;t precise enough; the rounding errors will look like "wobble" to the AI.</p>
+</li>
+<li>
+<p><strong>Motion Vectors</strong>: Calculate these by taking the current world position, projecting it with the <strong>current</strong> VP matrix, then projecting it with the <strong>previous</strong> VP matrix. The difference is your velocity.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_2_the_stochastic_ray_pass"><a class="anchor" href="#_stage_2_the_stochastic_ray_pass"></a>Stage 2: The Stochastic Ray Pass</h3>
+<div class="paragraph">
+<p>This is where the actual Monte Carlo ray tracing happens.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Guided Sampling</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Run your tiny <strong>Error Predictor</strong> ONNX model on a quick 1spp probe.</p>
+</li>
+<li>
+<p>This outputs the Heatmap texture.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Targeted Trace</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Dispatch your <code>vkCmdTraceRaysKHR</code> pipeline.</p>
+</li>
+<li>
+<p>Inside the RayGen shader, read the Heatmap.</p>
+</li>
+<li>
+<p>Allocate your ray budget dynamically.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// Inside RayGen Shader
+float heat = texture(heatmap, uv).r;
+int samples = (heat &gt; 0.5) ? 32 : 1; // Simplest adaptive logic
+
+for(int i = 0; i &lt; samples; i++) {
+    // Trace and accumulate...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_3_ml_preprocessing_vulkan_compute"><a class="anchor" href="#_stage_3_ml_preprocessing_vulkan_compute"></a>Stage 3: ML Preprocessing (Vulkan Compute)</h3>
+<div class="paragraph">
+<p>The AI needs its data in a specific format. You use a Vulkan Compute Shader to transform your interleaved graphics buffers into a single ML tensor.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Normalization</strong>: Map your World Normals from [-1, 1] to the [0, 1] range.</p>
+</li>
+<li>
+<p><strong>Log-Scaling</strong>: Apply <code>log(1.0 + x)</code> to the noisy color to squash the HDR range.</p>
+</li>
+<li>
+<p><strong>Planar Packing (NCHW)</strong>: Reorganize the data. This is often the most complex part of the shader. You must write each channel into its own section of the final buffer.</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(std430, binding = 0) writeonly buffer TensorBuffer { float data[]; } tensor;
+
+void main() {
+    ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+    uint pixelIdx = pos.y * width + pos.x;
+    uint planeSize = width * height;
+
+    vec3 color = log(1.0 + texelFetch(noisyImage, pos, 0).rgb);
+
+    // NCHW Planar Layout
+    tensor.data[0 * planeSize + pixelIdx] = color.r;
+    tensor.data[1 * planeSize + pixelIdx] = color.g;
+    tensor.data[2 * planeSize + pixelIdx] = color.b;
+    // ... continue for Albedo, Normals, Depth ...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_4_the_inference_stage_onnx_runtime"><a class="anchor" href="#_stage_4_the_inference_stage_onnx_runtime"></a>Stage 4: The Inference Stage (ONNX Runtime)</h3>
+<div class="paragraph">
+<p>Now, you run the heavy AI models. This is the most computationally expensive stage of the entire pipeline. To maintain a real-time frame rate (16.6ms for 60 FPS), you must be extremely careful with how you handle GPU memory.</p>
+</div>
+<div class="sect3">
+<h4 id="_advanced_gpu_memory_management"><a class="anchor" href="#_advanced_gpu_memory_management"></a>Advanced GPU Memory Management</h4>
+<div class="paragraph">
+<p>In a naive application, you might download the G-Buffers from the GPU to the CPU, feed them to ONNX Runtime, and then upload the result back to the GPU. <strong>Do not do this.</strong> The PCIe bus is far too slow for this kind of "round-trip" at 60 FPS.</p>
+</div>
+<div class="paragraph">
+<p>Instead, use <strong>Zero-Copy Memory Sharing</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Vulkan Side</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Allocate your preprocessing output buffer using <code>VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT</code>.</p>
+</li>
+<li>
+<p>Ensure the memory is "exportable" by using the <code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_WIN32_BIT</code> (on Windows) or <code>VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT</code> (on Linux).</p>
+</li>
+<li>
+<p>Get a "Handle" to this memory using <code>vkGetMemoryWin32HandleKHR</code> or <code>vkGetMemoryFdKHR</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>ML Side (ONNX Runtime / TensorRT)</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Import that handle into the ML framework.</p>
+</li>
+<li>
+<p>Tell the AI: "Don&#8217;t allocate your own memory for input; use this specific handle instead."</p>
+</li>
+<li>
+<p>The AI will now read your Vulkan buffer directly from GPU memory.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Synchronization (The "Handshake")</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>You must ensure the GPU has finished the Preprocessing pass before the AI starts reading the buffer.</p>
+</li>
+<li>
+<p>Since Vulkan and ONNX Runtime run on the same GPU, you use <strong>Timeline Semaphores</strong> or <strong>Timeline Fences</strong> to coordinate.</p>
+</li>
+<li>
+<p>Vulkan waits on a semaphore <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.262ex" height="1.181ex" role="img" focusable="false" viewBox="0 -511 1000 522"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path></g></g></g></svg> </span> Signals ONNX <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.262ex" height="1.181ex" role="img" focusable="false" viewBox="0 -511 1000 522"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path></g></g></g></svg> </span> ONNX completes <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.262ex" height="1.181ex" role="img" focusable="false" viewBox="0 -511 1000 522"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path></g></g></g></svg> </span> Signals Vulkan to start the Post-Processing pass.</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_model_precision_fp32_vs_fp16"><a class="anchor" href="#_model_precision_fp32_vs_fp16"></a>Model Precision: FP32 vs FP16</h4>
+<div class="paragraph">
+<p>A standard U-Net uses 32-bit floats (FP32). However, modern GPUs have specialized hardware (like NVIDIA Tensor Cores) that can process 16-bit floats (FP16) much faster—often <span class="steminline"> <svg style="vertical-align: 0; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.891ex" height="1.507ex" role="img" focusable="false" viewBox="0 -666 1278 666"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="mo" transform="translate(500,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> to <span class="steminline"> <svg style="vertical-align: 0; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.891ex" height="1.532ex" role="img" focusable="false" viewBox="0 -677 1278 677"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="34" d="M462 0Q444 3 333 3Q217 3 199 0H190V46H221Q241 46 248 46T265 48T279 53T286 61Q287 63 287 115V165H28V211L179 442Q332 674 334 675Q336 677 355 677H373L379 671V211H471V165H379V114Q379 73 379 66T385 54Q393 47 442 46H471V0H462ZM293 211V545L74 212L183 211H293Z"></path></g><g data-mml-node="mo" transform="translate(500,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> speedup.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>FP32</strong>: Safe, high precision, but slow.</p>
+</li>
+<li>
+<p><strong>FP16</strong>: Fast, uses half the memory, but can lead to "NaN" (Not a Number) errors if you don&#8217;t handle the logarithmic scaling we discussed earlier.</p>
+</li>
+<li>
+<p><strong>Recommendation</strong>: Use FP16 for the Denoiser and Confidence Predictor. The visual difference is usually imperceptible, but the performance gain is what makes the difference between 30 FPS and 60 FPS.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_model_optimization_for_real_time_graphics"><a class="anchor" href="#_model_optimization_for_real_time_graphics"></a>Model Optimization for Real-Time Graphics</h4>
+<div class="paragraph">
+<p>Even with FP16, a U-Net is a "heavy" model. In a fast-paced game, you might only have 5ms for the entire denoising pass. To achieve this, you need to use <strong>Model Optimization Techniques</strong>:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Layer Fusion</strong>: When you export your model to ONNX, use an optimizer (like <code>onnx-simplifier</code> or TensorRT&#8217;s graph compiler) to combine layers. For example, a "Convolution + ReLU" sequence can be fused into a single GPU kernel, saving precious memory bandwidth.</p>
+</li>
+<li>
+<p><strong>Pruning</strong>: You can remove "dead" weights from your network that don&#8217;t contribute much to the final image. A 20% pruned U-Net can run significantly faster with zero loss in visual quality.</p>
+</li>
+<li>
+<p><strong>Kernel Specialization</strong>: High-end solutions (like NVIDIA OptiX) use hand-written Winograd convolutions that are much faster than the generic convolutions used by standard ML frameworks.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_5_final_accumulation_and_post_fx"><a class="anchor" href="#_stage_5_final_accumulation_and_post_fx"></a>Stage 5: Final Accumulation and Post-FX</h3>
+<div class="paragraph">
+<p>The final step brings everything together on the screen.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Inverse Scaling</strong>: Dispatch a compute shader to apply <code>exp(x) - 1.0</code> to the AI&#8217;s output.</p>
+</li>
+<li>
+<p><strong>Temporal Blending</strong>: Use the AI-generated Confidence Map and your Motion Vectors to blend the current result with the previous frame&#8217;s result.</p>
+</li>
+<li>
+<p><strong>Tonemapping</strong>: Apply standard post-processing: Exposure Control (e.g., Reinhard or ACES), Color Grading, and Gamma correction.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comparing_ai_to_traditional_denoisers_a_visual_tradeoff"><a class="anchor" href="#_comparing_ai_to_traditional_denoisers_a_visual_tradeoff"></a>Comparing AI to Traditional Denoisers: A Visual Tradeoff</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You might ask: "Why use a heavy neural network when traditional filters like <strong>SVGF (Spatiotemporal Variance-Guided Filtering)</strong> exist?"</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Feature</th>
+<th class="tableblock halign-left valign-top">Traditional (SVGF/ASVGF)</th>
+<th class="tableblock halign-left valign-top">AI (U-Net)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Detail Preservation</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Often blurs fine textures.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Excellent at separating noise from texture.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Edge Sharpness</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reliant on manually tuned G-buffer weights.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Learned automatically from "Gold" data.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Setup Time</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Months of manual "tuning" of edge weights.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">"Tuned" automatically during training.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Performance</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Extremely fast (2-5ms).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Heavier (10-20ms).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Versatility</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Optimized for specific light types.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Can be trained for any lighting style.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>The Industry Verdict</strong>: For real-time games, a hybrid approach is often the winner. Use SVGF for the "easy" direct light noise, and use a specialized AI Denoiser for the complex "difficult" noise like glossy reflections and global illumination.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_acquiring_the_models_the_structural_roadmap"><a class="anchor" href="#_acquiring_the_models_the_structural_roadmap"></a>Acquiring the Models: The "Structural Roadmap"</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You don&#8217;t need to be an AI researcher to begin experimenting. You can generate the "empty" models (the structural roadmap) using the following Python script. While these won&#8217;t be trained yet, they define the exact input/output shapes needed for your Vulkan integration code.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import torch
+import torch.nn as nn
+
+# 1. The Denoiser: The U-Net architecture we discussed
+class DenoisingUNet(nn.Module):
+    def __init__(self, in_channels=10, out_channels=3):
+        super().__init__()
+        # 10 channels = Noisy RGB (3) + Albedo (3) + Normals (3) + Depth (1)
+        self.enc1 = self.conv_block(in_channels, 32)
+        self.pool1 = nn.MaxPool2d(2)
+        self.enc2 = self.conv_block(32, 64)
+        self.up1 = nn.ConvTranspose2d(64, 32, 2, stride=2)
+        self.dec1 = self.conv_block(64, 32)
+        self.final = nn.Conv2d(32, out_channels, 1)
+
+    def conv_block(self, in_c, out_c):
+        return nn.Sequential(
+            nn.Conv2d(in_c, out_c, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(out_c, out_c, 3, padding=1), nn.ReLU()
+        )
+
+    def forward(self, x):
+        e1 = self.enc1(x)
+        d1 = self.up1(self.enc2(self.pool1(e1)))
+        return self.final(self.dec1(torch.cat([d1, e1], dim=1)))
+
+# 2. The Error Predictor: A very lightweight CNN for adaptive sampling
+class ErrorPredictor(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv2d(3, 16, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(16, 16, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(16, 1, 1), nn.Sigmoid()
+        )
+    def forward(self, x): return self.net(x)
+
+# 3. The Confidence Predictor: Handles temporal anti-ghosting
+class ConfidencePredictor(nn.Module):
+    def __init__(self):
+        super().__init__()
+        # Input: Current RGB, History RGB, Current Depth, Previous Depth
+        self.net = nn.Sequential(
+            nn.Conv2d(8, 16, 3, padding=1), nn.ReLU(),
+            nn.Conv2d(16, 1, 1), nn.Sigmoid()
+        )
+    def forward(self, x): return self.net(x)
+
+def export_all():
+    torch.onnx.export(DenoisingUNet(), torch.randn(1, 10, 256, 256), "denoiser.onnx")
+    torch.onnx.export(ErrorPredictor(), torch.randn(1, 3, 256, 256), "error_predictor.onnx")
+    torch.onnx.export(ConfidencePredictor(), torch.randn(1, 8, 256, 256), "confidence.onnx")
+    print("Empty ONNX models exported successfully.")
+
+export_all()</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_professional_solutions_when_to_buy_vs_build"><a class="anchor" href="#_professional_solutions_when_to_buy_vs_build"></a>Professional Solutions: When to Buy vs. Build</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While building your own AI graphics pipeline from scratch is the best way to understand the underlying technology, large-scale production projects often rely on highly optimized vendor solutions. These libraries use similar U-Net and Spatio-temporal architectures to what we&#8217;ve discussed but are hand-tuned for specific hardware architectures.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>NVIDIA OptiX Denoiser</strong>: Included with the OptiX SDK, this is the gold standard for NVIDIA GPUs. It uses a specialized A-SVGF filter combined with a deep learning denoiser that is tuned specifically for RTX Tensor Cores. <a href="https://developer.nvidia.com/optix-denoiser">NVIDIA OptiX</a></p>
+</li>
+<li>
+<p><strong>Intel® Open Image Denoise (OIDN)</strong>: A high-performance, open-source denoiser that works on <strong>any</strong> CPU or GPU (including NVIDIA, AMD, and Intel). It is widely used in offline rendering engines like Blender Cycles and is increasingly capable of reaching interactive speeds. <a href="https://www.openimagedenoise.org/">Intel OIDN</a></p>
+</li>
+<li>
+<p><strong>NVIDIA Real-Time Denoisers (NRD)</strong>: A library specifically designed for low-latency spatio-temporal denoising in real-time games. It handles the adaptive sampling and temporal stability math for you, allowing you to focus on your creative shaders. <a href="https://developer.nvidia.com/nrd">NVIDIA NRD</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary_the_future_of_graphics_is_ai"><a class="anchor" href="#_summary_the_future_of_graphics_is_ai"></a>Summary: The Future of Graphics is AI</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>AI-enhanced Ray Tracing is about <strong>Efficiency</strong>. You are using deep learning to "predict" the physics that you don&#8217;t have time to calculate. By combining U-Net reconstruction, adaptive ray budgeting, and temporal validation, you can deliver "cinema-quality" visuals in a real-time Vulkan environment.</p>
+</div>
+<div class="paragraph">
+<p>You’ve moved from simply rendering triangles to using the laws of probability and the power of neural networks to intelligently reconstruct the world. This is the cutting edge of modern graphics engineering.</p>
+</div>
+<div class="sect2">
+<h3 id="_key_takeaways_for_the_vulkan_developer"><a class="anchor" href="#_key_takeaways_for_the_vulkan_developer"></a>Key Takeaways for the Vulkan Developer</h3>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>G-Buffers are Gold</strong>: Your first-hit data (Albedo, Normals, Depth) is your best friend. Use it as a "structural anchor" for your AI models.</p>
+</li>
+<li>
+<p><strong>Orchestration is King</strong>: The bottleneck isn&#8217;t the AI&#8217;s math; it&#8217;s the movement of data. Use Zero-Copy memory sharing and async compute to keep your pipeline running at 60 FPS.</p>
+</li>
+<li>
+<p><strong>Statistical Safety</strong>: Always combine AI with mathematical safeguards like Color Box Clamping or Variance Rectification. The AI provides the "guess," but the math provides the "guarantee."</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_road_ahead_hardware_evolution"><a class="anchor" href="#_the_road_ahead_hardware_evolution"></a>The road ahead: Hardware Evolution</h3>
+<div class="paragraph">
+<p>As you continue your journey, keep an eye on how hardware is evolving. New extensions like <code>VK_NV_ray_tracing_motion_blur</code> and specialized AI cores are making the techniques we discussed today even more powerful. The line between "Graphics Programmer" and "ML Engineer" is blurring, and you are now at the forefront of that change.</p>
+</div>
+<div class="paragraph">
+<p>Happy rendering!</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_final_thoughts_the_infinite_loop_of_learning"><a class="anchor" href="#_final_thoughts_the_infinite_loop_of_learning"></a>Final Thoughts: The Infinite Loop of Learning</h3>
+<div class="paragraph">
+<p>The most important thing to remember is that an AI denoiser is never truly "finished." As you add new materials to your engine—like thin-film interference for soap bubbles or complex volumetric fog—you will need to harvest new data and retrain your models.</p>
+</div>
+<div class="paragraph">
+<p>By treating your graphics pipeline as a living, learning system, you can ensure that your application always looks its best, no matter how complex the world becomes.</p>
+</div>
+<div class="paragraph">
+<p><a href="06_rl_automated_exploration.html" class="xref page">Previous: RL-Based Automated Exploration</a> | <a href="08_future_directions.html" class="xref page">Next: Future Directions</a></p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

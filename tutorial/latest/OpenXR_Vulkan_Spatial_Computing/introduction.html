@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>OpenXR and Vulkan 1.3 Spatial Computing: Introduction :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../");!function(){var f="../OpenXR_Vulkan_Spatial_Computing/introduction.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>OpenXR and Vulkan 1.3 Spatial Computing</li>
+    <li><a href="introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">OpenXR and Vulkan 1.3 Spatial Computing: Introduction</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Welcome to the frontiers of spatial computing. In this tutorial series, we are going to bridge the gap between traditional 2D engine architecture and the immersive, low-latency requirements of Virtual Reality (VR), Augmented Reality (AR), and Mixed Reality (MR)—collectively known as XR.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_prerequisites"><a class="anchor" href="#_prerequisites"></a>Prerequisites</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before beginning this tutorial, you should have a solid foundation in both the Vulkan API and engine architecture. Specifically, we assume you have completed:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong><a href="../00_Introduction.html" class="xref page">The Core Vulkan Tutorial</a></strong>: You should be comfortable with the core concepts of Vulkan, including instance creation, physical devices, logical devices, and the basic graphics pipeline.</p>
+</li>
+<li>
+<p><strong><a href="../Building_a_Simple_Engine/introduction.html" class="xref page">Building a Simple Engine</a></strong>: This series builds directly upon the code and architectural patterns established in the engine tutorial. We will be using the <code>Simple Engine</code> codebase as our starting point.</p>
+</li>
+<li>
+<p><strong>Modern C&#43;&#43; and RAII</strong>: We utilize <code>vulkan-hpp</code> and RAII (Resource Acquisition Is Initialization) throughout the series. You should be familiar with these patterns to follow the C&#43;&#43; integration sections.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_openxr_ecosystem_runtimes_and_loaders"><a class="anchor" href="#_the_openxr_ecosystem_runtimes_and_loaders"></a>The OpenXR Ecosystem: Runtimes and Loaders</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we dive into the code, it is important to understand the two core components that make OpenXR work: the <strong>Loader</strong> and the <strong>Runtime</strong>.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>The OpenXR Loader</strong>: This is a small, vendor-neutral library that your application links against. Its primary responsibility is to act as a traffic cop. When your engine starts, the loader looks at the system&#8217;s registry or environment variables to find the currently active XR runtime and redirects all your API calls to it.</p>
+</li>
+<li>
+<p><strong>The OpenXR Runtime</strong>: This is the heavy lifter provided by the hardware manufacturer (such as Meta, Valve, Microsoft, or the open-source Monado project). The runtime contains the actual implementation of the OpenXR spec, including the drivers for the cameras, displays, and tracking sensors.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>To follow this tutorial, you will need to have an OpenXR-compatible environment set up on your development machine. This typically involves installing the SDK and ensuring a runtime is active.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>For the most up-to-date installation instructions and to download the necessary headers and loader libraries, we highly recommend visiting the official <strong><a href="https://github.com/KhronosGroup/OpenXR-SDK-Source">Khronos OpenXR-SDK-Source</a></strong> repository and following the <strong><a href="https://www.khronos.org/registry/OpenXR/specs/1.1/html/xrspec.html">OpenXR Specification</a></strong> or the excellent <strong><a href="https://www.openxr-tutorial.com/">OpenXR Tutorial</a></strong> for platform-specific setup guides.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_openxr"><a class="anchor" href="#_why_openxr"></a>Why OpenXR?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the early days of XR, developers had to write custom backends for every headset on the market. OpenXR changed all that by providing a cross-platform, high-performance API that allows a single application to run on devices ranging from the Meta Quest to the Valve Index and the Microsoft HoloLens.</p>
+</div>
+<div class="paragraph">
+<p>But OpenXR isn&#8217;t just a wrapper. It is a sophisticated state machine that manages hardware poses, predictive frame timing, and specialized swapchains that are owned by the XR runtime itself. To use it effectively, we have to rethink how our engine handles its main loop, its memory, and its synchronization.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_vulkan_1_3_advantage"><a class="anchor" href="#_the_vulkan_1_3_advantage"></a>The Vulkan 1.3 Advantage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan 1.3 brings several critical features to the table that are particularly powerful for spatial computing:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Timeline Semaphores</strong>: Essential for the complex, cross-process synchronization required between your engine and the XR compositor.</p>
+</li>
+<li>
+<p><strong>Dynamic Rendering</strong>: Provides a flexible, lightweight rendering path for stereo views, avoiding the rigid state of legacy Render Passes.</p>
+</li>
+<li>
+<p><strong>Synchronization 2</strong>: Simplifies the ownership transfers and barriers needed for low-latency late latching.</p>
+</li>
+<li>
+<p><strong>Maintenance Extensions</strong>: Providing better control over memory and resource visibility across hardware boundaries.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_we_will_build"><a class="anchor" href="#_what_we_will_build"></a>What We Will Build</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Throughout this series, we will cover the entire lifecycle of an XR frame:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>The Handshake</strong>: Connecting OpenXR to our Vulkan context using the runtime-enforced physical device and mandatory extensions.</p>
+</li>
+<li>
+<p><strong>Resource Management</strong>: Wrapping runtime-owned images into our RAII-based engine abstractions.</p>
+</li>
+<li>
+<p><strong>The Predictive Loop</strong>: Mastering frame timing to ensure that what the user sees matches exactly where their head is located at the moment of display.</p>
+</li>
+<li>
+<p><strong>Spatial Shaders</strong>: Using Slang to author efficient multiview and foveated rendering shaders.</p>
+</li>
+<li>
+<p><strong>Advanced Sensing</strong>: Ingesting environmental meshes and using ML inference to refine spatial data.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>By the end of this tutorial, you won&#8217;t just have a working XR application; you will have a deep understanding of the architectural patterns required for high-performance spatial computing in the modern Vulkan ecosystem.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s get started with the first step: the OpenXR-Vulkan 1.3 Handshake.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_OpenXR_Vulkan_Handshake/01_introduction.html" class="xref page">Next</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

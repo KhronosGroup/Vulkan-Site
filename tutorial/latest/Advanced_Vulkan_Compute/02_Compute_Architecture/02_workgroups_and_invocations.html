@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Workgroups and Invocations: The 3D Lattice :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_Vulkan_Compute/02_Compute_Architecture/02_workgroups_and_invocations.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced Vulkan Compute</li>
+    <li>The Compute Architecture and Execution Model</li>
+    <li><a href="02_workgroups_and_invocations.html">Workgroups and Invocations</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Workgroups and Invocations: The 3D Lattice</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the basic compute tutorial, we used a simple one-dimensional dispatch. While that works for simple tasks, it doesn&#8217;t represent how the GPU actually schedules work. To write high-performance kernels, you need to understand how Vulkan&#8217;s 3D grid system maps to the physical silicon of the GPU.</p>
+</div>
+<div class="paragraph">
+<p>The grid system is more than just a convenient way to index into textures; it defines how your workload is subdivided and scheduled across the hardware.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_three_tier_hierarchy"><a class="anchor" href="#_the_three_tier_hierarchy"></a>The Three-Tier Hierarchy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When you define a compute dispatch, you are working with a hierarchy of units. Getting these dimensions right is the first step toward high performance.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Global Dispatch Grid</strong>: This is the entire workload, defined in <code>vkCmdDispatch(x, y, z)</code>.</p>
+</li>
+<li>
+<p><strong>Workgroups</strong>: The global grid is subdivided into workgroups. The GPU&#8217;s hardware scheduler assigns these workgroups to physical compute units.</p>
+</li>
+<li>
+<p><strong>Invocations</strong>: Each workgroup contains multiple individual threads, defined by the <code>local_size</code> in your shader.</p>
+</li>
+</ol>
+</div>
+<div class="sect2">
+<h3 id="_workgroup_locality"><a class="anchor" href="#_workgroup_locality"></a>Workgroup Locality</h3>
+<div class="paragraph">
+<p>In the previous section, we mentioned that a workgroup cannot be split across multiple physical <strong>Compute Units</strong> (CU, on AMD/Intel) or <strong>Streaming Multiprocessors</strong> (SM, on NVIDIA). This means that all invocations within a workgroup are physically executed on the same hardware block.</p>
+</div>
+<div class="paragraph">
+<p>This locality is a key design constraint. It allows invocations in the same workgroup to share a fast, local memory known as <strong>LDS</strong> (Local Data Store) or <strong>groupshared</strong> memory, but it also means that the size of your workgroup is limited by the physical resources of a single CU/SM. If your workgroup size is too large, the GPU simply won&#8217;t be able to schedule it.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_math_of_indexing"><a class="anchor" href="#_the_math_of_indexing"></a>The Math of Indexing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan provides several built-in variables to help you find your place in the grid. In Slang, these are typically passed as parameters to the entry point using semantics like <code>SV_DispatchThreadID</code>, <code>SV_GroupThreadID</code>, and <code>SV_GroupID</code>.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s look at how these relate in a typical shader:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">[numthreads(16, 16, 1)]
+void main(
+    uint3 groupID      : SV_GroupID,           // gl_WorkGroupID
+    uint3 localID      : SV_GroupThreadID,     // gl_LocalInvocationID
+    uint3 globalID     : SV_DispatchThreadID   // gl_GlobalInvocationID
+) {
+    // globalID: The unique index for this thread in the entire grid
+    // Formula: globalID = groupID * numthreads + localID
+    uint x = globalID.x;
+    uint y = globalID.y;
+
+    // Process pixel (x, y)
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using a 2D or 3D grid makes spatial tasks (like image processing or physics simulations) much cleaner. Instead of manually calculating a 1D index, you can use <code>.xy</code> or <code>.xyz</code> coordinates that match your data structure.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_choosing_optimal_sizes"><a class="anchor" href="#_choosing_optimal_sizes"></a>Choosing Optimal Sizes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A common mistake is choosing workgroup sizes based solely on what "fits" your data. For example, if you&#8217;re processing a 10x10 image, you might choose a workgroup size of (10, 10, 1).</p>
+</div>
+<div class="paragraph">
+<p>However, GPUs execute invocations in bundles of 32 or 64—known as <strong>Subgroups</strong>, <strong>Warps</strong> (NVIDIA), or <strong>Wavefronts</strong> (AMD). If your workgroup size is not a multiple of the hardware&#8217;s native bundle size, you are leaving silicon idle. This is called <strong>internal fragmentation</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_rule_of_3264"><a class="anchor" href="#_the_rule_of_3264"></a>The Rule of 32/64</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>NVIDIA</strong> GPUs typically prefer multiples of <strong>32</strong> (Warps).</p>
+</li>
+<li>
+<p><strong>AMD</strong> GPUs typically prefer multiples of <strong>64</strong> (Wavefronts), though modern RDNA architectures can also handle 32.</p>
+</li>
+<li>
+<p><strong>Intel</strong> GPUs have variable sizes (8, 16, 32).</p>
+</li>
+<li>
+<p><strong>Mobile</strong> GPUs vary the most: Arm Mali and Qualcomm Adreno may report a subgroup size anywhere from 4 to 128, and the maximum invocations per workgroup can be as low as 128 (versus 1024 on desktop). Never hard-code these — query them at runtime, as explained in <a href="../12_Mobile_and_Embedded_Compute/02_android_compute.html" class="xref page">Compute on Android</a>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A safe, portable choice for many <strong>desktop</strong> workloads is a workgroup size of <strong>64</strong> or <strong>256</strong> (e.g., <code>16x16</code> or <code>8x8x4</code>). This ensures that most hardware can keep its <strong>SIMD</strong> (Single Instruction, Multiple Data) lanes full. On mobile, prefer smaller groups that respect the device&#8217;s reported <code>maxComputeWorkGroupInvocations</code> and a multiple of its actual <code>subgroupSize</code>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dispatching_the_work"><a class="anchor" href="#_dispatching_the_work"></a>Dispatching the Work</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When you call <code>vkCmdDispatch(groupCountX, groupCountY, groupCountZ)</code>, you are defining how many times the <code>local_size</code> block is repeated.</p>
+</div>
+<div class="paragraph">
+<p>If you have an image of size <code>width</code> x <code>height</code> and a workgroup size of <code>16x16</code>, your dispatch would look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uint32_t groupCountX = (width + 15) / 16;
+uint32_t groupCountY = (height + 15) / 16;
+commandBuffer.dispatch(groupCountX, groupCountY, 1);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Note the use of "rounding up" (<code>(width + 15) / 16</code>). This ensures that if your image size isn&#8217;t a perfect multiple of 16, you don&#8217;t miss the last few pixels. Inside the shader, you would then use a bounds check: <code>if (x &lt; width &amp;&amp; y &lt; height)</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_whats_next"><a class="anchor" href="#_whats_next"></a>What&#8217;s Next?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Understanding how workgroups map to hardware is the foundation of GPU compute. But mapping work to hardware is only part of the story; we also need to keep that hardware busy. In the next section, we&#8217;ll talk about <strong>Occupancy</strong> and how to hide the massive latency of VRAM.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_occupancy_and_latency_hiding.html" class="xref page">Next: Occupancy and Latency Hiding</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

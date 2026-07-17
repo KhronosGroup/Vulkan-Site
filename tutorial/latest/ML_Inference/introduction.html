@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Machine Learning Inference with Vulkan: Introduction :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../");!function(){var f="../ML_Inference/introduction.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li><a href="introduction.html">Introduction</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Machine Learning Inference with Vulkan: Introduction</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Welcome to the "Machine Learning Inference with Vulkan" tutorial series! This series explores the exciting intersection of Vulkan&#8217;s powerful compute capabilities and modern machine learning inference, showing you how to leverage your GPU for high-performance AI workloads.</p>
+</div>
+<div class="sect2">
+<h3 id="_a_new_frontier"><a class="anchor" href="#_a_new_frontier"></a>A New Frontier</h3>
+<div class="paragraph">
+<p>While the previous tutorial series introduced you to Vulkan&#8217;s graphics and compute fundamentals, this series takes you into the world of machine learning inference—running trained neural networks efficiently on the GPU using Vulkan compute shaders. You&#8217;ll learn how to bridge the gap between ML frameworks and low-level GPU programming, gaining control and performance that high-level frameworks often can&#8217;t provide.</p>
+</div>
+<div class="paragraph">
+<p>This series targets readers who have completed the <a href="../00_Introduction.html" class="xref page">Vulkan Tutorial</a> and feel comfortable with compute shaders and GPU programming concepts. We&#8217;ll focus on practical implementation: loading models, transferring data efficiently, implementing neural network operations in compute shaders, and optimizing for real-time performance. If you haven&#8217;t worked with the compute pipeline yet, revisit the Compute Shader chapters in the main tutorial before continuing.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_should_you_build_your_own_a_practical_perspective"><a class="anchor" href="#_should_you_build_your_own_a_practical_perspective"></a>Should You Build Your Own? A Practical Perspective</h3>
+<div class="paragraph">
+<p>Before we dive deep into implementing ML inference with Vulkan, let&#8217;s address the most important question: <strong>should you actually do this?</strong></p>
+</div>
+<div class="paragraph">
+<p>For the vast majority of applications, our professional recommendation is clear: <strong>use existing ML inference libraries</strong>. Mature frameworks like TensorFlow Lite, ONNX Runtime, PyTorch Mobile, and platform-specific solutions (Core ML on iOS, ML Kit on Android, DirectML on Windows) provide:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Battle-tested implementations</strong> - Years of optimization and bug fixes</p>
+</li>
+<li>
+<p><strong>Broad model support</strong> - Hundreds of operation types already implemented</p>
+</li>
+<li>
+<p><strong>Hardware acceleration</strong> - Automatic use of GPUs, NPUs, and specialized AI accelerators</p>
+</li>
+<li>
+<p><strong>Active maintenance</strong> - Regular updates for new hardware and techniques</p>
+</li>
+<li>
+<p><strong>Production reliability</strong> - Used by millions of applications worldwide</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These libraries represent thousands of person-years of engineering effort. Unless you have specific constraints that prevent their use, leveraging this work is the smart choice.</p>
+</div>
+<div class="sect3">
+<h4 id="_when_custom_vulkan_implementation_makes_sense"><a class="anchor" href="#_when_custom_vulkan_implementation_makes_sense"></a>When Custom Vulkan Implementation Makes Sense</h4>
+<div class="paragraph">
+<p>So why does this tutorial exist? Because there are real scenarios where building your own inference engine with Vulkan is not just viable—it&#8217;s the best architectural choice:</p>
+</div>
+<div class="paragraph">
+<p><strong>Graphics Integration</strong>: If you&#8217;re building a game or graphics application that already uses Vulkan for rendering, integrating ML inference into your existing Vulkan pipeline can be more efficient than bridging to a separate ML framework. You avoid data transfers between different GPU contexts, can share memory and synchronization primitives, and maintain a unified codebase.</p>
+</div>
+<div class="paragraph">
+<p><strong>Rendering AI Techniques</strong>: Techniques like Gaussian splatting, neural rendering, and other graphics-focused AI methods often use lightweight activation functions and simple network architectures. These "simple AI" approaches are particularly well-suited for custom Vulkan implementation because the computational overhead is manageable, and tight integration with your rendering pipeline provides significant performance benefits.</p>
+</div>
+<div class="paragraph">
+<p><strong>Embedded and Resource-Constrained Platforms</strong>: Some embedded systems or specialized hardware don&#8217;t support standard ML frameworks but do support Vulkan. Custom implementation gives you precise control over memory usage and performance characteristics critical for resource-constrained environments.</p>
+</div>
+<div class="paragraph">
+<p><strong>Novel Model Architectures</strong>: If you&#8217;re working with cutting-edge research models that use operations not yet supported by standard frameworks, implementing them directly in Vulkan compute shaders might be faster than waiting for framework support or working around limitations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cross-Platform Consistency</strong>: Vulkan runs on Windows, Linux, Android, and increasingly on other platforms. If you need identical inference behavior across diverse platforms and existing frameworks show subtle differences, a custom Vulkan implementation provides that consistency.</p>
+</div>
+<div class="paragraph">
+<p><strong>Learning and Understanding</strong>: Even if you ultimately use existing libraries in production, understanding ML inference at the Vulkan level makes you a better engineer. You&#8217;ll understand performance characteristics, debug issues more effectively, and make better architectural decisions.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_hybrid_approach"><a class="anchor" href="#_the_hybrid_approach"></a>The Hybrid Approach</h4>
+<div class="paragraph">
+<p>In practice, many applications use a hybrid approach: standard ML frameworks for most inference workloads, with custom Vulkan implementations for specific performance-critical or tightly-integrated components. This tutorial prepares you for both scenarios—understanding the fundamentals deeply enough to make informed decisions about when to use each approach.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll dedicate an entire chapter to integrating third-party ML libraries with Vulkan applications, showing you how to bridge between frameworks and your Vulkan rendering pipeline. This ensures you can choose the right tool for each part of your application.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_to_expect"><a class="anchor" href="#_what_to_expect"></a>What to Expect</h3>
+<div class="paragraph">
+<p>The "Machine Learning Inference with Vulkan" series is designed to give you both understanding and practical skills. We&#8217;ll cover:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>ML Inference Fundamentals</strong> - What machine learning inference is, how it works, and how to think about neural networks as compute operations.</p>
+</li>
+<li>
+<p><strong>Integrating Third-Party ML Libraries</strong> - A comprehensive guide to using established ML inference frameworks (TensorFlow Lite, ONNX Runtime, PyTorch Mobile, DirectML) within Vulkan applications. This is the recommended approach for most production applications, and we dedicate significant coverage to bridging between ML frameworks and Vulkan rendering pipelines.</p>
+</li>
+<li>
+<p><strong>Model Formats and Loading</strong> - Working with popular formats like TFLite and ONNX, and understanding how to load and prepare models for GPU execution.</p>
+</li>
+<li>
+<p><strong>Vulkan Compute for ML</strong> - Implementing neural network operations using compute shaders, managing memory efficiently, and handling synchronization.</p>
+</li>
+<li>
+<p><strong>Building Custom Inference Engines</strong> - For specialized use cases where third-party libraries don&#8217;t meet your needs, learn to build your own inference engine from scratch.</p>
+</li>
+<li>
+<p><strong>Performance Optimization</strong> - Techniques for maximizing throughput, minimizing latency, and making the most of your GPU hardware, whether using third-party libraries or custom implementations.</p>
+</li>
+<li>
+<p><strong>Practical Applications</strong> - Real-world examples that combine ML inference with graphics rendering and interactive applications, demonstrating both third-party library integration and custom Vulkan implementations.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Throughout this series, we encourage you to experiment with different models, try various optimization strategies, and adapt the techniques to your specific use cases. Machine learning inference is a rapidly evolving field, and understanding it at the Vulkan level gives you the flexibility to implement cutting-edge techniques—whether by integrating existing libraries or building custom solutions.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_three_path_teaching_approach"><a class="anchor" href="#_the_three_path_teaching_approach"></a>The Three-Path Teaching Approach</h3>
+<div class="paragraph">
+<p>This tutorial takes a unique approach: wherever possible, we teach <strong>three</strong> methods of achieving ML inference goals.</p>
+</div>
+<div class="paragraph">
+<p><strong>Path 1: Third-Party Libraries</strong> - The recommended approach for most production applications. You&#8217;ll learn to integrate mature ML frameworks (TensorFlow Lite, ONNX Runtime, PyTorch Mobile, DirectML) with your Vulkan applications, bridging between ML inference and your rendering pipeline.</p>
+</div>
+<div class="paragraph">
+<p><strong>Path 2: Custom Vulkan Implementation</strong> - Building your own inference engine using Vulkan compute shaders. This path provides deep insight into how ML inference actually works at the GPU level, helping you understand what happens "under the hood" of those third-party libraries.</p>
+</div>
+<div class="paragraph">
+<p><strong>Path 3: ML Compiler</strong> - Use an ML compiler (IREE, Apache TVM, OpenXLA, MAX/Mojo) to lower models into optimized kernels for Vulkan and other backends. This strikes a balance between ease of integration and performance/portability.</p>
+</div>
+<div class="paragraph">
+<p>Why teach all three? Because understanding the internals makes you better at using libraries and compilers in production. When you know how convolutions map to GPU operations, how memory is managed, and where synchronization matters, you make better architectural decisions, debug issues more effectively, and optimize more intelligently. Someone familiar with the core concepts of the internals is better able to understand how to use these tools in production.</p>
+</div>
+<div class="paragraph">
+<p>Throughout the tutorial, you&#8217;ll get practice across the three approaches. The chapters on fundamentals and Vulkan compute teach you to implement operations yourself. The third-party libraries chapter shows production-ready solutions. The ML Compilers section introduces a compiler-driven path that often provides near hand-written performance with minimal runtime overhead.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_to_use_this_tutorial"><a class="anchor" href="#_how_to_use_this_tutorial"></a>How to Use This Tutorial</h3>
+<div class="paragraph">
+<p>Each chapter builds on the previous ones to create a complete understanding of ML inference with Vulkan. Read each chapter thoroughly before implementing, take time to understand the concepts, and don&#8217;t hesitate to revisit the main Vulkan tutorial when you need to refresh your knowledge of compute pipelines or memory management. The code examples are starting points—extend them, optimize them, and make them your own.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s begin our journey into ML inference with these chapters:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="ML_Inference_Pipeline/01_introduction.html" class="xref page">ML Inference Pipeline</a> - Understanding machine learning, neural networks, inference, transfer learning, model formats (TFLite and ONNX), and the mental model for ML workloads on GPUs.</p>
+</li>
+<li>
+<p><a href="Third_Party_Libraries/01_introduction.html" class="xref page">Integrating Third-Party ML Libraries</a> - <strong>The recommended approach for most applications.</strong> Comprehensive coverage of using TensorFlow Lite, ONNX Runtime, PyTorch Mobile, and DirectML within Vulkan applications. Learn to bridge between ML frameworks and Vulkan rendering pipelines, share GPU resources, synchronize between inference and rendering, handle data transfers efficiently, and choose the right library for your use case. Includes complete working examples for desktop, mobile, and embedded platforms.</p>
+</li>
+<li>
+<p><a href="Vulkan_Compute_for_ML/01_introduction.html" class="xref page">Vulkan Compute for ML</a> - Reviewing Vulkan compute pipelines, implementing compute shaders for ML operations, managing data transfers, synchronization with barriers and events, and building a complete "hello world" vector addition example.</p>
+</li>
+<li>
+<p><a href="Building_the_Inference_Engine/05_model_formats_as_input.html" class="xref page">Models and Data</a> - Understanding ML model formats in depth, the anatomy of neural network models, exporting models from PyTorch and TensorFlow, model inspection and simplification tools, and translating between formats.</p>
+</li>
+<li>
+<p><a href="Building_the_Inference_Engine/01_introduction.html" class="xref page">Building the Inference Engine</a> - For specialized use cases: Loading models to Vulkan objects, parsing model files, creating network graphs, extracting weights, implementing common NN layers (convolution, pooling, activation functions, fully connected) in GLSL and Slang, and building a complete MNIST inference example.</p>
+</li>
+<li>
+<p><a href="Advanced_Topics/01_introduction.html" class="xref page">Advanced Topics</a> - Quantization (what it is, why it matters, types, implementing quantized kernels), vendor-specific optimizations, debugging and validation techniques, performance tuning, and best practices including async compute for both third-party libraries and custom implementations.</p>
+</li>
+<li>
+<p><a href="Embedded_Applications/01_introduction.html" class="xref page">Deployment</a> - Cross-platform deployment strategies: desktop applications (command-line and graphics engine integration with CI validation), Android apps (permissions, asset management, real-time inference), and embedded devices (cross-compilation, memory optimization, battery considerations, headless execution with SLAM examples). Covers deployment for both third-party library integration and custom Vulkan inference engines.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><a href="../conclusion.html" class="xref page">Previous: Main Tutorial Conclusion</a> | <a href="ML_Inference_Pipeline/01_introduction.html" class="xref page">Next: ML Inference Pipeline</a></p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_getting_started_with_ml_tools"><a class="anchor" href="#_getting_started_with_ml_tools"></a>Getting Started with ML Tools</h3>
+<div class="paragraph">
+<p>To follow along with this tutorial series, you&#8217;ll need to set up a few additional tools beyond the standard Vulkan development environment:</p>
+</div>
+<div class="paragraph">
+<p><strong>Python and ML Frameworks</strong></p>
+</div>
+<div class="paragraph">
+<p>Most ML models are trained using Python-based frameworks. You&#8217;ll need:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Python 3.8 or later</strong> - For running model conversion scripts and working with ML libraries</p>
+</li>
+<li>
+<p><strong>PyTorch or TensorFlow</strong> - At least one major ML framework for understanding model formats and performing conversions</p>
+</li>
+<li>
+<p><strong>ONNX Runtime</strong> (optional) - Useful for working with ONNX models and validating conversions</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Model Conversion Tools</strong></p>
+</div>
+<div class="paragraph">
+<p>Different model formats require different tools:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>TensorFlow Lite Converter</strong> - For working with TFLite models</p>
+</li>
+<li>
+<p><strong>ONNX tools</strong> - For ONNX model manipulation and optimization</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Vulkan Compute Setup</strong></p>
+</div>
+<div class="paragraph">
+<p>Ensure your Vulkan development environment supports compute:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Verify your GPU supports Vulkan compute queues</p>
+</li>
+<li>
+<p>Confirm you can run the compute shader examples from the main tutorial</p>
+</li>
+<li>
+<p>Have profiling tools ready (RenderDoc, Nsight, or similar) for performance analysis</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>We&#8217;ll provide detailed setup instructions in the first chapter, but having these tools ready will help you follow along more smoothly. The focus will be on practical implementation, so you&#8217;ll be writing and running code from the start.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Inference Explained :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/ML_Inference_Pipeline/04_inference_explained.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>ML Inference Pipeline</li>
+    <li><a href="04_inference_explained.html">Inference Explained</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Inference Explained</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the previous chapter, we explored how neural networks learn—the intricate process of adjusting millions of weights through gradient descent, backpropagation, and iterative optimization. We built understanding from first principles, seeing how networks discover patterns in data through training.</p>
+</div>
+<div class="paragraph">
+<p>Now we&#8217;re going to shift our focus entirely. This tutorial series isn&#8217;t about training neural networks—it&#8217;s about <strong>using</strong> them. Specifically, it&#8217;s about taking models that have already been trained and running them efficiently on GPUs using Vulkan compute shaders. This process is called <strong>inference</strong>, and it&#8217;s fundamentally different from training in ways that matter deeply for implementation.</p>
+</div>
+<div class="paragraph">
+<p>Understanding this distinction isn&#8217;t just academic—it shapes every design decision we&#8217;ll make. The code we write, the memory we allocate, the synchronization we implement, all flow from understanding what inference is and what it isn&#8217;t.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_two_phases_two_worlds"><a class="anchor" href="#_two_phases_two_worlds"></a>Two Phases, Two Worlds</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Machine learning has two distinct phases that happen at different times, in different places, with different goals and constraints. Let&#8217;s understand each clearly.</p>
+</div>
+<div class="sect2">
+<h3 id="_training_the_learning_phase"><a class="anchor" href="#_training_the_learning_phase"></a>Training: The Learning Phase</h3>
+<div class="paragraph">
+<p>Think of training as the research and development phase. Somewhere—maybe in a university lab, maybe at a tech company, maybe on your own workstation—someone is teaching a neural network to perform a task.</p>
+</div>
+<div class="paragraph">
+<p>They start with a network that knows nothing. The weights are random. If you fed it an image of a cat, it would output nonsense—maybe it would confidently declare it&#8217;s a toaster. The network hasn&#8217;t learned anything yet.</p>
+</div>
+<div class="paragraph">
+<p>Then the training process begins. The network sees millions of examples: images of cats labeled "cat," images of dogs labeled "dog," images of cars labeled "car." For each example, the network makes a prediction. When it&#8217;s wrong (which is almost always at first), the training algorithm measures how wrong it was and adjusts the weights slightly to do better next time.</p>
+</div>
+<div class="paragraph">
+<p>This happens millions of times. The network gradually learns patterns: "images with pointy ears and whiskers tend to be cats," "images with wheels and windows tend to be cars." The weights—those millions of numbers we discussed in the previous chapter—slowly shift from random values to meaningful patterns that encode this knowledge.</p>
+</div>
+<div class="paragraph">
+<p>This process is <strong>expensive</strong>. Training a modern image recognition model on ImageNet might take days or weeks on high-end GPUs. Training a large language model can cost millions of dollars in compute time. It requires massive datasets, careful tuning of learning rates and other hyperparameters, and deep expertise in optimization algorithms.</p>
+</div>
+<div class="paragraph">
+<p>The good news? You usually don&#8217;t need to do this yourself. Researchers and companies train models and publish them. You can download a pre-trained model that already knows how to recognize objects, translate languages, or generate images. The hard work of training has already been done.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_inference_the_deployment_phase"><a class="anchor" href="#_inference_the_deployment_phase"></a>Inference: The Deployment Phase</h3>
+<div class="paragraph">
+<p>Inference is what happens after training is complete. You have a trained model—a file containing millions of learned weights. Now you want to <strong>use</strong> it to make predictions on new data.</p>
+</div>
+<div class="paragraph">
+<p>This is a completely different scenario. The weights are fixed—they&#8217;re not changing anymore. There&#8217;s no learning happening, no optimization, no backpropagation. You&#8217;re simply running data through the network to get predictions.</p>
+</div>
+<div class="paragraph">
+<p>The constraints are different too. Training happens offline, often on powerful server hardware, and can take as long as it needs. Inference happens in production, often on less powerful devices, and needs to be <strong>fast</strong>. When a user opens your app and points their camera at an object, they expect instant recognition. When a game needs to make an AI decision, it can&#8217;t wait seconds for a prediction—it needs an answer in milliseconds.</p>
+</div>
+<div class="paragraph">
+<p>This is where Vulkan comes in. By implementing inference at the Vulkan level, we get fine-grained control over GPU execution. We can optimize for the specific constraints of inference: fixed weights, forward-pass-only execution, real-time performance requirements. We&#8217;re not building a training system—we&#8217;re building a deployment system, and that&#8217;s a very different engineering challenge.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_this_distinction_matters_for_implementation"><a class="anchor" href="#_why_this_distinction_matters_for_implementation"></a>Why This Distinction Matters for Implementation</h3>
+<div class="paragraph">
+<p>Understanding the training-inference split has practical implications for how we build our Vulkan inference engine.</p>
+</div>
+<div class="paragraph">
+<p>During training, you need to store intermediate activations from every layer because backpropagation needs them to compute gradients. This means keeping the entire forward pass in memory. For inference, we only need the current layer&#8217;s activations—once we&#8217;ve computed layer 5&#8217;s output and passed it to layer 6, we can discard layer 5&#8217;s activations and reuse that memory. This dramatically reduces memory requirements.</p>
+</div>
+<div class="paragraph">
+<p>During training, you&#8217;re processing large batches of examples together (32, 64, 128 or more) because this provides more stable gradient estimates and better GPU utilization. For inference, you might process just one example at a time if you need low latency, or you might batch for throughput—the choice is yours based on your application&#8217;s needs.</p>
+</div>
+<div class="paragraph">
+<p>During training, you need automatic differentiation, gradient computation, and optimizer state. For inference, none of this exists. We&#8217;re implementing a much simpler system: load weights, run forward pass, get output. This simplicity is liberating—we can focus entirely on making the forward pass as fast as possible.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_inference_pipeline_following_data_through_the_system"><a class="anchor" href="#_the_inference_pipeline_following_data_through_the_system"></a>The Inference Pipeline: Following Data Through the System</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s trace what actually happens when you run inference. Understanding this flow helps you see where Vulkan fits in and what we need to implement.</p>
+</div>
+<div class="sect2">
+<h3 id="_stage_1_input_data_arrives"><a class="anchor" href="#_stage_1_input_data_arrives"></a>Stage 1: Input Data Arrives</h3>
+<div class="paragraph">
+<p>Your application has some data it wants the model to process. Maybe it&#8217;s an image from a camera, an audio buffer from a microphone, text from a user, or sensor readings from a device. This data is in whatever format your application naturally produces—an image might be RGB pixels in a buffer, audio might be PCM samples, text might be a string.</p>
+</div>
+<div class="paragraph">
+<p>This raw data isn&#8217;t ready for the neural network yet. Models have specific expectations about input format, and we need to meet those expectations.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_2_preprocessing_transforms_the_data"><a class="anchor" href="#_stage_2_preprocessing_transforms_the_data"></a>Stage 2: Preprocessing Transforms the Data</h3>
+<div class="paragraph">
+<p>Preprocessing is the bridge between your application&#8217;s data format and the model&#8217;s expected input format. This stage can involve several transformations, and getting it right is crucial—if your preprocessing doesn&#8217;t match what the model expects, your predictions will be garbage no matter how good the model is.</p>
+</div>
+<div class="sect3">
+<h4 id="_image_preprocessing_from_pixels_to_tensors"><a class="anchor" href="#_image_preprocessing_from_pixels_to_tensors"></a>Image Preprocessing: From Pixels to Tensors</h4>
+<div class="paragraph">
+<p>Let&#8217;s start with images, since they&#8217;re common in graphics applications and the transformations are intuitive.</p>
+</div>
+<div class="paragraph">
+<p><strong>Resizing</strong>: Models are trained on specific input dimensions. A model trained on 224×224 images has learned to recognize patterns at that scale. If you feed it a 1920×1080 image, the patterns are at completely different scales—what should be a face might span the entire input, or what should be a full object might be just a tiny corner. You need to resize first.</p>
+</div>
+<div class="paragraph">
+<p>But resizing isn&#8217;t trivial. Do you crop? If so, from where—center crop, random crop? Do you scale? If the aspect ratio doesn&#8217;t match, do you stretch (distorting the image) or letterbox (adding black bars)? The answer depends on how the model was trained. If it was trained on center-cropped images, you should center-crop during inference. If it was trained on stretched images, you should stretch. Mismatch here degrades accuracy.</p>
+</div>
+<div class="paragraph">
+<p><strong>Normalization</strong>: Images typically store pixels as 8-bit integers from 0 to 255. Neural networks work with floating-point numbers, and they&#8217;re sensitive to the range of input values. Most models expect inputs normalized to a specific range.</p>
+</div>
+<div class="paragraph">
+<p>Common normalization schemes include:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Scale to [0, 1]: <code>pixel_float = pixel_int / 255.0</code></p>
+</li>
+<li>
+<p>Scale to [-1, 1]: <code>pixel_float = (pixel_int / 127.5) - 1.0</code></p>
+</li>
+<li>
+<p>Standardization: <code>pixel_float = (pixel_int - mean) / std</code> where mean and std are computed from the training dataset</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>That last one is particularly important. Many models (especially those trained on ImageNet) expect inputs standardized using ImageNet statistics: mean = [0.485, 0.456, 0.406] and std = [0.229, 0.224, 0.225] (per RGB channel). If you don&#8217;t apply the exact same normalization, the model sees inputs that are out of distribution from what it was trained on, and accuracy suffers.</p>
+</div>
+<div class="paragraph">
+<p><strong>Color Space Conversion</strong>: This is a subtle gotcha. OpenCV loads images in BGR order (blue, green, red), while most ML frameworks expect RGB (red, green, blue). If you train a model with one convention and run inference with the other, the model sees red where it expects blue and vice versa. For some models, this completely breaks predictions.</p>
+</div>
+<div class="paragraph">
+<p>Similarly, some models expect grayscale inputs (single channel), while others expect RGB (three channels). Converting RGB to grayscale isn&#8217;t just averaging the channels—proper conversion uses weighted sums that account for human perception: <code>gray = 0.299*R + 0.587*G + 0.114*B</code>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Channel Ordering</strong>: Even within RGB, there are different memory layouts. Some frameworks use "channels last" (height × width × channels), where pixels are stored as RGBRGBRGB&#8230;&#8203; Others use "channels first" (channels × height × width), where all red values come first, then all green, then all blue. Your model expects one or the other, and you need to match it.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_text_preprocessing_from_strings_to_tokens"><a class="anchor" href="#_text_preprocessing_from_strings_to_tokens"></a>Text Preprocessing: From Strings to Tokens</h4>
+<div class="paragraph">
+<p>Text preprocessing is more complex because it involves linguistic structure, not just numerical transformations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Tokenization</strong>: Breaking text into pieces is the first step. The simplest approach is word-level tokenization: "Hello world" becomes ["Hello", "world"]. But this has problems—what about punctuation? What about words the model has never seen?</p>
+</div>
+<div class="paragraph">
+<p>Modern models use subword tokenization. Algorithms like Byte-Pair Encoding (BPE) or WordPiece break words into smaller units. "unhappiness" might become ["un", "happiness"], allowing the model to understand the word even if it never saw "unhappiness" during training, as long as it saw "un" and "happiness" separately.</p>
+</div>
+<div class="paragraph">
+<p>Each token gets converted to a numerical ID from a vocabulary. "Hello" might be ID 5234, "world" might be ID 8912. The model works with these IDs, not the original text.</p>
+</div>
+<div class="paragraph">
+<p><strong>Sequence Length Handling</strong>: Models have a maximum sequence length—maybe 512 tokens, maybe 1024. If your input is shorter, you pad it with special padding tokens. If it&#8217;s longer, you truncate it. Where you truncate matters: from the beginning, the end, or intelligently keeping the most important parts?</p>
+</div>
+<div class="paragraph">
+<p><strong>Special Tokens</strong>: Most models expect special tokens that mark structure. A [CLS] token at the beginning might indicate "this is the start of a sequence." A [SEP] token might separate different segments. A [PAD] token fills unused positions. These tokens have specific IDs in the vocabulary, and you need to insert them exactly where the model expects.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_audio_preprocessing_from_waveforms_to_features"><a class="anchor" href="#_audio_preprocessing_from_waveforms_to_features"></a>Audio Preprocessing: From Waveforms to Features</h4>
+<div class="paragraph">
+<p>Audio preprocessing often involves transforming the raw waveform into a representation that&#8217;s easier for neural networks to process.</p>
+</div>
+<div class="paragraph">
+<p><strong>Resampling</strong>: Audio might be recorded at 48kHz, but your model expects 16kHz. Resampling changes the sample rate, which involves filtering to avoid aliasing and interpolation to generate new samples.</p>
+</div>
+<div class="paragraph">
+<p><strong>Mono Conversion</strong>: If your audio is stereo but the model expects mono, you need to combine channels. Simple averaging works: <code>mono = (left + right) / 2</code>, but more sophisticated approaches might preserve more information.</p>
+</div>
+<div class="paragraph">
+<p><strong>Spectrograms</strong>: Many audio models don&#8217;t work with raw waveforms—they work with spectrograms, which represent audio in the frequency domain. A spectrogram shows which frequencies are present at each point in time. Computing a spectrogram involves applying a Short-Time Fourier Transform (STFT) to overlapping windows of the audio signal.</p>
+</div>
+<div class="paragraph">
+<p>Mel spectrograms go further, converting the frequency axis to the mel scale, which better matches human perception of pitch. This is what models like speech recognition systems often expect.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_where_preprocessing_happens_cpu_vs_gpu"><a class="anchor" href="#_where_preprocessing_happens_cpu_vs_gpu"></a>Where Preprocessing Happens: CPU vs GPU</h4>
+<div class="paragraph">
+<p>Traditionally, preprocessing happens on the CPU. It&#8217;s relatively lightweight compared to running the neural network, and CPUs handle the varied operations (resizing, color conversion, tokenization) well.</p>
+</div>
+<div class="paragraph">
+<p>But for performance-critical applications, GPU preprocessing can make a difference. If you&#8217;re processing video at 60 frames per second, spending 5ms on CPU preprocessing per frame adds up. Moving that to the GPU—implementing resize and normalization as compute shaders—can reduce latency significantly.</p>
+</div>
+<div class="paragraph">
+<p>The tradeoff is complexity. CPU preprocessing can use existing libraries (OpenCV for images, librosa for audio, tokenizers from ML frameworks). GPU preprocessing means writing custom compute shaders and managing data transfers. For most applications, CPU preprocessing is fine. For latency-critical applications (real-time video processing, interactive AR/VR), GPU preprocessing is worth considering.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_critical_importance_of_matching_training"><a class="anchor" href="#_the_critical_importance_of_matching_training"></a>The Critical Importance of Matching Training</h4>
+<div class="paragraph">
+<p>Here&#8217;s the key insight: preprocessing during inference must <strong>exactly</strong> match preprocessing during training. If the model was trained on images resized with bilinear interpolation, you should use bilinear interpolation during inference. If it was trained with ImageNet normalization, you must use ImageNet normalization during inference.</p>
+</div>
+<div class="paragraph">
+<p>Mismatches here are a common source of poor inference accuracy. The model works great in the training framework but fails when deployed because preprocessing differs slightly. Always check the model&#8217;s documentation or training code to understand exactly what preprocessing was used.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_3_neural_network_execution"><a class="anchor" href="#_stage_3_neural_network_execution"></a>Stage 3: Neural Network Execution</h3>
+<div class="paragraph">
+<p>This is the heart of inference—running the actual neural network. Your preprocessed input data flows through the network, layer by layer, until it reaches the output. This is where all the learning that happened during training gets put to use.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s make this concrete with an example. Suppose you&#8217;re running an image classification model—something like ResNet or MobileNet. Your input is a 224×224×3 tensor (height × width × color channels). That&#8217;s 150,528 floating-point numbers representing your image.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_first_layer_feature_extraction_begins"><a class="anchor" href="#_the_first_layer_feature_extraction_begins"></a>The First Layer: Feature Extraction Begins</h4>
+<div class="paragraph">
+<p>The first layer might be a convolution with 64 filters of size 7×7, with a stride of 2. What does this mean in practice?</p>
+</div>
+<div class="paragraph">
+<p>A convolution is a sliding window operation. Imagine taking a 7×7 magnifying glass and sliding it across your image, one step at a time. At each position, you&#8217;re looking at a 7×7 patch of pixels (across all 3 color channels, so really 7×7×3 = 147 values). You multiply each of these 147 values by a corresponding learned weight, sum them all up, add a bias term, and that gives you one output value.</p>
+</div>
+<div class="paragraph">
+<p>Now, you have 64 different filters, each with their own set of 147 weights. So at each position, you compute 64 different output values—one for each filter. Each filter has learned to detect a different pattern: maybe one detects horizontal edges, another detects vertical edges, another detects red regions, and so on.</p>
+</div>
+<div class="paragraph">
+<p>With a stride of 2, you&#8217;re moving your window 2 pixels at a time instead of 1, which means your output is half the size in each dimension. So your 224×224×3 input becomes a 112×112×64 output. You&#8217;ve downsampled spatially (from 224×224 to 112×112) but increased the number of channels (from 3 to 64). You&#8217;re trading spatial resolution for feature richness.</p>
+</div>
+<div class="paragraph">
+<p>This single convolution layer involves roughly 224 × 224 × 64 × 7 × 7 × 3 = 147 million multiply-add operations. That&#8217;s a lot of computation, but GPUs excel at exactly this kind of work—the same operation repeated millions of times on different data.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_activation_functions_introducing_non_linearity"><a class="anchor" href="#_activation_functions_introducing_non_linearity"></a>Activation Functions: Introducing Non-Linearity</h4>
+<div class="paragraph">
+<p>After the convolution, the output flows through an activation function—let&#8217;s say ReLU. Remember from the previous chapter why this matters: without non-linearity, stacking layers doesn&#8217;t increase the network&#8217;s expressive power. The activation function is what allows the network to learn complex patterns.</p>
+</div>
+<div class="paragraph">
+<p>ReLU is beautifully simple: <code>output = max(0, input)</code>. For each of those 112×112×64 = 802,816 values from the convolution, if it&#8217;s positive, keep it; if it&#8217;s negative, replace it with zero. This is computationally cheap—just a comparison and a selection—but it&#8217;s essential for the network to work.</p>
+</div>
+<div class="paragraph">
+<p>From a GPU perspective, this is an embarrassingly parallel operation. Each output value is independent of all others. You can process thousands of them simultaneously with no synchronization needed between threads.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_deeper_layers_building_hierarchical_features"><a class="anchor" href="#_deeper_layers_building_hierarchical_features"></a>Deeper Layers: Building Hierarchical Features</h4>
+<div class="paragraph">
+<p>As data flows deeper into the network, the pattern continues but the features become more abstract. The second convolution layer doesn&#8217;t see the original image—it sees the output of the first layer, which already represents edges and basic patterns. This second layer learns to combine those edges into more complex shapes: corners, curves, simple textures.</p>
+</div>
+<div class="paragraph">
+<p>The third layer combines those shapes into even more complex patterns: parts of objects, distinctive textures, recurring motifs. By the time you&#8217;re 10 or 20 layers deep, the network is detecting high-level concepts: "this looks like fur," "this looks like a wheel," "this looks like a face."</p>
+</div>
+<div class="paragraph">
+<p>This hierarchical feature learning is one of the key insights that makes deep neural networks so powerful. Early layers learn general, reusable features (edges work for any image). Middle layers learn domain-specific patterns (fur vs. metal vs. glass). Late layers learn task-specific concepts (cat vs. dog vs. car).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_batch_normalization_keeping_values_in_range"><a class="anchor" href="#_batch_normalization_keeping_values_in_range"></a>Batch Normalization: Keeping Values in Range</h4>
+<div class="paragraph">
+<p>Many modern networks include batch normalization layers. These layers address a subtle problem: as data flows through many layers, the distribution of values can shift and spread out. Values that started in a reasonable range (say, 0 to 1) might end up with a mean of 100 and a standard deviation of 50 by the time they reach layer 20. This makes training unstable and can hurt inference performance too.</p>
+</div>
+<div class="paragraph">
+<p>Batch normalization fixes this by normalizing the values at each layer. It computes the mean and standard deviation of the activations, then shifts and scales them to have a mean of 0 and standard deviation of 1 (or close to it, with learned parameters that allow some flexibility).</p>
+</div>
+<div class="paragraph">
+<p>For inference, there&#8217;s a simplification: the mean and standard deviation are fixed values that were computed during training. You&#8217;re not computing statistics on the fly—you&#8217;re just applying a fixed transformation: <code>output = (input - mean) / sqrt(variance + epsilon) * scale + shift</code>. This is still an element-wise operation, but it requires loading those fixed statistics (mean, variance, scale, shift) for each layer.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_pooling_downsampling_for_efficiency"><a class="anchor" href="#_pooling_downsampling_for_efficiency"></a>Pooling: Downsampling for Efficiency</h4>
+<div class="paragraph">
+<p>Pooling layers reduce spatial dimensions while preserving important information. Max pooling, the most common type, divides the input into small regions (typically 2×2) and outputs only the maximum value from each region.</p>
+</div>
+<div class="paragraph">
+<p>Why do this? It reduces the amount of data flowing through the network, making subsequent layers faster. It also provides a form of translation invariance—if a feature moves slightly in the image, the max pooling will still capture it as long as it&#8217;s within the pooling region.</p>
+</div>
+<div class="paragraph">
+<p>From an implementation perspective, max pooling is straightforward: for each output position, read 4 input values (for 2×2 pooling), find the maximum, write it out. It&#8217;s parallel across all output positions.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_fully_connected_layers_making_the_final_decision"><a class="anchor" href="#_fully_connected_layers_making_the_final_decision"></a>Fully Connected Layers: Making the Final Decision</h4>
+<div class="paragraph">
+<p>Near the end of the network, after many convolutions have extracted rich features, you typically find fully connected (dense) layers. These layers take all the features and combine them to make the final prediction.</p>
+</div>
+<div class="paragraph">
+<p>A fully connected layer is just a matrix multiplication. If you have 2048 input features and 1000 output classes, you&#8217;re multiplying a 1000×2048 weight matrix by your 2048-dimensional input vector. That&#8217;s 2,048,000 multiply-add operations, all of which can be parallelized.</p>
+</div>
+<div class="paragraph">
+<p>The final layer typically outputs raw scores (logits) for each class. These aren&#8217;t probabilities yet—they&#8217;re just numbers that indicate how strongly the network believes each class is present. Higher numbers mean higher confidence.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_complete_forward_pass"><a class="anchor" href="#_the_complete_forward_pass"></a>The Complete Forward Pass</h4>
+<div class="paragraph">
+<p>Putting it all together, a complete forward pass through a network like ResNet-50 involves:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>1 initial convolution layer</p>
+</li>
+<li>
+<p>16 residual blocks, each containing 3 convolutions, 3 batch normalizations, and 3 ReLU activations, plus skip connections</p>
+</li>
+<li>
+<p>1 global average pooling layer</p>
+</li>
+<li>
+<p>1 fully connected layer</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>That&#8217;s roughly 50 layers total (hence "ResNet-50"), involving billions of multiply-add operations. On a modern GPU, this entire process completes in just a few milliseconds.</p>
+</div>
+<div class="paragraph">
+<p>Each layer reads input tensors from GPU memory, performs its computation, and writes output tensors back to GPU memory. The output of one layer becomes the input to the next. Data flows through the network like water through a pipe, transforming at each stage until it emerges as a final prediction.</p>
+</div>
+<div class="paragraph">
+<p>This is where Vulkan shines. Each layer becomes a compute shader. Tensors live in GPU memory as buffers. We dispatch compute operations to process them, synchronize to ensure correct ordering, and pass data from one layer to the next. The GPU&#8217;s massive parallelism means we can process thousands of values simultaneously, making inference fast enough for real-time applications.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_4_postprocessing_interprets_the_output"><a class="anchor" href="#_stage_4_postprocessing_interprets_the_output"></a>Stage 4: Postprocessing Interprets the Output</h3>
+<div class="paragraph">
+<p>The neural network produces raw output, but this output often needs interpretation before it&#8217;s useful to your application. The raw numbers coming out of the network are just that—numbers. Postprocessing transforms them into actionable information.</p>
+</div>
+<div class="sect3">
+<h4 id="_classification_from_logits_to_labels"><a class="anchor" href="#_classification_from_logits_to_labels"></a>Classification: From Logits to Labels</h4>
+<div class="paragraph">
+<p>For classification models, the output is typically a vector of scores called <strong>logits</strong>—one number for each possible class. If you&#8217;re classifying images into 1000 categories (like ImageNet), you get 1000 numbers.</p>
+</div>
+<div class="paragraph">
+<p>These logits aren&#8217;t probabilities yet. They&#8217;re raw scores that can be any value—positive, negative, large, small. A logit of 5.2 for "cat" and 2.1 for "dog" means the network is more confident about "cat," but these aren&#8217;t probabilities you can interpret as percentages.</p>
+</div>
+<div class="paragraph">
+<p><strong>Softmax Conversion</strong>: To convert logits to probabilities, you apply the softmax function:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">probability[i] = exp(logit[i]) / sum(exp(logit[j]) for all j)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This ensures all probabilities are between 0 and 1 and sum to 1. Now you can say "the model is 87% confident this is a cat."</p>
+</div>
+<div class="paragraph">
+<p><strong>Finding the Top Prediction</strong>: The simplest postprocessing is finding the maximum probability and returning that class label. This is just a linear scan through the output vector—O(n) where n is the number of classes.</p>
+</div>
+<div class="paragraph">
+<p><strong>Top-K Predictions</strong>: Often you want the top 5 predictions, not just the top 1. This helps when the model is uncertain—maybe it&#8217;s 40% confident it&#8217;s a "golden retriever," 35% confident it&#8217;s a "Labrador," and 15% confident it&#8217;s a "yellow lab." All three are reasonable, and showing all three gives the user more information.</p>
+</div>
+<div class="paragraph">
+<p>Finding top-K requires a partial sort or a heap-based approach. For K=5 and n=1000 classes, this is still very fast.</p>
+</div>
+<div class="paragraph">
+<p><strong>Confidence Thresholding</strong>: Sometimes you only want to return predictions above a certain confidence threshold. If the top prediction is only 30% confident, maybe you should return "uncertain" rather than making a guess. This is application-specific—medical diagnosis might require 95% confidence, while a photo app might accept 50%.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_object_detection_from_boxes_to_objects"><a class="anchor" href="#_object_detection_from_boxes_to_objects"></a>Object Detection: From Boxes to Objects</h4>
+<div class="paragraph">
+<p>Object detection is more complex. The network outputs multiple detections, each with:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A bounding box (x, y, width, height)</p>
+</li>
+<li>
+<p>A class label (or probabilities for each class)</p>
+</li>
+<li>
+<p>A confidence score (how sure the network is that there&#8217;s an object here)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A typical detector might output 10,000+ candidate boxes, most of which are false positives or duplicates.</p>
+</div>
+<div class="paragraph">
+<p><strong>Confidence Filtering</strong>: First, filter out low-confidence detections. If a box has confidence below 0.5 (or whatever threshold you choose), discard it. This immediately reduces 10,000 candidates to maybe 100-200.</p>
+</div>
+<div class="paragraph">
+<p><strong>Non-Maximum Suppression (NMS)</strong>: Multiple boxes often detect the same object. You might have 5 boxes all detecting the same car, with slightly different positions and sizes. NMS removes these duplicates.</p>
+</div>
+<div class="paragraph">
+<p>The algorithm works like this:
+1. Sort all boxes by confidence (highest first)
+2. Take the highest-confidence box and add it to the output
+3. Remove all boxes that overlap significantly with this box (typically IoU &gt; 0.5)
+4. Repeat with the remaining boxes</p>
+</div>
+<div class="paragraph">
+<p>"Overlap" is measured by Intersection over Union (IoU): the area of overlap divided by the area of union. If two boxes overlap by 80%, they&#8217;re probably detecting the same object, so keep only the higher-confidence one.</p>
+</div>
+<div class="paragraph">
+<p>NMS is O(n²) in the worst case, but with confidence filtering first, n is small enough that it&#8217;s fast on CPU. GPU implementations exist for cases with many detections.</p>
+</div>
+<div class="paragraph">
+<p><strong>Class-Specific NMS</strong>: Some detectors apply NMS per class. A box detecting "car" doesn&#8217;t suppress a box detecting "person," even if they overlap. This allows detecting multiple objects in the same location (like a person sitting in a car).</p>
+</div>
+<div class="paragraph">
+<p><strong>Coordinate Conversion</strong>: Detectors often output boxes in normalized coordinates (0 to 1) or relative to anchor boxes. You need to convert these to absolute pixel coordinates in your image space. This involves scaling and offsetting based on your image dimensions.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_segmentation_from_masks_to_regions"><a class="anchor" href="#_segmentation_from_masks_to_regions"></a>Segmentation: From Masks to Regions</h4>
+<div class="paragraph">
+<p>Segmentation models output a label for every pixel. For a 224×224 image with 21 classes (like Pascal VOC), the output is a 224×224×21 tensor—21 probability values for each pixel.</p>
+</div>
+<div class="paragraph">
+<p><strong>Argmax to Labels</strong>: For each pixel, find which class has the highest probability. This converts the 224×224×21 tensor to a 224×224 label map, where each pixel has a single class ID.</p>
+</div>
+<div class="paragraph">
+<p><strong>Mask Smoothing</strong>: The raw output can be noisy—individual pixels might be misclassified. Applying a small amount of smoothing (like a median filter or morphological operations) can clean up the mask.</p>
+</div>
+<div class="paragraph">
+<p><strong>Contour Extraction</strong>: If you need object boundaries rather than pixel labels, extract contours from the mask. This gives you polygons or curves that outline each object, which might be more useful than a pixel grid.</p>
+</div>
+<div class="paragraph">
+<p><strong>Instance Segmentation</strong>: Some models distinguish between different instances of the same class (two separate cars, not just "car pixels"). Postprocessing involves clustering pixels into instances, often using connected components or more sophisticated algorithms.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_generative_models_from_noise_to_content"><a class="anchor" href="#_generative_models_from_noise_to_content"></a>Generative Models: From Noise to Content</h4>
+<div class="paragraph">
+<p>Generative models (like GANs or diffusion models) output images, audio, or text. Postprocessing here is about making the output usable.</p>
+</div>
+<div class="paragraph">
+<p><strong>Denormalization</strong>: If the model outputs values in [-1, 1], you need to convert back to [0, 255] for images: <code>pixel_int = (pixel_float + 1) * 127.5</code>.</p>
+</div>
+<div class="paragraph">
+<p><strong>Clipping</strong>: Ensure values are in valid ranges. Pixel values should be 0-255, audio samples should be in [-1, 1], etc. Clipping prevents artifacts from out-of-range values.</p>
+</div>
+<div class="paragraph">
+<p><strong>Format Conversion</strong>: Convert from the model&#8217;s output format to what your application needs. Maybe the model outputs planar RGB (all reds, then all greens, then all blues) but you need interleaved RGB (RGBRGBRGB&#8230;&#8203;).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_where_postprocessing_happens_cpu_vs_gpu"><a class="anchor" href="#_where_postprocessing_happens_cpu_vs_gpu"></a>Where Postprocessing Happens: CPU vs GPU</h4>
+<div class="paragraph">
+<p>Like preprocessing, postprocessing traditionally happens on CPU. Operations like finding the maximum, applying NMS, or extracting contours are well-suited to CPU execution and have mature library implementations.</p>
+</div>
+<div class="paragraph">
+<p>But for high-throughput scenarios, GPU postprocessing can help. If you&#8217;re running inference on a batch of 32 images and each produces 200 detections, that&#8217;s 6400 boxes to process. Doing NMS on the GPU might be faster than transferring all that data to CPU, processing it, and transferring results back.</p>
+</div>
+<div class="paragraph">
+<p>The tradeoff is the same as preprocessing: CPU is simpler and uses existing libraries, GPU is faster for large-scale processing but requires custom implementation.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_stage_5_output_returns_to_your_application"><a class="anchor" href="#_stage_5_output_returns_to_your_application"></a>Stage 5: Output Returns to Your Application</h3>
+<div class="paragraph">
+<p>Finally, the processed results return to your application. This might be a simple label ("golden retriever"), a list of detected objects with their locations, a generated sentence, or any other output the model produces.</p>
+</div>
+<div class="paragraph">
+<p>Your application uses this output however it needs to: displaying it to the user, making game logic decisions, triggering actions, or feeding it into another system. The inference pipeline is complete.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_thinking_about_neural_networks_as_compute_operations"><a class="anchor" href="#_thinking_about_neural_networks_as_compute_operations"></a>Thinking About Neural Networks as Compute Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now let&#8217;s shift perspective and think about neural networks from a GPU programming viewpoint. This mental model is crucial for implementing inference with Vulkan.</p>
+</div>
+<div class="sect2">
+<h3 id="_tensors_the_data_structures"><a class="anchor" href="#_tensors_the_data_structures"></a>Tensors: The Data Structures</h3>
+<div class="paragraph">
+<p>Everything in a neural network operates on <strong>tensors</strong>—multi-dimensional arrays of numbers. A grayscale image is a 2D tensor (height × width). A color image is a 3D tensor (height × width × channels). A batch of images is a 4D tensor (batch × height × width × channels).</p>
+</div>
+<div class="paragraph">
+<p>From a Vulkan perspective, tensors are just buffers in GPU memory. A 224×224×3 image tensor is a buffer containing 224 × 224 × 3 = 150,528 floating-point numbers. The "shape" of the tensor (224, 224, 3) is metadata that tells us how to interpret the linear buffer as a multi-dimensional structure.</p>
+</div>
+<div class="paragraph">
+<p>Understanding tensor shapes and how they transform through layers is essential. If a convolution layer takes a 224×224×3 input and produces a 112×112×64 output, you need to allocate a buffer large enough for 112 × 112 × 64 = 802,816 floats. You need to know these shapes to allocate memory correctly.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_layers_the_operations"><a class="anchor" href="#_layers_the_operations"></a>Layers: The Operations</h3>
+<div class="paragraph">
+<p>Each layer in a neural network is a specific mathematical operation on tensors. Let&#8217;s look at the most common types and what they mean for GPU implementation.</p>
+</div>
+<div class="paragraph">
+<p><strong>Dense (Fully Connected) Layers</strong> perform matrix multiplication. If your input is a vector of size N and the layer has M outputs, you&#8217;re multiplying an M×N weight matrix by your N-dimensional input vector, then adding an M-dimensional bias vector. This is a classic matrix-vector multiply, which GPUs handle very efficiently. The challenge is that for large layers (say, 4096 inputs and 4096 outputs), you&#8217;re multiplying a 4096×4096 matrix, which is 16 million multiply-add operations. Parallelizing this effectively is key to performance.</p>
+</div>
+<div class="paragraph">
+<p><strong>Convolutional Layers</strong> slide a small filter (typically 3×3 or 5×5) across the input, computing a weighted sum at each position. With multiple input channels and multiple output filters, this becomes a lot of computation. For a 3×3 convolution with 64 input channels and 128 output filters on a 112×112 image, you&#8217;re doing roughly 112 × 112 × 64 × 128 × 9 = 1.1 billion multiply-add operations. The good news? These operations are highly parallel—each output position can be computed independently.</p>
+</div>
+<div class="paragraph">
+<p><strong>Activation Functions</strong> apply element-wise non-linearities. ReLU is simple: <code>output = max(0, input)</code>. Sigmoid requires computing an exponential: <code>output = 1 / (1 + exp(-input))</code>. These are embarrassingly parallel—each element is independent—but some activations (like sigmoid) are computationally expensive.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pooling Layers</strong> downsample by taking the maximum or average over small regions. Max pooling with a 2×2 window reduces a 112×112 image to 56×56 by taking the maximum of each 2×2 block. This is simple and parallel, but requires careful indexing to ensure you&#8217;re reading the right input positions.</p>
+</div>
+<div class="paragraph">
+<p><strong>Normalization Layers</strong> (like batch normalization) compute statistics (mean and variance) across a dimension, then normalize values using those statistics. This is trickier because computing statistics requires reduction operations—you need to sum values across many elements, which requires synchronization. But once you have the statistics, applying the normalization is straightforward.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_execution_model"><a class="anchor" href="#_the_execution_model"></a>The Execution Model</h3>
+<div class="paragraph">
+<p>From Vulkan&#8217;s perspective, running inference is a sequence of compute shader dispatches with appropriate synchronization. Let&#8217;s break down what this means in practice.</p>
+</div>
+<div class="sect3">
+<h4 id="_the_basic_flow"><a class="anchor" href="#_the_basic_flow"></a>The Basic Flow</h4>
+<div class="paragraph">
+<p>You start by uploading the input tensor to GPU memory. This is a host-to-device transfer—copying data from CPU memory to GPU memory. For a 224×224×3 image (150,528 floats = ~600KB), this transfer is fast on modern systems, but it&#8217;s still overhead you want to minimize.</p>
+</div>
+<div class="paragraph">
+<p>Then you dispatch the first layer&#8217;s compute shader. This shader reads the input tensor and the layer&#8217;s weights (which are already resident on the GPU, loaded once at startup), performs its computation, and writes to an intermediate tensor. This intermediate tensor lives in GPU memory—no transfer back to CPU.</p>
+</div>
+<div class="paragraph">
+<p>You insert a memory barrier to ensure the write completes and is visible to subsequent operations. This is crucial for correctness—without it, the next layer might start reading before the previous layer finishes writing, leading to race conditions and incorrect results.</p>
+</div>
+<div class="paragraph">
+<p>Then you dispatch the second layer&#8217;s shader, which reads that intermediate tensor and writes to another. And so on, layer by layer, until you reach the final output. Each layer is a compute shader dispatch, each intermediate result is a buffer in GPU memory, and barriers ensure correct ordering.</p>
+</div>
+<div class="paragraph">
+<p>Finally, you read the output tensor back to CPU memory. This is a device-to-host transfer. For a classification model with 1000 classes, that&#8217;s just 1000 floats (~4KB)—much smaller than the input.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_memory_management_the_challenge_of_scale"><a class="anchor" href="#_memory_management_the_challenge_of_scale"></a>Memory Management: The Challenge of Scale</h4>
+<div class="paragraph">
+<p>Here&#8217;s the problem: neural networks use a lot of memory. Let&#8217;s trace through ResNet-50 to see why.</p>
+</div>
+<div class="paragraph">
+<p>Layer 1 (convolution): Input is 224×224×3, output is 112×112×64. That&#8217;s 150,528 input floats and 802,816 output floats. Plus the weights: 64 filters of size 7×7×3 = 9,408 weights. Total: ~3.8MB for this one layer.</p>
+</div>
+<div class="paragraph">
+<p>Layer 2 (convolution): Input is 112×112×64, output is 112×112×64. That&#8217;s 802,816 floats for both input and output, plus weights. Another ~3.2MB.</p>
+</div>
+<div class="paragraph">
+<p>By the time you&#8217;re 10 layers deep, you&#8217;ve accumulated tens of megabytes of intermediate tensors. By layer 50, you&#8217;re looking at hundreds of megabytes.</p>
+</div>
+<div class="paragraph">
+<p>The naive approach—allocate a separate buffer for each tensor—quickly exhausts GPU memory. A typical mobile GPU might have 2-4GB of memory, and you&#8217;re sharing that with graphics rendering, textures, and other applications.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_memory_reuse_the_solution"><a class="anchor" href="#_memory_reuse_the_solution"></a>Memory Reuse: The Solution</h4>
+<div class="paragraph">
+<p>The key insight is that most intermediate tensors have short lifetimes. Once layer 5 completes and layer 6 consumes its output, layer 5&#8217;s output tensor is never needed again. That memory can be reused for layer 7&#8217;s output.</p>
+</div>
+<div class="paragraph">
+<p>This is called <strong>memory pooling</strong> or <strong>memory reuse</strong>, and it&#8217;s essential for running large models on resource-constrained devices.</p>
+</div>
+<div class="paragraph">
+<p>The algorithm works like this:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Analyze the model graph to determine each tensor&#8217;s lifetime—which layers produce it and which layers consume it.</p>
+</li>
+<li>
+<p>Identify tensors whose lifetimes don&#8217;t overlap—they can share the same memory.</p>
+</li>
+<li>
+<p>Allocate a pool of memory buffers and assign tensors to buffers such that no two overlapping tensors share a buffer.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This is essentially a graph coloring problem. In practice, simple greedy algorithms work well: process layers in order, and for each output tensor, find the first available buffer that&#8217;s not currently in use.</p>
+</div>
+<div class="paragraph">
+<p>With memory reuse, ResNet-50&#8217;s memory footprint drops from hundreds of megabytes to tens of megabytes—a 5-10x reduction. This makes the difference between "doesn&#8217;t fit on device" and "runs comfortably."</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_synchronization_ensuring_correctness"><a class="anchor" href="#_synchronization_ensuring_correctness"></a>Synchronization: Ensuring Correctness</h4>
+<div class="paragraph">
+<p>GPUs are massively parallel, but neural network inference is inherently sequential—each layer depends on the previous layer&#8217;s output. We need synchronization to enforce this ordering while still allowing parallelism where possible.</p>
+</div>
+<div class="paragraph">
+<p><strong>Pipeline Barriers</strong>: Vulkan&#8217;s primary synchronization primitive for compute work. A pipeline barrier says "all operations before this point must complete before any operations after this point begin." You insert barriers between layers to ensure correct ordering.</p>
+</div>
+<div class="paragraph">
+<p>But barriers have cost—they serialize execution. If you insert a barrier after every single operation, you&#8217;re forcing the GPU to wait idle between each dispatch, wasting parallelism.</p>
+</div>
+<div class="paragraph">
+<p><strong>Granularity Matters</strong>: The trick is finding the right granularity. You don&#8217;t need a barrier after every operation—you need a barrier when one operation&#8217;s output becomes another operation&#8217;s input. If layer 5 writes tensor A and layer 6 reads tensor A, you need a barrier between them. But if layer 5 writes tensor A and layer 7 writes tensor B (and they don&#8217;t depend on each other), they can run in parallel.</p>
+</div>
+<div class="paragraph">
+<p>Modern networks often have parallel branches—ResNet has skip connections, Inception has multiple parallel paths. These branches can execute concurrently as long as you synchronize when they merge.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory Barriers vs Execution Barriers</strong>: Vulkan distinguishes between execution dependencies (operation A must finish before operation B starts) and memory dependencies (writes from operation A must be visible to reads in operation B). You need both. A pipeline barrier with appropriate memory barriers ensures both execution order and memory visibility.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_work_group_size_balancing_parallelism_and_resources"><a class="anchor" href="#_work_group_size_balancing_parallelism_and_resources"></a>Work Group Size: Balancing Parallelism and Resources</h4>
+<div class="paragraph">
+<p>When you dispatch a compute shader, you specify how many work groups to launch and how many threads (invocations) are in each work group. This choice significantly impacts performance.</p>
+</div>
+<div class="paragraph">
+<p><strong>Too Small</strong>: If your work groups are too small (say, 8 threads), you&#8217;re not utilizing the GPU&#8217;s parallelism. Modern GPUs can run thousands of threads concurrently, and you&#8217;re only using a tiny fraction of that capacity.</p>
+</div>
+<div class="paragraph">
+<p><strong>Too Large</strong>: If your work groups are too large (say, 1024 threads), you might exceed hardware limits or exhaust shared memory. Each work group needs resources (registers, shared memory), and the GPU can only run as many work groups as resources allow.</p>
+</div>
+<div class="paragraph">
+<p><strong>Just Right</strong>: Typical work group sizes are 64, 128, or 256 threads. This balances parallelism (enough threads to keep the GPU busy) with resource usage (not so many that you run out of resources).</p>
+</div>
+<div class="paragraph">
+<p>The optimal size depends on your shader&#8217;s resource usage and the specific GPU. Profiling is essential—try different sizes and measure performance.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_layout_memory_access_patterns_matter"><a class="anchor" href="#_data_layout_memory_access_patterns_matter"></a>Data Layout: Memory Access Patterns Matter</h4>
+<div class="paragraph">
+<p>How you arrange data in memory affects performance dramatically. GPUs have memory hierarchies—global memory (slow but large), shared memory (fast but small), and registers (fastest but tiny). Accessing memory efficiently is crucial.</p>
+</div>
+<div class="paragraph">
+<p><strong>Coalesced Access</strong>: GPUs perform best when adjacent threads access adjacent memory locations. If thread 0 reads address 0, thread 1 reads address 4, thread 2 reads address 8, etc., the GPU can coalesce these into a single memory transaction. If threads access random addresses, each becomes a separate transaction, killing performance.</p>
+</div>
+<div class="paragraph">
+<p><strong>Tensor Layout</strong>: The order you store tensor elements affects access patterns. "Channels last" (NHWC: batch, height, width, channels) vs "channels first" (NCHW: batch, channels, height, width) can make a 2-3x performance difference depending on the operation.</p>
+</div>
+<div class="paragraph">
+<p>For convolutions, channels-first often works better because you&#8217;re reading all channels at each spatial position. For element-wise operations, channels-last might be better. There&#8217;s no universal answer—it depends on your operations and hardware.</p>
+</div>
+<div class="paragraph">
+<p><strong>Shared Memory</strong>: For operations that reuse data (like convolutions, where multiple output positions read the same input values), loading data into shared memory can dramatically reduce global memory traffic. Threads cooperatively load a tile of data into shared memory, synchronize, then all read from the fast shared memory instead of slow global memory.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_training_vs_inference_a_detailed_comparison"><a class="anchor" href="#_training_vs_inference_a_detailed_comparison"></a>Training vs. Inference: A Detailed Comparison</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s make the differences concrete with a detailed comparison table, because understanding these distinctions guides our implementation choices.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Aspect</th>
+<th class="tableblock halign-left valign-top">Training</th>
+<th class="tableblock halign-left valign-top">Inference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Goal</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Learn patterns from data by adjusting weights</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apply learned patterns to make predictions on new data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Computation</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Forward pass (compute outputs) + backward pass (compute gradients via backpropagation)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Forward pass only—data flows through the network once</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Weights</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Constantly changing—adjusted after each batch to reduce loss</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Fixed—loaded from the trained model file and never modified</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Memory Requirements</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Must store all intermediate activations for backpropagation, plus gradients and optimizer state</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Only needs current layer&#8217;s activations—can reuse memory as we progress</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Batch Size</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Often large (32, 64, 128+) for stable gradient estimates and efficient GPU use</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flexible—can be 1 for low latency or larger for throughput</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Hardware</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Typically high-end GPUs or TPUs with lots of memory</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Can run on mobile GPUs, embedded devices, or even CPUs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Performance Focus</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Throughput over hours/days—how many examples per second during long training runs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latency (milliseconds per prediction) for interactive apps, or throughput for batch processing</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Frameworks</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PyTorch, TensorFlow, JAX—designed for automatic differentiation and optimization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TFLite, ONNX Runtime, or custom implementations like ours—optimized for forward pass</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Typical Environment</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Development/research environment with powerful hardware and no real-time constraints</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Production environment with varied hardware and strict latency requirements</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>For our Vulkan implementation, the key takeaway is simplicity: we only implement the forward pass. No gradients, no backpropagation, no optimizer state. This makes our task much more manageable while still requiring careful engineering to achieve good performance.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_were_building"><a class="anchor" href="#_what_were_building"></a>What We&#8217;re Building</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>With this understanding of inference, let&#8217;s clarify what we&#8217;re actually building in this tutorial series.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;re creating a Vulkan-based inference engine that can load pre-trained models and run them efficiently on the GPU. This engine will:</p>
+</div>
+<div class="paragraph">
+<p><strong>Load models</strong> from standard formats (ONNX or TFLite) and extract the network architecture and learned weights.</p>
+</div>
+<div class="paragraph">
+<p><strong>Allocate GPU memory</strong> for tensors—inputs, outputs, intermediate activations, and weights—with smart memory reuse to minimize footprint.</p>
+</div>
+<div class="paragraph">
+<p><strong>Implement neural network operations</strong> as Vulkan compute shaders—convolutions, matrix multiplications, activations, pooling, normalization, and other common layer types.</p>
+</div>
+<div class="paragraph">
+<p><strong>Execute inference</strong> by dispatching compute shaders in the correct order with appropriate synchronization, ensuring data flows correctly through the network.</p>
+</div>
+<div class="paragraph">
+<p><strong>Optimize for performance</strong> by choosing efficient algorithms, minimizing memory bandwidth, and leveraging GPU-specific features.</p>
+</div>
+<div class="paragraph">
+<p>We&#8217;re not building a training system. We&#8217;re not implementing backpropagation or optimizers. We&#8217;re not handling data augmentation or learning rate schedules. All of that happens elsewhere, during training. We&#8217;re focused purely on taking a trained model and running it as fast as possible.</p>
+</div>
+<div class="paragraph">
+<p>This focus makes our task tractable. Inference is simpler than training, but it still requires careful engineering. The performance demands are high—real-time applications need predictions in milliseconds—and Vulkan gives us the low-level control to meet those demands.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Inference is the process of using a trained neural network to make predictions on new data. Unlike training, which adjusts weights through backpropagation and optimization, inference uses fixed weights and only performs the forward pass through the network.</p>
+</div>
+<div class="paragraph">
+<p>The inference pipeline consists of five stages: input data arrives from your application, preprocessing transforms it to the model&#8217;s expected format, the neural network executes layer by layer, postprocessing interprets the raw output, and the final result returns to your application. Each stage can be optimized for performance, with Vulkan particularly well-suited for the neural network execution stage.</p>
+</div>
+<div class="paragraph">
+<p>From a Vulkan perspective, neural networks are sequences of compute operations on tensors (multi-dimensional arrays stored in GPU buffers). Each layer is a compute shader that reads input tensors, performs mathematical operations, and writes output tensors. The key challenges—memory management, synchronization, and performance optimization—are exactly what Vulkan is designed to handle.</p>
+</div>
+<div class="paragraph">
+<p>Understanding the training-inference distinction shapes our implementation: we only need the forward pass, we can reuse memory for intermediate results, and we can optimize specifically for the constraints of deployment rather than training. This focus makes building a Vulkan inference engine tractable while still requiring careful engineering to achieve real-time performance.</p>
+</div>
+<div class="paragraph">
+<p>With this understanding of what inference is and how it differs from training, we&#8217;re ready to explore transfer learning strategies that allow us to adapt existing models to new tasks without training from scratch.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_neural_networks_fundamentals.html" class="xref page">Previous: Neural Networks Fundamentals</a> | <a href="05_transfer_learning.html" class="xref page">Next: Transfer Learning</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

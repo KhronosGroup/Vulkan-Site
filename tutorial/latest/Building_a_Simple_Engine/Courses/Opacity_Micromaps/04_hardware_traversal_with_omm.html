@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Inside the Traversal: How the GPU Uses Your Micromap :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../../");!function(){var f="../../../Building_a_Simple_Engine/Courses/Opacity_Micromaps/04_hardware_traversal_with_omm.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Extra Courses</li>
+    <li>Opacity Micromaps</li>
+    <li><a href="04_hardware_traversal_with_omm.html">Hardware traversal with OMM</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Inside the Traversal: How the GPU Uses Your Micromap</h1>
+<div class="sect1">
+<h2 id="_two_journeys_for_one_shadow_ray"><a class="anchor" href="#_two_journeys_for_one_shadow_ray"></a>Two Journeys for One Shadow Ray</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The best way to understand what Opacity Micromaps do at runtime is to follow a single shadow ray through both worlds — first the world without OMMs, then the world with them — and observe exactly where the work happens and where it disappears.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/images/omm_traversal_comparison.svg" alt="Side-by-side diagram contrasting shadow ray traversal without OMM (many any-hit shader invocations) versus with OMM (most hits resolved by hardware" width="few shader invocations)" height="700">
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_journey_without_omms"><a class="anchor" href="#_the_journey_without_omms"></a>The Journey Without OMMs</h3>
+<div class="paragraph">
+<p>Our shadow ray is cast from a surface point on the ground directly below a tree canopy. Its target is a sample position on the area light above. The ray enters the BVH.</p>
+</div>
+<div class="paragraph">
+<p>First, it tests the top-level bounding box of the entire scene and finds it intersects. It descends into the scene&#8217;s sub-nodes, testing bounding boxes at each level. The non-leaf geometry — the trunk, the ground, a nearby wall — is quickly excluded by the BVH. The ray&#8217;s path passes through the bounding box region containing the leaf canopy. Several hundred leaf triangles live in this region.</p>
+</div>
+<div class="paragraph">
+<p>At the leaf level of the BVH, the traversal begins testing individual triangles. The ray intersects the bounding box of the first candidate leaf cluster. Several leaf triangles are candidates. For each candidate, the traversal hardware determines that the geometry is flagged as alpha-tested. It cannot commit the hit automatically. It invokes the any-hit shader.</p>
+</div>
+<div class="paragraph">
+<p>The any-hit shader runs. It receives the barycentric coordinates of the intersection. It interpolates UV coordinates. It issues a texture sample request. The texture unit processes the request — likely a cache miss, since this is the first frame and the cache is cold. The sample returns. The shader compares the alpha value to the material&#8217;s cutoff threshold. The alpha is 0.02 — this is empty space between leaves. Traversal continues.</p>
+</div>
+<div class="paragraph">
+<p>The next candidate: another leaf triangle. The any-hit shader fires again. UV interpolation, texture sample (another miss), comparison. Alpha is 0.87 — solid leaf. The hit is committed. The ray is blocked. The shadow query returns "in shadow."</p>
+</div>
+<div class="paragraph">
+<p>But that was two any-hit shader invocations just for this one ray, and most shadow rays in a forest scene will encounter more. A ray traveling at a shallow angle through the canopy might test eight, twelve, or more leaf triangles before finding a solid hit or exiting the tree. Each test: a shader invocation, a texture sample, a decision.</p>
+</div>
+<div class="paragraph">
+<p>Multiply by 16 shadow rays per pixel. Multiply by millions of pixels. The any-hit shader is the most frequently invoked shader in the entire frame.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_journey_with_omms"><a class="anchor" href="#_the_journey_with_omms"></a>The Journey With OMMs</h3>
+<div class="paragraph">
+<p>The same shadow ray is cast. The BVH traversal proceeds identically — micromaps do not change the BVH structure or the bounding box hierarchy. The ray reaches the leaf geometry region and begins testing candidate triangles.</p>
+</div>
+<div class="paragraph">
+<p>The first candidate leaf triangle is an alpha-tested mesh, but this time it has an attached micromap. The traversal hardware computes the intersection point&#8217;s barycentric coordinates as before. Then — still in fixed-function hardware, without any shader involvement — it looks up the micro-triangle that contains this intersection point. The micro-triangle is classified Transparent. The hardware discards the hit immediately. No shader fires. No texture sample. Traversal continues in a fraction of the time.</p>
+</div>
+<div class="paragraph">
+<p>The second candidate: the hardware checks the micro-triangle. Opaque. The hit is committed immediately. No shader fires. No texture sample. The ray is blocked. Shadow query returns "in shadow."</p>
+</div>
+<div class="paragraph">
+<p>Total any-hit shader invocations for this ray: zero. The hardware resolved everything.</p>
+</div>
+<div class="paragraph">
+<p>For a different ray that happens to land precisely on the leaf edge region — in an Unknown micro-triangle — the any-hit shader does fire. But this is the exception, not the rule. For a well-subdivided leaf texture, this happens for perhaps one in twenty ray-leaf intersections, not nineteen in twenty.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_the_hardware_reads_the_micromap"><a class="anchor" href="#_how_the_hardware_reads_the_micromap"></a>How the Hardware Reads the Micromap</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The micromap data is stored in GPU memory as a densely packed array of 2-bit values, in a format the traversal hardware can address directly given a base pointer, a stride, and a subdivision level. When the BLAS is built with a micromap attached, the acceleration structure stores a reference to this data alongside the geometry.</p>
+</div>
+<div class="paragraph">
+<p>During traversal, when the hardware identifies a candidate triangle intersection, it performs a micro-triangle lookup that is essentially an index calculation: given the barycentric coordinates of the hit point and the subdivision level, compute which micro-triangle the point falls within, then read the 2-bit state from the array. This computation is simple integer arithmetic — no general-purpose shader, no texture fetch from a separately managed resource. It is part of the fixed-function traversal unit, the same circuit that tests bounding boxes and computes intersection distances.</p>
+</div>
+<div class="paragraph">
+<p>This is what it means for the hardware to provide <strong>hardware-accelerated opacity evaluation</strong>. The micromap is not a compute buffer that a shader reads. It is metadata embedded in the acceleration structure, readable by the traversal hardware itself.</p>
+</div>
+<div class="paragraph">
+<p>Under <code>VK_KHR_opacity_micromap</code>, the micromap is represented not as a separate object type but as a standard <code>VkAccelerationStructureKHR</code> created with type <code>VK_ACCELERATION_STRUCTURE_TYPE_OPACITY_MICROMAP_KHR</code>. This unification with the standard acceleration structure object is a deliberate design choice in the KHR extension: it means the micromap participates in the same memory model, barrier rules, and lifetime management as all other acceleration structures in the scene, rather than introducing a parallel hierarchy of objects.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_opacitymicromapkhr_execution_mode"><a class="anchor" href="#_the_opacitymicromapkhr_execution_mode"></a>The OpacityMicromapKHR Execution Mode</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In <code>VK_KHR_opacity_micromap</code>, the hardware micromap fast-path for ray queries is <strong>not</strong> automatic. The shadow shader must explicitly declare the <code>OpacityMicromapKHR</code> SPIR-V execution mode, defined by <code>SPV_KHR_opacity_micromap</code>, to signal to the traversal hardware that it should consult the micromap data. In GLSL this declaration looks like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">layout(constant_id = N) gl_EnableOpacityMicromapExt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>where <code>N</code> is a specialisation constant ID. This declaration is required by the <code>SPV_KHR_opacity_micromap</code> SPIR-V extension: if a ray query shader traverses acceleration structures that contain opacity micromaps but does not declare <code>OpacityMicromapKHR</code> with a value of <code>true</code>, the SPIR-V specification mandates <strong>undefined behavior</strong> — not a graceful fallback to the any-hit path. Do not rely on any particular outcome from omitting the declaration. The declaration makes the hardware intent unambiguous and allows drivers and compilers to reason about traversal behavior correctly.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_cascade_effect_on_warp_efficiency"><a class="anchor" href="#_the_cascade_effect_on_warp_efficiency"></a>The Cascade Effect on Warp Efficiency</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Recall from the previous chapter the problem of divergence: when different threads in a warp take different code paths, the warp serializes. Alpha-tested geometry was a chronic source of divergence because the any-hit shader fired with different outcomes for different rays.</p>
+</div>
+<div class="paragraph">
+<p>With OMMs, this divergence is dramatically reduced. Most ray-leaf intersections never reach a shader. The threads that would have diverged on "did we hit solid or transparent?" now never reach that decision in a shader context — the hardware makes the decision silently, in a unified fixed-function path, before the shader even knows a candidate intersection existed. Threads whose rays pass through transparent micro-triangles stay synchronized with threads whose rays hit nothing, because both paths are zero-cost hardware operations.</p>
+</div>
+<div class="paragraph">
+<p>The any-hit shader still fires for Unknown micro-triangles, and divergence can still occur there. But the fraction of invocations that trigger this path is small enough that the warp efficiency improves substantially. In a typical foliage-heavy scene, moving from no OMMs to well-classified OMMs can reduce any-hit shader invocations by 80 to 95 percent. The warp efficiency gains are proportionally significant.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_multiplier_effect_for_soft_shadows"><a class="anchor" href="#_the_multiplier_effect_for_soft_shadows"></a>The Multiplier Effect for Soft Shadows</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The performance benefit of OMMs scales with the number of shadow rays per pixel. For hard shadows — one ray per pixel — the saving is real but bounded. For soft shadows with 16 samples per pixel, the saving multiplies by 16. This is one of the most important practical implications of the technique.</p>
+</div>
+<div class="paragraph">
+<p>Soft shadows are among the most visually compelling features of ray-traced rendering. They are also among the most expensive, because cost scales directly with sample count. Anything that reduces the per-ray cost of shadow queries has a multiplied impact on soft shadow performance. OMMs are therefore most impactful precisely in the rendering modes that matter most for visual quality: high-sample-count soft shadows under foliage.</p>
+</div>
+<div class="paragraph">
+<p>There is also a subtler cache benefit at play. When 16 shadow rays from nearby pixels all test the same leaf triangles (which they tend to do, since nearby pixels see nearby geometry), the micromap data for those triangles is already warm in the GPU&#8217;s L1 and L2 caches from the first few rays. The micromap lookup for subsequent rays is nearly free in memory terms. The alpha texture, by contrast, would need to be fetched every time and is less likely to stay warm given the potentially varying UV coordinates of different rays.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_shadow_ray_lifecycle_complete"><a class="anchor" href="#_the_shadow_ray_lifecycle_complete"></a>The Shadow Ray Lifecycle, Complete</h2>
+<div class="sectionbody">
+<div class="imageblock">
+<div class="content">
+<img src="../../../_images/images/omm_shadow_ray_lifecycle.svg" alt="Flowchart showing the lifecycle of a shadow ray with OMM: cast ray" width="BVH traversal" height="candidate hit found">
+</div>
+</div>
+<div class="paragraph">
+<p>The complete lifecycle of a shadow ray in an OMM-enabled scene can be summarized as a decision tree. The ray enters BVH traversal. For each candidate triangle intersection, the hardware checks for an attached micromap. If no micromap is present (non-alpha-tested geometry), it uses the standard opaque-geometry path: commit the hit immediately. If a micromap is present, it looks up the micro-triangle state. Opaque: commit, no shader. Transparent: discard, no shader. Unknown: invoke the any-hit shader and let the shader make the final call.</p>
+</div>
+<div class="paragraph">
+<p>This decision tree lives entirely in fixed-function hardware for the Opaque and Transparent branches. Only the Unknown branch enters programmable execution. The result is that the GPU&#8217;s shader execution units are freed from the overwhelming majority of alpha-testing work and can focus on the cases that genuinely require a shader. In <code>VK_KHR_opacity_micromap</code>, reaching this optimized path also requires that the shader has declared the <code>OpacityMicromapKHR</code> execution mode. Omitting that declaration when the acceleration structures contain opacity micromaps results in undefined behavior per the SPIR-V specification — the hardware and the shader must both be in agreement for correct results.</p>
+</div>
+<hr>
+<div class="paragraph">
+<p><a href="03_what_are_micromaps.html" class="xref page">Previous: Micromaps: Teaching the Hardware What It Already Should Know</a> | <a href="05_implementation_overview.html" class="xref page">Next: Building Opacity Micromaps in the Simple Engine</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

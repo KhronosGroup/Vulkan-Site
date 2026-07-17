@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Global Atomic Management: Lock-Free Lists and Queues :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_Vulkan_Compute/06_Advanced_Data_Structures/03_global_atomic_management.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced Vulkan Compute</li>
+    <li>Advanced Data Structures on the GPU</li>
+    <li><a href="03_global_atomic_management.html">Global Atomic Management</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Global Atomic Management: Lock-Free Lists and Queues</h1>
+<div class="sect1">
+<h2 id="_why_64_bit_atomics"><a class="anchor" href="#_why_64_bit_atomics"></a>Why 64-bit Atomics?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In early Vulkan, atomics were limited to 32-bit integers. While useful for simple counters, they weren&#8217;t enough to handle pointers or complex data structures. With <strong>Vulkan 1.4</strong>, 64-bit atomics are a core feature, which opens the door to building truly lock-free data structures.</p>
+</div>
+<div class="paragraph">
+<p>A 64-bit atomic can store both a value and a "tag" (to avoid the <strong>ABA problem</strong>—where a value is changed from A to B and back to A, tricking a thread into thinking it never changed) or a full 64-bit <strong>Buffer Device Address</strong> (a pointer).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_does_lock_free_actually_mean"><a class="anchor" href="#_what_does_lock_free_actually_mean"></a>What Does "Lock-Free" Actually Mean?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In traditional CPU programming, if two threads want to update the same piece of data, we use a <strong>mutex</strong> (mutual exclusion) to "lock" the data, perform the update, and then "unlock" it. On a GPU, this is a disaster. Because thousands of threads are running in lock-step (<strong>SIMT</strong>—Single Instruction, Multiple Threads), if one thread takes a lock and the others wait, the entire GPU can grind to a halt—a situation called <strong>deadlock</strong>.</p>
+</div>
+<div class="paragraph">
+<p>A <strong>Lock-Free</strong> algorithm is one that guarantees that at least one thread in the system will make progress in a finite number of steps. Instead of locking, we use <strong>Atomic Operations</strong>. These are special hardware instructions that perform a "Read-Modify-Write" sequence in a single, uninterruptible step.</p>
+</div>
+<div class="paragraph">
+<p>In our linked list example, we use <code>InterlockedExchange</code> (or <code>atomicExchange</code> in GLSL). This instruction says: "Take this new value, put it in memory, and give me whatever was there before—all without letting any other thread touch that memory location in between."</p>
+</div>
+<div class="paragraph">
+<p>Because every thread successfully completes its "exchange" and gets a unique <code>oldHead</code>, no thread ever has to wait for another. They all make progress simultaneously. This is the essence of being lock-free on the GPU.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building_lock_free_linked_lists"><a class="anchor" href="#_building_lock_free_linked_lists"></a>Building Lock-Free Linked Lists</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Linked lists are the foundation of many GPU algorithms, particularly for <strong>Order-Independent Transparency (OIT)</strong>. In a per-pixel linked list, every pixel in the framebuffer stores a "head" pointer to a list of transparent fragments that hit that pixel.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_anatomy_of_a_gpu_linked_list"><a class="anchor" href="#_the_anatomy_of_a_gpu_linked_list"></a>The Anatomy of a GPU Linked List</h3>
+<div class="paragraph">
+<p>A GPU-resident linked list consists of three main components:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>The Head Buffer</strong>: A 2D texture or buffer (matching the screen resolution) that stores the index of the first node for each pixel. It is initialized to a "null" value (e.g., <code>0xFFFFFFFF</code>).</p>
+</li>
+<li>
+<p><strong>The Node Pool</strong>: A large linear buffer that stores the actual data for every fragment.</p>
+</li>
+<li>
+<p><strong>The Atomic Counter</strong>: A single integer used to "allocate" nodes from the pool.</p>
+</li>
+</ol>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct Node {
+    float4 color;      // Fragment color
+    float  depth;      // Fragment depth
+    uint   nextIdx;    // Index of the next node in the pool
+};
+
+RWStructuredBuffer&lt;uint&gt; headBuffer; // size: width * height
+RWStructuredBuffer&lt;Node&gt; nodePool;   // size: Max total fragments
+RWStructuredBuffer&lt;uint&gt; counter;    // size: 1</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When a fragment is processed:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>The thread atomically increments the <code>counter</code> to get a unique <code>newNodeIdx</code>.</p>
+</li>
+<li>
+<p>The thread uses <code>InterlockedExchange</code> on the <code>headBuffer</code> at its pixel location. It writes <code>newNodeIdx</code> and receives the <code>oldHead</code>.</p>
+</li>
+<li>
+<p>The thread writes its data and the <code>oldHead</code> (as <code>nextIdx</code>) into <code>nodePool[newNodeIdx]</code>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This structure allows thousands of fragments to be added to millions of different lists simultaneously without ever needing a global lock.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_beyond_exchange_compare_and_swap_cas"><a class="anchor" href="#_beyond_exchange_compare_and_swap_cas"></a>Beyond Exchange: Compare-and-Swap (CAS)</h3>
+<div class="paragraph">
+<p>While <code>InterlockedExchange</code> is great for simple lists, more complex structures (like thread-safe queues) often need <strong>Compare-and-Swap (CAS)</strong>, exposed as <code>InterlockedCompareExchange</code> in Slang.</p>
+</div>
+<div class="paragraph">
+<p>CAS works like this: "Only update this memory if its current value matches my 'expected' value." If it doesn&#8217;t match, it means another thread changed the data first. In that case, our thread must "retry" the operation with the new value. This "loop until success" pattern is common in advanced lock-free programming and is much more efficient than a traditional lock because threads only wait if there is actual contention, and they never leave the hardware scheduler.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glsl_atomicadd_and_64_bit_atomics"><a class="anchor" href="#_glsl_atomicadd_and_64_bit_atomics"></a>GLSL: atomicAdd and 64-bit Atomics</h3>
+<div class="paragraph">
+<p>In GLSL, you use the <code>atomicAdd</code> and <code>atomicExchange</code> functions. For 64-bit atomics, you must enable the <code>GL_EXT_shader_atomic_int64</code> extension.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#extension GL_EXT_shader_atomic_int64 : enable
+
+layout(binding = 0) buffer HeadBuffer { uint64_t heads[]; };
+layout(binding = 1) buffer Counter    { uint64_t count; };
+
+void addNode(uint pixelIdx, Node newNode) {
+    // 64-bit atomic add to a global counter
+    uint64_t newNodeIdx = atomicAdd(count, 1UL);
+
+    // 64-bit atomic exchange to update the head pointer
+    uint64_t oldHead = atomicExchange(heads[pixelIdx], newNodeIdx);
+
+    // ... update node and next pointer
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>While Slang provides a more unified <code>InterlockedAdd</code> that works across different bit-widths, GLSL requires being explicit about the extensions and the types (e.g., using <code>1UL</code> for 64-bit literals).</p>
+</div>
+<div class="paragraph">
+<p>While the example above uses 32-bit indices for simplicity, 64-bit atomics allow you to do this across different buffers or even different memory types using raw pointers.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_building_work_queues"><a class="anchor" href="#_building_work_queues"></a>Building Work Queues</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <strong>Work Queue</strong> is a list of tasks that the GPU needs to perform. In a <strong>GPU-Driven Pipeline</strong>, one compute dispatch might generate a list of objects that need to be culled, and then another dispatch might process that list.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_anatomy_of_a_work_queue"><a class="anchor" href="#_the_anatomy_of_a_work_queue"></a>The Anatomy of a Work Queue</h3>
+<div class="paragraph">
+<p>A work queue is essentially a <strong>producer-consumer</strong> structure. On the GPU, this is typically implemented as a <strong>Linear Buffer</strong> with an atomic counter, or a <strong>Ring Buffer</strong> for persistent workloads.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct Task {
+    uint objectID;
+    uint drawCommandIdx;
+};
+
+struct WorkQueue {
+    RWStructuredBuffer&lt;Task&gt; data;    // Storage for pending tasks
+    RWStructuredBuffer&lt;uint&gt; counter; // Number of tasks currently in the queue
+};
+
+void pushTask(WorkQueue queue, Task myTask) {
+    uint slot;
+    // Atomic increment to claim a unique slot
+    InterlockedAdd(queue.counter[0], 1, slot);
+
+    // Check for buffer overflow!
+    if (slot &lt; MAX_QUEUE_SIZE) {
+        queue.data[slot] = myTask;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By using a global work queue, you can handle variable-sized workloads without ever returning to the CPU.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_optimizing_atomics_with_subgroups"><a class="anchor" href="#_optimizing_atomics_with_subgroups"></a>Optimizing Atomics with Subgroups</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Atomics are relatively expensive because they have to be coordinated across the entire GPU. If thousands of threads are all trying to add to the same counter, the hardware will serialize them, leading to a massive performance drop.</p>
+</div>
+<div class="paragraph">
+<p>As we discussed in Chapter 4, you can use <strong>Subgroup Operations</strong> to <strong>coalesce</strong> (combine multiple operations into one) these atomics. Instead of every thread calling <code>InterlockedAdd</code>, you can have the threads in a subgroup perform a <strong>Subgroup Reduction</strong> to calculate the total amount they need to add, pick one "leader" thread to perform a single atomic add for the whole subgroup, and then distribute the resulting base index to the other threads.</p>
+</div>
+<div class="paragraph">
+<p>This simple optimization can improve the throughput of global atomics by 32x or 64x, making complex data structures viable for even the most demanding real-time applications.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_gpu_resident_trees.html" class="xref page">Previous: GPU-Resident Trees</a> | <a href="04_device_addressable_buffers.html" class="xref page">Next: Device-Addressable Buffers</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

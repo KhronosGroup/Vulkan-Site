@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Vulkan 1.4 Scalar Layouts: Tight Packing :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_Vulkan_Compute/02_Compute_Architecture/04_vulkan_1_4_scalar_layouts.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced Vulkan Compute</li>
+    <li>The Compute Architecture and Execution Model</li>
+    <li><a href="04_vulkan_1_4_scalar_layouts.html">Vulkan 1.4 Scalar Layouts</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Vulkan 1.4 Scalar Layouts: Tight Packing</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the previous sections, we&#8217;ve focused on keeping the GPU&#8217;s Compute Units busy through high occupancy. But even if you have thousands of threads active, you can still be held back by <strong>Bandwidth</strong>.</p>
+</div>
+<div class="paragraph">
+<p>Every byte you fetch from VRAM is precious. If your data is poorly laid out, you might be fetching bytes you never use. In this final section of the Compute Architecture chapter, we&#8217;ll look at how Vulkan 1.4&#8217;s <strong>Scalar Layouts</strong> solve one of the oldest and most frustrating problems in GPU programming: the alignment tax.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_alignment_tax_std140_and_std430"><a class="anchor" href="#_the_alignment_tax_std140_and_std430"></a>The Alignment Tax: std140 and std430</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Historically, OpenGL and Vulkan required you to lay out your buffers using strict alignment rules known as <strong>std140</strong> and <strong>std430</strong> (standard 140/430 layouts). These rules were designed for older hardware that had difficulty reading data that wasn&#8217;t perfectly aligned to 4-byte or 16-byte boundaries.</p>
+</div>
+<div class="paragraph">
+<p>For example, under <code>std140</code>, a simple <code>vec3</code> (which is three floats) would often be padded to the size of a <code>vec4</code>. This means that if you had an array of <code>vec3</code>, 25% of your memory bandwidth was being wasted on empty padding!</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Under std140:
+struct MyData {
+    float3 position; // 12 bytes + 4 bytes padding
+    float radius;    // 4 bytes
+};
+// Total size: 20 bytes (but logically 16)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>std430</code> improved this by allowing tighter packing for arrays of scalars and vectors, but it still had strict rules about how nested structures were aligned.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_enter_gl_ext_scalar_block_layout"><a class="anchor" href="#_enter_gl_ext_scalar_block_layout"></a>Enter GL_EXT_scalar_block_layout</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To solve this, a new extension called <strong>GL_EXT_scalar_block_layout</strong> was introduced. This extension allows you to use a <strong>scalar layout</strong>, which essentially removes all padding between members of a structure or elements of an array.</p>
+</div>
+<div class="paragraph">
+<p>In Vulkan 1.4, this functionality is now a core requirement. By using the <code>scalar</code> layout, you can ensure that your data structures on the GPU match your C&#43;&#43; structures perfectly, byte-for-byte.</p>
+</div>
+<div class="sect2">
+<h3 id="_why_does_this_matter"><a class="anchor" href="#_why_does_this_matter"></a>Why does this matter?</h3>
+<div class="paragraph">
+<p>It&#8217;s not just about saving a few bytes of VRAM. It&#8217;s about <strong>Cache Efficiency</strong>.</p>
+</div>
+<div class="paragraph">
+<p>When the GPU fetches data from VRAM, it fetches it in large "cache lines" (often 64 or 128 bytes). If your data is full of padding, each cache line will contain less "real" data. This means you have to perform more memory fetches to get the same amount of information, which directly leads to lower performance.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_slang_automatic_packing"><a class="anchor" href="#_slang_automatic_packing"></a>Slang: Automatic Packing</h3>
+<div class="paragraph">
+<p>If you are using Slang, you don&#8217;t even need to worry about manual layout qualifiers for most cases. Slang&#8217;s layout engine handles the <code>scalar</code> rules for you when targeting Vulkan 1.4:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">struct MyData {
+    float3 position;
+    float radius;
+};
+
+[[vk::binding(0, 0)]]
+RWStructuredBuffer&lt;MyData&gt; MyBuffer;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The <code>RWStructuredBuffer</code> in Slang maps to a <code>Storage Buffer</code> in Vulkan, and because Slang defaults to natural alignment, it produces the same result as the <code>scalar</code> layout in GLSL without the boilerplate.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_glsl_the_manual_struggle"><a class="anchor" href="#_glsl_the_manual_struggle"></a>GLSL: The Manual Struggle</h3>
+<div class="paragraph">
+<p>To truly appreciate the "win" in Vulkan 1.4, let&#8217;s look at how this same structure would be handled in GLSL under the older <code>std430</code> rules vs. the modern <code>scalar</code> layout.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// The "Old" Way (std430)
+struct MyData {
+    vec3 position; // 12 bytes + 4 bytes padding (arrays of vec3 are even worse!)
+    float radius;  // 4 bytes
+};
+
+layout(std430, binding = 0) buffer MyBuffer {
+    MyData data[];
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Under <code>std430</code>, if you had an array of <code>MyData</code>, each <code>vec3</code> would be padded to 16 bytes. If you tried to match this with a simple <code>struct { glm::vec3 p; float r; }</code> on the CPU, you would likely experience memory corruption because the GPU expects that 4-byte gap between <code>position</code> and <code>radius</code>.</p>
+</div>
+<div class="paragraph">
+<p>Now, look at the Vulkan 1.4 way using the <strong>scalar</strong> layout:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// The "Modern" Way (Vulkan 1.4 / GL_EXT_scalar_block_layout)
+#extension GL_EXT_scalar_block_layout : enable
+
+struct MyData {
+    vec3 position; // 12 bytes
+    float radius;  // 4 bytes
+};
+
+layout(scalar, binding = 0) buffer MyBuffer {
+    MyData data[];
+};
+// Total size of MyData: 16 bytes. No padding!</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By explicitly using <code>layout(scalar)</code>, you tell the driver that you want the tighter packing rules. This allows your GLSL code to perfectly match a standard C&#43;&#43; struct without any manual <code>float padding</code> members.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_c_side_comparison"><a class="anchor" href="#_c_side_comparison"></a>C&#43;&#43; Side Comparison</h3>
+<div class="paragraph">
+<p>To match this on the CPU, you no longer need to manually add <code>float padding[1]</code> or use <code>alignas(16)</code>. You can simply define your structure naturally:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct MyData {
+    glm::vec3 position;
+    float radius;
+};
+// Total size: 16 bytes. No padding!</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you are using modern languages like Slang, this becomes even easier. Slang defaults to a more natural, C&#43;&#43;-like layout, and its Vulkan backend handles the scalar layout details for you automatically when targeting Vulkan 1.4.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We&#8217;ve covered a lot of ground in this chapter. We&#8217;ve seen how workgroups map to silicon, how occupancy helps us hide the massive latency of memory fetches, and how scalar layouts ensure we aren&#8217;t wasting the bandwidth we&#8217;ve worked so hard to use.</p>
+</div>
+<div class="paragraph">
+<p>By understanding these low-level architectural details, you&#8217;ve moved beyond "writing shaders" and started "programming the hardware."</p>
+</div>
+<div class="paragraph">
+<p>In the next chapter, we&#8217;ll take these concepts even further by looking at the <strong>Vulkan Memory Model</strong> and how to safely synchronize data between thousands of threads.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_occupancy_and_latency_hiding.html" class="xref page">Previous: Occupancy and Latency Hiding</a> | <a href="../03_Memory_Models/01_introduction.html" class="xref page">Next: Memory Models and Consistency</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

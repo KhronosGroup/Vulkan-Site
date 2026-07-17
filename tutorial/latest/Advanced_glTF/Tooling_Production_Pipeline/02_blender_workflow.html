@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Blender-to-Vulkan Workflow :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Tooling_Production_Pipeline/02_blender_workflow.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Tooling &amp; Production Pipeline</li>
+    <li><a href="02_blender_workflow.html">Blender workflow</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Blender-to-Vulkan Workflow</h1>
+<div class="sect1">
+<h2 id="_naming_conventions_the_unwritten_contract"><a class="anchor" href="#_naming_conventions_the_unwritten_contract"></a>Naming Conventions: The Unwritten Contract</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The most consistent source of confusion between artists and engine programmers is naming. An engine loader that looks for a bone named <code>"Spine1"</code> to attach an IK chain will silently fail if the rig uses <code>"spine_1"</code>, <code>"Spine_01"</code>, or <code>"spine.001"</code> (Blender&#8217;s default naming when you duplicate a bone). This is not a bug in the loader or in the rig—it is a breakdown in the naming contract between the two.</p>
+</div>
+<div class="paragraph">
+<p>Establishing naming conventions before the first character is built, writing them down, and enforcing them consistently is one of the highest-leverage investments a small team can make. The conventions don&#8217;t need to be elaborate—they just need to be agreed upon and followed.</p>
+</div>
+<div class="paragraph">
+<p>For skeleton joints, the standard that works well in practice is: all lowercase, words separated by underscores, side indicated by a <code>_l</code> or <code>_r</code> suffix (left and right respectively), and a consistent hierarchy naming pattern. A humanoid spine chain under this convention would be <code>hips</code>, <code>spine</code>, <code>spine_upper</code>, <code>chest</code>, <code>neck</code>, <code>head</code>. A leg chain would be <code>thigh_l</code>, <code>shin_l</code>, <code>foot_l</code>, <code>toes_l</code>. This is the convention used by Blender&#8217;s built-in Rigify system and by Mixamo, which makes it compatible with a large body of existing animation content.</p>
+</div>
+<div class="paragraph">
+<p>For your engine&#8217;s benefit, the loader code should never hardcode joint names—it should discover them from the glTF file or from a small configuration file that maps semantic names to glTF names. This allows different assets to use different naming conventions without engine code changes. However, the extras-based physics and constraint metadata we defined in Chapter 2 uses <code>"parent_bone"</code> as a string reference to joint names, so those must match the exported joint names exactly.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vertex_groups_and_skinning_weights"><a class="anchor" href="#_vertex_groups_and_skinning_weights"></a>Vertex Groups and Skinning Weights</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In Blender, skeletal skinning is defined through <strong>vertex groups</strong>: named collections of vertices where each vertex has a weight value (between 0 and 1) indicating how much that group&#8217;s bone influences it. Blender exports vertex group weights as the <code>JOINTS</code> and <code>WEIGHTS</code> accessors in the glTF file.</p>
+</div>
+<div class="paragraph">
+<p>Several Blender-side issues can corrupt the skinning data on export:</p>
+</div>
+<div class="paragraph">
+<p><strong>Unnormalized weights.</strong> If the sum of a vertex&#8217;s bone weights is not 1.0, the skinning math produces incorrect results—the vertex will shrink or expand as it moves. Blender&#8217;s Weight Paint mode has a normalize option; use it before exporting. The glTF specification does not require normalized weights, but your skinning shader almost certainly computes the blend matrix as <code>sum(weight_i * joint_matrix_i)</code>, which assumes normalization.</p>
+</div>
+<div class="paragraph">
+<p><strong>More than four influences per vertex.</strong> glTF&#8217;s standard skinning (<code>JOINTS_0</code>/<code>WEIGHTS_0</code>) supports exactly four bone influences per vertex. Blender rigs frequently produce more than four influences when automatic weight painting is used—particularly near joint intersections like the armpit or hip crease. Blender&#8217;s Limit Total option in the Weight Paint tools reduces each vertex to at most N influences; set N to 4 before exporting and re-normalize afterwards.</p>
+</div>
+<div class="paragraph">
+<p><strong>Zero-weight vertex groups.</strong> If a vertex group exists but a vertex has zero weight in it, Blender may still include that group as one of the four influences, wasting a slot that could be used for a meaningful influence. Clean this up with Blender&#8217;s Clean Weights option.</p>
+</div>
+<div class="paragraph">
+<p><strong>Rest pose mismatch.</strong> The glTF export captures the rig in its current pose at export time as the bind pose. If the rig has been posed (not in rest pose) when you export, all the inverse bind matrices will be wrong, and the character will appear deformed in the base T-pose. Always ensure the armature is in rest position (<code>Pose mode → Pose → Apply Pose as Rest Pose</code> if needed, then export) before exporting for the first time, and make it a workflow rule to export only from rest pose.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_custom_properties_for_physics_extras"><a class="anchor" href="#_custom_properties_for_physics_extras"></a>Custom Properties for Physics Extras</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In Chapter 2 we described how physics collider and constraint definitions are stored in glTF "extras" JSON and parsed by the engine at load time. On the Blender side, these extras originate from Blender&#8217;s <strong>Custom Properties</strong> panel, available on bones in Pose mode (Properties → Bone → Custom Properties).</p>
+</div>
+<div class="paragraph">
+<p>The critical detail is the data format. Blender exports custom properties as raw JSON values in the extras field. A float property becomes a JSON number. A string property becomes a JSON string. Modern Blender glTF exporters handle dictionary properties directly, allowing you to create complex, nested JSON structures in the glTF <code>extras</code> field without manual string encoding.</p>
+</div>
+<div class="paragraph">
+<p>The cleanest approach for physics extras is a Python script run from Blender&#8217;s Script Editor. The script iterates over all bones in the armature and sets custom properties programmatically based on a configuration dictionary:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-python hljs" data-lang="python">import bpy, json
+
+# Configuration: bone name -&gt; physics settings
+physics_config = {
+    "shin_l": {
+        "physics": {
+            "collider": "capsule",
+            "radius": 0.05,
+            "half_height": 0.18,
+            "mass": 3.0,
+            "constraint": {
+                "type": "hinge",
+                "hinge_axis": [0, 0, 1],
+                "limit_min_deg": -140,
+                "limit_max_deg": 0,
+                "parent_bone": "thigh_l"
+            },
+            "collision_group": "leg",
+            "collision_mask": "world,props"
+        }
+    },
+    # ... more bones
+}
+
+armature = bpy.data.objects["Armature"]
+bpy.context.view_layer.objects.active = armature
+bpy.ops.object.mode_set(mode='POSE')
+
+for bone_name, config in physics_config.items():
+    if bone_name in armature.pose.bones:
+        bone = armature.pose.bones[bone_name]
+        for key, value in config.items():
+            # Modern Blender glTF exporters handle dicts directly,
+            # ensuring 'extras' contains a proper JSON object.
+            bone[key] = value
+
+bpy.ops.object.mode_set(mode='OBJECT')
+print("Physics properties applied.")</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This script produces the nested JSON structure that the <code>parse_collider_extras</code> and <code>parse_constraint_def</code> functions from Chapter 2 expect. Modern Blender ensures that these dictionary properties are exported as proper JSON objects in the glTF <code>extras</code> field, matching the C&#43;&#43; parsing logic we implemented using <code>tinygltf</code>. Store this script alongside the blend file and run it after any rig changes. Version-controlling the script together with the blend file ensures that physics parameters are reproducible and tracked.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_gltf_export_checklist"><a class="anchor" href="#_gltf_export_checklist"></a>glTF Export Checklist</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When exporting from Blender, use the following settings in the <code>Export glTF 2.0</code> dialog to ensure your character data arrives correctly in the engine:</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p><strong>Format</strong>: <code>glTF Binary (.glb)</code></p>
+</li>
+<li>
+<p><strong>Include</strong>:</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Selected Objects</code> (Ensure only Mesh and Armature are selected)</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Custom Properties</code> (<strong>Critical</strong>: This is where your physics metadata lives)</p>
+</li>
+<li>
+<p><strong>Transform</strong>:</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>+Y Up</code> (Standard glTF convention)</p>
+</li>
+<li>
+<p><strong>Data &#8594; Mesh</strong>:</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>UVs</code>, <code>Normals</code>, <code>Tangents</code> (Required for PBR and skinning)</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Vertex Weights</code> (Required for skeletal animation)</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Shape Keys</code> (Required for morph targets)</p>
+</li>
+<li>
+<p><strong>Data &#8594; Armature</strong>:</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Use Rest Position Armature</code></p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>Export Deformation Bones Only</code> (Keep this <strong>off</strong> if you have non-deforming control bones that IK needs to reference)</p>
+</li>
+<li>
+<p><i class="fa fa-square-o"></i> <code>Add Leaf Bones</code> (<strong>Off</strong>: avoids extra bones at chain tips)</p>
+</li>
+<li>
+<p><strong>Animation</strong>:</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Animation</code> (Enable to export clips)</p>
+</li>
+<li>
+<p><i class="fa fa-check-square-o"></i> <code>Shape Key Animation</code> (Required if your facial expressions are keyed)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_morph_target_shape_key_workflow"><a class="anchor" href="#_morph_target_shape_key_workflow"></a>Morph Target (Shape Key) Workflow</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Morph targets in glTF (called <strong>Shape Keys</strong> in Blender) allow for complex deformations like facial expressions that skeletal animation alone cannot handle.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Creation</strong>: Create Shape Keys in the <code>Mesh Data</code> properties panel. The first key is always the <code>Basis</code> (the rest pose). Additional keys define displacements from that basis.</p>
+</li>
+<li>
+<p><strong>Naming</strong>: Give your shape keys semantic names (e.g., <code>blink_l</code>, <code>smile</code>, <code>mouth_open</code>). These names will be exported in the glTF <code>extras.targetNames</code> field, allowing your engine to address them by name.</p>
+</li>
+<li>
+<p><strong>Range</strong>: Ensure your shape keys are designed to be additive. If a vertex is moved by both a <code>smile</code> morph and a <code>blink</code> morph, the engine will sum their displacements.</p>
+</li>
+<li>
+<p><strong>Export</strong>: As noted in the checklist, ensure the <strong>Shape Keys</strong> and <strong>Shape Key Animation</strong> options are enabled in the glTF exporter.</p>
+</li>
+<li>
+<p><strong>Validation</strong>: After exporting, run your <code>.glb</code> through the <strong>glTF-Validator</strong>. It will check that your shape keys use <strong>Sparse Accessors</strong> where appropriate, which is a critical optimization for complex facial rigs.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_validation.html" class="xref page">Next: Validation</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

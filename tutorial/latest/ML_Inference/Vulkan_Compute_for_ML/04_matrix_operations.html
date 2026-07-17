@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Matrix Operations :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Vulkan_Compute_for_ML/04_matrix_operations.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Vulkan Compute for ML</li>
+    <li><a href="04_matrix_operations.html">Matrix Operations</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Matrix Operations</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Matrix operations are the computational workhorses of neural networks. While activation functions get the attention for introducing non-linearity, matrix operations do the heavy lifting. Fully connected layers are matrix-vector multiplications. The core of convolutional layers can be reformulated as matrix multiplications. Attention mechanisms—the foundation of transformers—are built on matrix-matrix multiplications.</p>
+</div>
+<div class="paragraph">
+<p>Understanding how to implement matrix operations efficiently on the GPU is essential for building a performant inference engine. Unlike element-wise operations, which are memory-bound and embarrassingly parallel, matrix operations have more complex access patterns and opportunities for optimization through data reuse.</p>
+</div>
+<div class="paragraph">
+<p>This chapter covers implementing matrix-vector multiplication (the foundation of fully connected layers) and matrix-matrix multiplication (GEMM—General Matrix Multiply, used throughout modern architectures). We&#8217;ll start with naive implementations to understand the basics, then progress to optimized versions using shared memory and tiling that achieve significantly better performance.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_matrix_operations_matter"><a class="anchor" href="#_why_matrix_operations_matter"></a>Why Matrix Operations Matter</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before diving into implementations, let&#8217;s understand why these operations dominate neural network computation and what makes them challenging.</p>
+</div>
+<div class="sect2">
+<h3 id="_computational_intensity"><a class="anchor" href="#_computational_intensity"></a>Computational Intensity</h3>
+<div class="paragraph">
+<p>Matrix operations are compute-intensive. A matrix-vector multiplication of an M×N matrix with an N-dimensional vector requires M×N multiply-add operations. For a typical fully connected layer with 4096 inputs and 4096 outputs, that&#8217;s 16 million operations.</p>
+</div>
+<div class="paragraph">
+<p>Matrix-matrix multiplication is even more intensive. Multiplying two N×N matrices requires N³ multiply-add operations. For 1024×1024 matrices, that&#8217;s over 1 billion operations. This computational intensity is why GPUs excel at neural networks—they can perform thousands of operations in parallel.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_access_patterns"><a class="anchor" href="#_memory_access_patterns"></a>Memory Access Patterns</h3>
+<div class="paragraph">
+<p>The challenge with matrix operations isn&#8217;t just the computation—it&#8217;s the memory access patterns. Consider matrix-vector multiplication: each output element requires reading an entire row of the matrix and the entire input vector. If you compute outputs independently, you read the input vector multiple times, wasting memory bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>Matrix-matrix multiplication has even more complex patterns. The naive implementation reads each element of the input matrices multiple times. Optimized implementations use tiling and shared memory to reuse data, dramatically reducing memory traffic.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_data_reuse_opportunities"><a class="anchor" href="#_data_reuse_opportunities"></a>Data Reuse Opportunities</h3>
+<div class="paragraph">
+<p>Unlike element-wise operations where each input is used once, matrix operations have significant data reuse. In matrix-matrix multiplication, each element of the input matrices is used N times (where N is the matrix dimension). Exploiting this reuse through shared memory is the key to high performance.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_matrix_vector_multiplication"><a class="anchor" href="#_matrix_vector_multiplication"></a>Matrix-Vector Multiplication</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Matrix-vector multiplication is the foundation of fully connected (dense) layers. Given a matrix A of size M×N and a vector x of size N, we compute y = A×x, where y is a vector of size M.</p>
+</div>
+<div class="paragraph">
+<p>Mathematically, each output element is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">y[i] = Σ(j=0 to N-1) A[i][j] * x[j]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each output element is the dot product of a matrix row with the input vector.</p>
+</div>
+<div class="sect2">
+<h3 id="_naive_implementation"><a class="anchor" href="#_naive_implementation"></a>Naive Implementation</h3>
+<div class="paragraph">
+<p>Let&#8217;s start with a straightforward implementation where each thread computes one output element:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 256) in;
+
+layout(set = 0, binding = 0) readonly buffer MatrixBuffer {
+    float matrix[];  // M x N matrix in row-major order
+};
+
+layout(set = 0, binding = 1) readonly buffer VectorBuffer {
+    float vector[];  // N-dimensional vector
+};
+
+layout(set = 0, binding = 2) writeonly buffer OutputBuffer {
+    float output[];  // M-dimensional output vector
+};
+
+layout(push_constant) uniform PushConstants {
+    uint M;  // Number of rows
+    uint N;  // Number of columns
+} pc;
+
+void main() {
+    uint row = gl_GlobalInvocationID.x;
+
+    if (row &gt;= pc.M) {
+        return;
+    }
+
+    // Compute dot product of matrix row with vector
+    float sum = 0.0;
+    for (uint col = 0; col &lt; pc.N; col++) {
+        uint matrix_index = row * pc.N + col;
+        sum += matrix[matrix_index] * vector[col];
+    }
+
+    output[row] = sum;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This implementation is simple and correct. Each thread:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identifies which output element it&#8217;s computing (its row)</p>
+</li>
+<li>
+<p>Loops over all columns, accumulating the dot product</p>
+</li>
+<li>
+<p>Writes the result</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The memory access pattern is straightforward: each thread reads one row of the matrix sequentially (good for coalescing) and reads the entire input vector (shared across all threads).</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_analysis"><a class="anchor" href="#_performance_analysis"></a>Performance Analysis</h3>
+<div class="paragraph">
+<p>The naive implementation has a problem: every thread reads the entire input vector. For M threads, we read the vector M times, even though it&#8217;s the same data. This wastes memory bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>On the positive side, matrix reads are coalesced—threads read consecutive rows, so consecutive threads access consecutive memory locations. This is good for memory efficiency.</p>
+</div>
+<div class="paragraph">
+<p>The computation itself is efficient—modern GPUs can perform multiply-add operations very quickly. The bottleneck is memory bandwidth, specifically the redundant vector reads.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_optimized_implementation_with_shared_memory"><a class="anchor" href="#_optimized_implementation_with_shared_memory"></a>Optimized Implementation with Shared Memory</h3>
+<div class="paragraph">
+<p>We can eliminate redundant vector reads by loading the vector into shared memory once per work group:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 256) in;
+
+layout(set = 0, binding = 0) readonly buffer MatrixBuffer {
+    float matrix[];
+};
+
+layout(set = 0, binding = 1) readonly buffer VectorBuffer {
+    float vector[];
+};
+
+layout(set = 0, binding = 2) writeonly buffer OutputBuffer {
+    float output[];
+};
+
+layout(push_constant) uniform PushConstants {
+    uint M;
+    uint N;
+} pc;
+
+// Shared memory for the input vector
+shared float shared_vector[256];  // Adjust size based on N
+
+void main() {
+    uint local_id = gl_LocalInvocationID.x;
+    uint row = gl_GlobalInvocationID.x;
+
+    // Cooperatively load vector into shared memory
+    // Each thread loads one element (or more if N &gt; 256)
+    for (uint i = local_id; i &lt; pc.N; i += 256) {
+        shared_vector[i] = vector[i];
+    }
+
+    // Synchronize to ensure all threads have loaded their data
+    barrier();
+
+    if (row &gt;= pc.M) {
+        return;
+    }
+
+    // Compute dot product using shared memory
+    float sum = 0.0;
+    for (uint col = 0; col &lt; pc.N; col++) {
+        uint matrix_index = row * pc.N + col;
+        sum += matrix[matrix_index] * shared_vector[col];
+    }
+
+    output[row] = sum;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Key improvements:</p>
+</div>
+<div class="paragraph">
+<p><strong>Cooperative Loading</strong>: All threads in the work group cooperate to load the vector into shared memory. Each thread loads one or more elements, ensuring the entire vector is loaded efficiently.</p>
+</div>
+<div class="paragraph">
+<p><strong>Barrier Synchronization</strong>: The <code>barrier()</code> ensures all threads have finished loading before any thread starts computing. This prevents race conditions.</p>
+</div>
+<div class="paragraph">
+<p><strong>Shared Memory Access</strong>: Threads read from shared memory instead of global memory. Shared memory is much faster—typically 10-100x faster than global memory.</p>
+</div>
+<div class="paragraph">
+<p>This optimization can improve performance by 2-5x for large vectors, depending on the hardware and vector size.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_handling_large_vectors"><a class="anchor" href="#_handling_large_vectors"></a>Handling Large Vectors</h3>
+<div class="paragraph">
+<p>If the vector is larger than shared memory can hold (e.g., N &gt; 16384), you need to tile the computation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Process vector in tiles
+const uint TILE_SIZE = 256;
+
+for (uint tile_start = 0; tile_start &lt; pc.N; tile_start += TILE_SIZE) {
+    uint tile_end = min(tile_start + TILE_SIZE, pc.N);
+    uint tile_size = tile_end - tile_start;
+
+    // Load tile into shared memory
+    if (local_id &lt; tile_size) {
+        shared_vector[local_id] = vector[tile_start + local_id];
+    }
+    barrier();
+
+    // Compute partial dot product for this tile
+    for (uint i = 0; i &lt; tile_size; i++) {
+        uint col = tile_start + i;
+        uint matrix_index = row * pc.N + col;
+        sum += matrix[matrix_index] * shared_vector[i];
+    }
+    barrier();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This processes the vector in chunks, keeping memory usage bounded while still benefiting from shared memory.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_matrix_matrix_multiplication_gemm"><a class="anchor" href="#_matrix_matrix_multiplication_gemm"></a>Matrix-Matrix Multiplication (GEMM)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Matrix-matrix multiplication is more complex but follows similar principles. Given matrices A (M×K) and B (K×N), we compute C = A×B, where C is M×N.</p>
+</div>
+<div class="paragraph">
+<p>Mathematically:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-none hljs">C[i][j] = Σ(k=0 to K-1) A[i][k] * B[k][j]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Each output element is the dot product of a row from A with a column from B.</p>
+</div>
+<div class="sect2">
+<h3 id="_naive_implementation_2"><a class="anchor" href="#_naive_implementation_2"></a>Naive Implementation</h3>
+<div class="paragraph">
+<p>The simplest approach: each thread computes one output element:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(set = 0, binding = 0) readonly buffer MatrixA {
+    float A[];  // M x K matrix
+};
+
+layout(set = 0, binding = 1) readonly buffer MatrixB {
+    float B[];  // K x N matrix
+};
+
+layout(set = 0, binding = 2) writeonly buffer MatrixC {
+    float C[];  // M x N output matrix
+};
+
+layout(push_constant) uniform PushConstants {
+    uint M;
+    uint K;
+    uint N;
+} pc;
+
+void main() {
+    uint row = gl_GlobalInvocationID.y;
+    uint col = gl_GlobalInvocationID.x;
+
+    if (row &gt;= pc.M || col &gt;= pc.N) {
+        return;
+    }
+
+    float sum = 0.0;
+    for (uint k = 0; k &lt; pc.K; k++) {
+        float a_val = A[row * pc.K + k];
+        float b_val = B[k * pc.N + col];
+        sum += a_val * b_val;
+    }
+
+    C[row * pc.N + col] = sum;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We use 2D work groups (16×16) because we&#8217;re computing a 2D output. Each thread:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Identifies its output position (row, col)</p>
+</li>
+<li>
+<p>Loops over K, accumulating the dot product</p>
+</li>
+<li>
+<p>Writes the result</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This implementation is correct but inefficient. Each element of A and B is read multiple times from global memory. For large matrices, this wastes enormous memory bandwidth.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tiled_implementation_with_shared_memory"><a class="anchor" href="#_tiled_implementation_with_shared_memory"></a>Tiled Implementation with Shared Memory</h3>
+<div class="paragraph">
+<p>The key optimization is tiling: divide the matrices into tiles, load tiles into shared memory, and compute partial results. This exploits data reuse—each tile element is used multiple times while in shared memory.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s the optimized implementation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">#version 450
+
+#define TILE_SIZE 16
+
+layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE) in;
+
+layout(set = 0, binding = 0) readonly buffer MatrixA {
+    float A[];
+};
+
+layout(set = 0, binding = 1) readonly buffer MatrixB {
+    float B[];
+};
+
+layout(set = 0, binding = 2) writeonly buffer MatrixC {
+    float C[];
+};
+
+layout(push_constant) uniform PushConstants {
+    uint M;
+    uint K;
+    uint N;
+} pc;
+
+// Shared memory for tiles
+shared float tile_A[TILE_SIZE][TILE_SIZE];
+shared float tile_B[TILE_SIZE][TILE_SIZE];
+
+void main() {
+    uint local_row = gl_LocalInvocationID.y;
+    uint local_col = gl_LocalInvocationID.x;
+    uint global_row = gl_GlobalInvocationID.y;
+    uint global_col = gl_GlobalInvocationID.x;
+
+    float sum = 0.0;
+
+    // Loop over tiles
+    uint num_tiles = (pc.K + TILE_SIZE - 1) / TILE_SIZE;
+
+    for (uint tile = 0; tile &lt; num_tiles; tile++) {
+        // Load tile of A into shared memory
+        uint a_col = tile * TILE_SIZE + local_col;
+        if (global_row &lt; pc.M &amp;&amp; a_col &lt; pc.K) {
+            tile_A[local_row][local_col] = A[global_row * pc.K + a_col];
+        } else {
+            tile_A[local_row][local_col] = 0.0;
+        }
+
+        // Load tile of B into shared memory
+        uint b_row = tile * TILE_SIZE + local_row;
+        if (b_row &lt; pc.K &amp;&amp; global_col &lt; pc.N) {
+            tile_B[local_row][local_col] = B[b_row * pc.N + global_col];
+        } else {
+            tile_B[local_row][local_col] = 0.0;
+        }
+
+        // Synchronize to ensure tiles are loaded
+        barrier();
+
+        // Compute partial dot product using tiles
+        for (uint k = 0; k &lt; TILE_SIZE; k++) {
+            sum += tile_A[local_row][k] * tile_B[k][local_col];
+        }
+
+        // Synchronize before loading next tile
+        barrier();
+    }
+
+    // Write result
+    if (global_row &lt; pc.M &amp;&amp; global_col &lt; pc.N) {
+        C[global_row * pc.N + global_col] = sum;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This implementation is more complex but much faster. Let&#8217;s break down what&#8217;s happening:</p>
+</div>
+<div class="paragraph">
+<p><strong>Tiling Strategy</strong>: We divide the K dimension into tiles of size TILE_SIZE. For each tile, we load a TILE_SIZE×TILE_SIZE block from A and B into shared memory.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cooperative Loading</strong>: All threads in the work group cooperate to load the tiles. Each thread loads one element from A and one from B.</p>
+</div>
+<div class="paragraph">
+<p><strong>Compute on Tiles</strong>: Once tiles are loaded, threads compute partial dot products using shared memory. Each element in the tiles is reused TILE_SIZE times.</p>
+</div>
+<div class="paragraph">
+<p><strong>Accumulation</strong>: We accumulate partial results across all tiles to get the final output.</p>
+</div>
+<div class="paragraph">
+<p><strong>Boundary Handling</strong>: The <code>if</code> statements handle cases where matrix dimensions aren&#8217;t multiples of TILE_SIZE, padding with zeros.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_performance_analysis_2"><a class="anchor" href="#_performance_analysis_2"></a>Performance Analysis</h3>
+<div class="paragraph">
+<p>The tiled implementation dramatically reduces memory traffic. Consider multiplying 1024×1024 matrices:</p>
+</div>
+<div class="paragraph">
+<p><strong>Naive</strong>: Each output element requires reading 1024 elements from A and 1024 from B. Total: 1024² × 2 × 1024 = 2 billion reads.</p>
+</div>
+<div class="paragraph">
+<p><strong>Tiled (16×16 tiles)</strong>: Each tile is loaded once and reused 16 times. Total reads: approximately 2 × 1024² × 1024 / 16 = 128 million reads.</p>
+</div>
+<div class="paragraph">
+<p>That&#8217;s a 16x reduction in memory traffic! In practice, the speedup is typically 5-10x due to other factors (compute time, memory latency), but it&#8217;s still substantial.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_optimizing_tile_size"><a class="anchor" href="#_optimizing_tile_size"></a>Optimizing Tile Size</h3>
+<div class="paragraph">
+<p>The tile size affects performance. Larger tiles mean more data reuse but require more shared memory. Typical tile sizes are 8×8, 16×16, or 32×32.</p>
+</div>
+<div class="paragraph">
+<p>Factors to consider:</p>
+</div>
+<div class="paragraph">
+<p><strong>Shared Memory Limits</strong>: GPUs have limited shared memory per work group (typically 16-64 KB). Two TILE_SIZE×TILE_SIZE tiles of floats require 2 × TILE_SIZE² × 4 bytes. For 32×32 tiles, that&#8217;s 8 KB—well within limits.</p>
+</div>
+<div class="paragraph">
+<p><strong>Occupancy</strong>: Larger work groups (larger tiles) mean fewer work groups can run concurrently. This can reduce occupancy (the percentage of GPU resources actively used).</p>
+</div>
+<div class="paragraph">
+<p><strong>Register Pressure</strong>: Larger tiles might require more registers per thread, also reducing occupancy.</p>
+</div>
+<div class="paragraph">
+<p>The optimal tile size depends on your GPU architecture. Profile different sizes to find the best for your hardware. For most modern GPUs, 16×16 is a good default.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_advanced_optimizations"><a class="anchor" href="#_advanced_optimizations"></a>Advanced Optimizations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Beyond basic tiling, several advanced techniques can further improve performance.</p>
+</div>
+<div class="sect2">
+<h3 id="_vectorization"><a class="anchor" href="#_vectorization"></a>Vectorization</h3>
+<div class="paragraph">
+<p>Process multiple elements per thread using vector types:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Load 4 elements at once
+vec4 a_vec = vec4(A[index], A[index+1], A[index+2], A[index+3]);
+vec4 b_vec = vec4(B[index], B[index+1], B[index+2], B[index+3]);
+sum += dot(a_vec, b_vec);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This can improve throughput by 10-30% on some GPUs by better utilizing memory bandwidth and compute units.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_register_blocking"><a class="anchor" href="#_register_blocking"></a>Register Blocking</h3>
+<div class="paragraph">
+<p>Compute multiple output elements per thread to increase arithmetic intensity:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Each thread computes a 2x2 block of outputs
+float sum00 = 0.0, sum01 = 0.0;
+float sum10 = 0.0, sum11 = 0.0;
+
+for (uint k = 0; k &lt; TILE_SIZE; k++) {
+    float a0 = tile_A[local_row * 2 + 0][k];
+    float a1 = tile_A[local_row * 2 + 1][k];
+    float b0 = tile_B[k][local_col * 2 + 0];
+    float b1 = tile_B[k][local_col * 2 + 1];
+
+    sum00 += a0 * b0;
+    sum01 += a0 * b1;
+    sum10 += a1 * b0;
+    sum11 += a1 * b1;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This increases the compute-to-memory ratio, making better use of the GPU&#8217;s arithmetic units.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_prefetching"><a class="anchor" href="#_prefetching"></a>Prefetching</h3>
+<div class="paragraph">
+<p>Overlap loading the next tile with computing the current tile:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-slang hljs" data-lang="slang">// Load first tile
+load_tile(0);
+barrier();
+
+for (uint tile = 0; tile &lt; num_tiles - 1; tile++) {
+    // Start loading next tile (asynchronous if supported)
+    load_tile(tile + 1);
+
+    // Compute using current tile
+    compute_tile();
+
+    // Wait for next tile to finish loading
+    barrier();
+}
+
+// Compute last tile
+compute_tile();</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This hides memory latency behind computation, improving overall throughput.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_dispatching_matrix_operations"><a class="anchor" href="#_dispatching_matrix_operations"></a>Dispatching Matrix Operations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here&#8217;s how you dispatch the tiled matrix multiplication from your Vulkan application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Assuming matrices are M x K, K x N, producing M x N output
+uint32_t M = 1024, K = 1024, N = 1024;
+const uint32_t TILE_SIZE = 16;
+
+// Calculate work group counts
+uint32_t num_groups_x = (N + TILE_SIZE - 1) / TILE_SIZE;
+uint32_t num_groups_y = (M + TILE_SIZE - 1) / TILE_SIZE;
+
+// Update descriptor sets with matrix buffers
+// ... (similar to previous examples)
+
+// Record commands
+commandBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, *gemmPipeline);
+commandBuffer.bindDescriptorSets(vk::PipelineBindPoint::eCompute,
+                                 *pipelineLayout, 0, *descriptorSet, nullptr);
+
+// Push constants
+struct {
+    uint32_t M, K, N;
+} pushConstants = {M, K, N};
+
+commandBuffer.pushConstants(*pipelineLayout,
+                           vk::ShaderStageFlagBits::eCompute, 0, sizeof(pushConstants), &amp;pushConstants);
+
+// Dispatch
+commandBuffer.dispatch(num_groups_x, num_groups_y, 1);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The key is calculating the number of work groups based on the output dimensions and tile size.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>Performance Considerations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Matrix operations are complex, and performance depends on many factors:</p>
+</div>
+<div class="paragraph">
+<p><strong>Matrix Size</strong>: Small matrices (&lt; 256×256) might not fully utilize the GPU. Large matrices (&gt; 4096×4096) provide better parallelism.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory Layout</strong>: Row-major vs column-major affects access patterns. Ensure your layout matches your access pattern for coalescing.</p>
+</div>
+<div class="paragraph">
+<p><strong>Data Types</strong>: Float16 (half precision) can be 2x faster than float32 on GPUs with specialized hardware, with minimal accuracy loss for many models.</p>
+</div>
+<div class="paragraph">
+<p><strong>Batch Processing</strong>: Processing multiple matrix multiplications in parallel (batching) improves GPU utilization.</p>
+</div>
+<div class="paragraph">
+<p><strong>Specialized Hardware</strong>: Modern GPUs have tensor cores or matrix engines that accelerate matrix multiplication. Using vendor-specific extensions can provide 5-10x speedups.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary"><a class="anchor" href="#_summary"></a>Summary</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Matrix operations are the computational core of neural networks. Key takeaways:</p>
+</div>
+<div class="paragraph">
+<p><strong>Matrix-vector multiplication</strong> is the foundation of fully connected layers. Optimize it using shared memory to eliminate redundant vector reads.</p>
+</div>
+<div class="paragraph">
+<p><strong>Matrix-matrix multiplication</strong> (GEMM) is more complex but follows similar principles. Tiling with shared memory is essential for performance, reducing memory traffic by 10-20x.</p>
+</div>
+<div class="paragraph">
+<p><strong>Tile size</strong> affects performance. 16×16 is a good default, but profile different sizes for your hardware.</p>
+</div>
+<div class="paragraph">
+<p><strong>Advanced optimizations</strong> like vectorization, register blocking, and prefetching can provide additional speedups but increase complexity.</p>
+</div>
+<div class="paragraph">
+<p><strong>Memory layout</strong> and access patterns matter. Ensure coalesced access and consider data reuse opportunities.</p>
+</div>
+<div class="paragraph">
+<p>With efficient matrix operations implemented, you have the computational foundation for neural network inference. The next chapter covers data management—how to organize and transfer tensor data efficiently.</p>
+</div>
+<div class="paragraph">
+<p><a href="03_element_wise_operations.html" class="xref page">Previous: Element-Wise Operations</a> | <a href="05_data_management.html" class="xref page">Next: Data Management</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

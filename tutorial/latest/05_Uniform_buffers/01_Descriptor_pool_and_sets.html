@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Descriptor pool and sets :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../");!function(){var f="../05_Uniform_buffers/01_Descriptor_pool_and_sets.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="00_Descriptor_set_layout_and_buffer.html">Uniform buffers</a></li>
+    <li><a href="01_Descriptor_pool_and_sets.html">Descriptor pool and sets</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Descriptor pool and sets</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The descriptor set layout from the previous chapter describes the type of descriptors that can be bound.
+In this chapter we&#8217;re going to create a descriptor set for each <code>vk::raii::Buffer</code> resource to bind it to the uniform buffer descriptor.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_descriptor_pool"><a class="anchor" href="#_descriptor_pool"></a>Descriptor pool</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Descriptor sets can&#8217;t be created directly, they must be allocated from a pool like command buffers.
+The equivalent for descriptor sets is unsurprisingly called a <em>descriptor pool</em>.
+We&#8217;ll write a new function <code>createDescriptorPool</code> to set it up.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan()
+{
+    ...
+    createUniformBuffers();
+    createDescriptorPool();
+    ...
+}
+
+...
+
+void createDescriptorPool()
+{
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We first need to describe which descriptor types our descriptor sets are going to contain and how many of them, using <code>vk::DescriptorPoolSize</code> structures.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::DescriptorPoolSize poolSize{ .type = vk::DescriptorType::eUniformBuffer, .descriptorCount = MAX_FRAMES_IN_FLIGHT };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We will allocate one of these descriptors for every frame.
+This pool size structure is referenced by the main <code>vk::DescriptorPoolCreateInfo</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::DescriptorPoolCreateInfo poolInfo{ .flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, .maxSets = MAX_FRAMES_IN_FLIGHT, .poolSizeCount = 1, .pPoolSizes = &amp;poolSize };</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Aside from the maximum number of individual descriptors that are available, we also need to specify the maximum number of descriptor sets that may be allocated.</p>
+</div>
+<div class="paragraph">
+<p>The structure has an optional flag similar to command pools that determines if individual descriptor sets can be freed or not.
+As the <code>vk::raii::DescriptorSets</code> destroy the underlying <code>VkDescriptorSet</code> on destruction we need to set it to <code>vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet</code> to allow that.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::DescriptorPool descriptorPool = nullptr;
+
+...
+
+descriptorPool = vk::raii::DescriptorPool(device, poolInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Add a new class member to store the handle of the descriptor pool and call the <code>vk::raii::DescriptorPool</code> constructor to create it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_descriptor_set"><a class="anchor" href="#_descriptor_set"></a>Descriptor set</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We can now allocate the descriptor sets themselves.
+Add a <code>createDescriptorSets</code> function for that purpose:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">void initVulkan()
+{
+    ...
+    createDescriptorPool();
+    createDescriptorSets();
+    ...
+}
+
+...
+
+void createDescriptorSets()
+{
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A descriptor set allocation is described with a <code>vk::DescriptorSetAllocateInfo</code> struct.
+You need to specify the descriptor pool to allocate from, the number of descriptor sets to allocate, and the descriptor set layout to base them on:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">std::vector&lt;vk::DescriptorSetLayout&gt; layouts(MAX_FRAMES_IN_FLIGHT, *descriptorSetLayout);
+vk::DescriptorSetAllocateInfo        allocInfo{.descriptorPool     = descriptorPool,
+                                               .descriptorSetCount = static_cast&lt;uint32_t&gt;(layouts.size()),
+                                               .pSetLayouts        = layouts.data()};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In our case, we will create one descriptor set for each frame in flight, all with the same layout.
+Unfortunately, we do need all the copies of the layout because the next function expects an array matching the number of sets.</p>
+</div>
+<div class="paragraph">
+<p>Add a class member to hold the descriptor set handles and allocate them with <code>vk::raii::Device::allocateDescriptorSets</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::raii::DescriptorPool             descriptorPool = nullptr;
+std::vector&lt;vk::raii::DescriptorSet&gt; descriptorSets;
+
+...
+
+descriptorSets = device.allocateDescriptorSets(allocInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The descriptor sets have been allocated now, but the descriptors within still need to be configured.
+We&#8217;ll now add a loop to populate every descriptor:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++)
+{
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Descriptors that refer to buffers, like our uniform buffer descriptor, are configured with a <code>vk::DescriptorBufferInfo</code> struct.
+This structure specifies the buffer and the region within it that contains the data for the descriptor.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">for (size_t i = 0; i &lt; MAX_FRAMES_IN_FLIGHT; i++)
+{
+    vk::DescriptorBufferInfo bufferInfo{ .buffer = uniformBuffers[i], .offset = 0, .range = sizeof(UniformBufferObject) };
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re overwriting the whole buffer, like we are in this case, then it is also possible to use the <code>vk::WholeSize</code> value for the range.
+The configuration of descriptors is updated using the <code>vk::raii::Device::updateDescriptorSets</code> function, which takes an array of <code>vk::WriteDescriptorSet</code> structs as parameter.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::DescriptorBufferInfo bufferInfo{.buffer = uniformBuffers[i], .offset = 0, .range = sizeof(UniformBufferObject)};
+vk::WriteDescriptorSet   descriptorWrite{.dstSet          = descriptorSets[i],
+                                         .dstBinding      = 0,
+                                         .dstArrayElement = 0,
+                                         .descriptorCount = 1,
+                                         .descriptorType  = vk::DescriptorType::eUniformBuffer,
+                                         .pBufferInfo     = &amp;bufferInfo};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The first two fields specify the descriptor set to update and the binding.
+We gave our uniform buffer binding index <code>0</code>.
+Remember that descriptors can be arrays, so we also need to specify the first index in the array that we want to update.
+We&#8217;re not using an array, so the index is simply <code>0</code>.</p>
+</div>
+<div class="paragraph">
+<p>We need to specify the type of descriptor again.
+It&#8217;s possible to update multiple descriptors at once in an array, starting at index <code>dstArrayElement</code>.
+The <code>descriptorCount</code> field specifies how many array elements you want to update.</p>
+</div>
+<div class="paragraph">
+<p>The last field references an array with <code>descriptorCount</code> structs that actually configure the descriptors.
+It depends on the type of descriptor which one of the three you actually need to use.
+The <code>pBufferInfo</code> field is used for descriptors that refer to buffer data. There are additional elements in this struct, that are not
+used in this sample: <code>pImageInfo</code> is used for descriptors that refer to image data, and <code>pTexelBufferView</code> is used for descriptors that refer to buffer views.
+Our descriptor is based on buffers, so we&#8217;re just using <code>pBufferInfo</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">device.updateDescriptorSets(descriptorWrite, {});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The updates are applied using <code>vk::raii::Device::updateDescriptorSets</code>.
+It accepts two arrays as parameters: an array of <code>vk::WriteDescriptorSet</code> and an array of <code>vk::CopyDescriptorSet</code>.
+The latter can be used to copy descriptors to each other, as its name implies.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_using_descriptor_sets"><a class="anchor" href="#_using_descriptor_sets"></a>Using descriptor sets</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>We now need to update the <code>recordCommandBuffer</code> function to actually bind the right descriptor set for each frame to the descriptors in the shader with <code>vk::raii::CommandBuffer::bindDescriptorSets</code>.
+This needs to be done before the <code>vk::raii::CommandBuffer::drawIndexed</code> call:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">commandBuffers[frameIndex].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipelineLayout, 0, *descriptorSets[frameIndex], nullptr);
+commandBuffer.drawIndexed(static_cast&lt;uint32_t&gt;(indices.size()), 1, 0, 0, 0);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Unlike vertex and index buffers, descriptor sets are not unique to graphics pipelines.
+Therefore, we need to specify if we want to bind descriptor sets to the graphics or compute pipeline.
+The next parameter is the layout that the descriptors are based on.
+The next two parameters specify the index of the first descriptor set, and the array of sets to bind.
+We&#8217;ll get back to this in a moment.
+The last parameter specifies an array of offsets that are used for dynamic descriptors.
+We&#8217;ll look at these in a future chapter.</p>
+</div>
+<div class="paragraph">
+<p>If you run your program now, then you&#8217;ll notice that unfortunately nothing is visible.
+The problem is that because of the Y-flip we did in the projection matrix, the vertices are now being drawn in counter-clockwise order instead of clockwise order.
+This causes backface culling to kick in and prevents any geometry from being drawn.
+Go to the <code>createGraphicsPipeline</code> function and modify the <code>frontFace</code> in <code>vk::PipelineRasterizationStateCreateInfo</code> to correct this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">vk::PipelineRasterizationStateCreateInfo rasterizer{.depthClampEnable        = vk::False,
+                                                    .rasterizerDiscardEnable = vk::False,
+                                                    .polygonMode             = vk::PolygonMode::eFill,
+                                                    .cullMode                = vk::CullModeFlagBits::eBack,
+                                                    .frontFace               = vk::FrontFace::eCounterClockwise,
+                                                    .depthBiasEnable         = vk::False,
+                                                    .lineWidth               = 1.0f};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Run your program again, and you should now see the following:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/images/spinning_quad.png" alt="spinning quad">
+</div>
+</div>
+<div class="paragraph">
+<p>The rectangle has changed into a square because the projection matrix now corrects for aspect ratio.
+The <code>updateUniformBuffer</code> takes care of screen resizing, so we don&#8217;t need to recreate the descriptor set in <code>recreateSwapChain</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_alignment_requirements"><a class="anchor" href="#_alignment_requirements"></a>Alignment requirements</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One thing we&#8217;ve glossed over so far is how exactly the data in the C&#43;&#43; structure should match with the uniform definition in the shader.
+It seems obvious enough to simply use the same types in both:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject
+{
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
+struct UniformBuffer
+{
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>However, that&#8217;s not all there is to it.
+For example, try modifying the struct and shader to look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject
+{
+    glm::vec2 foo;
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};
+
+struct UniformBuffer {
+    float2 foo;
+    float4x4 model;
+    float4x4 view;
+    float4x4 proj;
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Recompile your shader and your program and run it, and you&#8217;ll find that the colorful square you worked so far has disappeared!
+That&#8217;s because we haven&#8217;t taken into account the <em>alignment requirements</em>.</p>
+</div>
+<div class="paragraph">
+<p>Vulkan expects the data in your structure to be aligned in memory in a specific way, for example:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Scalars have to be aligned by N (= 4 bytes given 32-bit floats).</p>
+</li>
+<li>
+<p>A <code>float2</code> must be aligned by 2N (= 8 bytes)</p>
+</li>
+<li>
+<p>A <code>float3</code> or <code>float4</code> must be aligned by 4N (= 16 bytes)</p>
+</li>
+<li>
+<p>A nested structure must be aligned by the base alignment of its members rounded up to a multiple of 16.</p>
+</li>
+<li>
+<p>A <code>float4x4</code> matrix must have the same alignment as a <code>float4</code>.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>You can find the full list of alignment requirements in <a href="https://docs.vulkan.org/spec/latest/chapters/interfaces.html#interfaces-resources-layout">the specification</a>.</p>
+</div>
+<div class="paragraph">
+<p>Our original shader with just three <code>mat4</code> fields already met the alignment requirements.
+As each <code>mat4</code> is 4 x 4 x 4 = 64 bytes in size, <code>model</code> has an offset of <code>0</code>, <code>view</code> has an offset of 64 and <code>proj</code> has an offset of 128.
+All of these are multiples of 16 and that&#8217;s why it worked fine.</p>
+</div>
+<div class="paragraph">
+<p>The new structure starts with a <code>vec2</code> which is only 8 bytes in size and therefore throws off all of the offsets.
+Now <code>model</code> has an offset of <code>8</code>, <code>view</code> an offset of <code>72</code> and <code>proj</code> an offset of <code>136</code>, none of which are multiples of 16.
+To fix this problem we can use the <a href="https://en.cppreference.com/w/cpp/language/alignas"><code>alignas</code></a> specifier introduced in C&#43;&#43;11:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject
+{
+    glm::vec2 foo;
+    alignas(16) glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you now compile and run your program again, you should see that the shader correctly receives its matrix values once again.</p>
+</div>
+<div class="paragraph">
+<p>Luckily there is a way to not have to think about these alignment requirements <em>most</em> of the time.
+We can define <code>GLM_FORCE_DEFAULT_ALIGNED_GENTYPES</code> right before including GLM:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#include &lt;glm/glm.hpp&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This will force GLM to use a version of <code>vec2</code> and <code>mat4</code> that has the alignment requirements already specified for us.
+If you add this definition then you can remove the <code>alignas</code> specifier and your program should still work.</p>
+</div>
+<div class="paragraph">
+<p>Unfortunately, this method can break down if you start using nested structures.
+Consider the following definition in the C&#43;&#43; code:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct Foo
+{
+    glm::vec2 v;
+};
+
+struct UniformBufferObject
+{
+    Foo f1;
+    Foo f2;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And the following shader definition:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct Foo
+{
+    vec2 v;
+};
+
+struct UniformBuffer
+{
+    Foo f1;
+    Foo f2;
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this case <code>f2</code> will have an offset of <code>8</code> whereas it should have an offset of <code>16</code> since it is a nested structure.
+In this case, you must specify the alignment yourself:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject
+{
+    Foo f1;
+    alignas(16) Foo f2;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>These gotchas are a good reason to always be explicit about alignment.
+That way you won&#8217;t be caught off guard by the strange symptoms of alignment errors.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBufferObject
+{
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Remember to recompile your shader after removing the <code>foo</code> field.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_multiple_descriptor_sets"><a class="anchor" href="#_multiple_descriptor_sets"></a>Multiple descriptor sets</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>As some of the structures and function calls hinted at, it is actually possible to bind multiple descriptor sets simultaneously.
+You need to specify a descriptor set layout for each descriptor set when creating the pipeline layout.
+Shaders can then reference specific descriptor sets like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">struct UniformBuffer
+{
+};
+ConstantBuffer&lt;UniformBuffer&gt; ubo;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use this feature to put descriptors that vary per-object and descriptors that are shared into separate descriptor sets.
+In that case, you avoid rebinding most of the descriptors across draw calls which are potentially more efficient.</p>
+</div>
+<div class="paragraph">
+<p>In the <a href="../06_Texture_mapping/00_Images.html" class="xref page">next chapters</a> we&#8217;ll build upon what we just learned and add textures to our scene.</p>
+</div>
+<div class="paragraph">
+<p><a href="../_attachments/23_descriptor_sets.cpp">C&#43;&#43; code</a>  /
+<a href="../_attachments/22_shader_ubo.slang">slang shader</a> /
+<a href="../_attachments/22_shader_ubo.vert">GLSL Vertex shader</a> /
+<a href="../_attachments/22_shader_ubo.frag">GLSL Fragment shader</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../_/js/site.js" data-ui-root-path="../../../_"></script>
+<script async src="../../../_/js/vendor/highlight.js"></script>
+<script src="../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../.." data-snippet-length="100" data-stylesheet="../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

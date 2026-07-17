@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>The Synchronization 2 Advantage :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Synchronization/Anatomy_of_a_Dependency/03_sync2_advantage.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Synchronization 2</li>
+    <li>Anatomy of a Dependency</li>
+    <li><a href="03_sync2_advantage.html">Sync 2 Advantage</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">The Synchronization 2 Advantage</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the early days of Vulkan 1.0, defining dependencies was a fragmented and often frustrating process. You had to juggle multiple structures like <code>VkMemoryBarrier</code>, <code>VkBufferMemoryBarrier</code>, and <code>VkImageMemoryBarrier</code>. These structures weren&#8217;t just numerous; they were also functionally separate, which meant the logic of your synchronization was spread across several different parts of your code.</p>
+</div>
+<div class="paragraph">
+<p><strong>Synchronization 2</strong> (VK_KHR_synchronization2), which is now core in Vulkan 1.3, fundamentally changes this. It unifies these disparate barriers into a single, cohesive structure: <code>vk::DependencyInfo</code>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_fragmented_past_why_legacy_was_hard"><a class="anchor" href="#_the_fragmented_past_why_legacy_was_hard"></a>The Fragmented Past: Why Legacy Was Hard</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To appreciate the advantage of Synchronization 2, we have to look at what we&#8217;re leaving behind. In the legacy Vulkan 1.0 API, a pipeline barrier was a single function call that took three separate arrays of barriers: global, buffer, and image.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Legacy Vulkan 1.0 (Still works, but we don't like it)
+vkCmdPipelineBarrier(
+    commandBuffer,
+    srcStageMask,  // Global stage mask for ALL barriers
+    dstStageMask,  // Global stage mask for ALL barriers
+    dependencyFlags,
+    memoryBarrierCount, pMemoryBarriers,
+    bufferMemoryBarrierCount, pBufferMemoryBarriers,
+    imageMemoryBarrierCount, pImageMemoryBarriers
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice the problem? The <code>srcStageMask</code> and <code>dstStageMask</code> were passed as arguments to the <strong>function</strong>, not as part of the individual barrier structures. This meant that if you had two different image transitions in the same call—say, one from <code>Transfer</code> to <code>Fragment Shader</code> and another from <code>Compute</code> to <code>Vertex Shader</code>—you had to combine all those stages into a single, broad mask.</p>
+</div>
+<div class="paragraph">
+<p>This led to "over-synchronization." By merging the stages at the function level, you were inadvertently telling the GPU to wait for <strong>all</strong> the source stages to finish before <strong>any</strong> of the destination stages could start. You were creating a bottleneck where one didn&#8217;t need to exist.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="../../_images/images/sync2_problem_over_sync.svg" alt="Legacy Synchronization Log Jam" width="600">
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_chain_of_intent_unification_with_vkdependencyinfo"><a class="anchor" href="#_the_chain_of_intent_unification_with_vkdependencyinfo"></a>The "Chain of Intent": Unification with vk::DependencyInfo</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Synchronization 2 solves this by moving the stage masks into the barrier structures themselves. In our engine, we use <code>vk::DependencyInfo</code>, which acts as a container for all our synchronization needs.</p>
+</div>
+<div class="paragraph">
+<p>When we unify synchronization, we aren&#8217;t just cleaning up the syntax. We are grouping the entire "intent" of the dependency in one place. With <code>vk::DependencyInfo</code>, each individual <code>vk::ImageMemoryBarrier2</code> or <code>vk::BufferMemoryBarrier2</code> contains its own <code>srcStageMask</code> and <code>dstStageMask</code>.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Synchronization 2 (The Modern Way)
+vk::ImageMemoryBarrier2 imageBarrier{
+    .srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+    .srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+    .dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
+    .dstAccessMask = vk::AccessFlagBits2::eShaderRead,
+    // ... layout transitions, image handles ...
+};
+
+vk::DependencyInfo dependencyInfo{
+    .imageMemoryBarrierCount = 1,
+    .pImageMemoryBarriers = &amp;imageBarrier
+};
+
+commandBuffer.pipelineBarrier2(dependencyInfo);</code></pre>
+</div>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="../../_images/images/sync2_solution_granular.svg" alt="Synchronization 2 Granular Control" width="600">
+</div>
+</div>
+<div class="paragraph">
+<p>This is a massive win for human readability. When you look at that <code>imageBarrier</code> block, you see a complete "handshake." You know exactly what work is finishing (<code>src</code>) and exactly what work is waiting (<code>dst</code>). There&#8217;s no need to hunt through function arguments or global variables to find the other half of the dependency.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_granular_control_with_64_bit_masks"><a class="anchor" href="#_granular_control_with_64_bit_masks"></a>Granular Control with 64-bit Masks</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Another technical reason for the switch was simple math. The original Vulkan 1.0 flags were 32-bit bitmasks. As Vulkan evolved, we added Ray Tracing, Mesh Shading, Video Encoding, and more. We were literally running out of bits.</p>
+</div>
+<div class="paragraph">
+<p>With <code>vk::PipelineStageFlagBits2</code>, we&#8217;ve moved to 64-bit masks. This gives us the headroom to target specific hardware units with surgical precision.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_power_of_none"><a class="anchor" href="#_the_power_of_none"></a>The Power of "None"</h3>
+<div class="paragraph">
+<p>In legacy Vulkan, if you didn&#8217;t need a memory dependency (just an execution one), you often had to pass <code>0</code> or use confusing flags like <code>BOTTOM_OF_PIPE</code>. In Sync 2, we have an explicit <code>vk::PipelineStageFlagBits2::eNone</code> and <code>vk::AccessFlagBits2::eNone</code>.</p>
+</div>
+<div class="paragraph">
+<p>If you&#8217;re doing a layout transition that doesn&#8217;t require a memory flush (very rare, but possible), or if you just want to be absolutely clear that a certain barrier has no effect on a specific stage, <code>eNone</code> is your best friend. It makes the code self-documenting.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sync_2_as_a_mental_model"><a class="anchor" href="#_sync_2_as_a_mental_model"></a>Sync 2 as a Mental Model</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Think of Synchronization 2 not as a new API, but as a better way to talk to the GPU. In the old system, you were shouting broad commands at the hardware: "EVERYONE STOP UNTIL THE RENDERING IS DONE!"</p>
+</div>
+<div class="paragraph">
+<p>In Synchronization 2, you&#8217;re having a more nuanced conversation: "Hey, Color Attachment Output, once you&#8217;re done writing this specific image, let the Fragment Shader know it&#8217;s safe to start reading it."</p>
+</div>
+<div class="paragraph">
+<p>This "human-to-human" level of clarity is why we&#8217;ve built our entire engine around these structures. It reduces the cognitive load on you, the developer, and it gives the driver the exact information it needs to keep the GPU&#8217;s "pipeline" full of work.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_putting_it_together_in_the_engine"><a class="anchor" href="#_putting_it_together_in_the_engine"></a>Putting it Together in the Engine</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In a real-world engine, synchronization isn&#8217;t just about single transitions; it&#8217;s about orchestrating the entire flow of data between passes. A perfect example of the Synchronization 2 "win" can be found in our <code>Renderer</code> class, specifically during a complex operation like a reflection pass.</p>
+</div>
+<div class="paragraph">
+<p>When rendering reflections, we often need to transition multiple resources at once—for example, a color buffer and a depth buffer. In the legacy API, these would be forced into a "log jam" where both would have to wait for the union of all stages. With Synchronization 2, we can batch them while maintaining their unique requirements.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void Renderer::renderReflectionPass(vk::raii::CommandBuffer&amp; cmd) {
+    // Transition reflection color to COLOR_ATTACHMENT_OPTIMAL
+    vk::ImageMemoryBarrier2 toColor{
+        .srcStageMask  = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        .srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+        .dstStageMask  = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+        .dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+        .oldLayout     = vk::ImageLayout::eShaderReadOnlyOptimal,
+        .newLayout     = vk::ImageLayout::eColorAttachmentOptimal,
+        .image         = *reflectionColor,
+        .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+    };
+
+    // Transition reflection depth to DEPTH_ATTACHMENT_OPTIMAL
+    vk::ImageMemoryBarrier2 toDepth{
+        .srcStageMask  = vk::PipelineStageFlagBits2::eEarlyFragmentTests,
+        .srcAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+        .dstStageMask  = vk::PipelineStageFlagBits2::eEarlyFragmentTests,
+        .dstAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+        .oldLayout     = vk::ImageLayout::eUndefined,
+        .newLayout     = vk::ImageLayout::eDepthAttachmentOptimal,
+        .image         = *reflectionDepth,
+        .subresourceRange = { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
+    };
+
+    // The Win: Batching unique intents into a single call
+    std::array barriers{ toColor, toDepth };
+    vk::DependencyInfo dependencyInfo{
+        .imageMemoryBarrierCount = static_cast&lt;uint32_t&gt;(barriers.size()),
+        .pImageMemoryBarriers    = barriers.data()
+    };
+
+    // One call, but the driver knows 'toColor' only cares about
+    // ColorAttachmentOutput, while 'toDepth' only cares about EarlyFragmentTests.
+    cmd.pipelineBarrier2(dependencyInfo);
+
+    // Now we can safely begin our reflection rendering
+    // ...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>To see the "win" here, let&#8217;s look at the legacy alternative for that same <code>renderReflectionPass</code> operation. You would have been forced to combine your stage masks at the function level:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Legacy Vulkan 1.0 equivalent - The "Log Jam"
+vk::ImageMemoryBarrier legacyToColor{
+    .srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+    .dstAccessMask = vk::AccessFlagBits::eColorAttachmentWrite,
+    .oldLayout     = vk::ImageLayout::eShaderReadOnlyOptimal,
+    .newLayout     = vk::ImageLayout::eColorAttachmentOptimal,
+    .image         = *reflectionColor,
+    .subresourceRange = { vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 }
+};
+
+vk::ImageMemoryBarrier legacyToDepth{
+    .srcAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+    .dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+    .oldLayout     = vk::ImageLayout::eUndefined,
+    .newLayout     = vk::ImageLayout::eDepthAttachmentOptimal,
+    .image         = *reflectionDepth,
+    .subresourceRange = { vk::ImageAspectFlagBits::eDepth, 0, 1, 0, 1 }
+};
+
+std::array legacyBarriers{ legacyToColor, legacyToDepth };
+
+// NOTICE: The stage masks are passed to the function, not the barriers!
+cmd.pipelineBarrier(
+    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests, // srcStageMask (Union)
+    vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests, // dstStageMask (Union)
+    {}, // dependencyFlags
+    nullptr, nullptr, legacyBarriers
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this legacy version, you are forced to pass a single <code>srcStageMask</code> that is the union of <code>eColorAttachmentOutput</code> and <code>eEarlyFragmentTests</code>. This means the GPU would have to wait for <strong>both</strong> the color writes and the depth tests of all previous work to finish before it could even <strong>start</strong> transitioning either image.</p>
+</div>
+<div class="paragraph">
+<p>With Synchronization 2, if the depth tests finish early, the driver can begin the <code>toDepth</code> transition immediately, even if the color hardware is still busy. This keeps the GPU&#8217;s "log jam" from forming, allowing different parts of the hardware to work at their own pace.</p>
+</div>
+<div class="paragraph">
+<p>This code typically lives inside your frame recording logic, often in a dedicated pass function like <code>renderReflectionPass</code>, just before calling <code>beginRendering</code>. By placing the synchronization logic right where the resource is needed, and grouping related transitions into a single <code>vk::DependencyInfo</code>, you create a "Chain of Intent" that is both easy for you to read and optimal for the hardware to execute.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_implementation_modernizing_simple_engine"><a class="anchor" href="#_implementation_modernizing_simple_engine"></a>Implementation: Modernizing Simple Engine</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While <code>Simple Engine&#8217;s renderer has been largely modernized to use the `pipelineBarrier2</code> calls we&#8217;ve discussed, the codebase still contains "legacy islands" that we are in the process of refactoring. A prime example is the <code>PhysicsSystem</code> (<code>physics_system.cpp</code>), which still uses the old-style <code>pipelineBarrier</code> for synchronizing its compute dispatches.</p>
+</div>
+<div class="paragraph">
+<p>If you look into <code>PhysicsSystem::SimulatePhysicsOnGPU</code>, you&#8217;ll see transitions that look like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Legacy synchronization in PhysicsSystem
+vulkanResources.commandBuffer.pipelineBarrier(
+    vk::PipelineStageFlagBits::eComputeShader,
+    vk::PipelineStageFlagBits::eComputeShader,
+    {},
+    vk::MemoryBarrier(vk::AccessFlagBits::eShaderWrite, vk::AccessFlagBits::eShaderRead),
+    nullptr, nullptr
+);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In the upcoming "Synchronization Upgrade" branch of <code>Simple Engine</code>, we will replace these with the cleaner <code>vk::DependencyInfo</code> and <code>vk::BufferMemoryBarrier2</code>. This will allow us to move away from global memory barriers and target the specific physics buffers, reducing the performance penalty on architectures with complex cache hierarchies.</p>
+</div>
+<div class="paragraph">
+<p>In the next section, we&#8217;ll dive deeper into how to pick the right stages and flags to squeeze every last drop of performance out of the hardware.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_navigation"><a class="anchor" href="#_navigation"></a>Navigation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Previous: <a href="02_execution_vs_memory.html" class="xref page">Execution vs. Memory Dependencies</a> | Next: <a href="04_refined_pipeline_stages.html" class="xref page">Refined Pipeline Stages</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

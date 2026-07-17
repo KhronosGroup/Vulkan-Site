@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Cross-Compilation: Building for the ARM Empire :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Embedded_Applications/02_cross_compilation.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Embedded Applications</li>
+    <li><a href="02_cross_compilation.html">Cross Compilation</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Cross-Compilation: Building for the ARM Empire</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>You are developing on a powerful x86_64 workstation with 128GB of RAM and a liquid-cooled GPU. Your target is a <strong>Raspberry Pi 5</strong> or an <strong>NVIDIA Jetson</strong> with an ARM64 processor and a fraction of the resources. You could try to compile your Vulkan C&#43;&#43; code directly on the device, but you will quickly discover that building a large project like ONNX Runtime or a complex Vulkan engine on a micro-computer is a recipe for disaster.</p>
+</div>
+<div class="paragraph">
+<p>If you attempt a local build, you will hit <strong>Memory Thrashing</strong>—where the system spends more time swapping memory pages to the slow SD card than actually compiling code. Eventually, the Linux <strong>Out of Memory (OOM) Killer</strong> will wake up and terminate your compiler to save the system from freezing. Even if it succeeds, you&#8217;ll be waiting 8 hours for a build that your workstation could finish in 2 minutes.</p>
+</div>
+<div class="paragraph">
+<p><strong>Cross-Compilation</strong> is the professional solution. It allows you to use the "Brute Force" of your workstation to generate binary code for a completely different architecture.</p>
+</div>
+<div class="paragraph">
+<p>In this chapter, we are going to demystify the cross-compilation process. We will learn how to set up a <strong>Sysroot</strong>, configure a <a href="https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html"><strong>CMake Toolchain</strong></a>, and build a remote deployment pipeline that feels as seamless as local development.</p>
+</div>
+<div class="paragraph">
+<p>It is important to understand that most OEMs provide everything we learn about below and if you can, you should use their pre-built toolchains and sysroots to avoid the complexity of setting up your own.  However, if you are working with a custom or non-standard ARM device, you may need to set up your own toolchain and sysroot; and learning how that works enables you to understand what to expect from a development environment setup.</p>
+</div>
+<div class="paragraph">
+<p>In an effort to not complicate this further, we will avoid diving into the specifics of setting up the IDE as there&#8217;s many IDE&#8217;s available each with their own Quarks and setup gotchas.  The core path outlined below will be common for all of them in some way.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_two_world_problem_host_vs_target"><a class="anchor" href="#_the_two_world_problem_host_vs_target"></a>The Two-World Problem: Host vs. Target</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In cross-compilation, you live in two worlds simultaneously:
+1.  <strong>The Build Host</strong>: Your x86_64 Linux/Windows machine where the compiler (<code>gcc</code> or <code>clang</code>) actually runs.
+2.  <strong>The Target Host</strong>: The ARM64 device where the resulting binary code will execute.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/ML_Inference/Embedded_Applications/cross_compilation_architecture.svg" alt="Diagram showing the relationship between Build Host" width="Target Host" height="and the Sysroot mirror">
+</div>
+<div class="title">Figure 1. Cross-Compilation Ecosystem</div>
+</div>
+<div class="paragraph">
+<p>The biggest mistake beginners make is trying to link against their Build Host&#8217;s libraries. If you link your ARM code against an x86 <code>libvulkan.so</code>, the linker will either scream in confusion ("File format not recognized") or produce a binary that crashes with an "Invalid Instruction" error the moment it hits the first Vulkan call.</p>
+</div>
+<div class="paragraph">
+<p>You must maintain a strict separation between the <strong>Tools</strong> (which run on x86) and the <strong>Libraries</strong> (which must be ARM). The compiler is a tool; the <code>.so</code> files are libraries.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_1_the_sysroot_the_targets_reflection"><a class="anchor" href="#_pillar_1_the_sysroot_the_targets_reflection"></a>Pillar 1: The Sysroot (The Target&#8217;s Reflection)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A <strong>Sysroot</strong> is a folder on your Build Host that contains a perfect copy of the Target Host’s filesystem. It includes every header (<code>.h</code>) and library (<code>.so</code>) that the ARM device uses.</p>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_sysroot_with_rsync"><a class="anchor" href="#_creating_a_sysroot_with_rsync"></a>Creating a Sysroot with <code>rsync</code></h3>
+<div class="paragraph">
+<p>Don&#8217;t download random libraries from the internet. The best sysroot comes directly from your hardware. We use <code>rsync</code> to clone the "Vital Organs" of the target OS.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># On your development machine
+mkdir -p ~/target_sysroot
+
+# Pull the vital organs of the target OS
+# -a: Archive mode (preserves permissions and timestamps)
+# -v: Verbose output so you can see the progress
+# -z: Compress data during transfer to save network bandwidth
+# -L: CRITICAL - Transforms absolute symlinks into relative ones.
+# On Linux, /usr/lib/libvulkan.so often points to /lib/aarch64-linux-gnu/libvulkan.so.1
+# Without -L, that link would point to your workstation's root, not the sysroot!
+rsync -avzL --rsync-path="sudo rsync" \
+    pi@raspberrypi.local:/lib/aarch64-linux-gnu ~/target_sysroot/
+rsync -avzL --rsync-path="sudo rsync" \
+    pi@raspberrypi.local:/usr/include ~/target_sysroot/usr/
+rsync -avzL --rsync-path="sudo rsync" \
+    pi@raspberrypi.local:/usr/lib/aarch64-linux-gnu ~/target_sysroot/usr/lib/</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deep_dive_the_linkers_search_path"><a class="anchor" href="#_deep_dive_the_linkers_search_path"></a>Deep Dive: The Linker&#8217;s search path</h3>
+<div class="paragraph">
+<p>On Linux, many <code>.so</code> files are actually text scripts (linker scripts) or contain absolute paths. For example, <code>/usr/lib/aarch64-linux-gnu/libpthread.so</code> is often a text file that says:
+<code>GROUP ( /lib/aarch64-linux-gnu/libpthread.so.0  /usr/lib/aarch64-linux-gnu/libpthread_nonshared.a )</code></p>
+</div>
+<div class="paragraph">
+<p>When you are cross-compiling, that path <code>/lib/&#8230;&#8203;</code> points to your <strong>Host&#8217;s</strong> root directory, not the <strong>Sysroot&#8217;s</strong> root. This will cause the link to fail because your workstation&#8217;s <code>libpthread.so.0</code> is an x86 binary.</p>
+</div>
+<div class="paragraph">
+<p><strong>The Fix</strong>: We use the <code>--sysroot</code> flag in the compiler to tell the linker: "Whenever you see an absolute path in a linker script or a library search, prefix it with <code>~/target_sysroot</code> first."</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_troubleshooting_symlinks"><a class="anchor" href="#_troubleshooting_symlinks"></a>Troubleshooting Symlinks</h3>
+<div class="paragraph">
+<p>A common failure point in <code>rsync</code>-based sysroots is broken symlinks. On the target device, <code>/usr/lib/libvulkan.so</code> might be a symlink to <code>../../lib/aarch64-linux-gnu/libvulkan.so.1.2.3</code>. If you don&#8217;t use the <code>-L</code> flag with <code>rsync</code>, you will copy a "dangling" link that points to a non-existent path on your workstation.</p>
+</div>
+<div class="paragraph">
+<p>Even with <code>-L</code>, some absolute symlinks might still sneak in. You can use a tool like <code>symlinks</code> to fix them:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">sudo apt install symlinks
+# Convert all absolute symlinks to relative ones within the sysroot
+symlinks -cr ~/target_sysroot</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_2_the_docker_advantage_reproducible_forges"><a class="anchor" href="#_pillar_2_the_docker_advantage_reproducible_forges"></a>Pillar 2: The Docker Advantage (Reproducible Forges)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While setting up a sysroot on your local machine works, it is fragile. If you update your workstation&#8217;s OS, your cross-compiler might change versions, breaking compatibility with your target&#8217;s GLIBC.</p>
+</div>
+<div class="paragraph">
+<p><strong>Docker</strong> allows you to create a "Frozen Forge" that is identical for every developer on your team. It also simplifies the management of <a href="https://docs.docker.com/build/building/multi-platform/">multi-architecture builds</a> by providing consistent environments.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_multi_arch_dockerfile"><a class="anchor" href="#_the_multi_arch_dockerfile"></a>The Multi-Arch Dockerfile</h3>
+<div class="paragraph">
+<p>We can create a Docker image that contains the cross-compiler and the sysroot pre-configured.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-dockerfile hljs" data-lang="dockerfile"># Dockerfile.cross
+FROM ubuntu:22.04
+
+# 1. Install the cross-compilation tools
+RUN apt-get update &amp;&amp; apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    pkg-config \
+    g++-aarch64-linux-gnu \
+    rsync \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+
+# 2. Define the sysroot location
+ENV SYSROOT=/opt/sysroot
+RUN mkdir -p ${SYSROOT}
+
+# (Optional) You can copy a pre-built sysroot into the image
+# COPY ./target_sysroot ${SYSROOT}
+
+# 3. Set up environment for CMake
+ENV ARCH=aarch64
+ENV CROSS_COMPILE=aarch64-linux-gnu-</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_building_inside_docker"><a class="anchor" href="#_building_inside_docker"></a>Building inside Docker</h3>
+<div class="paragraph">
+<p>You can mount your source code into the container and build without "polluting" your workstation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">docker build -t vulkan-cross-builder -f Dockerfile.cross .
+docker run --rm -v $(pwd):/src -w /src vulkan-cross-builder \
+    cmake -B build-arm64 -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake .</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_3_the_cmake_toolchain_file"><a class="anchor" href="#_pillar_3_the_cmake_toolchain_file"></a>Pillar 3: The CMake Toolchain File</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>CMake doesn&#8217;t "know" you are cross-compiling unless you tell it. We use a <strong>Toolchain File</strong> to redirect CMake away from your workstation&#8217;s system folders and toward your Sysroot.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake"># cmake/aarch64-toolchain.cmake
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+
+# 1. Point to the ARM cross-compiler
+# You can install this on Ubuntu via: sudo apt install g++-aarch64-linux-gnu
+set(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
+set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
+
+# 2. Point to our local Sysroot mirror
+# We use an environment variable so the path can be different in Docker vs Local
+if(NOT DEFINED ENV{SYSROOT})
+    set(CMAKE_SYSROOT $ENV{HOME}/target_sysroot)
+else()
+    set(CMAKE_SYSROOT $ENV{SYSROOT})
+endif()
+
+# 3. CRITICAL: Don't look for libraries on the workstation host!
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER) # Use workstation's 'make', 'ls', 'cmake'
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)  # ONLY look in sysroot for libraries
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)  # ONLY look in sysroot for headers
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)  # ONLY look in sysroot for cmake-packages
+
+# 4. Handle Pkg-Config for ARM
+# Pkg-config is the most common cause of "Header not found" errors.
+# We must prevent it from returning paths like /usr/include (which is your x86 host).
+set(ENV{PKG_CONFIG_DIR} "")
+set(ENV{PKG_CONFIG_LIBDIR} "${CMAKE_SYSROOT}/usr/lib/aarch64-linux-gnu/pkgconfig:${CMAKE_SYSROOT}/usr/share/pkgconfig")
+set(ENV{PKG_CONFIG_SYSROOT_DIR} "${CMAKE_SYSROOT}")
+
+# 5. Staging: Where do we 'install' our ARM binaries?
+set(CMAKE_STAGING_PREFIX $ENV{HOME}/arm64_build_output)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_4_handling_the_vulkan_sdk"><a class="anchor" href="#_pillar_4_handling_the_vulkan_sdk"></a>Pillar 4: Handling the Vulkan SDK</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When cross-compiling for Vulkan, you need two things:
+1.  <strong>Vulkan Headers</strong>: These are architecture-independent. You can use the ones on your host.
+2.  <strong>Vulkan Loader (<code>libvulkan.so</code>)</strong>: This MUST be the ARM version from your sysroot.</p>
+</div>
+<div class="sect2">
+<h3 id="_finding_vulkan_correctly"><a class="anchor" href="#_finding_vulkan_correctly"></a>Finding Vulkan Correctly</h3>
+<div class="paragraph">
+<p>In your <code>CMakeLists.txt</code>, don&#8217;t use hardcoded paths. Use <code>find_package(Vulkan REQUIRED)</code>. Because we set <code>CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY</code> in our toolchain, CMake will automatically skip your host&#8217;s Vulkan and find the one in the sysroot.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">find_package(Vulkan REQUIRED)
+add_executable(vulkan_ml_app main.cpp)
+target_link_libraries(vulkan_ml_app PRIVATE Vulkan::Vulkan)</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_verification"><a class="anchor" href="#_verification"></a>Verification</h3>
+<div class="paragraph">
+<p>After building, use <code>readelf</code> to verify that your binary is actually ARM64 and not x86:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">readelf -h build-arm64/vulkan_ml_app | grep Machine
+# Should output: Machine: AArch64</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_5_cpu_specific_optimizations"><a class="anchor" href="#_pillar_5_cpu_specific_optimizations"></a>Pillar 5: CPU-Specific Optimizations</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>ARM is a massive family of processors. A binary compiled for a generic "ARM64" will run on a Raspberry Pi 5, but it will be slow because it won&#8217;t use the specialized hardware instructions that make the Pi 5 fast.</p>
+</div>
+<div class="sect2">
+<h3 id="_tuning_the_flags"><a class="anchor" href="#_tuning_the_flags"></a>Tuning the Flags</h3>
+<div class="paragraph">
+<p>To get production performance, you should add architecture-specific flags to your CMake build. These flags enable specific silicon features like NEON SIMD or Dot-Product instructions. You can find a full list of available flags in the <a href="https://gcc.gnu.org/onlinedocs/gcc/AArch64-Options.html">GCC AArch64 Options</a> documentation.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Target SoC</th>
+<th class="tableblock halign-left valign-top"><code>-march</code> (Architecture)</th>
+<th class="tableblock halign-left valign-top"><code>-mtune</code> (Tuning)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Raspberry Pi 4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>armv8-a+crc</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cortex-a72</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Raspberry Pi 5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>armv8.2-a+fp16+rcpc+dotprod</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cortex-a76</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NVIDIA Jetson Orin</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>armv8.2-a+fp16</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cortex-a78ae</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apple Silicon (M1/M2)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>armv8.5-a+fp16+sha3</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>apple-m1</code></p></td>
+</tr>
+</tbody>
+</table>
+<div class="ulist">
+<ul>
+<li>
+<p><strong><code>+fp16</code></strong>: Enables hardware support for half-precision floats. This is the single most important flag for Vulkan ML, as it doubles the throughput of your shaders and reduces register pressure.</p>
+</li>
+<li>
+<p><strong><code>+dotprod</code></strong>: Enables specialized instructions for integer dot-products (UDOT/SDOT), which are vital for INT8 quantized models.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake">if(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    # Tell the compiler exactly which silicon we are targeting
+    # Note: Using -mcpu is often a shorthand for -march + -mtune
+    add_compile_options(-march=armv8.2-a+fp16+dotprod -mtune=cortex-a76)
+endif()</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_6_managing_glibc_compatibility"><a class="anchor" href="#_pillar_6_managing_glibc_compatibility"></a>Pillar 6: Managing GLIBC Compatibility</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The most common and frustrating runtime error in embedded Linux is:
+<code>./app: /lib/aarch64-linux-gnu/libc.so.6: version 'GLIBC_2.34' not found</code></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Cause</strong>: You compiled against a Sysroot that has a <strong>newer</strong> version of the C-Library (GLIBC) than the one running on your actual hardware. GLIBC is backward compatible but not forward compatible.</p>
+</li>
+<li>
+<p><strong>The Rule</strong>: You can always run a binary compiled against an <strong>older</strong> GLIBC on a <strong>newer</strong> system, but never the other way around.</p>
+</li>
+<li>
+<p><strong>Expert Tip</strong>: If you are developing for an older Debian/Ubuntu release (like JetPack 4.x), use a Docker image based on an older Ubuntu version (like 18.04) to ensure your cross-compiler links against an older GLIBC.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_7_remote_deployment_and_debugging"><a class="anchor" href="#_pillar_7_remote_deployment_and_debugging"></a>Pillar 7: Remote Deployment and Debugging</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A professional embedded workflow is: <strong>Code <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.262ex" height="1.181ex" role="img" focusable="false" viewBox="0 -511 1000 522"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path></g></g></g></svg> </span> Build <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.262ex" height="1.181ex" role="img" focusable="false" viewBox="0 -511 1000 522"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path></g></g></g></svg> </span> Deploy <span class="steminline"> <svg style="vertical-align: -0.025ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.262ex" height="1.181ex" role="img" focusable="false" viewBox="0 -511 1000 522"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mo"><path data-c="2192" d="M56 237T56 250T70 270H835Q719 357 692 493Q692 494 692 496T691 499Q691 511 708 511H711Q720 511 723 510T729 506T732 497T735 481T743 456Q765 389 816 336T935 261Q944 258 944 250Q944 244 939 241T915 231T877 212Q836 186 806 152T761 85T740 35T732 4Q730 -6 727 -8T711 -11Q691 -11 691 0Q691 7 696 25Q728 151 835 230H70Q56 237 56 250Z"></path></g></g></g></svg> </span> Run</strong> in one click from your IDE.</p>
+</div>
+<div class="sect2">
+<h3 id="_automated_deployment_with_ssh_keys"><a class="anchor" href="#_automated_deployment_with_ssh_keys"></a>Automated Deployment with SSH Keys</h3>
+<div class="paragraph">
+<p>Don&#8217;t type your password every time you build. It ruins your creative flow. Generate an SSH key on your workstation and copy it to the target:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">ssh-keygen -t ed25519
+ssh-copy-id pi@raspberrypi.local</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now, you can use a deployment script to sync your binaries in milliseconds. Using <code>rsync</code> for deployment is better than <code>scp</code> because it only transfers the bytes that actually changed.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">#!/bin/bash
+# deploy.sh
+set -e
+
+TARGET="pi@192.168.1.50"
+DEPLOY_DIR="~/edge_ai"
+
+# 1. Build the project locally
+cmake -B build-arm64 -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake .
+cmake --build build-arm64 -j$(nproc)
+
+# 2. Sync to the target (Only transfers changed files)
+rsync -avz build-arm64/vulkan_ml_app $TARGET:$DEPLOY_DIR/
+
+# 3. Remote Execution
+ssh $TARGET "$DEPLOY_DIR/vulkan_ml_app --model $DEPLOY_DIR/resnet.onnx"</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_deep_dive_remote_debugging_with_gdb"><a class="anchor" href="#_deep_dive_remote_debugging_with_gdb"></a>Deep Dive: Remote Debugging with GDB</h3>
+<div class="paragraph">
+<p>You can debug your ARM code line-by-line using your workstation&#8217;s high-resolution monitor and IDE, while the code actually executes on the tiny processor.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>On the Target (The ARM device)</strong>:
+Launch the <strong>GDB Server</strong>. It acts as a "Remote Control" for the processor.
+[source,bash]
+----
+# Listen on port 1234
+gdbserver :1234 ./vulkan_ml_app --model resnet.onnx
+----</p>
+</li>
+<li>
+<p><strong>On the Host (Your Workstation)</strong>:
+Launch <code>gdb-multiarch</code>. You must point it to the <strong>local copy</strong> of the binary (which has the debug symbols) and the <strong>sysroot</strong>.
+[source,bash]
+----
+gdb-multiarch ./build-arm64/vulkan_ml_app
+(gdb) set sysroot ~/target_sysroot
+(gdb) target remote 192.168.1.50:1234
+(gdb) continue
+----</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_pillar_8_runtime_search_paths_rpath"><a class="anchor" href="#_pillar_8_runtime_search_paths_rpath"></a>Pillar 8: Runtime Search Paths (RPATH)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When you link against a library like <code>libonnxruntime.so</code> in your Sysroot, the linker records the path <code>~/target_sysroot/usr/lib/&#8230;&#8203;</code>. But on the Pi, that library is at <code>/usr/lib/&#8230;&#8203;</code>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Problem</strong>: The app might try to find the library using the Build Host path and fail to start with a "Shared library not found" error.</p>
+</li>
+<li>
+<p><strong>The Fix</strong>: Use <code>CMAKE_INSTALL_RPATH</code>. This embeds a search path into the binary&#8217;s header.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cmake hljs" data-lang="cmake"># Tell the app to look in its own folder ($ORIGIN)
+# and the standard system folders on the target.
+set(CMAKE_INSTALL_RPATH "$ORIGIN;/usr/lib/aarch64-linux-gnu")
+
+# Ensure RPATH is not cleared during installation
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary_the_cross_compilation_checklist"><a class="anchor" href="#_summary_the_cross_compilation_checklist"></a>Summary: The Cross-Compilation Checklist</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>The Forge</strong>: <code>g++-aarch64-linux-gnu</code> cross-compiler installed on the host or inside a Docker container.</p>
+</li>
+<li>
+<p><strong>The Mirror</strong>: A fresh <code>rsync</code> of the target&#8217;s <code>/usr/include</code> and <code>/usr/lib</code> folders, with absolute symlinks resolved.</p>
+</li>
+<li>
+<p><strong>The Guide</strong>: A toolchain file that sets <code>CMAKE_SYSROOT</code>, redirects <code>pkg-config</code>, and configures <code>CMAKE_FIND_ROOT_PATH_MODE_*</code>.</p>
+</li>
+<li>
+<p><strong>The Optimization</strong>: Architecture-specific <code>-march</code> and <code>-mtune</code> flags for your specific silicon generation (e.g., <code>+fp16</code>).</p>
+</li>
+<li>
+<p><strong>The Handshake</strong>: ed25519 SSH keys configured for passwordless, fast deployment.</p>
+</li>
+<li>
+<p><strong>The Microscope</strong>: <code>gdbserver</code> on the target and <code>gdb-multiarch</code> on your workstation.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Cross-compilation is the "Entry Fee" for professional embedded development. Once you pay it, you have the full power of a liquid-cooled workstation focused on a tiny, efficient piece of silicon.</p>
+</div>
+<div class="paragraph">
+<p>Next, we will look at how to feed raw, high-bandwidth data into this pipeline using <strong>Low-Latency Camera Integration</strong>.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_camera_integration.html" class="xref page">Next: Camera Integration</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Vulkan Profiles: Simplifying Feature Detection :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../_/css/site.css">
+    <link rel="stylesheet" href="../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../.."><img class="navbar-item" alt="Vulkan White Label" src="../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("");!function(){var f="13_Vulkan_Profiles.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li><a href="13_Vulkan_Profiles.html">Vulkan Profiles</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Vulkan Profiles: Simplifying Feature Detection</h1>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we&#8217;ll explore Vulkan profiles, a powerful feature that builds upon the ecosystem utilities we discussed in the previous chapter. Vulkan profiles provide a standardized way to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Define a set of features, extensions, and limits that your application requires</p>
+</li>
+<li>
+<p>Automatically check for compatibility with the user&#8217;s hardware</p>
+</li>
+<li>
+<p>Eliminate the need for manual feature detection and fallback paths</p>
+</li>
+<li>
+<p>Significantly reduce boilerplate code</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Vulkan profiles are particularly valuable for developers who want to ensure their applications work consistently across a wide range of hardware without the complexity of manually checking for feature support.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_understanding_vulkan_profiles"><a class="anchor" href="#_understanding_vulkan_profiles"></a>Understanding Vulkan Profiles</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_what_are_vulkan_profiles"><a class="anchor" href="#_what_are_vulkan_profiles"></a>What Are Vulkan Profiles?</h3>
+<div class="paragraph">
+<p>Vulkan profiles are predefined collections of features, extensions, limits, and formats that represent a specific target environment or set of best practices. They provide a higher-level abstraction over the low-level Vulkan API, making it easier to:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Target specific hardware capabilities</p>
+</li>
+<li>
+<p>Ensure compatibility across different GPUs</p>
+</li>
+<li>
+<p>Implement best practices consistently</p>
+</li>
+<li>
+<p>Reduce boilerplate code for feature detection</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Instead of manually checking for each feature and extension and implementing fallback paths, you can simply specify a profile that your application requires. The Vulkan profiles library will handle the compatibility checks and provide appropriate error messages if the user&#8217;s hardware doesn&#8217;t meet the requirements.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_types_of_vulkan_profiles"><a class="anchor" href="#_types_of_vulkan_profiles"></a>Types of Vulkan Profiles</h3>
+<div class="paragraph">
+<p>Several types of profiles are available:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>API Profiles</strong>: Represent specific Vulkan API versions (e.g., Vulkan 1.1, 1.2, 1.3)</p>
+</li>
+<li>
+<p><strong>Vendor Profiles</strong>: Target specific hardware vendors (e.g., NVIDIA, AMD, Intel)</p>
+</li>
+<li>
+<p><strong>Platform Profiles</strong>: Target specific platforms (e.g., Windows, Linux, Android)</p>
+</li>
+<li>
+<p><strong>Best Practices Profile</strong>: Implements recommended practices for Vulkan development</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In this chapter, we&#8217;ll use the Best Practices profile as an example,
+additionally, we will demonstrate how profiles can simplify your code by
+eliminating the need for manual feature detection.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_how_profiles_simplify_your_code"><a class="anchor" href="#_how_profiles_simplify_your_code"></a>How Profiles Simplify Your Code</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_eliminating_manual_feature_detection"><a class="anchor" href="#_eliminating_manual_feature_detection"></a>Eliminating Manual Feature Detection</h3>
+<div class="paragraph">
+<p>Up until now, we had to manually check for feature support and implement
+fallback paths:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Check if the device supports Vulkan 1.3</p>
+</li>
+<li>
+<p>If not, check if it supports the dynamic rendering extension</p>
+</li>
+<li>
+<p>If neither is supported, fall back to traditional render passes</p>
+</li>
+<li>
+<p>Repeat this process for every feature (timeline semaphores, synchronization2, etc.)</p>
+</li>
+<li>
+<p>Maintain separate code paths for each feature</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This approach leads to complex, hard-to-maintain code with multiple conditional branches.</p>
+</div>
+<div class="paragraph">
+<p>With profiles, this entire process is simplified to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Check if the profile is supported</p>
+</li>
+<li>
+<p>If supported, use all features guaranteed by the profile</p>
+</li>
+<li>
+<p>If not, optionally fall back to a more basic approach</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_benefits_of_using_profiles"><a class="anchor" href="#_benefits_of_using_profiles"></a>Benefits of Using Profiles</h3>
+<div class="paragraph">
+<p>Using profiles offers several advantages:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Drastically reduced code complexity</strong>: No need for multiple feature checks and conditional branches</p>
+</li>
+<li>
+<p><strong>Improved maintainability</strong>: Fewer code paths to test and debug</p>
+</li>
+<li>
+<p><strong>Future-proofing</strong>: As new Vulkan versions are released, profiles can be updated without changing your code</p>
+</li>
+<li>
+<p><strong>Clearer requirements</strong>: Profiles provide a clear specification of what your application needs</p>
+</li>
+<li>
+<p><strong>Simplified error handling</strong>: One check instead of many</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_implementing_profiles_in_your_application"><a class="anchor" href="#_implementing_profiles_in_your_application"></a>Implementing Profiles in Your Application</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s see how to implement profiles in your Vulkan application. We&#8217;ll use the Best Practices profile as an example to demonstrate how profiles can replace the manual feature detection we had to do in the previous chapter.</p>
+</div>
+<div class="sect2">
+<h3 id="_adding_the_vulkan_profiles_library"><a class="anchor" href="#_adding_the_vulkan_profiles_library"></a>Adding the Vulkan Profiles Library</h3>
+<div class="paragraph">
+<p>First, you need to include the Vulkan profiles header:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">#include &lt;vulkan/vulkan_profiles.hpp&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This header provides the necessary functions and structures to work with Vulkan profiles.</p>
+</div>
+<div class="paragraph">
+<p>The Vulkan Profiles header is NOT part of the standard Vulkan headers.
+It is only available if you use the Vulkan SDK. Make sure you have the Vulkan SDK installed and properly configured in your development environment.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_defining_the_profile_requirements"><a class="anchor" href="#_defining_the_profile_requirements"></a>Defining the Profile Requirements</h3>
+<div class="paragraph">
+<p>Instead of manually checking for features and extensions, you can define your profile requirements:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Define the profile we want to use
+const VpProfileProperties profile = {
+    VP_KHR_ROADMAP_2022_NAME,
+    VP_KHR_ROADMAP_2022_SPEC_VERSION
+};
+
+// Check if the profile is supported
+VkBool32 supported = false;
+vpGetPhysicalDeviceProfileSupport(instance, physicalDevice, &amp;profile, &amp;supported);
+
+if (!supported) {
+    throw std::runtime_error("Roadmap 2022 profile is not supported on this device");
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_creating_a_device_with_the_profile"><a class="anchor" href="#_creating_a_device_with_the_profile"></a>Creating a Device with the Profile</h3>
+<div class="paragraph">
+<p>When creating a logical device, you can use the profile to automatically enable the required features and extensions:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Create device with Best Practices profile
+VkDeviceCreateInfo deviceCreateInfo = {};
+deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+
+// Set up queue create infos
+// ...
+
+// Apply the Best Practices profile to the device creation
+vpCreateDevice(physicalDevice, &amp;deviceCreateInfo, &amp;bestPracticesProfile, nullptr, &amp;device);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This automatically enables all the features and extensions required by the Best Practices profile, without having to manually specify them.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_profile_specific_features"><a class="anchor" href="#_using_profile_specific_features"></a>Using Profile-Specific Features</h3>
+<div class="paragraph">
+<p>The Best Practices profile may enable specific features that you can use in your application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// The profile guarantees these features are available
+// No need to check for support or provide fallback paths
+
+// Example: Using dynamic rendering (guaranteed by the profile)
+vk::RenderingAttachmentInfo colorAttachment{
+    .imageView = swapChainImageViews[imageIndex],
+    .imageLayout = vk::ImageLayout::eAttachmentOptimal,
+    .loadOp = vk::AttachmentLoadOp::eClear,
+    .storeOp = vk::AttachmentStoreOp::eStore,
+    .clearValue = clearColor
+};
+
+vk::RenderingInfo renderingInfo{
+    .renderArea = {{0, 0}, swapChainExtent},
+    .layerCount = 1,
+    .colorAttachmentCount = 1,
+    .pColorAttachments = &amp;colorAttachment
+};
+
+commandBuffer.beginRendering(renderingInfo);
+// ... draw commands ...
+commandBuffer.endRendering();</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_error_handling_with_profiles"><a class="anchor" href="#_error_handling_with_profiles"></a>Error Handling with Profiles</h3>
+<div class="paragraph">
+<p>When using profiles, error handling becomes more straightforward:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">try {
+    // Try to create a device with the Best Practices profile
+    vpCreateDevice(physicalDevice, &amp;deviceCreateInfo, &amp;bestPracticesProfile, nullptr, &amp;device);
+} catch (const std::exception&amp; e) {
+    // Profile is not supported, provide user-friendly error message
+    std::cerr &lt;&lt; "Your GPU does not support the required Vulkan features for optimal performance." &lt;&lt; std::endl;
+    std::cerr &lt;&lt; "Error: " &lt;&lt; e.what() &lt;&lt; std::endl;
+
+    // Optionally, try with a more basic profile or exit gracefully
+    // ...
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comparing_manual_feature_detection_vs_profiles"><a class="anchor" href="#_comparing_manual_feature_detection_vs_profiles"></a>Comparing Manual Feature Detection vs. Profiles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s compare the two approaches to understand just how much code and complexity profiles can eliminate:</p>
+</div>
+<div class="sect2">
+<h3 id="_manual_feature_detection_previous_chapter"><a class="anchor" href="#_manual_feature_detection_previous_chapter"></a>Manual Feature Detection (Previous Chapter)</h3>
+<div class="paragraph">
+<p>In the previous chapter, we had to write code like this for <strong>each feature</strong> we wanted to use:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Check if dynamic rendering is supported
+bool dynamicRenderingSupported = false;
+
+// Check for Vulkan 1.3 support
+if (deviceProperties.apiVersion &gt;= VK_API_VERSION_1_3) {
+    dynamicRenderingSupported = true;
+} else {
+    // Check for the extension on older Vulkan versions
+    for (const auto&amp; extension : availableExtensions) {
+        if (strcmp(extension.extensionName, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME) == 0) {
+            dynamicRenderingSupported = true;
+            break;
+        }
+    }
+}
+
+// Store this information for later use
+appInfo.dynamicRenderingSupported = dynamicRenderingSupported;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And then we had to create conditional code paths throughout our application:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// When creating the pipeline
+if (appInfo.dynamicRenderingSupported) {
+    // Use dynamic rendering
+    vk::PipelineRenderingCreateInfo renderingInfo{
+        .colorAttachmentCount = 1,
+        .pColorAttachmentFormats = &amp;swapChainImageFormat
+    };
+    pipelineInfo.pNext = &amp;renderingInfo;
+    pipelineInfo.renderPass = nullptr;
+} else {
+    // Use traditional render pass
+    pipelineInfo.pNext = nullptr;
+    pipelineInfo.renderPass = renderPass;
+    pipelineInfo.subpass = 0;
+}
+
+// When recording command buffers
+if (appInfo.dynamicRenderingSupported) {
+    // Begin dynamic rendering
+    vk::RenderingAttachmentInfo colorAttachment{/*...*/};
+    vk::RenderingInfo renderingInfo{/*...*/};
+    commandBuffer.beginRendering(renderingInfo);
+} else {
+    // Begin traditional render pass
+    vk::RenderPassBeginInfo renderPassInfo{/*...*/};
+    commandBuffer.beginRenderPass(renderPassInfo, vk::SubpassContents::eInline);
+}
+
+// And again at the end of the command buffer
+if (appInfo.dynamicRenderingSupported) {
+    commandBuffer.endRendering();
+} else {
+    commandBuffer.endRenderPass();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We had to repeat this pattern for <strong>every feature</strong> we wanted to use conditionally (timeline semaphores, synchronization2, etc.), resulting in complex, branching code that&#8217;s challenging to maintain.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_using_profiles_this_chapter"><a class="anchor" href="#_using_profiles_this_chapter"></a>Using Profiles (This Chapter)</h3>
+<div class="paragraph">
+<p>With profiles, all of that complexity is reduced to:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-c++ hljs" data-lang="c++">// Define the profile
+const VpProfileProperties profile = {
+    VP_KHR_ROADMAP_2022_NAME,
+    VP_KHR_ROADMAP_2022_SPEC_VERSION
+};
+
+// Check if the profile is supported
+VkBool32 supported = false;
+vpGetPhysicalDeviceProfileSupport(instance, physicalDevice, &amp;profile, &amp;supported);
+
+if (supported) {
+    // Create device with the profile - all features enabled automatically
+    vpCreateDevice(physicalDevice, &amp;deviceCreateInfo, &amp;profile, nullptr, &amp;device);
+
+    // Now we can use any feature guaranteed by the profile without checks
+    // For example, dynamic rendering is always available:
+    vk::RenderingAttachmentInfo colorAttachment{/*...*/};
+    vk::RenderingInfo renderingInfo{/*...*/};
+    commandBuffer.beginRendering(renderingInfo);
+    // ... draw commands ...
+    commandBuffer.endRendering();
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The profile approach eliminates:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Multiple feature detection checks</p>
+</li>
+<li>
+<p>Conditional code paths throughout your application</p>
+</li>
+<li>
+<p>The need to track feature support in your application state</p>
+</li>
+<li>
+<p>The complexity of maintaining and testing multiple code paths</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This results in code that is:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Significantly shorter</p>
+</li>
+<li>
+<p>Easier to read and understand</p>
+</li>
+<li>
+<p>Less prone to errors</p>
+</li>
+<li>
+<p>Easier to maintain and update</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_best_practices_for_using_profiles"><a class="anchor" href="#_best_practices_for_using_profiles"></a>Best Practices for Using Profiles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When using Vulkan profiles, consider these best practices:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Choose the right profile</strong>: Select a profile that matches your application&#8217;s requirements without being overly restrictive.</p>
+</li>
+<li>
+<p><strong>Provide fallback options</strong>: If the Best Practices profile isn&#8217;t supported, consider falling back to a more basic profile.</p>
+</li>
+<li>
+<p><strong>Communicate requirements clearly</strong>: Inform users about the hardware requirements based on the profiles you support.</p>
+</li>
+<li>
+<p><strong>Test on various hardware</strong>: Even with profiles, it&#8217;s important to test your application on different GPUs.</p>
+</li>
+<li>
+<p><strong>Stay updated</strong>: Profiles evolve with new Vulkan versions, so keep your implementation up to date.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan profiles provide a powerful way to simplify your Vulkan code by eliminating the need for manual feature detection and conditional code paths. As we&#8217;ve seen in this chapter, profiles can dramatically reduce the amount of code you need to write and maintain, making your application:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>More concise and readable</p>
+</li>
+<li>
+<p>Easier to maintain and update</p>
+</li>
+<li>
+<p>Less prone to errors</p>
+</li>
+<li>
+<p>More consistent across different hardware</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The example we&#8217;ve explored in this chapter demonstrates how profiles can replace the complex feature detection and fallback paths we had to implement in the previous chapter. By using profiles, you can focus more on your application&#8217;s core functionality and less on the intricacies of hardware compatibility.</p>
+</div>
+<div class="paragraph">
+<p><a href="_attachments/33_vulkan_profiles.cpp">C&#43;&#43; code</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../_/js/site.js" data-ui-root-path="../../_"></script>
+<script async src="../../_/js/vendor/highlight.js"></script>
+<script src="../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../.." data-snippet-length="100" data-stylesheet="../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

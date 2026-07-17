@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Incorporating into the Engine :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../OpenXR_Vulkan_Spatial_Computing/02_OpenXR_Vulkan_Handshake/05_incorporating_into_the_engine.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>OpenXR and Vulkan 1.3 Spatial Computing</li>
+    <li>The OpenXR-Vulkan 1.3 Handshake</li>
+    <li><a href="05_incorporating_into_the_engine.html">Incorporating into the Engine</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Incorporating into the Engine</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>In this chapter, we&#8217;ve explored the fundamental handshake between OpenXR and Vulkan 1.3. To bring these concepts into our <code>simple_game_engine</code>, we must evolve our core initialization logic in <code>renderer_core.cpp</code> and <code>xr_context.cpp</code>. An example of this implementation can be found in <a href="../../../attachments/openxr_engine/xr_context.cpp">xr_context.cpp</a> and <a href="../../../attachments/openxr_engine/renderer_core.cpp">renderer_core.cpp</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_testing_for_xr_mode"><a class="anchor" href="#_testing_for_xr_mode"></a>Testing for XR Mode</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we change the engine, we need a way to detect if we should even try to use OpenXR. In <code>main.cpp</code>, within the <code>main</code> function, we can add a check before initializing the engine:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// main.cpp
+int main(int, char *[]) {
+    // ... initial setup ...
+
+    Engine engine;
+
+    // Test if we are able to run in XR mode
+    bool useXR = false;
+    if (XrContext::checkRuntimeAvailable()) {
+        std::cout &lt;&lt; "OpenXR Runtime detected. Attempting spatial initialization..." &lt;&lt; std::endl;
+        useXR = true;
+    }
+
+    if (!engine.Initialize("Simple Engine", WINDOW_WIDTH, WINDOW_HEIGHT, ENABLE_VALIDATION_LAYERS, useXR)) {
+        throw std::runtime_error("Failed to initialize engine");
+    }
+
+    // ...
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_modifying_the_renderer_initialization"><a class="anchor" href="#_modifying_the_renderer_initialization"></a>Modifying the Renderer Initialization</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In <code>renderer_core.cpp</code>, we need to update <code>Renderer::Initialize</code> and its helper methods to handle the OpenXR handshake.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_supporting_code_the_xrcontext_helper"><a class="anchor" href="#_supporting_code_the_xrcontext_helper"></a>Supporting Code: The XrContext Helper</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Throughout this tutorial, we will use a helper class named <code>XrContext</code> (or <code>xrContext</code> as an instance) to wrap the OpenXR API. This keeps our engine code clean and focused on spatial logic. Before modifying the renderer, ensure your engine has a basic structure for this helper.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// xr_context.h
+class XrContext {
+public:
+    // Core Handshake (Chapter 2)
+    std::vector&lt;const char*&gt; getVulkanInstanceExtensions();
+    // The runtime hands back the exact VkPhysicalDevice it requires — no matching needed.
+    vk::PhysicalDevice getRequiredPhysicalDevice();
+
+    // Swapchain Management (Chapter 3)
+    void createSwapchains(vk::Device device, vk::Format format, vk::Extent2D extent);
+    std::vector&lt;vk::Image&gt; enumerateSwapchainImages();
+    vk::Extent2D getSwapchainExtent();
+    vk::Format getSwapchainFormat();
+    void waitSwapchainImage();
+    uint32_t acquireSwapchainImage();
+    void releaseSwapchainImage();
+
+    // Frame Lifecycle (Chapter 5)
+    XrFrameState waitFrame();
+    void beginFrame();
+    void endFrame(const std::array&lt;std::vector&lt;vk::ImageView&gt;, 2&gt;&amp; eyeViews);
+
+    // View &amp; Projection (Chapter 4 &amp; 11)
+    void locateViews(XrTime predictedTime);
+    std::vector&lt;XrView&gt; getLatestViews();
+    std::array&lt;XrPosef, 2&gt; getLatestViewPoses(); // Added for Late Latching
+    vk::Viewport getViewport(uint32_t eye);
+    vk::Rect2D getScissor(uint32_t eye);
+    glm::mat4 getProjectionMatrix(uint32_t eye);
+    glm::mat4 getViewMatrix(uint32_t eye);
+    glm::vec3 getEyePosition(uint32_t eye); // Added for UBO updates
+
+    // Input Actions (Chapter 7)
+    void pollActions();
+    bool isActionActive(const std::string&amp; name);
+    XrPosef getActionPose(const std::string&amp; name);
+
+    // Scene Understanding (Chapter 16)
+    std::vector&lt;XrSpatialMesh&gt; getLatestSpatialMeshes();
+
+    // ML &amp; Occlusion (Chapter 17 &amp; 18)
+    glm::vec2 getGazeNDC();
+    XrReferenceSpaceType getReferenceSpace();
+};
+
+// Common Helper: Convert XrPosef to glm::mat4
+inline glm::mat4 xrPoseToMatrix(const XrPosef&amp; pose) {
+    glm::quat q(pose.orientation.w, pose.orientation.x, pose.orientation.y, pose.orientation.z);
+    glm::mat4 m = glm::mat4_cast(q);
+    m[3] = glm::vec4(pose.position.x, pose.position.y, pose.position.z, 1.0f);
+    return m;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_1_instance_creation_with_xr_extensions"><a class="anchor" href="#_1_instance_creation_with_xr_extensions"></a>1. Instance Creation with XR Extensions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In <code>Renderer::createInstance</code>, we must append the extensions required by OpenXR. Instead of only relying on GLFW, we query the XR runtime:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// renderer_core.cpp
+bool Renderer::createInstance(const std::string&amp; appName, bool enableValidationLayers) {
+    // ...
+    std::vector&lt;const char *&gt; extensions;
+
+    // Standard GLFW extensions
+    #if defined(PLATFORM_DESKTOP)
+    uint32_t glfwExtensionCount = 0;
+    const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&amp;glfwExtensionCount);
+    extensions.insert(extensions.end(), glfwExtensions, glfwExtensions + glfwExtensionCount);
+    #endif
+
+    // NEW: Add OpenXR mandatory extensions
+    if (xrMode) {
+        auto xrExtensions = xrContext.getVulkanInstanceExtensions();
+        extensions.insert(extensions.end(), xrExtensions.begin(), xrExtensions.end());
+    }
+
+    // ... create vk::raii::Instance ...
+}</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_hardware_alignment_runtime_enforced_device"><a class="anchor" href="#_2_hardware_alignment_runtime_enforced_device"></a>2. Hardware Alignment (Runtime-Enforced Device)</h3>
+<div class="paragraph">
+<p>In <code>Renderer::pickPhysicalDevice</code>, we must ensure we select the GPU that OpenXR requires. The runtime does not merely suggest a device—it enforces one, and hands it back to us directly from <code>xrGetVulkanGraphicsDevice2KHR</code>. We just compare handles:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// renderer_core.cpp
+bool Renderer::pickPhysicalDevice() {
+    // ... enumerate devices ...
+
+    for (auto&amp; _device : devices) {
+        if (xrMode) {
+            // The OpenXR runtime already told us which VkPhysicalDevice to use.
+            vk::PhysicalDevice required = xrContext.getRequiredPhysicalDevice();
+            if (static_cast&lt;VkPhysicalDevice&gt;(required) == VK_NULL_HANDLE) {
+                continue; // Could not query the runtime's required device.
+            }
+            if (*_device != required) {
+                continue; // Not the GPU OpenXR requires.
+            }
+        }
+        // ... rest of suitability scoring ...
+    }
+}</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+Earlier versions of this tutorial matched devices by comparing their LUID (<code>VkPhysicalDeviceIDProperties::deviceLUID</code>) against a LUID extracted from the runtime&#8217;s device. That extra step was unnecessary—<code>xrGetVulkanGraphicsDevice2KHR</code> already gives you the <code>VkPhysicalDevice</code> handle itself—and unreliable on runtimes/drivers where <code>deviceLUIDValid</code> isn&#8217;t set. Compare handles directly instead.
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_3_enabling_vulkan_1_3_features"><a class="anchor" href="#_3_enabling_vulkan_1_3_features"></a>3. Enabling Vulkan 1.3 Features</h3>
+<div class="paragraph">
+<p>In <code>Renderer::createLogicalDevice</code>, we must explicitly enable the Vulkan 1.3 features required for spatial computing, particularly <strong>Dynamic Rendering</strong> and <strong>Synchronization 2</strong>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// renderer_core.cpp
+bool Renderer::createLogicalDevice(bool enableValidationLayers) {
+    // ...
+
+    // Enable Vulkan 1.3 features using designated initializers
+    vk::PhysicalDeviceVulkan13Features vulkan13Features{
+        .synchronization2 = vk::True,
+        .dynamicRendering = vk::True
+    };
+
+    // Enable Multiview (if in XR mode) using designated initializers
+    vk::PhysicalDeviceMultiviewFeatures multiviewFeatures{
+        .pNext = &amp;vulkan13Features,
+        .multiview = xrMode ? vk::True : vk::False
+    };
+
+    // ... create vk::raii::Device with multiviewFeatures in pNext ...
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_why_these_changes"><a class="anchor" href="#_why_these_changes"></a>Why These Changes?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>By referencing the specific locations in <code>renderer_core.cpp</code>, we can see that OpenXR isn&#8217;t just an "add-on"—it&#8217;s a <strong>collaborator</strong> in the Vulkan lifecycle. Without honoring the runtime-enforced device in <code>pickPhysicalDevice</code>, our engine might initialize on a discrete GPU while the VR headset is tethered to an integrated one, leading to a complete failure to display. Similarly, the extension negotiation ensures that the XR compositor and our engine speak the same "dialect" of Vulkan.</p>
+</div>
+<div class="paragraph">
+<p><a href="04_vulkan_1_3_feature_requirements.html" class="xref page">Previous</a> | <a href="../03_Runtime_Owned_Swapchains/01_introduction.html" class="xref page">Next</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

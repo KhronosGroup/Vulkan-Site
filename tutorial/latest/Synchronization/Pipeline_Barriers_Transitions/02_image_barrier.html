@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>The Image Barrier: Implementing vk::ImageMemoryBarrier2 :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Synchronization/Pipeline_Barriers_Transitions/02_image_barrier.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Synchronization 2</li>
+    <li>Pipeline Barriers and Transitions</li>
+    <li><a href="02_image_barrier.html">The Image Barrier</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">The Image Barrier: Implementing vk::ImageMemoryBarrier2</h1>
+<div class="sect1">
+<h2 id="_the_core_mechanism"><a class="anchor" href="#_the_core_mechanism"></a>The Core Mechanism</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the world of modern Vulkan, the image memory barrier is the definitive tool for managing how resources flow through the pipeline. While the theory of synchronization is about "execution" and "visibility," the image barrier adds a third, equally critical component: <strong>Layout Transitions</strong>. Unlike a buffer, which is just a linear strip of memory, an image has a layout that determines how its texels are organized.</p>
+</div>
+<div class="paragraph">
+<p>If we want to write to an image as a color attachment, the GPU hardware expects it to be in <code>VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</code>. If we later want to sample that same image in a shader, it must be transitioned to <code>VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</code>. This is not just a driver-side "flag"—on some hardware, this transition might trigger a physical reorganization of the data or a cache flush.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/image_barrier_anatomy.svg" alt="Anatomy of an Image Barrier">
+</div>
+</div>
+<div class="paragraph">
+<p>When we talk about "physical reorganization," we&#8217;re referring to how different hardware units see the same bits. For instance, a Rasterizer might use a specialized tiled compression format (like Delta Color Compression) to save bandwidth. However, a Compute shader sampling that same image might not understand that compression. The layout transition ensures the data is "decompressed" or moved into a format that the next stage can consume.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_deconstructing_the_image_barrier"><a class="anchor" href="#_deconstructing_the_image_barrier"></a>Deconstructing the Image Barrier</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When we record a pipeline barrier, we are essentially defining a "gate" that the GPU must pass through. Let’s look at how we construct this using the RAII-style Vulkan-Hpp wrappers we use in our engine:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">auto imageBarrier = vk::ImageMemoryBarrier2{
+    .srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+    .srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+    .dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
+    .dstAccessMask = vk::AccessFlagBits2::eShaderRead,
+    .oldLayout = vk::ImageLayout::eColorAttachmentOptimal,
+    .newLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
+    .image = renderTarget.image(),
+    .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1
+    }
+};
+
+auto dependencyInfo = vk::DependencyInfo{
+    .imageMemoryBarrierCount = 1,
+    .pImageMemoryBarriers = &amp;imageBarrier
+};
+
+commandBuffer.pipelineBarrier2(dependencyInfo);</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>In this example, we&#8217;re transitioning a color attachment so it can be sampled by a subsequent fragment shader. The <code>srcStageMask</code> tells the GPU "wait for the color attachment output stage of previous commands to finish," while the <code>srcAccessMask</code> specifies that we are specifically waiting for the memory <strong>writes</strong> from that stage to be complete. On the other side of the gate, the <code>dstStageMask</code> and <code>dstAccessMask</code> ensure that the fragment shader stage will wait to start its read operations until the layout transition and cache flushes are finished.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_power_of_layout_discard"><a class="anchor" href="#_the_power_of_layout_discard"></a>The Power of Layout Discard</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One of the most common performance optimizations in Vulkan is the use of <code>vk::ImageLayout::eUndefined</code> as the <code>oldLayout</code>. When we set the old layout to undefined, we are telling the driver: "I don&#8217;t care about what was in this image before."</p>
+</div>
+<div class="paragraph">
+<p>This is incredibly powerful. If the driver knows the previous content is garbage, it can skip the expensive work of preserving data during a layout transition. For example, if you&#8217;re about to clear an image and use it as a fresh color attachment, transitioning from <code>eUndefined</code> to <code>eColorAttachmentOptimal</code> is significantly faster than transitioning from <code>eShaderReadOnlyOptimal</code> (which might require a "resolve" or "decompression" of the previous frame&#8217;s data).</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_subresource_ranges_and_aspect_masks"><a class="anchor" href="#_subresource_ranges_and_aspect_masks"></a>Subresource Ranges and Aspect Masks</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Vulkan doesn&#8217;t just let us synchronize an entire image; it gives us surgical control over specific parts of it via the <code>subresourceRange</code>. This is vital for complex effects:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Mipmap Generation</strong>: We can transition mip level 0 to <code>eTransferSrcOptimal</code> and level 1 to <code>eTransferDstOptimal</code> to perform a blit, then transition them back.</p>
+</li>
+<li>
+<p><strong>Aspect Masks</strong>: For depth-stencil formats, we might only want to transition the <code>eDepth</code> aspect while leaving <code>eStencil</code> alone (or vice versa).</p>
+</li>
+<li>
+<p><strong>Layered Rendering</strong>: In VR or cubemap rendering, we can transition individual array layers independently to allow different parts of the GPU to work on different views simultaneously.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_synchronization_in_dynamic_rendering"><a class="anchor" href="#_synchronization_in_dynamic_rendering"></a>Synchronization in Dynamic Rendering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One of the major shifts in modern Vulkan is the move toward <strong>Dynamic Rendering</strong> (core since Vulkan 1.3, or via extensions). In the old "Render Pass" system, transitions were often hidden within subpass dependencies or the render pass definition itself. This was often confusing and led to over-synchronization.</p>
+</div>
+<div class="paragraph">
+<p>With dynamic rendering, the responsibility for transitions falls squarely on us. We typically perform our transitions <strong>between</strong> calls to <code>beginRendering</code> and <code>endRendering</code>. This might feel like more work, but it provides far more clarity. We know exactly where the transition is happening because we recorded it explicitly. It also makes it much easier to integrate with modern engine architectures where rendering passes are more fluid and less rigid than the legacy system.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_putting_it_together_in_the_engine"><a class="anchor" href="#_putting_it_together_in_the_engine"></a>Putting it Together in the Engine</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In a real-world engine, you rarely emit just one barrier. You batch them. Here is how our <code>Renderer</code> might handle a common "Post-Process" sequence where we transition both the scene color and the depth buffer (for depth-of-field) before the final UI pass:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::array&lt;vk::ImageMemoryBarrier2, 2&gt; barriers;
+
+// Transition Scene Color from Attachment to Shader Read
+barriers[0] = vk::ImageMemoryBarrier2{
+    .srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+    .srcAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+    .dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
+    .dstAccessMask = vk::AccessFlagBits2::eShaderRead,
+    .oldLayout = vk::ImageLayout::eColorAttachmentOptimal,
+    .newLayout = vk::ImageLayout::eShaderReadOnlyOptimal,
+    .image = sceneColor.image()
+};
+
+// Transition Depth from Attachment to Shader Read (Depth Aspect only!)
+barriers[1] = vk::ImageMemoryBarrier2{
+    .srcStageMask = vk::PipelineStageFlagBits2::eLateFragmentTests,
+    .srcAccessMask = vk::AccessFlagBits2::eDepthStencilAttachmentWrite,
+    .dstStageMask = vk::PipelineStageFlagBits2::eFragmentShader,
+    .dstAccessMask = vk::AccessFlagBits2::eShaderRead,
+    .oldLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal,
+    .newLayout = vk::ImageLayout::eDepthReadOnlyOptimal,
+    .image = depthBuffer.image(),
+    .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eDepth,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1
+    }
+};
+
+commandBuffer.pipelineBarrier2(vk::DependencyInfo{
+    .imageMemoryBarrierCount = static_cast&lt;uint32_t&gt;(barriers.size()),
+    .pImageMemoryBarriers = barriers.data()
+});</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>By batching these into a single <code>DependencyInfo</code>, the driver can optimize the state changes and cache flushes, ensuring the GPU spends more time drawing and less time waiting for barriers.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_simple_engine_the_unified_barrier"><a class="anchor" href="#_simple_engine_the_unified_barrier"></a>Simple Engine: The Unified Barrier</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In <code>Simple Engine</code>, we consolidate our image transitions to minimize driver overhead. If you look at <code>Renderer::Render</code> in <code>renderer_rendering.cpp</code>, you&#8217;ll see how we handle the transition from the <strong>Opaque Pass</strong> to the <strong>Post-Processing Pass</strong>. We don&#8217;t just transition the color buffer; we often transition the depth buffer and any auxiliary buffers (like our G-Buffer for Forward+ lighting) in a single <code>vk::DependencyInfo</code>.</p>
+</div>
+<div class="paragraph">
+<p>One specific trick we use in <code>Simple Engine</code> is the <strong>Layout Tracking</strong> system. Because our <code>Renderer</code> can switch between different rendering paths (like Rasterization vs. Ray Query), we keep track of the current layout of our main images (like <code>opaqueSceneColorImageLayouts</code>). When we begin a pass, we check the current layout and only emit a barrier if a transition is actually necessary. If the image is already in the correct layout, we skip the barrier entirely, saving precious GPU cycles.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_navigation"><a class="anchor" href="#_navigation"></a>Navigation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Previous: <a href="01_introduction.html" class="xref page">Introduction</a> | Next: <a href="03_queue_family_ownership.html" class="xref page">Queue Family Ownership</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

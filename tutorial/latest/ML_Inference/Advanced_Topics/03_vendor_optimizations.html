@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Vendor-Specific Optimizations: Squeezing the Last Drop :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../ML_Inference/Advanced_Topics/03_vendor_optimizations.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Machine Learning Inference</li>
+    <li>Advanced Topics</li>
+    <li><a href="03_vendor_optimizations.html">Vendor Optimizations</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Vendor-Specific Optimizations: Squeezing the Last Drop</h1>
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>Generic Vulkan compute shaders are the "Great Equalizer"—they run on almost any modern GPU. But in the high-stakes world of ML inference, "running" isn&#8217;t enough. You want to dominate.</p>
+</div>
+<div class="paragraph">
+<p>NVIDIA has <strong>Tensor Cores</strong>, AMD has <strong>AI Accelerators</strong> (WMMA), and Intel has <strong>XMX</strong> engines. These are specialized hardware blocks designed for one thing: multiplying matrices at terrifying speeds. If you ignore them, you are leaving <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.891ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 1278 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z"></path></g><g data-mml-node="mo" transform="translate(500,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> to <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="4.023ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 1778 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path></g><g data-mml-node="mo" transform="translate(1000,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> performance on the table.</p>
+</div>
+<div class="paragraph">
+<p>In this chapter, we are going to learn how to write <strong>Hardware-Aware Vulkan</strong>. We will explore the architectural differences between the "Big Three" and learn how to bridge the gap between high-level library usage (ONNX Runtime) and low-level shader engineering.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_pragmatic_path_library_level_hardware_acceleration"><a class="anchor" href="#_the_pragmatic_path_library_level_hardware_acceleration"></a>The Pragmatic Path: Library-Level Hardware Acceleration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you are using ONNX Runtime (as taught in the Desktop Applications chapter), you might wonder: "Do I need to write custom assembly to use a Tensor Core?"</p>
+</div>
+<div class="paragraph">
+<p>The answer is <strong>No</strong>. High-level libraries are designed to detect and utilize this hardware automatically via <strong>Execution Providers (EP)</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_1_webgpu_directml_universal_windowslinux"><a class="anchor" href="#_1_webgpu_directml_universal_windowslinux"></a>1. WebGPU / DirectML (Universal Windows/Linux)</h3>
+<div class="paragraph">
+<p>When you use the <code>webgpu</code> or <code>DirectML</code> execution providers, the library translates your model nodes into <strong>Metacommands</strong>. These are pre-compiled, vendor-optimized GPU kernels provided by the driver.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>How to verify</strong>: In Windows, use <strong>Task Manager</strong> or <strong>NVIDIA Control Panel</strong>. If your "Compute" or "Tensor" engine usage spikes during inference while 3D usage remains low, the library is successfully bypassing the generic graphics units.</p>
+</li>
+<li>
+<p><strong>Tuning</strong>: You can often force specific behaviors using environment variables. For example, <code>ORT_DIRECTML_DEVICE_ID</code> can select a specific GPU, and DirectML itself has internal flags to prioritize "Performance" vs "Power."</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_cuda_tensorrt_nvidia_specific"><a class="anchor" href="#_2_cuda_tensorrt_nvidia_specific"></a>2. CUDA / TensorRT (NVIDIA Specific)</h3>
+<div class="paragraph">
+<p>For the absolute highest performance on NVIDIA hardware, the <strong>TensorRT</strong> execution provider is king. It doesn&#8217;t just run the model; it <strong>compiles</strong> it for your specific GPU architecture (e.g., Ada Lovelace vs. Ampere).</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Compilation</strong>: The first time you run a model with TensorRT, it will pause for a few minutes. It is literally testing different matrix tile sizes on your specific silicon to find the one that hits the highest throughput.</p>
+</li>
+<li>
+<p><strong>FP16/INT8</strong>: To use Tensor Cores via TensorRT, you must explicitly enable them in the <code>SessionOptions</code>:</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>Ort::SessionOptions options;
+OrtTensorRTProviderOptions trt_options;
+trt_options.device_id = 0;
+trt_options.trt_fp16_enable = 1; // Enables Tensor Cores
+trt_options.trt_int8_enable = 1; // Requires calibration data
+options.AppendExecutionProvider_TensorRT(trt_options);</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_silicon_landscape_matrix_math_units"><a class="anchor" href="#_the_silicon_landscape_matrix_math_units"></a>The Silicon Landscape: Matrix Math Units</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>To optimize for a vendor at the shader level (Path 2), you must understand their "Matrix Unit"—the hardware block that performs the fused multiply-add (<span class="steminline"> <svg style="vertical-align: -0.186ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="15.555ex" height="1.805ex" role="img" focusable="false" viewBox="0 -716 6875.4 798"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D437" d="M287 628Q287 635 230 637Q207 637 200 638T193 647Q193 655 197 667T204 682Q206 683 403 683Q570 682 590 682T630 676Q702 659 752 597T803 431Q803 275 696 151T444 3L430 1L236 0H125H72Q48 0 41 2T33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM703 469Q703 507 692 537T666 584T629 613T590 629T555 636Q553 636 541 636T512 636T479 637H436Q392 637 386 627Q384 623 313 339T242 52Q242 48 253 48T330 47Q335 47 349 47T373 46Q499 46 581 128Q617 164 640 212T683 339T703 469Z"></path></g><g data-mml-node="mo" transform="translate(1105.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mi" transform="translate(2161.6,0)"><path data-c="1D434" d="M208 74Q208 50 254 46Q272 46 272 35Q272 34 270 22Q267 8 264 4T251 0Q249 0 239 0T205 1T141 2Q70 2 50 0H42Q35 7 35 11Q37 38 48 46H62Q132 49 164 96Q170 102 345 401T523 704Q530 716 547 716H555H572Q578 707 578 706L606 383Q634 60 636 57Q641 46 701 46Q726 46 726 36Q726 34 723 22Q720 7 718 4T704 0Q701 0 690 0T651 1T578 2Q484 2 455 0H443Q437 6 437 9T439 27Q443 40 445 43L449 46H469Q523 49 533 63L521 213H283L249 155Q208 86 208 74ZM516 260Q516 271 504 416T490 562L463 519Q447 492 400 412L310 260L413 259Q516 259 516 260Z"></path></g><g data-mml-node="mo" transform="translate(3133.8,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g><g data-mml-node="mi" transform="translate(4134,0)"><path data-c="1D435" d="M231 637Q204 637 199 638T194 649Q194 676 205 682Q206 683 335 683Q594 683 608 681Q671 671 713 636T756 544Q756 480 698 429T565 360L555 357Q619 348 660 311T702 219Q702 146 630 78T453 1Q446 0 242 0Q42 0 39 2Q35 5 35 10Q35 17 37 24Q42 43 47 45Q51 46 62 46H68Q95 46 128 49Q142 52 147 61Q150 65 219 339T288 628Q288 635 231 637ZM649 544Q649 574 634 600T585 634Q578 636 493 637Q473 637 451 637T416 636H403Q388 635 384 626Q382 622 352 506Q352 503 351 500L320 374H401Q482 374 494 376Q554 386 601 434T649 544ZM595 229Q595 273 572 302T512 336Q506 337 429 337Q311 337 310 336Q310 334 293 263T258 122L240 52Q240 48 252 48T333 46Q422 46 429 47Q491 54 543 105T595 229Z"></path></g><g data-mml-node="mo" transform="translate(5115.2,0)"><path data-c="2B" d="M56 237T56 250T70 270H369V420L370 570Q380 583 389 583Q402 583 409 568V270H707Q722 262 722 250T707 230H409V-68Q401 -82 391 -82H389H387Q375 -82 369 -68V230H70Q56 237 56 250Z"></path></g><g data-mml-node="mi" transform="translate(6115.4,0)"><path data-c="1D436" d="M50 252Q50 367 117 473T286 641T490 704Q580 704 633 653Q642 643 648 636T656 626L657 623Q660 623 684 649Q691 655 699 663T715 679T725 690L740 705H746Q760 705 760 698Q760 694 728 561Q692 422 692 421Q690 416 687 415T669 413H653Q647 419 647 422Q647 423 648 429T650 449T651 481Q651 552 619 605T510 659Q484 659 454 652T382 628T299 572T226 479Q194 422 175 346T156 222Q156 108 232 58Q280 24 350 24Q441 24 512 92T606 240Q610 253 612 255T628 257Q648 257 648 248Q648 243 647 239Q618 132 523 55T319 -22Q206 -22 128 53T50 252Z"></path></g></g></g></svg> </span>) on small matrix tiles.</p>
+</div>
+<div class="sect2">
+<h3 id="_1_nvidia_tensor_cores"><a class="anchor" href="#_1_nvidia_tensor_cores"></a>1. NVIDIA (Tensor Cores)</h3>
+<div class="paragraph">
+<p>Since the <strong>Volta</strong> architecture, NVIDIA SMs (Streaming Multiprocessors) have contained Tensor Cores.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Unit</strong>: A Tensor Core doesn&#8217;t work on individual numbers; it works on <strong>Matrix Tiles</strong> (typically 16x16).</p>
+</li>
+<li>
+<p><strong>The Workflow</strong>: Threads in a <strong>Warp</strong> (32 threads) work cooperatively. The matrix <span class="steminline"> <svg style="vertical-align: 0; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.697ex" height="1.62ex" role="img" focusable="false" viewBox="0 -716 750 716"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D434" d="M208 74Q208 50 254 46Q272 46 272 35Q272 34 270 22Q267 8 264 4T251 0Q249 0 239 0T205 1T141 2Q70 2 50 0H42Q35 7 35 11Q37 38 48 46H62Q132 49 164 96Q170 102 345 401T523 704Q530 716 547 716H555H572Q578 707 578 706L606 383Q634 60 636 57Q641 46 701 46Q726 46 726 36Q726 34 723 22Q720 7 718 4T704 0Q701 0 690 0T651 1T578 2Q484 2 455 0H443Q437 6 437 9T439 27Q443 40 445 43L449 46H469Q523 49 533 63L521 213H283L249 155Q208 86 208 74ZM516 260Q516 271 504 416T490 562L463 519Q447 492 400 412L310 260L413 259Q516 259 516 260Z"></path></g></g></g></svg> </span> is not loaded by one thread; its rows are distributed across all 32 threads. The Tensor Core "reaches into" the registers of all threads in the warp simultaneously to perform the multiplication.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../../_images/images/ML_Inference/Advanced_Topics/coop_matrix_warp.svg" alt="Diagram showing Matrix A and B distribution across a GPU Warp for hardware acceleration" width="800">
+</div>
+<div class="title">Figure 1. Warp-Level Matrix Cooperation</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Bottleneck</strong>: Tensor Cores are so fast that they are almost always <strong>Memory Bound</strong>. If you can&#8217;t feed them 16x16 tiles of data every few clock cycles, they sit idle. This is why <strong>Shared Memory Tiling</strong> (Chapter 05) is mandatory when using them.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_amd_wmma_wave_matrix_multiply_accumulate"><a class="anchor" href="#_2_amd_wmma_wave_matrix_multiply_accumulate"></a>2. AMD (WMMA - Wave Matrix Multiply-Accumulate)</h3>
+<div class="paragraph">
+<p>Introduced in <strong>RDNA3</strong> (RX 7000 series), AMD GPUs feature AI Accelerators.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Unit</strong>: WMMA units are designed to saturate AMD&#8217;s wide <strong>SIMD units</strong>.</p>
+</li>
+<li>
+<p><strong>The Workflow</strong>: Similar to NVIDIA, but optimized for AMD&#8217;s <strong>Wavefront</strong> (32 or 64 threads). AMD&#8217;s architecture relies heavily on <strong>Infinity Cache</strong> to keep these units fed.</p>
+</li>
+<li>
+<p><strong>Nuance</strong>: On AMD, the hardware often supports different "Wave" sizes (Wave32 vs Wave64). A shader written for Wave32 might run at half speed on a Wave64 card if you don&#8217;t query the hardware limits correctly.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_3_intel_xmx_xe_matrix_extensions"><a class="anchor" href="#_3_intel_xmx_xe_matrix_extensions"></a>3. Intel (XMX - Xe Matrix Extensions)</h3>
+<div class="paragraph">
+<p>Intel&#8217;s <strong>Arc</strong> GPUs (Xe-HPG) feature some of the most aggressive matrix hardware in the consumer market.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>The Unit</strong>: Each Xe-core contains a <strong>Systolic Array</strong>.</p>
+</li>
+<li>
+<p><strong>Systolic Flow</strong>: Unlike a standard GPU thread that reads and writes to registers, a systolic array passes data directly from one processing element to its neighbor. Imagine a "pulse" of data flowing through a grid.</p>
+</li>
+<li>
+<p><strong>The Payoff</strong>: This minimizes "Register Pressure," allowing Intel GPUs to run very deep matrix calculations without stalling for memory. Intel&#8217;s units are particularly efficient at <strong>INT8</strong> and <strong>BF16</strong> (Brain Floating Point) precisions.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cooperative_matrices_the_universal_fast_path"><a class="anchor" href="#_cooperative_matrices_the_universal_fast_path"></a>Cooperative Matrices: The Universal Fast-Path</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The <code>VK_KHR_cooperative_matrix</code> extension is the "Standard Library" for matrix hardware. It provides types that the Vulkan compiler automatically maps to the correct hardware units (Tensor Cores, WMMA, or XMX).</p>
+</div>
+<div class="sect2">
+<h3 id="_the_concept_opaque_tiling"><a class="anchor" href="#_the_concept_opaque_tiling"></a>The Concept: Opaque Tiling</h3>
+<div class="paragraph">
+<p>Instead of writing nested <code>for</code> loops, you use the <code>coopmat</code> type. A <code>coopmat</code> is <strong>opaque</strong>—you don&#8217;t know which thread owns which pixel. The hardware decides the optimal mapping.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#extension GL_KHR_cooperative_matrix : enable
+#extension GL_EXT_shader_explicit_arithmetic_types_float16 : enable
+
+// Define a matrix configuration
+// M, N, K are the tile dimensions (e.g., 16, 16, 16)
+layout(constant_id = 0) const uint M = 16;
+layout(constant_id = 1) const uint N = 16;
+layout(constant_id = 2) const uint K = 16;
+
+// Cooperative matrices for Subgroup scope (the 32/64 threads work together)
+coopmat&lt;float16_t, gl_ScopeSubgroup, M, K, gl_MatrixUseA&gt; matA;
+coopmat&lt;float16_t, gl_ScopeSubgroup, K, N, gl_MatrixUseB&gt; matB;
+coopmat&lt;float32_t, gl_ScopeSubgroup, M, N, gl_MatrixUseAccumulator&gt; matC;
+
+void main() {
+    // 1. Cooperative Load: Hardware-optimized memory fetch
+    // Stride is the number of elements between rows in VRAM.
+    // 'false' indicates the memory is not column-major.
+    coopMatLoad(matA, inputABuffer, indexA, strideA, false);
+    coopMatLoad(matB, inputBBuffer, indexB, strideB, false);
+
+    // 2. The Systolic Burst: Multiply-Add in one instruction
+    // This maps to 'hmma' on NVIDIA or 'v_wmma' on AMD.
+    matC = coopMatMulAdd(matA, matB, matC);
+
+    // 3. Store the result
+    coopMatStore(matC, outputBuffer, indexC, strideC, false);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_hands_on_querying_and_using_matrix_accelerators"><a class="anchor" href="#_hands_on_querying_and_using_matrix_accelerators"></a>Hands-on: Querying and Using Matrix Accelerators</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Cooperative matrices are "Opaque" because their internal layout is hardware-defined. To use them, you must query the specific configurations (M, N, K) your user&#8217;s GPU supports.</p>
+</div>
+<div class="sect2">
+<h3 id="_phase_1_enabling_the_extension_c"><a class="anchor" href="#_phase_1_enabling_the_extension_c"></a>Phase 1: Enabling the Extension (C++)</h3>
+<div class="paragraph">
+<p>Matrix hardware requires explicit activation during your Vulkan setup.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// 1. Instance Extensions
+// Usually none needed beyond standard Vulkan 1.2+
+
+// 2. Device Extensions
+std::vector&lt;const char*&gt; deviceExtensions = {
+    VK_KHR_COOPERATIVE_MATRIX_EXTENSION_NAME,
+    VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME // Often needed for ML data types
+};
+
+// 3. Feature Activation
+VkPhysicalDeviceCooperativeMatrixFeaturesKHR matrixFeatures = {
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_FEATURES_KHR,
+    .cooperativeMatrix = VK_TRUE, // Enable the actual hardware path
+    .cooperativeMatrixRobustness = VK_TRUE // Recommended for safety
+};
+
+// Pass matrixFeatures to your VkDeviceCreateInfo pNext chain</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_2_querying_hardware_capabilities"><a class="anchor" href="#_phase_2_querying_hardware_capabilities"></a>Phase 2: Querying Hardware Capabilities</h3>
+<div class="paragraph">
+<p>Every GPU supports different matrix sizes. An RTX 4090 might support 16x16, while an AMD card might prefer 32x32. You must query this at runtime.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uint32_t propertyCount = 0;
+vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR(gpu, &amp;propertyCount, nullptr);
+
+std::vector&lt;VkCooperativeMatrixPropertiesKHR&gt; props(propertyCount);
+for(auto&amp; p : props) p.sType = VK_STRUCTURE_TYPE_COOPERATIVE_MATRIX_PROPERTIES_KHR;
+
+vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR(gpu, &amp;propertyCount, props.data());
+
+// Filter for the configuration you want (e.g., float16 math)
+for (const auto&amp; p : props) {
+    if (p.AType == VK_COMPONENT_TYPE_FLOAT16_KHR &amp;&amp; p.scope == VK_SCOPE_SUBGROUP_KHR) {
+        std::cout &lt;&lt; "Supported Tile: M=" &lt;&lt; p.MSize &lt;&lt; " N=" &lt;&lt; p.NSize &lt;&lt; " K=" &lt;&lt; p.KSize &lt;&lt; std::endl;
+        // Save these for Specialization Constants!
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_3_the_specialization_constant_handshake"><a class="anchor" href="#_phase_3_the_specialization_constant_handshake"></a>Phase 3: The Specialization Constant Handshake</h3>
+<div class="paragraph">
+<p>Since the shader needs to know the tile size at compile-time for register allocation, we use <strong>Specialization Constants</strong> to pass the hardware values we just queried.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Map hardware M, N, K to specialization constants
+std::array&lt;VkSpecializationMapEntry, 3&gt; specMap;
+specMap[0] = { .constantID = 0, .offset = 0, .size = sizeof(uint32_t) }; // M
+specMap[1] = { .constantID = 1, .offset = 4, .size = sizeof(uint32_t) }; // N
+specMap[2] = { .constantID = 2, .offset = 8, .size = sizeof(uint32_t) }; // K
+
+uint32_t specData[] = { supportedM, supportedN, supportedK };
+
+VkSpecializationInfo specInfo = {
+    .mapEntryCount = 3, .pMapEntries = specMap.data(),
+    .dataSize = sizeof(specData), .pData = specData
+};
+
+// Pass specInfo to your VkComputePipelineCreateInfo</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_phase_4_dispatch_orchestration"><a class="anchor" href="#_phase_4_dispatch_orchestration"></a>Phase 4: Dispatch Orchestration</h3>
+<div class="paragraph">
+<p>When using cooperative matrices, your dispatches must be aligned to the <strong>Subgroup</strong>.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Workgroup Size</strong>: Set your <code>local_size_x</code> to the <code>subgroupSize</code> (e.g., 32).</p>
+</li>
+<li>
+<p><strong>Grid Dimensions</strong>: Divide your total matrix size by the hardware Tile Size (M, N).</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>dispatchX = totalN / supportedN;</code></p>
+</li>
+<li>
+<p><code>dispatchY = totalM / supportedM;</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_mastering_registers_the_hidden_bottleneck"><a class="anchor" href="#_mastering_registers_the_hidden_bottleneck"></a>Mastering Registers: The Hidden Bottleneck</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In Path 2 (Custom Shaders), your biggest enemy isn&#8217;t the code logic—it is <strong>Register Pressure</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_register_file"><a class="anchor" href="#_the_register_file"></a>The Register File</h3>
+<div class="paragraph">
+<p>Every GPU Compute Unit has a fixed pool of fast memory called the <strong>Register File</strong>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>If your shader uses <strong>32 registers</strong>, the GPU can launch <strong>2,048 threads</strong> simultaneously (High Occupancy).</p>
+</li>
+<li>
+<p>If your shader uses <strong>128 registers</strong> (e.g., because you have a large <code>coopmat</code> or a big array), the GPU can only launch <strong>512 threads</strong> (Low Occupancy).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_occupancy_matters"><a class="anchor" href="#_why_occupancy_matters"></a>Why Occupancy Matters</h3>
+<div class="paragraph">
+<p>GPUs use threads to hide <strong>Memory Latency</strong>. When one thread is waiting for data from VRAM, the GPU "swaps" it for another thread that is ready to compute.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>High Occupancy</strong>: The GPU always has "fresh" threads to run. The hardware stays busy.</p>
+</li>
+<li>
+<p><strong>Low Occupancy</strong>: All 512 threads are waiting for VRAM. The GPU compute units sit idle. You are "Register Bound."</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_professional_profiling_the_microscope"><a class="anchor" href="#_professional_profiling_the_microscope"></a>Professional Profiling: The "Microscope"</h3>
+<div class="paragraph">
+<p>To fix this, you must use vendor-specific profilers:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>NVIDIA (Nsight Compute)</strong>: Look at the "Register Pressure" metric. If it says "Spilling to Local Memory," your registers overflowed into slow VRAM. You must shrink your <code>coopmat</code> tiles or simplify your loops.</p>
+</li>
+<li>
+<p><strong>AMD (Radeon GPU Profiler)</strong>: Look at the "Wavefront Occupancy" graph. If it&#8217;s below 4 wavefronts per SIMD, you aren&#8217;t hiding latency effectively.</p>
+</li>
+<li>
+<p><strong>Intel (Graphics Performance Analyzers)</strong>: Check the "Stall Reason." If it&#8217;s "Register Dependency," your math is faster than your register file can deliver data.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_subgroup_shuffles_communication_without_vram"><a class="anchor" href="#_subgroup_shuffles_communication_without_vram"></a>Subgroup Shuffles: Communication Without VRAM</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Even if you aren&#8217;t doing matrix math, you can still optimize for specific vendors by using <strong>Subgroup Operations</strong>. These allow threads within a subgroup to share data <strong>without touching Shared Memory or L1 Cache</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_shuffle_pattern"><a class="anchor" href="#_the_shuffle_pattern"></a>The "Shuffle" Pattern</h3>
+<div class="paragraph">
+<p>Imagine you are calculating a <strong>Softmax</strong>. You need the maximum value of a row to ensure numerical stability.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Naive Way</strong>: Every thread writes to Shared Memory, calls <code>barrier()</code>, then one thread reads them all. (Latency: 40-100 cycles).</p>
+</li>
+<li>
+<p><strong>Hardware Way</strong>: Use <code>subgroupMax()</code>.</p>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#extension GL_KHR_shader_subgroup_arithmetic : enable
+
+void main() {
+    float myVal = ...;
+    // The GPU hardware performs a reduction across all 32 threads
+    // in the register file.
+    float rowMax = subgroupMax(myVal);
+    // rowMax is now correct for ALL threads in the subgroup.
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This reduces the latency from 100 cycles to <strong>1 cycle</strong>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vendor_nuance_wavefront_sizes"><a class="anchor" href="#_vendor_nuance_wavefront_sizes"></a>Vendor Nuance: Wavefront Sizes</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>One of the biggest hurdles in vendor-specific code is the <strong>Subgroup Size</strong>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>NVIDIA</strong>: Always 32 (Warp).</p>
+</li>
+<li>
+<p><strong>Intel</strong>: Usually 8, 16, or 32 depending on the shader complexity.</p>
+</li>
+<li>
+<p><strong>AMD</strong>: Can be 32 or 64 (Wave32 vs Wave64) depending on the hardware generation.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To write robust vendor code, you must never hard-code <code>32</code>. Always query <code>gl_SubgroupSize</code> or use the <code>subgroupSize</code> specialization constant provided by Vulkan. If you assume 32 on a Wave64 AMD card, you will only process half the data, leaving the other half as uninitialized garbage.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_multi_vendor_dispatcher_pattern"><a class="anchor" href="#_the_multi_vendor_dispatcher_pattern"></a>The Multi-Vendor Dispatcher Pattern</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>A professional inference engine shouldn&#8217;t have three different apps. It should have one app that detects the hardware at runtime and "swaps" the implementation.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class InferencePath {
+public:
+    virtual void dispatch(vk::CommandBuffer cmd) = 0;
+};
+
+// Implementation for NVIDIA Tensor Cores
+class NvidiaPath : public InferencePath { ... };
+
+// Implementation for AMD WMMA
+class AmdPath : public InferencePath { ... };
+
+// Implementation for Intel XMX
+class IntelPath : public InferencePath { ... };
+
+// Generic path using standard subgroups
+class GenericPath : public InferencePath { ... };
+
+// Helper to check for extension support
+bool supportsCoopMat(vk::PhysicalDevice gpu) {
+    auto extensions = gpu.enumerateDeviceExtensionProperties();
+    for (const auto&amp; ext : extensions) {
+        if (std::string(ext.extensionName) == VK_KHR_COOPERATIVE_MATRIX_EXTENSION_NAME) return true;
+    }
+    return false;
+}
+
+std::unique_ptr&lt;InferencePath&gt; selectOptimalPath(vk::PhysicalDevice gpu) {
+    auto props = gpu.getProperties();
+
+    // Check Vendor ID
+    if (props.vendorID == 0x10DE &amp;&amp; supportsCoopMat(gpu)) {
+        return std::make_unique&lt;NvidiaPath&gt;();
+    }
+    if (props.vendorID == 0x1002 &amp;&amp; supportsCoopMat(gpu)) {
+        return std::make_unique&lt;AmdPath&gt;();
+    }
+    if (props.vendorID == 0x8086 &amp;&amp; supportsCoopMat(gpu)) {
+        return std::make_unique&lt;IntelPath&gt;();
+    }
+
+    return std::make_unique&lt;GenericPath&gt;();
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_vendor_specific_performance_profiles"><a class="anchor" href="#_vendor_specific_performance_profiles"></a>Vendor-Specific Performance Profiles</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When choosing a precision, you must understand the throughput ratios of your target hardware. Modern GPUs are heavily biased toward integer math. The numbers below represent peak theoretical throughput for standard matrix multiplication (GEMM) operations.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 14.2857%;">
+<col style="width: 28.5714%;">
+<col style="width: 28.5714%;">
+<col style="width: 28.5715%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Precision</th>
+<th class="tableblock halign-left valign-top">NVIDIA (RTX 4090)</th>
+<th class="tableblock halign-left valign-top">AMD (RX 7900 XTX)</th>
+<th class="tableblock halign-left valign-top">Intel (Arc A770)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FP32</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">82.6 TFLOPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">61.3 TFLOPS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">17.2 TFLOPS</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>FP16</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">330.3 TFLOPS (TC)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">122.6 TFLOPS (WMMA)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">68.8 TFLOPS (XMX)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>INT8</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">660.6 TOPS (TC)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">245.2 TOPS (WMMA)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">137.6 TOPS (XMX)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><strong>Sources</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>NVIDIA</strong>: <a href="https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/">RTX 4090 Product Specifications</a> (Tensor Core throughputs derived from peak compute and sparsity ratios).</p>
+</li>
+<li>
+<p><strong>AMD</strong>: <a href="https://www.amd.com/en/products/graphics/amd-radeon-rx-7900-xtx">AMD Radeon RX 7900 XTX Specs</a> (AI Accelerator performance).</p>
+</li>
+<li>
+<p><strong>Intel</strong>: <a href="https://www.intel.com/content/www/us/en/products/sku/229151/intel-arc-a770-graphics-16gb/specifications.html">Intel Arc A770 Specifications</a> (XMX throughput).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>The Insight</strong>: If you move from FP32 to INT8, you aren&#8217;t just saving memory; you are accessing a hardware path that is <strong>8x to 10x faster</strong> across all major vendors.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_memory_alignment_the_silent_performance_killer"><a class="anchor" href="#_memory_alignment_the_silent_performance_killer"></a>Memory Alignment: The Silent Performance Killer</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Matrix hardware is extremely picky about memory layout. If you ignore this, the driver will silently fall back to a "Slow Path," and your <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="4.023ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 1778 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path></g><g data-mml-node="mo" transform="translate(1000,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> speedup will disappear.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Buffer Alignment</strong>: NVIDIA Tensor Cores require that your buffer start address and every row "Stride" be aligned to <strong>128 bits (16 bytes)</strong>.</p>
+</li>
+<li>
+<p><strong>Tiling Strategy</strong>: Always try to keep your matrix dimensions multiples of 16. If your layer is 100x100, "Pad" it to 112x112 with zeros. The hardware math is so fast that calculating 12 extra zeros is faster than running an unaligned 100x100 kernel.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary_the_hardware_mastery_checklist"><a class="anchor" href="#_summary_the_hardware_mastery_checklist"></a>Summary: The Hardware Mastery Checklist</h2>
+<div class="sectionbody">
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Library Path</strong>: Configure <code>SessionOptions</code> to enable <code>trt_fp16_enable</code> or the <code>webgpu</code> provider.</p>
+</li>
+<li>
+<p><strong>Query</strong>: Use <code>vkGetPhysicalDeviceProperties2</code> to check for <code>VkPhysicalDeviceCooperativeMatrixPropertiesKHR</code>.</p>
+</li>
+<li>
+<p><strong>Tiling</strong>: Align your ML layers to 16x16 or 32x32 blocks to match hardware matrix units.</p>
+</li>
+<li>
+<p><strong>Cooperative Matrices</strong>: Replace inner loops with <code>coopMatMulAdd</code> for a <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="6.661ex" height="1.557ex" role="img" focusable="false" viewBox="0 -666 2944 688"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mn"><path data-c="35" d="M164 157Q164 133 148 117T109 101H102Q148 22 224 22Q294 22 326 82Q345 115 345 210Q345 313 318 349Q292 382 260 382H254Q176 382 136 314Q132 307 129 306T114 304Q97 304 95 310Q93 314 93 485V614Q93 664 98 664Q100 666 102 666Q103 666 123 658T178 642T253 634Q324 634 389 662Q397 666 402 666Q410 666 410 648V635Q328 538 205 538Q174 538 149 544L139 546V374Q158 388 169 396T205 412T256 420Q337 420 393 355T449 201Q449 109 385 44T229 -22Q148 -22 99 32T50 154Q50 178 61 192T84 210T107 214Q132 214 148 197T164 157Z"></path></g><g data-mml-node="mtext" transform="translate(500,0)"><path data-c="2D" d="M11 179V252H277V179H11Z"></path><path data-c="2D" d="M11 179V252H277V179H11Z" transform="translate(333,0)"></path></g><g data-mml-node="mn" transform="translate(1166,0)"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z" transform="translate(500,0)"></path></g><g data-mml-node="mo" transform="translate(2166,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g></g></g></svg> </span> boost.</p>
+</li>
+<li>
+<p><strong>Subgroups</strong>: Use <code>subgroupMax</code>, <code>subgroupSum</code>, and <code>subgroupShuffle</code> for all inter-thread communication.</p>
+</li>
+<li>
+<p><strong>Alignment</strong>: Ensure all buffer strides are 16-byte aligned to enable <strong>Coalesced Memory Access</strong>.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>In the next chapter, we will look at the final hardware constraint: <strong>Memory Management</strong>. We’ll learn how to fit massive 10GB models into 4GB of GPU memory using professional pooling and streaming techniques.</p>
+</div>
+<div class="paragraph">
+<p><a href="02_quantization_strategies.html" class="xref page">Previous: Quantization Strategies</a> | <a href="04_memory_management.html" class="xref page">Next: Advanced Memory Management</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

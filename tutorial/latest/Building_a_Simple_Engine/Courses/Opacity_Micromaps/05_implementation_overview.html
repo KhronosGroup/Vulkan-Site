@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Building Opacity Micromaps in the Simple Engine :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../../");!function(){var f="../../../Building_a_Simple_Engine/Courses/Opacity_Micromaps/05_implementation_overview.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Building a Simple Engine</li>
+    <li>Extra Courses</li>
+    <li>Opacity Micromaps</li>
+    <li><a href="05_implementation_overview.html">Implementation overview</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Building Opacity Micromaps in the Simple Engine</h1>
+<div class="sect1">
+<h2 id="_the_conceptual_architecture"><a class="anchor" href="#_the_conceptual_architecture"></a>The Conceptual Architecture</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Understanding the hardware is one thing; seeing how that understanding translates into code is another. This chapter walks through the engine&#8217;s Opacity Micromap implementation at a conceptual level. The full source is available in the <code>Courses/</code> folder alongside this curriculum, and we will point you to specific files throughout. The goal here is to understand the shape of the implementation: what happens when, why each step is necessary, and how the pieces connect.</p>
+</div>
+<div class="paragraph">
+<p>The implementation is organized around a single class, <code>OpacityMicromapBuilder</code>, defined in <code>opacity_micromap_builder.h</code> and implemented in <code>opacity_micromap_builder.cpp</code>. This class is responsible for the entire micromap lifecycle: checking hardware support, building the micromaps from mesh and texture data, managing their GPU memory, and providing them to the BLAS build process.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_phase_zero_checking_for_support"><a class="anchor" href="#_phase_zero_checking_for_support"></a>Phase Zero: Checking for Support</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before any micromap work can begin, the engine must verify that the current GPU and driver support <code>VK_KHR_opacity_micromap</code>. This extension is relatively recent and is not universally available. The <code>OpacityMicromapBuilder</code> checks for the extension during device initialization and sets an internal flag. If the extension is absent, every subsequent call to the builder is a no-op — the engine proceeds with normal alpha testing, exactly as it did before micromaps were introduced.</p>
+</div>
+<div class="paragraph">
+<p>This graceful fallback is not optional; it is a hard requirement for any shipping application. Content must look correct regardless of whether OMMs are active. Because OMMs do not change the visual result (the any-hit shader remains the fallback for Unknown micro-triangles, and the shader&#8217;s behavior is unchanged), disabling OMMs leaves the rendering visually identical while simply reverting to the higher per-frame cost. The fallback path requires no special code path in the shaders.</p>
+</div>
+<div class="paragraph">
+<p>The extension also requires that <code>VK_KHR_acceleration_structure</code> is enabled (which it already must be for any ray-traced rendering) and <code>VK_KHR_synchronization2</code> for the build commands. These dependencies are checked alongside the main extension. The feature structure used during device creation is <code>VkPhysicalDeviceOpacityMicromapFeaturesKHR</code>, which exposes the availability of the core micromap functionality and the optional lossy compression feature; the builder queries both and records which capabilities are active.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_phase_one_analysis"><a class="anchor" href="#_phase_one_analysis"></a>Phase One: Analysis</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>When a mesh is submitted to the engine for loading, the <code>OpacityMicromapBuilder</code> inspects the mesh&#8217;s material list. For each submesh, it examines the material properties and asks: is this an alpha-tested material? Specifically, does it have an alpha-mask texture and is it flagged to use alpha cutoff rather than full transparency blending?</p>
+</div>
+<div class="paragraph">
+<p>If the answer is yes, the submesh is a candidate for micromap generation. The builder records which submeshes need micromaps and determines the appropriate subdivision level for each one. The subdivision level choice is currently based on a simple heuristic: the builder examines the texture dimensions and the ratio of the mesh&#8217;s triangle count to its surface area. Finely detailed textures on smaller triangles benefit from higher subdivision, while large triangles with simple alpha patterns can use lower levels. The engine also respects the device&#8217;s reported <code>maxOpacityLossy4StateSubdivisionLevel</code> and <code>maxMicromapTriangles</code> limits when selecting subdivision levels, ensuring that the chosen parameters remain within what the hardware can represent. A configuration file in the <code>Courses/</code> folder documents the heuristic and how to override it per-material.</p>
+</div>
+<div class="paragraph">
+<p>The analysis phase is fast and happens on the CPU as part of normal mesh loading. Its output is a per-submesh descriptor that the next phase consumes.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_phase_two_classification"><a class="anchor" href="#_phase_two_classification"></a>Phase Two: Classification</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Classification is where the substantive work happens. For each alpha-tested submesh, and for each triangle in that submesh, the builder iterates over the micro-triangles at the chosen subdivision level. For each micro-triangle, it computes the barycentric coordinates of the micro-triangle&#8217;s centroid within the original triangle. From those coordinates, it interpolates the triangle&#8217;s UV coordinates to find the centroid&#8217;s position in texture space. It then samples the CPU-side alpha texture at that UV position.</p>
+</div>
+<div class="paragraph">
+<p>The sampling here is deliberately simple: a bilinear sample at the centroid, optionally averaged with several nearby jittered samples to reduce aliasing artifacts at the boundary. If the sampled alpha is above an upper threshold (typically 0.9), the micro-triangle is classified Opaque. Below a lower threshold (typically 0.1), it is Transparent. Between the thresholds, it is Unknown.</p>
+</div>
+<div class="paragraph">
+<p>The classification results are packed into a compact array — 2 bits per micro-triangle — which forms the raw input for the GPU micromap build. For large meshes, this classification step can take noticeable time, which is why it is typically performed as part of an offline pre-process for shipping content rather than at application startup. The engine supports both modes: online classification during load (for development) and loading pre-classified micromap data from a binary file (for production).</p>
+</div>
+<div class="paragraph">
+<p>It is worth pausing to appreciate the asymmetry here. The classification step runs once. The benefit accumulates over every frame the application renders. For a shipping game or visualization application, the payoff ratio is enormous.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_phase_three_gpu_construction"><a class="anchor" href="#_phase_three_gpu_construction"></a>Phase Three: GPU Construction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Once the classification data is ready on the CPU, it is uploaded to a staging buffer and transferred to GPU-local memory. The builder then fills in a <code>VkAccelerationStructureBuildGeometryInfoKHR</code> structure, specifying <code>type = VK_ACCELERATION_STRUCTURE_TYPE_OPACITY_MICROMAP_KHR</code> along with the geometry type <code>VK_GEOMETRY_TYPE_MICROMAP_KHR</code>, the usage flags, per-triangle format descriptors, the input data buffer address, and a scratch buffer for the build operation. The destination acceleration structure handle is obtained by first calling <code>vkCreateAccelerationStructureKHR</code> — the KHR extension reuses the standard acceleration structure creation path rather than introducing a dedicated micromap creation command.</p>
+</div>
+<div class="paragraph">
+<p>The builder then records a call to <code>vkCmdBuildAccelerationStructuresKHR</code> into a command buffer, which performs the actual build of the micromap on the device. There is no host-side build path — all micromap construction must be submitted to a queue. This keeps acceleration structure work firmly on the device side, where the hardware&#8217;s internal data layout can be determined and applied by the driver without round-tripping through host memory.</p>
+</div>
+<div class="paragraph">
+<p>The resulting <code>VkAccelerationStructureKHR</code> handle is stored alongside the submesh&#8217;s existing BLAS geometry descriptor. In <code>VK_KHR_opacity_micromap</code>, micromaps are not a separate object type: the extension deliberately reuses the standard acceleration structure handle for micromaps, distinguishing them only by their creation type. This simplifies lifecycle management considerably — the same creation, barrier, and destruction patterns that apply to BVH acceleration structures apply equally to micromap acceleration structures, and the programmer does not need to learn a parallel set of object management rules. The handle must be created before the BLAS that references it is built, and it must not be destroyed while the BLAS is alive.</p>
+</div>
+<div class="paragraph">
+<p>A detail worth noting: the <code>vkCmdBuildAccelerationStructuresKHR</code> call for the micromap is recorded into a command buffer and submitted to the GPU queue, just like the BLAS build itself. The micromap data is not computed on the CPU and pushed to the GPU as a plain buffer — the build step performs its own internal compaction and layout transformation to pack the data into the traversal hardware&#8217;s native format. The engine uses a single transfer and compute queue submission to build all micromaps for a newly loaded mesh, then signals a semaphore before proceeding to the BLAS build.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_connecting_the_micromap_to_the_blas"><a class="anchor" href="#_connecting_the_micromap_to_the_blas"></a>Connecting the Micromap to the BLAS</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The micromap <code>VkAccelerationStructureKHR</code> object by itself does nothing. It becomes effective only when it is attached to a BLAS geometry description before the BLAS is built or updated. This attachment happens through the <code>VkAccelerationStructureTrianglesOpacityMicromapKHR</code> structure, which is added to the <code>pNext</code> chain of the <code>VkAccelerationStructureGeometryTrianglesDataKHR</code> for the relevant submesh. The <code>micromap</code> field in this structure holds the <code>VkAccelerationStructureKHR</code> handle created above, and the <code>indexBuffer</code> field — which identifies which micromap entry corresponds to each triangle — is a plain <code>VkDeviceAddress</code>. Only a device-side address is accepted here, consistent with the device-only construction model used throughout the pipeline.</p>
+</div>
+<div class="paragraph">
+<p>This chaining is the literal link between the human-readable concept ("this leaf mesh has a micromap") and the hardware-visible result ("this BLAS contains micromap data in its internal representation"). Once the BLAS is built with this chain in place, all subsequent traversal queries against that BLAS automatically consult the micromap — provided the querying shader has declared the necessary execution mode, as discussed in the previous chapter.</p>
+</div>
+<div class="paragraph">
+<p>The BLAS must be rebuilt after micromaps are attached. If the mesh is static — as foliage usually is — this is a one-time cost. If the mesh deforms (unusual for micromap use cases but possible), the micromap must be rebuilt and the BLAS must be updated accordingly. The <code>OpacityMicromapBuilder</code> tracks which BLASes have attached micromaps and flags them for rebuild if their micromap data changes.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_shadow_shader_needs_one_small_addition"><a class="anchor" href="#_the_shadow_shader_needs_one_small_addition"></a>The Shadow Shader Needs One Small Addition</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here is nearly the elegant part. After all of this infrastructure work — the analysis, the classification, the GPU build, the BLAS attachment — the shadow shader requires only a single addition, not a logical rewrite.</p>
+</div>
+<div class="paragraph">
+<p>Under <code>VK_KHR_opacity_micromap</code>, a ray query shader must declare the <code>OpacityMicromapKHR</code> SPIR-V execution mode in order for the traversal hardware to apply the micromap optimization. In GLSL this is expressed as enabling <code>gl_EnableOpacityMicromapExt</code> via the <code>GLSL_EXT_opacity_micromap_ray_query_mode</code> extension — one line at the top of the shader file. Without it — when the acceleration structures contain opacity micromaps — the SPIR-V specification mandates <strong>undefined behavior</strong>, not a graceful fallback to the any-hit path. The rest of the shader is untouched: the calls to <code>rayQueryInitializeEXT</code>, <code>rayQueryProceedEXT</code>, and the standard query functions remain identical. The micromap is still transparent to the shader&#8217;s logic — the traversal hardware handles Opaque and Transparent micro-triangles before the shader layer is involved, and Unknown micro-triangles still invoke the any-hit shader through the same mechanism as before. The shader never learns whether a given intersection was resolved by the micromap or by the any-hit path. The single declaration is not a logic change; it is an opt-in that the KHR spec requires to ensure the shader&#8217;s author has considered the subtle traversal-order implications of micromap participation.</p>
+</div>
+<div class="paragraph">
+<p>Students should open <code>opacity_micromap_builder.cpp</code> in the <code>Courses/</code> folder to see the full implementation of the three phases, and look at the engine&#8217;s main initialization sequence in <code>simple_engine.cpp</code> to see where <code>OpacityMicromapBuilder::buildForScene()</code> is called. The integration is deliberately minimal — the builder is a self-contained utility that plugs into the existing scene loading pipeline without restructuring it.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_memory_and_object_lifetime"><a class="anchor" href="#_memory_and_object_lifetime"></a>Memory and Object Lifetime</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Every micromap <code>VkAccelerationStructureKHR</code> created by the builder is stored in a vector of owned handles alongside the backing device memory allocation. The builder provides a <code>releaseAll()</code> method that destroys all micromap acceleration structures and frees their device memory. This is called when the scene is unloaded or when the engine shuts down.</p>
+</div>
+<div class="paragraph">
+<p>The ordering requirement is strict: BLASes must be destroyed before the micromap acceleration structures they reference. Because micromaps in <code>VK_KHR_opacity_micromap</code> are standard <code>VkAccelerationStructureKHR</code> objects, there is no separate destroy command to learn — the same <code>vkDestroyAccelerationStructureKHR</code> call that tears down a BLAS also tears down a micromap. The BLAS always holds a live reference to its micromap; there is no concept of a discardable or optional micromap attachment in the KHR model. The engine&#8217;s teardown sequence respects this order, destroying all BLAS acceleration structures before calling <code>releaseAll()</code> on the micromaps. If you modify the engine&#8217;s shutdown sequence, preserve this ordering.</p>
+</div>
+<div class="paragraph">
+<p>For very large scenes with many distinct mesh types, micromap memory can add up. The <code>OpacityMicromapBuilder</code> includes a method to query the total micromap memory footprint, which can be used to implement a budget-based policy: if micromap memory exceeds a threshold, lower-priority submeshes (those with fewer shadow-casting triangles in view) can be built at lower subdivision levels or skipped entirely. The device&#8217;s reported <code>maxMicromapTriangles</code> property also informs the upper bound on what can be built in a single micromap acceleration structure, and the builder respects this limit when deciding whether to split large meshes across multiple micromap objects.</p>
+</div>
+<hr>
+<div class="paragraph">
+<p><a href="04_hardware_traversal_with_omm.html" class="xref page">Previous: Inside the Traversal: How the GPU Uses Your Micromap</a> | <a href="06_results_guidance_and_tradeoffs.html" class="xref page">Next: Seeing the Difference and Knowing When to Use It</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../../_/js/site.js" data-ui-root-path="../../../../../_"></script>
+<script async src="../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../.." data-snippet-length="100" data-stylesheet="../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

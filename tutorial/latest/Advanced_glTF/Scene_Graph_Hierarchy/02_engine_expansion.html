@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>The Engine Expansion: Optimizing the Scene Graph :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:tutorial" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<!-- antora-static-nav --><script src="../../_static_nav.js"></script><script>window.__antoraStaticNav&&window.__antoraStaticNav("../../");!function(){var f="../../Advanced_glTF/Scene_Graph_Hierarchy/02_engine_expansion.html",ls=document.querySelectorAll('.nav-link[href]');for(var i=0;i<ls.length;i++){if(ls[i].getAttribute('href')===f){var li=ls[i].closest('li');if(li){li.classList.add('is-current-page');break;}}}}();</script>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../00_Introduction.html">Khronos Vulkan Tutorial</a></li>
+    <li>Advanced glTF: High-Performance Character Pipelines</li>
+    <li>Scene Graph &amp; Transform Hierarchy</li>
+    <li><a href="02_engine_expansion.html">Engine expansion</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">The Engine Expansion: Optimizing the Scene Graph</h1>
+<div class="sect1">
+<h2 id="_from_simple_instances_to_a_global_hierarchy"><a class="anchor" href="#_from_simple_instances_to_a_global_hierarchy"></a>From Simple Instances to a Global Hierarchy</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>In the "Building a Simple Engine" series, we managed our world objects using a straightforward <code>ObjectInstance</code> vector. Each object had its own position, rotation, and scale, and we rendered them one by one:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct ObjectInstance {
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::vec3 scale;
+    // ...
+};
+std::vector&lt;ObjectInstance&gt; objectInstances;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This approach is perfect for learning the basics of Vulkan, but it creates what we call a <strong>"Shallow World."</strong> In this model, every object is independent. While a model inside an instance could have its own internal glTF hierarchy, the objects in the world couldn&#8217;t easily interact with each other.</p>
+</div>
+<div class="paragraph">
+<p>As we move into advanced character animation, this "shallow" architecture becomes a major roadblock. Imagine a character holding a sword. In a shallow world, the sword and the character are two separate entities. If the character&#8217;s hand moves, we have to manually calculate where the sword should be every single frame. This becomes exponentially more difficult when you add holsters, shields, or even multiple characters riding on a moving vehicle.</p>
+</div>
+<div class="paragraph">
+<p>To solve this, we must replace our flat list with a <strong>Unified Scene Graph</strong>. In this system, every entity in our engine—whether it&#8217;s a character&#8217;s pelvis bone, a sword, or a massive elevator—is a <strong>Node</strong> in a single, global hierarchy. By giving every node an optional <code>parent_index</code>, we allow any object to be attached to any other object. When the parent moves, the children follow automatically.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_performance_barrier_redundant_computation"><a class="anchor" href="#_the_performance_barrier_redundant_computation"></a>The Performance Barrier: Redundant Computation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>While a recursive hierarchy is architecturally elegant, it introduces a significant performance challenge. In a traditional scene graph, calculating a node&#8217;s "World Matrix" (its final position in the 3D world) requires multiplying its local transform by its parent&#8217;s world matrix:</p>
+</div>
+<div class="paragraph">
+<p><code>WorldMatrix = ParentWorldMatrix * LocalMatrix</code></p>
+</div>
+<div class="paragraph">
+<p>In a complex character with a 200-bone skeleton, calculating the world-space position of a fingertip requires traversing the entire hierarchy from the pelvis, through the spine, shoulder, arm, and wrist. If we perform this calculation for every bone, every single frame, we waste a massive amount of CPU cycles—especially if the character isn&#8217;t even moving!</p>
+</div>
+<div class="paragraph">
+<p>To achieve professional-grade performance, we will implement the <strong>Dirty Flag Pattern</strong>.</p>
+</div>
+<div class="sect2">
+<h3 id="_understanding_the_dirty_flag"><a class="anchor" href="#_understanding_the_dirty_flag"></a>Understanding the Dirty Flag</h3>
+<div class="paragraph">
+<p>A "Dirty Flag" is a simple but powerful optimization. Instead of blindly recalculating matrices every frame, we add a small "status" variable to each node. When we change a node&#8217;s position, we mark it as <strong>"Dirty."</strong></p>
+</div>
+<div class="paragraph">
+<p>We then only perform the expensive matrix multiplications if a node (or its parent) is dirty. If a node is <strong>"Clean,"</strong> we simply reuse the world matrix we calculated in the previous frame.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">static constexpr uint32_t INVALID_NODE_INDEX = 0xFFFFFFFF;
+
+enum TransformStatus : uint8_t {
+    Clean = 0,
+    LocalDirty = 1 &lt;&lt; 0,  // This node's position/rotation/scale changed
+    WorldDirty = 1 &lt;&lt; 1   // This node's world matrix needs recalculation
+};
+
+struct ColliderDef {
+    enum class Shape { CAPSULE, BOX, NONE };
+    Shape shape     = Shape::NONE;
+    float radius    = 0.0f;
+    float half_height = 0.0f;
+    glm::vec3 box_half_extents = {0,0,0};
+    float mass      = 1.0f;
+    std::string collision_group;
+    std::string collision_mask;
+};
+
+struct ConstraintDef {
+    enum class Type { NONE, BALL_SOCKET, HINGE };
+    Type        type              = Type::NONE;
+    float       swing_limit_deg   = 180.0f;
+    float       twist_limit_deg   = 180.0f;
+    float       hinge_min_deg     = -180.0f;
+    float       hinge_max_deg     =  180.0f;
+    glm::vec3   hinge_axis        = {0,0,1};
+    std::string parent_bone;
+};
+
+struct Node {
+    uint32_t node_index;
+    uint32_t parent_index = INVALID_NODE_INDEX;
+    std::vector&lt;uint32_t&gt; child_indices;
+    std::string name;
+
+    // Local transform data (SRT: Scale, Rotation, Translation)
+    glm::vec3 translation    = {0,0,0};
+    glm::quat local_rotation = glm::identity&lt;glm::quat&gt;();
+    glm::vec3 scale          = {1,1,1};
+
+    // Cached world matrix - we only update this when dirty!
+    glm::mat4 world_matrix = glm::mat4(1.0f);
+
+    uint8_t status = TransformStatus::Clean;
+    bool is_joint = false;
+
+    // Physics metadata (extracted from glTF extras)
+    ColliderDef collider_def;
+    ConstraintDef constraint_def;
+
+    // Call this whenever you change translation, rotation, or scale
+    void mark_dirty() {
+        status |= TransformStatus::LocalDirty | TransformStatus::WorldDirty;
+    }
+
+    // Computes the local transform matrix from SRT components.
+    // The order is TRS (Translation * Rotation * Scale).
+    glm::mat4 get_local_matrix() const {
+        return glm::translate(glm::mat4(1.0f), translation) *
+               glm::mat4_cast(local_rotation) *
+               glm::scale(glm::mat4(1.0f), scale);
+    }
+
+    // Safely extracts rotation from the world matrix, stripping any scale.
+    glm::quat get_world_rotation() const {
+        glm::mat3 rot_scale = glm::mat3(world_matrix);
+        glm::mat3 rotation;
+        // We must normalize the axes to remove scale before converting to a quaternion,
+        // otherwise non-uniform scaling will corrupt the rotation data.
+        rotation[0] = glm::normalize(rot_scale[0]);
+        rotation[1] = glm::normalize(rot_scale[1]);
+        rotation[2] = glm::normalize(rot_scale[2]);
+        return glm::quat_cast(rotation);
+    }
+};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This optimization is the difference between an engine that chokes on a few animated characters and one that can handle a whole crowd. By tracking the "dirtiness" of our transforms, we ensure that static environmental objects—which make up the bulk of most scenes—consume almost zero CPU time for transform updates.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_cache_friendly_memory_data_oriented_design_dod"><a class="anchor" href="#_cache_friendly_memory_data_oriented_design_dod"></a>Cache-Friendly Memory: Data-Oriented Design (DOD)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>How we store these nodes in memory is just as important as the math we use to update them. Traditional scene graphs often use pointers (e.g., <code>std::vector&lt;Node*&gt; children</code>), which leads to <strong>"Pointer Chasing."</strong> When the CPU tries to update the hierarchy, it has to jump to different, unpredictable locations in memory to find each child node. This "random access" is incredibly slow because it misses the CPU&#8217;s high-speed cache.</p>
+</div>
+<div class="paragraph">
+<p>To maximize performance, we will store all of our nodes in a <strong>Flat Data-Oriented Array</strong>. Instead of pointers, we use stable indices (<code>uint32_t</code>) to link parents and children.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">class SceneGraph {
+public:
+    std::vector&lt;Node&gt; nodes;
+
+    // Linear update: Only works if nodes are topologically sorted (parent before children)
+    void update_transforms() {
+        for (auto&amp; node : nodes) {
+            if (node.status &amp; TransformStatus::WorldDirty) {
+                if (node.parent_index != INVALID_NODE_INDEX) {
+                    node.world_matrix = nodes[node.parent_index].world_matrix * node.get_local_matrix();
+                } else {
+                    node.world_matrix = node.get_local_matrix();
+                }
+
+                for (uint32_t child_index : node.child_indices) {
+                    nodes[child_index].status |= TransformStatus::WorldDirty;
+                }
+                node.status = TransformStatus::Clean;
+            }
+        }
+    }
+
+    // Recursive update: Correctly handles any node order and sub-tree updates
+    void update_world_matrices_subtree(uint32_t index) {
+        Node&amp; node = nodes[index];
+
+        if (node.parent_index != INVALID_NODE_INDEX) {
+            node.world_matrix = nodes[node.parent_index].world_matrix * node.get_local_matrix();
+        } else {
+            node.world_matrix = node.get_local_matrix();
+        }
+
+        for (uint32_t child_idx : node.child_indices) {
+            // We force WorldDirty on children because their parent's matrix just changed
+            nodes[child_idx].status |= TransformStatus::WorldDirty;
+            update_world_matrices_subtree(child_idx);
+        }
+
+        node.status = TransformStatus::Clean;
+    }
+};</code></pre>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_importance_of_order_topological_sorting"><a class="anchor" href="#_the_importance_of_order_topological_sorting"></a>The Importance of Order: Topological Sorting</h3>
+<div class="paragraph">
+<p>There is a subtle but critical detail in the loop above. For the "parent-to-child" update to work correctly in a single pass, a parent node must <strong>always</strong> appear in the array before its children.</p>
+</div>
+<div class="paragraph">
+<p>If the pelvis bone is at index 0 and the thigh bone is at index 50, the pelvis will be updated first, its <code>world_matrix</code> will be ready, and its "dirty" state will be passed to the thigh. If the order were reversed, the thigh would try to update using the <strong>old</strong> pelvis matrix from the previous frame, leading to a "jittering" effect where the character&#8217;s limbs appear to lag behind their bodies.</p>
+</div>
+<div class="paragraph">
+<p>Ensuring this order is called a <strong>Topological Sort</strong>. By maintaining this specific order in our flat array, we allow the CPU to linearly prefetch node data, resulting in extremely fast, cache-friendly updates that can handle thousands of nodes in a fraction of a millisecond.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_preparing_for_the_character_pipeline"><a class="anchor" href="#_preparing_for_the_character_pipeline"></a>Preparing for the Character Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This engine expansion isn&#8217;t just about rendering performance; it&#8217;s about architectural readiness. By implementing a unified, dirty-flag-driven scene graph, we&#8217;ve prepared the ground for several advanced features we&#8217;ll implement later:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Skeletal Animation</strong>: Our bones will simply be nodes in this hierarchy.</p>
+</li>
+<li>
+<p><strong>Physics Syncing</strong>: We&#8217;ll attach physics rigid bodies to specific nodes. When a node&#8217;s <code>world_matrix</code> becomes dirty, we&#8217;ll know exactly when to update the physics proxy.</p>
+</li>
+<li>
+<p><strong>Ray Tracing (RTAS)</strong>: Building Acceleration Structures for ray tracing is expensive. Our dirty flags will tell us exactly which BLAS (Bottom-Level Acceleration Structure) needs to be rebuilt because an object moved.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s now move to the next section and look at how we link this visual hierarchy to our physics simulation.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_migrating_from_the_simple_engine"><a class="anchor" href="#_migrating_from_the_simple_engine"></a>Migrating from the Simple Engine</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>If you are coming from the "Building a Simple Engine" series, you likely have a collection of <code>ObjectInstance</code> structs. Transitioning to a unified Scene Graph is a major architectural shift. Here is a migration checklist:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Switch from Pointers to Indices</strong>: Replace any <code>Node*</code> or <code>Entity*</code> references with <code>uint32_t</code> indices into a global <code>std::vector&lt;Node&gt;</code>.</p>
+</li>
+<li>
+<p><strong>Unify the Storage</strong>: Instead of each <code>Model</code> owning its own internal node hierarchy, load all glTF nodes directly into the global <code>SceneGraph</code>.</p>
+</li>
+<li>
+<p><strong>Adopt the Dirty Flag</strong>: Remove any per-frame <code>Parent * Local</code> matrix math from your render loop. Instead, call <code>update_transforms()</code> once at the start of your frame.</p>
+</li>
+<li>
+<p><strong>Topological Sorting</strong>: When loading a glTF, ensure you add nodes to the <code>std::vector</code> in an order where parents always precede their children. This allows the high-speed linear update loop to function correctly.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>By making these changes, you move from a collection of independent objects to a cohesive world where every element can react to its parents, setting the stage for complex character interactions.</p>
+</div>
+<div class="paragraph">
+<p><a href="01_introduction.html" class="xref page">Previous: Introduction</a> | <a href="03_physics_syncing.html" class="xref page">Next: Physics Syncing</a></p>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../_/js/site.js" data-ui-root-path="../../../../_"></script>
+<script async src="../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../.." data-snippet-length="100" data-stylesheet="../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>
