@@ -3,8 +3,8 @@
   'use strict'
 
   function parseMultilang (text) {
-    const startRe = /^\s*\/\/\s*START\s+([A-Za-z0-9_-]+)/i
-    const endRe = /^\s*\/\/\s*END\s+([A-Za-z0-9_-]+)/i
+    const startRe = /^\s*\/\/\s*START\s+([A-Za-z0-9_+#-]+)/i
+    const endRe = /^\s*\/\/\s*END\s+([A-Za-z0-9_+#-]+)/i
     const lines = text.replace(/\r\n?/g, '\n').split('\n')
     const blocks = {}
     const order = []
@@ -151,7 +151,7 @@
       var pre = code.parentNode
       // only process if language is marked as multilang or content contains markers
       var isMulti = (code.getAttribute('data-lang') || '').toLowerCase() === 'multilang' ||
-        /\n\s*\/\/\s*START\s+[A-Za-z0-9_-]+/i.test(code.textContent)
+        /\n\s*\/\/\s*START\s+[A-Za-z0-9_+#-]+/i.test(code.textContent)
       if (!isMulti) return
       try { enhanceMultilangBlock(pre, code) } catch (e) { /* fail-safe */ }
     })
