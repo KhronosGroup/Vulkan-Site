@@ -1034,6 +1034,16 @@
   exports.bootstrap = bootstrap;
   exports.initSearch = initSearch;
 
+  // Exported for unit testing (see test/search-ui.test.js). Pure functions only -
+  // no DOM/browser globals - safe to call directly in Node.
+  exports.buildHighlightedText = buildHighlightedText;
+  exports.getTermPosition = getTermPosition;
+  exports.findTermPosition = findTermPosition;
+  exports.search = search;
+  exports.filter = filter;
+  exports.highlightHit = highlightHit;
+  exports.highlightText = highlightText;
+
   Object.defineProperty(exports, '__esModule', { value: true });
 
 }));
