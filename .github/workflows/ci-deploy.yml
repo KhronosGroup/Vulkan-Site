@@ -1,0 +1,257 @@
+# Copyright 2021-2026 The Khronos Group, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Deploys the site built by ci.yml. This runs via `workflow_run`, which always
+# executes the workflow file from the base branch (never a fork's version) and
+# is the standard safe pattern for handling PRs from forks: the untrusted build
+# in ci.yml runs with no secrets, and only this trusted job - which never
+# checks out or executes fork code - gets write-scoped secrets.
+
+name: CI Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ci-deploy-${{ github.event.workflow_run.head_branch }}
+      cancel-in-progress: true
+    permissions:
+      contents: write
+      pull-requests: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: "Download deploy metadata"
+        uses: actions/download-artifact@v8
+        with:
+          name: deploy-metadata
+          path: deploy-metadata
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Read deploy metadata"
+        id: meta
+        run: |
+          set -euo pipefail
+          IS_PR=$(jq -r '.is_pr' deploy-metadata/metadata.json)
+          PR_NUM=$(jq -r '.pr_num' deploy-metadata/metadata.json)
+          PR_URL=$(jq -r '.pr_url' deploy-metadata/metadata.json)
+          PUBLISH_LOCAL=$(jq -r '.publish_local' deploy-metadata/metadata.json)
+          echo "is_pr=${IS_PR}" >> "$GITHUB_OUTPUT"
+          echo "pr_num=${PR_NUM}" >> "$GITHUB_OUTPUT"
+          echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
+          echo "publish_local=${PUBLISH_LOCAL}" >> "$GITHUB_OUTPUT"
+
+      - name: "Download site artifact"
+        if: steps.meta.outputs.publish_local == 'true'
+        uses: actions/download-artifact@v8
+        with:
+          name: fullSite
+          path: docs-site/build
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Checkout gh-pages for staging"
+        if: steps.meta.outputs.publish_local == 'true'
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          path: public-site
+          fetch-depth: 1
+
+      - name: Stage deployment
+        if: steps.meta.outputs.publish_local == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_PR: ${{ steps.meta.outputs.is_pr }}
+          PR_NUM: ${{ steps.meta.outputs.pr_num }}
+        run: |
+          set -euo pipefail
+
+          # Defense in depth: strip any Assets/assets dirs the builder may have emitted.
+          find docs-site/build/site -type d \( -name "Assets" -o -name "assets" \) -exec rm -rf {} + || true
+          touch docs-site/build/site/.nojekyll
+
+          find docs-site/build/site -type f \( \
+            -name '*.zip' -o -name '*.tar.gz' -o -name '*.pdf' -o \
+            -name '*.mp4' -o -name '*.mov' -o -name '*.whl' -o \
+            -name '*.nupkg' -o -name '*.tgz' -o -name '*.so' -o \
+            -name '*.so.*' -o -name '*.exe' -o -name '*.bin' -o \
+            -name '*.tar.xz' -o -name '*.onnx' -o -name '*.onnx.*' -o \
+            -name '*.pth' -o -name '*.vmfb' -o -name '*.mlir' -o \
+            -name '*.a' -o -name '*.lib' -o -name '*.dll' -o \
+            -name '*.node' -o -name '*.pyc' \
+          \) -delete || true
+          for _d in venv node_modules third_party cmake-build-debug lib ort_gpu build_integration_test __pycache__; do
+            find docs-site/build/site -type d -name "$_d" -prune -exec rm -rf {} + || true
+          done
+
+          # 1) Update the gh-pages checkout with the freshly built content.
+          if [[ "$IS_PR" == "true" ]]; then
+            TARGET_DIR="public-site/PR-${PR_NUM}"
+            echo "Staging preview for PR ${PR_NUM} in ${TARGET_DIR}"
+            mkdir -p "$TARGET_DIR"
+            rsync -a --delete docs-site/build/site/ "$TARGET_DIR/"
+          else
+            echo "Staging main site (preserving PR-* previews on gh-pages)"
+            rsync -a --delete --exclude='PR-*' --exclude='.git' docs-site/build/site/ public-site/
+            touch public-site/.nojekyll
+          fi
+
+          # 2) Prune PR-* folders whose PR is no longer open. When a PR is merged
+          #    or closed, pr-cleanup.yml also removes its folder, but this acts
+          #    as a safety net and keeps the artifact from carrying stale PRs.
+          if command -v gh >/dev/null 2>&1; then
+            OPEN_PRS=$(gh pr list --repo "${{ github.repository }}" --state open \
+              --json number --jq '.[].number' 2>/dev/null || echo "")
+            if [ -n "${OPEN_PRS}" ]; then
+              OPEN_SET=" $(echo "$OPEN_PRS" | tr '\n' ' ') "
+              for d in public-site/PR-*; do
+                [ -d "$d" ] || continue
+                n="${d##*/PR-}"
+                if ! echo "$OPEN_SET" | grep -q " ${n} "; then
+                  # Keep the PR currently being built, just in case.
+                  if [[ "$IS_PR" == "true" && "$n" == "${PR_NUM}" ]]; then continue; fi
+                  echo "Pruning closed PR folder: $d"
+                  rm -rf "$d"
+                fi
+              done
+            fi
+          fi
+
+          # 3) Build the Pages artifact payload from the full gh-pages tree
+          #    (main site + all still-open PR previews), then deduplicate in a
+          #    tar-safe way (symlinks/hardlinks are dereferenced by
+          #    upload-pages-artifact, so we use HTML redirect stubs + binary
+          #    reference rewriting instead).
+          rm -rf pages-artifact
+          mkdir -p pages-artifact
+          rsync -a --exclude='.git' public-site/ pages-artifact/
+          touch pages-artifact/.nojekyll
+
+          echo "Artifact size before dedup:"
+          du -sh pages-artifact || true
+
+          if [ "${IS_PR}" = "true" ]; then
+            python3 docs-site/economize_preview.py \
+              --site "pages-artifact/PR-${PR_NUM}" \
+              --base pages-artifact \
+              --stub-dirs refpages
+          fi
+          # Main-site builds skip dedup: the base IS the artifact root.
+
+          echo "Artifact size after dedup:"
+          du -sh pages-artifact || true
+
+      - name: "Remove stale pages artifact (re-run safety)"
+        if: steps.meta.outputs.publish_local == 'true'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+              name: 'github-pages'
+            });
+            for (const a of artifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: a.id
+              });
+              core.info(`Deleted stale github-pages artifact ${a.id}`);
+            }
+
+      - name: "Upload Pages Artifact"
+        if: steps.meta.outputs.publish_local == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages-artifact
+
+      - name: "Deploy to GitHub Pages"
+        if: steps.meta.outputs.publish_local == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: "Verify deployment is live"
+        if: steps.meta.outputs.publish_local == 'true'
+        run: |
+          set -euo pipefail
+          URL="${{ steps.deployment.outputs.page_url }}"
+          IS_PR="${{ steps.meta.outputs.is_pr }}"
+          PR_NUM="${{ steps.meta.outputs.pr_num }}"
+          if [ "${IS_PR}" = "true" ]; then
+            URL="${URL%/}/PR-${PR_NUM}/"
+          fi
+          echo "Checking ${URL} ..."
+          for i in $(seq 1 10); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' -L "$URL")
+            if [ "$CODE" = "200" ]; then
+              echo "Deployment verified live at ${URL}"
+              exit 0
+            fi
+            echo "Attempt $i: got HTTP ${CODE}, retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Pages deployment reported success but ${URL} is not serving HTTP 200 (last status: ${CODE})"
+          exit 1
+
+      - name: "Push changes to gh-pages branch"
+        if: steps.meta.outputs.publish_local == 'true'
+        run: |
+          cd public-site
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          IS_PR="${{ steps.meta.outputs.is_pr }}"
+          PR_NUM="${{ steps.meta.outputs.pr_num }}"
+          BUILD="$GITHUB_WORKSPACE/pages-artifact"
+          # Always create a parentless commit so gh-pages never accumulates history.
+          # Retry up to 3 times: fetch latest remote state, re-apply our changes,
+          # and force-push with --force-with-lease to avoid clobbering concurrent runs.
+          for attempt in 1 2 3; do
+            git fetch origin gh-pages
+            git reset --hard origin/gh-pages
+            if [ "${IS_PR}" = "true" ]; then
+              rsync -a --delete "${BUILD}/PR-${PR_NUM}/" "PR-${PR_NUM}/"
+            else
+              rsync -a --delete --exclude='PR-*' --exclude='.git' "${BUILD}/" ./
+              touch .nojekyll
+            fi
+            git add -A
+            TREE=$(git write-tree)
+            COMMIT=$(git commit-tree "$TREE" -m "Update site [skip ci]")
+            EXPECTED=$(git rev-parse origin/gh-pages)
+            git push origin "${COMMIT}:refs/heads/gh-pages" \
+              --force-with-lease="refs/heads/gh-pages:${EXPECTED}" && break
+            echo "Push attempt $attempt failed, retrying..."
+          done
+
+      - name: Comment on PR
+        if: steps.meta.outputs.is_pr == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ steps.meta.outputs.pr_url }}
+          PR_NUM: ${{ steps.meta.outputs.pr_num }}
+        run: |
+          set -euo pipefail
+          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${PR_NUM}/"
+          COMMENT_MARKER="<!-- preview-link-comment -->"
+          EXISTING_COMMENT=$(gh pr view "$PR_URL" --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id" || echo "")
+
+          if [ -n "$PR_URL" ] && [ -z "$EXISTING_COMMENT" ]; then
+            gh pr comment "$PR_URL" --body "$COMMENT_MARKER
+          Preview site published: $PREVIEW_URL"
+          fi
