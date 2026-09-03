@@ -53,10 +53,23 @@
     const positionsWithinRange = orderedPositions
       .filter((position) => position.start >= range.start && position.start + position.length <= range.end);
 
+    // Merge overlapping/adjacent positions (e.g. separate term matches for "spir" and
+    // "v" both landing inside "SPIR-V") so the same text isn't marked twice.
+    const mergedPositions = [];
     for (const position of positionsWithinRange) {
       const start = position.start;
-      const length = position.length;
-      const end = start + length;
+      const end = start + position.length;
+      const last = mergedPositions[mergedPositions.length - 1];
+      if (last && start <= last.end) {
+        last.end = Math.max(last.end, end);
+      } else {
+        mergedPositions.push({ start, end });
+      }
+    }
+
+    for (const position of mergedPositions) {
+      const start = position.start;
+      const end = position.end;
       if (lastEndPosition > 0) {
         // create text Node from the last end position to the start of the current position
         nodes.push({
@@ -1020,6 +1033,16 @@
 
   exports.bootstrap = bootstrap;
   exports.initSearch = initSearch;
+
+  // Exported for unit testing (see test/search-ui.test.js). Pure functions only -
+  // no DOM/browser globals - safe to call directly in Node.
+  exports.buildHighlightedText = buildHighlightedText;
+  exports.getTermPosition = getTermPosition;
+  exports.findTermPosition = findTermPosition;
+  exports.search = search;
+  exports.filter = filter;
+  exports.highlightHit = highlightHit;
+  exports.highlightText = highlightText;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
