@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Gaussian Splats Rendering in Vulkan: A Comprehensive Guide :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs" aria-label="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox" aria-label="Toggle color theme" title="Toggle color theme"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../api/swapchain_present_timing/README.html">Swapchain present timing</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/compute_shader_derivatives/README.html">Compute shader derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/descriptor_heap/README.html">Descriptor heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/device_fault/README.html">Device Fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_density_map/README.html">Fragment density map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/pipeline_binary/README.html">Pipeline Binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/rasterization_order_attachment_access/README.html">Rasterization order attachment access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_invocation_reorder/README.html">Ray tracing invocation reorder (SER)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_quad_control/README.html">Shader quad control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/layer_settings/README.html">Layer settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_relaxed_extended_instruction/README.html">Shader relaxed extended instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/README.html">Tensor and Data Graph</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/simple_tensor_and_data_graph/README.html">Simple Tensor and Data Graph</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/graph_constants/README.html">Graph constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/compute_shaders_with_tensors/README.html">Compute shaders with tensors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/tensor_image_aliasing/README.html">Tensor image aliasing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/postprocessing_with_vgf/README.html">Postprocessing with VGF</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../README.html">Complex Samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Gausssian Splat and Octomap Rendering</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="capturing-gaussian-splats.html">Capturing Gaussian Splats</a>
+  </li>
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="gaussian-splats-rendering.html">Rendering Gaussian Splats</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Samples" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../glslext/latest/glslext/index.html">OpenGL Shading Language Extensions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../glslext/latest/glslext/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../../README.html">Complex Samples</a></li>
+    <li><a href="../README.html">Gausssian Splat and Octomap Rendering</a></li>
+    <li><a href="gaussian-splats-rendering.html">Rendering Gaussian Splats</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Gaussian Splats Rendering in Vulkan: A Comprehensive Guide</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_what_are_gaussian_splats">2. What are Gaussian Splats?</a>
+<ul class="sectlevel2">
+<li><a href="#_the_math_behind_the_blobs">2.1. The Math Behind the Blobs</a></li>
+<li><a href="#_what_goes_into_each_splat">2.2. What Goes Into Each Splat?</a></li>
+<li><a href="#_why_gaussians_work_so_well">2.3. Why Gaussians Work So Well</a></li>
+<li><a href="#_how_do_they_compare_to_other_techniques">2.4. How Do They Compare to Other Techniques?</a></li>
+</ul>
+</li>
+<li><a href="#_storing_splats_in_gltf_files">3. Storing Splats in GLTF Files</a>
+<ul class="sectlevel2">
+<li><a href="#_the_practical_impact">3.1. The Practical Impact</a></li>
+<li><a href="#_extension_structure">3.2. Extension Structure</a></li>
+<li><a href="#_attribute_accessors">3.3. Attribute Accessors</a></li>
+<li><a href="#_extension_properties">3.4. Extension Properties</a></li>
+</ul>
+</li>
+<li><a href="#_the_compression_problem_and_solution">4. The Compression Problem (And Solution)</a>
+<ul class="sectlevel2">
+<li><a href="#_storage_requirements_without_compression">4.1. Storage Requirements Without Compression</a></li>
+<li><a href="#_how_quantization_saves_the_day">4.2. How Quantization Saves the Day</a>
+<ul class="sectlevel3">
+<li><a href="#_compressing_positions">4.2.1. Compressing Positions</a></li>
+<li><a href="#_compressing_rotations">4.2.2. Compressing Rotations</a></li>
+<li><a href="#_compressing_scales">4.2.3. Compressing Scales</a></li>
+<li><a href="#_compressing_opacity_and_color">4.2.4. Compressing Opacity and Color</a></li>
+</ul>
+</li>
+<li><a href="#_compression_ratios_in_practice">4.3. Compression Ratios in Practice</a></li>
+<li><a href="#_spz_compression_the_official_standard">4.4. SPZ Compression: The Official Standard</a>
+<ul class="sectlevel3">
+<li><a href="#_how_spz_works">4.4.1. How SPZ Works</a></li>
+<li><a href="#_the_practical_impact_2">4.4.2. The Practical Impact</a></li>
+<li><a href="#_graceful_degradation">4.4.3. Graceful Degradation</a></li>
+<li><a href="#_base_extension_vs_compression_extension">4.4.4. Base Extension vs Compression Extension</a></li>
+</ul>
+</li>
+<li><a href="#_additional_compression_techniques">4.5. Additional Compression Techniques</a>
+<ul class="sectlevel3">
+<li><a href="#_1_mesh_compression_standards">4.5.1. 1. Mesh Compression Standards</a></li>
+<li><a href="#_2_container_level_compression">4.5.2. 2. Container-Level Compression</a></li>
+</ul>
+</li>
+<li><a href="#_gltf_structure_with_spz_compression">4.6. GLTF Structure with SPZ Compression</a></li>
+</ul>
+</li>
+<li><a href="#_framework_integration">5. Framework Integration</a>
+<ul class="sectlevel2">
+<li><a href="#_splatinstance_layout">5.1. SplatInstance Layout</a></li>
+<li><a href="#_gltf_loader_extension">5.2. GLTF Loader Extension</a></li>
+</ul>
+</li>
+<li><a href="#_reading_gaussian_splats_from_gltf">6. Reading Gaussian Splats from GLTF</a>
+<ul class="sectlevel2">
+<li><a href="#_step_1_detecting_gaussian_splat_data">6.1. Step 1: Detecting Gaussian Splat Data</a></li>
+<li><a href="#_step_2_extracting_extension_data">6.2. Step 2: Extracting Extension Data</a></li>
+<li><a href="#_step_3_reading_buffer_data">6.3. Step 3: Reading Buffer Data</a></li>
+<li><a href="#_step_4_creating_gpu_buffers">6.4. Step 4: Creating GPU Buffers</a></li>
+<li><a href="#_step_5_handling_quantized_data">6.5. Step 5: Handling Quantized Data</a></li>
+<li><a href="#_complete_loading_example">6.6. Complete Loading Example</a></li>
+<li><a href="#_error_handling_and_validation">6.7. Error Handling and Validation</a></li>
+</ul>
+</li>
+<li><a href="#_rendering_gaussian_splats">7. Rendering Gaussian Splats</a>
+<ul class="sectlevel2">
+<li><a href="#_the_big_picture">7.1. The Big Picture</a></li>
+<li><a href="#_the_projection_math_dont_worry_ill_explain">7.2. The Projection Math (Don&#8217;t Worry, I&#8217;ll Explain)</a></li>
+<li><a href="#_the_vertex_shader_where_the_magic_happens">7.3. The Vertex Shader: Where the Magic Happens</a></li>
+<li><a href="#_the_fragment_shader_evaluating_the_gaussian">7.4. The Fragment Shader: Evaluating the Gaussian</a></li>
+<li><a href="#_premultiplied_alpha">7.5. Premultiplied Alpha</a></li>
+<li><a href="#_vulkan_pipeline_configuration">7.6. Vulkan Pipeline Configuration</a></li>
+<li><a href="#_drawing_gaussian_splats">7.7. Drawing Gaussian Splats</a></li>
+</ul>
+</li>
+<li><a href="#_depth_sorting">8. Depth Sorting</a>
+<ul class="sectlevel2">
+<li><a href="#_cpu_sorting">8.1. CPU Sorting</a></li>
+<li><a href="#_gpu_radix_sort">8.2. GPU Radix Sort</a></li>
+<li><a href="#_tile_based_sorting">8.3. Tile-Based Sorting</a></li>
+</ul>
+</li>
+<li><a href="#_performance_considerations">9. Performance Considerations</a>
+<ul class="sectlevel2">
+<li><a href="#_culling">9.1. Culling</a></li>
+<li><a href="#_level_of_detail">9.2. Level of Detail</a></li>
+<li><a href="#_memory_layout">9.3. Memory Layout</a></li>
+</ul>
+</li>
+<li><a href="#_sample_usage">10. Sample Usage</a></li>
+<li><a href="#_future_enhancements">11. Future Enhancements</a>
+<ul class="sectlevel2">
+<li><a href="#_spherical_harmonics">11.1. Spherical Harmonics</a></li>
+<li><a href="#_anti_aliasing">11.2. Anti-Aliasing</a></li>
+<li><a href="#_streaming">11.3. Streaming</a></li>
+</ul>
+</li>
+<li><a href="#_references">12. References</a>
+<ul class="sectlevel2">
+<li><a href="#_what_this_sample_demonstrates">12.1. What This Sample Demonstrates</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This tutorial demonstrates how to render 3D Gaussian Splats using Vulkan. Gaussian splatting is a novel approach to real-time radiance field rendering that represents scenes as collections of 3D Gaussians, enabling high-quality novel view synthesis at interactive frame rates.</p>
+</div>
+<div class="paragraph">
+<p>For background on the render_octomap sample and its SLAM context, see the <a href="../README.adoc">README</a>.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_are_gaussian_splats"><a class="anchor" href="#_what_are_gaussian_splats"></a>2. What are Gaussian Splats?</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Imagine you&#8217;re trying to capture a real-world scene - maybe a room in your house or an outdoor environment - and you want to render it back in 3D. Traditionally, you might create a mesh with triangles and textures. But what if the scene has complex geometry like plants, fur, or intricate details? Meshes become unwieldy, and you need thousands of triangles plus UV mapping.</p>
+</div>
+<div class="paragraph">
+<p>Enter Gaussian splats. Instead of triangles, think of the scene as being made up of thousands (or millions) of soft, fuzzy blobs floating in 3D space. Each blob is a 3D Gaussian - mathematically speaking, it&#8217;s that familiar bell curve from statistics, but extended into three dimensions. These Gaussians can be squashed, stretched, and rotated to match the shape of whatever they&#8217;re representing.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_math_behind_the_blobs"><a class="anchor" href="#_the_math_behind_the_blobs"></a>2.1. The Math Behind the Blobs</h3>
+<div class="paragraph">
+<p>Don&#8217;t worry - the math isn&#8217;t as scary as it looks. Each Gaussian is essentially defined by "where it is" and "what shape it has." The classic 3D Gaussian formula is:</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -0.566ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="24.007ex" height="2.884ex" role="img" focusable="false" viewBox="0 -1024.6 10610.9 1274.6"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D43A" d="M50 252Q50 367 117 473T286 641T490 704Q580 704 633 653Q642 643 648 636T656 626L657 623Q660 623 684 649Q691 655 699 663T715 679T725 690L740 705H746Q760 705 760 698Q760 694 728 561Q692 422 692 421Q690 416 687 415T669 413H653Q647 419 647 422Q647 423 648 429T650 449T651 481Q651 552 619 605T510 659Q492 659 471 656T418 643T357 615T294 567T236 496T189 394T158 260Q156 242 156 221Q156 173 170 136T206 79T256 45T308 28T353 24Q407 24 452 47T514 106Q517 114 529 161T541 214Q541 222 528 224T468 227H431Q425 233 425 235T427 254Q431 267 437 273H454Q494 271 594 271Q634 271 659 271T695 272T707 272Q721 272 721 263Q721 261 719 249Q714 230 709 228Q706 227 694 227Q674 227 653 224Q646 221 643 215T629 164Q620 131 614 108Q589 6 586 3Q584 1 581 1Q571 1 553 21T530 52Q530 53 528 52T522 47Q448 -22 322 -22Q201 -22 126 55T50 252Z"></path></g><g data-mml-node="mo" transform="translate(786,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(1175,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mo" transform="translate(1747,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="mo" transform="translate(2413.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="msup" transform="translate(3469.6,0)"><g data-mml-node="mi"><path data-c="1D452" d="M39 168Q39 225 58 272T107 350T174 402T244 433T307 442H310Q355 442 388 420T421 355Q421 265 310 237Q261 224 176 223Q139 223 138 221Q138 219 132 186T125 128Q125 81 146 54T209 26T302 45T394 111Q403 121 406 121Q410 121 419 112T429 98T420 82T390 55T344 24T281 -1T205 -11Q126 -11 83 42T39 168ZM373 353Q367 405 305 405Q272 405 244 391T199 357T170 316T154 280T149 261Q149 260 169 260Q282 260 327 284T373 353Z"></path></g><g data-mml-node="TeXAtom" transform="translate(499,413) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mo"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mfrac" transform="translate(778,0)"><g data-mml-node="mn" transform="translate(220,394) scale(0.707)"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path></g><g data-mml-node="mn" transform="translate(220,-345) scale(0.707)"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><rect width="553.6" height="60" x="120" y="220"></rect></g><g data-mml-node="mo" transform="translate(1571.6,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(1960.6,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mo" transform="translate(2532.6,0)"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mi" transform="translate(3310.6,0)"><path data-c="1D707" d="M58 -216Q44 -216 34 -208T23 -186Q23 -176 96 116T173 414Q186 442 219 442Q231 441 239 435T249 423T251 413Q251 401 220 279T187 142Q185 131 185 107V99Q185 26 252 26Q261 26 270 27T287 31T302 38T315 45T327 55T338 65T348 77T356 88T365 100L372 110L408 253Q444 395 448 404Q461 431 491 431Q504 431 512 424T523 412T525 402L449 84Q448 79 448 68Q448 43 455 35T476 26Q485 27 496 35Q517 55 537 131Q543 151 547 152Q549 153 557 153H561Q580 153 580 144Q580 138 575 117T555 63T523 13Q510 0 491 -8Q483 -10 467 -10Q446 -10 429 -4T402 11T385 29T376 44T374 51L368 45Q362 39 350 30T324 12T288 -4T246 -11Q199 -11 153 12L129 -85Q108 -167 104 -180T92 -202Q76 -216 58 -216Z"></path></g><g data-mml-node="msup" transform="translate(3913.6,0)"><g data-mml-node="mo"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g><g data-mml-node="mi" transform="translate(422,363) scale(0.707)"><path data-c="1D447" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path></g></g><g data-mml-node="msup" transform="translate(4883.4,0)"><g data-mml-node="mi"><path data-c="3A3" d="M666 247Q664 244 652 126T638 4V0H351Q131 0 95 0T57 5V6Q54 12 57 17L73 36Q89 54 121 90T182 159L305 299L56 644L55 658Q55 677 60 681Q63 683 351 683H638V679Q640 674 652 564T666 447V443H626V447Q618 505 604 543T559 605Q529 626 478 631T333 637H294H189L293 494Q314 465 345 422Q400 346 400 340Q400 338 399 337L154 57Q407 57 428 58Q476 60 508 68T551 83T575 103Q595 125 608 162T624 225L626 251H666V247Z"></path></g><g data-mml-node="TeXAtom" transform="translate(755,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mo"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mn" transform="translate(778,0)"><path data-c="31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path></g></g></g><g data-mml-node="mo" transform="translate(6592,0)"><path data-c="28" d="M94 250Q94 319 104 381T127 488T164 576T202 643T244 695T277 729T302 750H315H319Q333 750 333 741Q333 738 316 720T275 667T226 581T184 443T167 250T184 58T225 -81T274 -167T316 -220T333 -241Q333 -250 318 -250H315H302L274 -226Q180 -141 137 -14T94 250Z"></path></g><g data-mml-node="mi" transform="translate(6981,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mo" transform="translate(7553,0)"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mi" transform="translate(8331,0)"><path data-c="1D707" d="M58 -216Q44 -216 34 -208T23 -186Q23 -176 96 116T173 414Q186 442 219 442Q231 441 239 435T249 423T251 413Q251 401 220 279T187 142Q185 131 185 107V99Q185 26 252 26Q261 26 270 27T287 31T302 38T315 45T327 55T338 65T348 77T356 88T365 100L372 110L408 253Q444 395 448 404Q461 431 491 431Q504 431 512 424T523 412T525 402L449 84Q448 79 448 68Q448 43 455 35T476 26Q485 27 496 35Q517 55 537 131Q543 151 547 152Q549 153 557 153H561Q580 153 580 144Q580 138 575 117T555 63T523 13Q510 0 491 -8Q483 -10 467 -10Q446 -10 429 -4T402 11T385 29T376 44T374 51L368 45Q362 39 350 30T324 12T288 -4T246 -11Q199 -11 153 12L129 -85Q108 -167 104 -180T92 -202Q76 -216 58 -216Z"></path></g><g data-mml-node="mo" transform="translate(8934,0)"><path data-c="29" d="M60 749L64 750Q69 750 74 750H86L114 726Q208 641 251 514T294 250Q294 182 284 119T261 12T224 -76T186 -143T145 -194T113 -227T90 -246Q87 -249 86 -250H74Q66 -250 63 -250T58 -247T55 -238Q56 -237 66 -225Q221 -64 221 250T66 725Q56 737 55 738Q55 746 60 749Z"></path></g></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p>This basically says: the further you get from the center (<code>μ</code>), the more the value falls off, and the rate of falloff depends on the covariance matrix (<code>Σ</code>). The covariance matrix encodes both the size and orientation of the Gaussian.</p>
+</div>
+<div class="paragraph">
+<p>Now here&#8217;s the clever part: instead of storing that covariance matrix directly (which would be 9 numbers), we split it into rotation and scale. Think of it like describing an ellipsoid by saying "take a sphere, stretch it by these amounts along each axis, then rotate it." Mathematically:</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -0.186ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="13.748ex" height="2.203ex" role="img" focusable="false" viewBox="0 -891.7 6076.8 973.7"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="3A3" d="M666 247Q664 244 652 126T638 4V0H351Q131 0 95 0T57 5V6Q54 12 57 17L73 36Q89 54 121 90T182 159L305 299L56 644L55 658Q55 677 60 681Q63 683 351 683H638V679Q640 674 652 564T666 447V443H626V447Q618 505 604 543T559 605Q529 626 478 631T333 637H294H189L293 494Q314 465 345 422Q400 346 400 340Q400 338 399 337L154 57Q407 57 428 58Q476 60 508 68T551 83T575 103Q595 125 608 162T624 225L626 251H666V247Z"></path></g><g data-mml-node="mo" transform="translate(999.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mi" transform="translate(2055.6,0)"><path data-c="1D445" d="M230 637Q203 637 198 638T193 649Q193 676 204 682Q206 683 378 683Q550 682 564 680Q620 672 658 652T712 606T733 563T739 529Q739 484 710 445T643 385T576 351T538 338L545 333Q612 295 612 223Q612 212 607 162T602 80V71Q602 53 603 43T614 25T640 16Q668 16 686 38T712 85Q717 99 720 102T735 105Q755 105 755 93Q755 75 731 36Q693 -21 641 -21H632Q571 -21 531 4T487 82Q487 109 502 166T517 239Q517 290 474 313Q459 320 449 321T378 323H309L277 193Q244 61 244 59Q244 55 245 54T252 50T269 48T302 46H333Q339 38 339 37T336 19Q332 6 326 0H311Q275 2 180 2Q146 2 117 2T71 2T50 1Q33 1 33 10Q33 12 36 24Q41 43 46 45Q50 46 61 46H67Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628Q287 635 230 637ZM630 554Q630 586 609 608T523 636Q521 636 500 636T462 637H440Q393 637 386 627Q385 624 352 494T319 361Q319 360 388 360Q466 361 492 367Q556 377 592 426Q608 449 619 486T630 554Z"></path></g><g data-mml-node="mi" transform="translate(2814.6,0)"><path data-c="1D446" d="M308 24Q367 24 416 76T466 197Q466 260 414 284Q308 311 278 321T236 341Q176 383 176 462Q176 523 208 573T273 648Q302 673 343 688T407 704H418H425Q521 704 564 640Q565 640 577 653T603 682T623 704Q624 704 627 704T632 705Q645 705 645 698T617 577T585 459T569 456Q549 456 549 465Q549 471 550 475Q550 478 551 494T553 520Q553 554 544 579T526 616T501 641Q465 662 419 662Q362 662 313 616T263 510Q263 480 278 458T319 427Q323 425 389 408T456 390Q490 379 522 342T554 242Q554 216 546 186Q541 164 528 137T492 78T426 18T332 -20Q320 -22 298 -22Q199 -22 144 33L134 44L106 13Q83 -14 78 -18T65 -22Q52 -22 52 -14Q52 -11 110 221Q112 227 130 227H143Q149 221 149 216Q149 214 148 207T144 186T142 153Q144 114 160 87T203 47T255 29T308 24Z"></path></g><g data-mml-node="msup" transform="translate(3459.6,0)"><g data-mml-node="mi"><path data-c="1D446" d="M308 24Q367 24 416 76T466 197Q466 260 414 284Q308 311 278 321T236 341Q176 383 176 462Q176 523 208 573T273 648Q302 673 343 688T407 704H418H425Q521 704 564 640Q565 640 577 653T603 682T623 704Q624 704 627 704T632 705Q645 705 645 698T617 577T585 459T569 456Q549 456 549 465Q549 471 550 475Q550 478 551 494T553 520Q553 554 544 579T526 616T501 641Q465 662 419 662Q362 662 313 616T263 510Q263 480 278 458T319 427Q323 425 389 408T456 390Q490 379 522 342T554 242Q554 216 546 186Q541 164 528 137T492 78T426 18T332 -20Q320 -22 298 -22Q199 -22 144 33L134 44L106 13Q83 -14 78 -18T65 -22Q52 -22 52 -14Q52 -11 110 221Q112 227 130 227H143Q149 221 149 216Q149 214 148 207T144 186T142 153Q144 114 160 87T203 47T255 29T308 24Z"></path></g><g data-mml-node="mi" transform="translate(729.6,413) scale(0.707)"><path data-c="1D447" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path></g></g><g data-mml-node="msup" transform="translate(4737,0)"><g data-mml-node="mi"><path data-c="1D445" d="M230 637Q203 637 198 638T193 649Q193 676 204 682Q206 683 378 683Q550 682 564 680Q620 672 658 652T712 606T733 563T739 529Q739 484 710 445T643 385T576 351T538 338L545 333Q612 295 612 223Q612 212 607 162T602 80V71Q602 53 603 43T614 25T640 16Q668 16 686 38T712 85Q717 99 720 102T735 105Q755 105 755 93Q755 75 731 36Q693 -21 641 -21H632Q571 -21 531 4T487 82Q487 109 502 166T517 239Q517 290 474 313Q459 320 449 321T378 323H309L277 193Q244 61 244 59Q244 55 245 54T252 50T269 48T302 46H333Q339 38 339 37T336 19Q332 6 326 0H311Q275 2 180 2Q146 2 117 2T71 2T50 1Q33 1 33 10Q33 12 36 24Q41 43 46 45Q50 46 61 46H67Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628Q287 635 230 637ZM630 554Q630 586 609 608T523 636Q521 636 500 636T462 637H440Q393 637 386 627Q385 624 352 494T319 361Q319 360 388 360Q466 361 492 367Q556 377 592 426Q608 449 619 486T630 554Z"></path></g><g data-mml-node="mi" transform="translate(792,413) scale(0.707)"><path data-c="1D447" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p>The rotation <code>R</code> orients the Gaussian in space (stored as a quaternion - 4 numbers), and the scale <code>S</code> determines how stretched it is along each axis (3 numbers). This decomposition makes Gaussians easy to manipulate: you can rotate them, scale them, and move them around independently.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_goes_into_each_splat"><a class="anchor" href="#_what_goes_into_each_splat"></a>2.2. What Goes Into Each Splat?</h3>
+<div class="paragraph">
+<p>So what data do we actually need to store for each of these fuzzy blobs? Let&#8217;s break it down:</p>
+</div>
+<div class="paragraph">
+<p>First, obviously, we need to know <strong>where</strong> it is in 3D space - that&#8217;s the position (x, y, z), which takes 12 bytes if we use 32-bit floats. Then we need to know <strong>how it&#8217;s oriented</strong> - that&#8217;s the rotation stored as a quaternion (4 values = 16 bytes). The <strong>size</strong> comes from the scale factors (3 values = 12 bytes). We also need to know how <strong>see-through</strong> it is, which is the opacity (1 value = 4 bytes).</p>
+</div>
+<div class="paragraph">
+<p>Finally, there&#8217;s color. The simplest approach is just RGB (3 values = 12 bytes), but here&#8217;s where things get interesting: you can instead store spherical harmonics coefficients. These are like a compact way of encoding how the color changes depending on which angle you&#8217;re viewing from - think of how real objects look different colors from different angles due to lighting. Full degree-3 spherical harmonics takes 48 float values (192 bytes), which is substantial but gives you view-dependent appearance for free.</p>
+</div>
+<div class="paragraph">
+<p>Add it all up: a simple RGB splat is 56 bytes, while one with full spherical harmonics is 236 bytes. Now multiply that by a million splats&#8230;&#8203; yeah, we&#8217;ll need to talk about compression later.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_why_gaussians_work_so_well"><a class="anchor" href="#_why_gaussians_work_so_well"></a>2.3. Why Gaussians Work So Well</h3>
+<div class="paragraph">
+<p>You might be wondering, "Why Gaussians specifically? Why not some other shape?" Great question. Gaussians have some special mathematical properties that make them perfect for this:</p>
+</div>
+<div class="paragraph">
+<p>They&#8217;re <strong>smooth and continuous</strong> - no hard edges means everything blends together naturally to create high-quality images. They&#8217;re <strong>differentiable everywhere</strong>, which means you can use gradient descent to optimize them (critical for training). They have a <strong>closed-form projection</strong> from 3D to 2D - we can mathematically project a 3D Gaussian onto the screen as a 2D Gaussian without approximation. They&#8217;re <strong>fast to evaluate</strong> - just an exponential function. And they naturally support <strong>alpha blending</strong> through the opacity value, so transparent objects just work.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_how_do_they_compare_to_other_techniques"><a class="anchor" href="#_how_do_they_compare_to_other_techniques"></a>2.4. How Do They Compare to Other Techniques?</h3>
+<div class="paragraph">
+<p>If you&#8217;ve worked with 3D rendering, you&#8217;re probably comparing Gaussian splats to techniques you already know. Let&#8217;s talk about how they stack up.</p>
+</div>
+<div class="paragraph">
+<p><strong>Versus NeRF (Neural Radiance Fields):</strong> NeRF was groundbreaking - it showed you could represent scenes as neural networks and get photorealistic results. But rendering a NeRF means ray marching through a neural network, which is slow. We&#8217;re talking seconds per frame. Gaussian splats flip this around: instead of a neural network, you have an explicit collection of Gaussians that you can rasterize directly on the GPU. This gets you from "seconds per frame" to "60+ frames per second." The downside? You&#8217;re storing more data (millions of splats vs. network weights), but with compression (coming up later), this becomes manageable. Plus, explicit splats are way easier to edit, manipulate, and stream than a neural network.</p>
+</div>
+<div class="paragraph">
+<p><strong>Versus Traditional Meshes:</strong> Meshes are great for engineered objects - cars, buildings, game characters. But try capturing a real-world scene with tons of fine detail like tree leaves, grass, or fuzzy surfaces. You&#8217;ll need millions of triangles, and you still won&#8217;t capture the subtle transparency and view-dependent effects naturally. Gaussian splats excel here: each splat can be transparent, and with spherical harmonics, the color automatically changes with viewing angle. No UV mapping, no texture atlases - the appearance is baked into the splats themselves.</p>
+</div>
+<div class="paragraph">
+<p><strong>Versus Point Clouds:</strong> Point clouds are simple - just a bunch of points in space with colors. But they have problems: zoom in and you see gaps between points; zoom out and you get aliasing. Gaussian splats solve both issues. Each "point" is actually a fuzzy blob that blends with its neighbors, so no gaps. The Gaussian falloff provides natural anti-aliasing. And because splats are oriented ellipsoids (not just spheres), they can represent surfaces more efficiently - one elongated splat can cover the area that would need many spherical points.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_storing_splats_in_gltf_files"><a class="anchor" href="#_storing_splats_in_gltf_files"></a>3. Storing Splats in GLTF Files</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Here&#8217;s the thing: having a cool rendering technique is great, but if nobody can share their work, it stays isolated. This is where the <code>KHR_gaussian_splatting</code> GLTF extension comes in, and it&#8217;s more important than you might think.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_practical_impact"><a class="anchor" href="#_the_practical_impact"></a>3.1. The Practical Impact</h3>
+<div class="paragraph">
+<p>Think about your workflow: you capture a scene, process it, and want to share it. With GLTF:</p>
+</div>
+<div class="paragraph">
+<p>You can upload it to a Vulkan application that streams the splats to the GPU progressively - load a low-detail version first, then stream in more detail as needed. You can import it into game engines for XR applications - imagine walking through a captured real-world environment in VR. Museums can archive cultural heritage scans in a format that won&#8217;t become obsolete. Film productions can use captured environments as background plates or reference geometry. All using standard tools and pipelines.</p>
+</div>
+<div class="paragraph">
+<p>And here&#8217;s a bonus: GLTF already has extensions for compression (<code>KHR_mesh_quantization</code>, <code>KHR_draco_mesh_compression</code>). These work with Gaussian splats too, which brings us to our next topic.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_extension_structure"><a class="anchor" href="#_extension_structure"></a>3.2. Extension Structure</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "extensionsUsed": ["KHR_gaussian_splatting"],
+  "meshes": [{
+    "name": "GaussianSplats",
+    "primitives": [{
+      "attributes": {
+        "POSITION": 0,
+        "KHR_gaussian_splatting:ROTATION": 1,
+        "KHR_gaussian_splatting:SCALE": 2,
+        "KHR_gaussian_splatting:OPACITY": 3,
+        "KHR_gaussian_splatting:SH_DEGREE_0_COEF_0": 4
+      },
+      "extensions": {
+        "KHR_gaussian_splatting": {
+          "kernel": "ellipse",
+          "colorSpace": "sRGB",
+          "antialiased": false,
+          "shDegree": 0
+        }
+      },
+      "mode": 0
+    }]
+  }]
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_attribute_accessors"><a class="anchor" href="#_attribute_accessors"></a>3.3. Attribute Accessors</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Attribute</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">POSITION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Splat center positions</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ROTATION</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Quaternion orientations</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SCALE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3D scale factors</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OPACITY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SCALAR</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Alpha values (0-1)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COLOR_0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">VEC3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RGB colors</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SH_DEGREE_0_COEF_0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MAT3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Spherical harmonics coefficients</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_extension_properties"><a class="anchor" href="#_extension_properties"></a>3.4. Extension Properties</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>antialiased</code>: Enable anti-aliasing filter</p>
+</li>
+<li>
+<p><code>colorSpace</code>: Color space ("BT.709-sRGB" or "linear")</p>
+</li>
+<li>
+<p><code>kernel</code>: Splat kernel type ("ellipse" or "sphere")</p>
+</li>
+<li>
+<p><code>shDegree</code>: Spherical harmonics degree (0-3)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_compression_problem_and_solution"><a class="anchor" href="#_the_compression_problem_and_solution"></a>4. The Compression Problem (And Solution)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Okay, let&#8217;s talk about the scary limiting factor: file size. Remember when we said a splat with spherical harmonics takes 236 bytes? And a typical scene has a million splats? Let&#8217;s do the math:</p>
+</div>
+<div class="paragraph">
+<p>1 million splats × 236 bytes = 236 megabytes. For a single room.</p>
+</div>
+<div class="paragraph">
+<p>5 million splats × 236 bytes = 1.18 gigabytes. For a larger scene.</p>
+</div>
+<div class="paragraph">
+<p>Now imagine trying to load that on a mobile device. Or stream it over a network. Or store thousands of these captures. The raw data sizes are simply not practical for real-world use. Compression isn&#8217;t a nice-to-have feature - it&#8217;s absolutely essential.</p>
+</div>
+<div class="sect2">
+<h3 id="_storage_requirements_without_compression"><a class="anchor" href="#_storage_requirements_without_compression"></a>4.1. Storage Requirements Without Compression</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Scene Size</th>
+<th class="tableblock halign-left valign-top">Splat Count</th>
+<th class="tableblock halign-left valign-top">Uncompressed Size (RGB)</th>
+<th class="tableblock halign-left valign-top">Uncompressed Size (SH Degree 3)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Small room</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">500,000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">28 MB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">118 MB</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Large room</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2,000,000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">112 MB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">472 MB</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Building floor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5,000,000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">280 MB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1.18 GB</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Outdoor scene</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">10,000,000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">560 MB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.36 GB</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_how_quantization_saves_the_day"><a class="anchor" href="#_how_quantization_saves_the_day"></a>4.2. How Quantization Saves the Day</h3>
+<div class="paragraph">
+<p>The good news? Gaussian splat data compresses really well, and the secret is quantization. Here&#8217;s the insight: do we <strong>really</strong> need 32-bit float precision for everything?</p>
+</div>
+<div class="paragraph">
+<p>Think about it: if a splat&#8217;s position is off by 0.0001 units, will anyone notice? If a rotation quaternion has a tiny error, will the visual result be different? Spoiler: usually not. Gaussian splat data has some properties that make it perfect for compression:</p>
+</div>
+<div class="paragraph">
+<p><strong>Spatial coherence</strong> - nearby splats tend to look similar. If you have 100 splats representing a wall, they probably have similar colors, scales, and orientations.</p>
+</div>
+<div class="paragraph">
+<p><strong>Perceptual tolerance</strong> - our eyes are forgiving. Small errors in rotation, position, or color get lost in the final blended image.</p>
+</div>
+<div class="paragraph">
+<p><strong>Redundancy</strong> - many splats share similar properties. Lots of splats might have the same opacity, or similar scales.</p>
+</div>
+<div class="paragraph">
+<p>So instead of using 32 bits per number, let&#8217;s see what happens when we use fewer bits&#8230;&#8203;</p>
+</div>
+<div class="sect3">
+<h4 id="_compressing_positions"><a class="anchor" href="#_compressing_positions"></a>4.2.1. Compressing Positions</h4>
+<div class="paragraph">
+<p>Let&#8217;s start with positions. Here&#8217;s a clever trick: instead of storing absolute world coordinates, we normalize them relative to the scene bounds. Say your scene extends from (0, 0, 0) to (10, 10, 10). We can express any position as a fraction from 0 to 1 along each axis:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Normalize position to [0, 1] range
+vec3 normalized = (position - scene_min) / (scene_max - scene_min);
+
+// Now instead of using floats, use 16-bit integers
+uint16_t x = (uint16_t)(normalized.x * 65535.0f);
+uint16_t y = (uint16_t)(normalized.y * 65535.0f);
+uint16_t z = (uint16_t)(normalized.z * 65535.0f);
+
+// We just went from 12 bytes to 6 bytes - that's 50% savings!</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>How much precision did we lose? A 16-bit integer gives you 65,536 steps. For a 10-meter room, that&#8217;s 0.15mm precision. Can your eye see a 0.15mm position error after everything is blended? Nope.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_compressing_rotations"><a class="anchor" href="#_compressing_rotations"></a>4.2.2. Compressing Rotations</h4>
+<div class="paragraph">
+<p>Rotations are trickier. A quaternion has 4 components, but here&#8217;s a mathematical fact: if you know 3 of them, you can calculate the 4th (since quaternions are normalized: x² + y² + z² + w² = 1). This gives us the "smallest-three" encoding:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Find the largest component (so we can reconstruct it accurately)
+int largest_idx = find_largest_component(quat);
+
+// Store only the other three
+vec3 smallest_three = extract_other_components(quat, largest_idx);
+
+// Quantize these to 16-bit integers (or 10-bit for more aggressive compression)
+int16_t q1 = (int16_t)(smallest_three.x * 32767.0f);
+int16_t q2 = (int16_t)(smallest_three.y * 32767.0f);
+int16_t q3 = (int16_t)(smallest_three.z * 32767.0f);
+
+// 16 bytes → 6 bytes (plus 2 bits to store which component we dropped)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>That&#8217;s a 62.5% reduction! The SPZ format in the official GLTF extension takes this further, using <strong>10-bit signed integers</strong> for each of the three components plus 2 bits for the index, fitting everything into just 32 bits total. This gives excellent precision while cutting storage to just 4 bytes per rotation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_compressing_scales"><a class="anchor" href="#_compressing_scales"></a>4.2.3. Compressing Scales</h4>
+<div class="paragraph">
+<p>Scale factors tend to cluster around certain ranges - most splats aren&#8217;t huge or tiny. But here&#8217;s the thing: scale values can vary by orders of magnitude (a splat might be 0.01 units or 10 units). If we quantize them linearly, we waste precision on large values and don&#8217;t have enough for small values.</p>
+</div>
+<div class="paragraph">
+<p>Solution? Logarithmic encoding. We store log₂(scale) instead of scale directly:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Take the log first (now our range is more uniform)
+vec3 log_scale = log2(scale);
+
+// Quantize to 16-bit (now we have good precision across the range)
+uint16_t sx = quantize_to_range(log_scale.x, -8.0f, 8.0f, 65535);
+uint16_t sy = quantize_to_range(log_scale.y, -8.0f, 8.0f, 65535);
+uint16_t sz = quantize_to_range(log_scale.z, -8.0f, 8.0f, 65535);
+
+// 12 bytes → 6 bytes, with better precision distribution</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_compressing_opacity_and_color"><a class="anchor" href="#_compressing_opacity_and_color"></a>4.2.4. Compressing Opacity and Color</h4>
+<div class="paragraph">
+<p>These are the easiest wins. Opacity is just a number from 0 to 1. Do we need float precision? Nope - 8 bits gives you 256 levels of transparency, which is way more than anyone can distinguish:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uint8_t opacity = (uint8_t)(opacity_float * 255.0f);
+// 4 bytes → 1 byte (75% reduction!)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Colors are similar. RGB with 32-bit floats? Overkill. Standard 8-bit per channel (like every image format uses) works great:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">uint8_t r = (uint8_t)(color.r * 255.0f);
+uint8_t g = (uint8_t)(color.g * 255.0f);
+uint8_t b = (uint8_t)(color.b * 255.0f);
+// 12 bytes → 3 bytes (75% reduction)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Even spherical harmonics coefficients can be quantized down to 8 or 16 bits per value. Sure, you lose some of the subtle view-dependent effects, but 192 bytes → 48 bytes (75% savings) is worth the imperceptible quality loss in most cases.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_compression_ratios_in_practice"><a class="anchor" href="#_compression_ratios_in_practice"></a>4.3. Compression Ratios in Practice</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Attribute</th>
+<th class="tableblock halign-left valign-top">Original Size</th>
+<th class="tableblock halign-left valign-top">Quantized Size</th>
+<th class="tableblock halign-left valign-top">Reduction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Position</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12 bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6 bytes (uint16×3)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">50%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rotation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">16 bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6 bytes (smallest-3)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">62.5%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Scale</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12 bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6 bytes (uint16×3)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">50%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Opacity</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4 bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 byte (uint8)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">75%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Color (RGB)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">12 bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3 bytes (uint8×3)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">75%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SH Degree 3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">192 bytes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">48 bytes (uint8×48)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">75%</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Total (RGB)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>56 bytes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>22 bytes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>61% reduction</strong></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Total (SH)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>236 bytes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>70 bytes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>70% reduction</strong></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_spz_compression_the_official_standard"><a class="anchor" href="#_spz_compression_the_official_standard"></a>4.4. SPZ Compression: The Official Standard</h3>
+<div class="paragraph">
+<p>Here&#8217;s the real story about compression in the GLTF standard: the <code>KHR_gaussian_splatting</code> extension works alongside a companion extension called <code>KHR_gaussian_splatting_compression_spz</code> that handles compression using the SPZ format.</p>
+</div>
+<div class="paragraph">
+<p>SPZ (Splat compression format) was specifically designed for Gaussian splats and achieves up to <strong>90% compression compared to uncompressed PLY</strong> while preserving visual fidelity and performance. PLY (Polygon File Format) is the original file format used to store raw Gaussian splat data before standardization in GLTF - it&#8217;s essentially a flat binary dump of all splat attributes without any compression. This isn&#8217;t a repurposed mesh compression format - it&#8217;s purpose-built for splat data.</p>
+</div>
+<div class="sect3">
+<h4 id="_how_spz_works"><a class="anchor" href="#_how_spz_works"></a>4.4.1. How SPZ Works</h4>
+<div class="paragraph">
+<p>SPZ is clever about how it stores Gaussian splat attributes. The format can be used in two ways:</p>
+</div>
+<div class="paragraph">
+<p><strong>Option 1 - Decompressed to attributes:</strong> The SPZ blob gets decompressed into standard GLTF accessors (position, rotation, scale, etc.) that your renderer reads normally.</p>
+</div>
+<div class="paragraph">
+<p><strong>Option 2 - Direct to rendering pipeline:</strong> Advanced implementations can pass the compressed SPZ data directly to the GPU and decompress in shaders, saving memory bandwidth.</p>
+</div>
+<div class="paragraph">
+<p>The compression itself uses aggressive quantization optimized for splat data:</p>
+</div>
+<div class="paragraph">
+<p><strong>Positions</strong> are stored relative to scene bounds and quantized.</p>
+</div>
+<div class="paragraph">
+<p><strong>Rotations</strong> use an improved encoding: the smallest three components of the normalized quaternion are stored as <strong>10-bit signed integers</strong> (not 16-bit like earlier approaches), and the largest component is derived. The index of which component was dropped is stored in just 2 bits. This gives excellent precision in only 32 bits total.</p>
+</div>
+<div class="paragraph">
+<p><strong>Scales and opacity</strong> are quantized to appropriate bit depths.</p>
+</div>
+<div class="paragraph">
+<p><strong>Spherical harmonics</strong> (if present) support flexible encoding from degree 0 (no SH, just diffuse) up to degree 3 (full view-dependent appearance), letting you trade file size for visual quality.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_practical_impact_2"><a class="anchor" href="#_the_practical_impact_2"></a>4.4.2. The Practical Impact</h4>
+<div class="paragraph">
+<p>Let&#8217;s revisit our 1 million splat scene with the actual SPZ numbers:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Uncompressed PLY</strong>: 236 MB (with degree-3 spherical harmonics)</p>
+</li>
+<li>
+<p><strong>SPZ compressed</strong>: ~24 MB (90% reduction)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>That&#8217;s right - the standard claims 90% compression while maintaining visual fidelity. A 24 MB file downloads in under 3 seconds on most mobile connections. That&#8217;s the difference between "impractical" and "production-ready."</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_graceful_degradation"><a class="anchor" href="#_graceful_degradation"></a>4.4.3. Graceful Degradation</h4>
+<div class="paragraph">
+<p>Here&#8217;s something smart: the <code>KHR_gaussian_splatting</code> extension includes graceful fallback to sparse point cloud rendering. If a viewer doesn&#8217;t support Gaussian splat rendering, it can fall back to rendering the splats as simple points. You won&#8217;t get the smooth, blended appearance, but you&#8217;ll see <strong>something</strong> rather than nothing.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_base_extension_vs_compression_extension"><a class="anchor" href="#_base_extension_vs_compression_extension"></a>4.4.4. Base Extension vs Compression Extension</h4>
+<div class="paragraph">
+<p>It&#8217;s important to understand there are two related extensions:</p>
+</div>
+<div class="paragraph">
+<p><strong>KHR_gaussian_splatting</strong> - The base extension that defines how Gaussian splats are represented in GLTF. Splats are treated as point primitives with attributes for position, rotation, scale, transparency, and spherical harmonics.</p>
+</div>
+<div class="paragraph">
+<p><strong>KHR_gaussian_splatting_compression_spz</strong> - The companion extension that defines SPZ compression. This is optional but highly recommended for any practical use case.</p>
+</div>
+<div class="paragraph">
+<p>You can technically use the base extension without compression (storing uncompressed splat data in GLTF buffers) however, this is only useful in the small scenes due to large file sizes.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_additional_compression_techniques"><a class="anchor" href="#_additional_compression_techniques"></a>4.5. Additional Compression Techniques</h3>
+<div class="paragraph">
+<p>Beyond SPZ compression, you can stack additional optimizations:</p>
+</div>
+<div class="sect3">
+<h4 id="_1_mesh_compression_standards"><a class="anchor" href="#_1_mesh_compression_standards"></a>4.5.1. 1. Mesh Compression Standards</h4>
+<div class="paragraph">
+<p>GLTF supports the <code>KHR_mesh_quantization</code> extension, which can work alongside Gaussian splats:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Normalized integers for positions and other attributes</p>
+</li>
+<li>
+<p>Automatic dequantization in vertex shaders</p>
+</li>
+<li>
+<p>Interoperability with existing GLTF tooling</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The quantization parameters are stored in the GLTF JSON, working in harmony with SPZ compression.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_container_level_compression"><a class="anchor" href="#_2_container_level_compression"></a>4.5.2. 2. Container-Level Compression</h4>
+<div class="paragraph">
+<p>On top of SPZ, you <strong>can</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>GZIP the entire GLTF package</strong>: Compress the .gltf and binary buffers together (modest additional savings)</p>
+</li>
+<li>
+<p><strong>GLB format with compression</strong>: Use the binary GLTF format with built-in compression</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gltf_structure_with_spz_compression"><a class="anchor" href="#_gltf_structure_with_spz_compression"></a>4.6. GLTF Structure with SPZ Compression</h3>
+<div class="paragraph">
+<p>When you use the <code>KHR_gaussian_splatting_compression_spz</code> extension, the GLTF structure looks like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">{
+  "extensionsUsed": [
+    "KHR_gaussian_splatting",
+    "KHR_gaussian_splatting_compression_spz"
+  ],
+  "meshes": [{
+    "name": "GaussianSplats",
+    "primitives": [{
+      "mode": 0,  // POINTS
+      "attributes": {
+        "POSITION": 0,
+        "KHR_gaussian_splatting:ROTATION": 1,
+        "KHR_gaussian_splatting:SCALE": 2,
+        "KHR_gaussian_splatting:OPACITY": 3,
+        "KHR_gaussian_splatting:SH_DEGREE_0_COEF_0": 4
+      },
+      "extensions": {
+        "KHR_gaussian_splatting": {
+          "kernel": "ellipse",
+          "colorSpace": "sRGB",
+          "antialiased": false,
+          "shDegree": 0
+        },
+        "KHR_gaussian_splatting_compression_spz": {
+          "buffer": 5,  // Points to SPZ blob
+          "byteOffset": 0,
+          "byteLength": 25000000
+        }
+      }
+    }]
+  }],
+  "buffers": [{
+    "uri": "splats.spz",
+    "byteLength": 25000000
+  }]
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The SPZ blob is stored as a buffer that the loader can either:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Decompress into the standard accessors (POSITION, ROTATION, etc.)</p>
+</li>
+<li>
+<p>Pass directly to GPU shaders for decompression</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This flexibility means renderers can choose the approach that works best for their architecture, while the data format remains standard and portable.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_framework_integration"><a class="anchor" href="#_framework_integration"></a>5. Framework Integration</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The Vulkan-Samples framework has been extended to support gaussian splats:</p>
+</div>
+<div class="sect2">
+<h3 id="_splatinstance_layout"><a class="anchor" href="#_splatinstance_layout"></a>5.1. SplatInstance Layout</h3>
+<div class="paragraph">
+<p>Rather than using a separate scene-graph component, the sample stores splat data directly as a packed array of <code>SplatInstance</code> structs (Array of Structures layout):</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// From render_octomap.h
+struct SplatInstance
+{
+    float pos[3];
+    float rot[4];
+    float scale[3];
+    float opacity;
+    float color[3];
+    float _pad;  // padding to 16-byte alignment
+};
+
+std::vector&lt;SplatInstance&gt;          splat_instances_cpu;
+std::unique_ptr&lt;vkb::core::BufferC&gt; splat_instance_buffer;
+uint32_t                            splat_count{0};</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>All splat attributes are interleaved in a single buffer, which the GPU reads using a single instanced vertex binding. The UBO contains the matrices and focal lengths for the projection math:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct
+{
+    glm::mat4 projection;
+    glm::mat4 view;
+    glm::vec2 viewport;
+    float     focalX;
+    float     focalY;
+} splat_ubo;</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gltf_loader_extension"><a class="anchor" href="#_gltf_loader_extension"></a>5.2. GLTF Loader Extension</h3>
+<div class="paragraph">
+<p>The <code>GLTFLoader</code> class recognizes the <code>KHR_gaussian_splatting</code> extension:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// In gltf_loader.h
+#define KHR_GAUSSIAN_SPLATTING_EXTENSION "KHR_gaussian_splatting"
+
+// In gltf_loader.cpp
+std::unordered_map&lt;std::string, bool&gt; GLTFLoader::supported_extensions = {
+    {KHR_LIGHTS_PUNCTUAL_EXTENSION, false},
+    {KHR_GAUSSIAN_SPLATTING_EXTENSION, false}
+};</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_reading_gaussian_splats_from_gltf"><a class="anchor" href="#_reading_gaussian_splats_from_gltf"></a>6. Reading Gaussian Splats from GLTF</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Loading Gaussian splats from GLTF involves several steps: parsing the JSON structure, reading binary buffers, and creating GPU resources.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The code snippets in this section illustrate the general loading pattern. The actual sample (<code>render_octomap.cpp</code>, function <code>load_gaussian_splats_data</code>) uses a simpler, more direct approach: it reads all accessor data in a single pass into <code>SplatInstance</code> structs without a generic template, and only handles float-component accessors since that is what our GLTF files contain. The conceptual pattern below is useful when writing a more general-purpose loader.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_step_1_detecting_gaussian_splat_data"><a class="anchor" href="#_step_1_detecting_gaussian_splat_data"></a>6.1. Step 1: Detecting Gaussian Splat Data</h3>
+<div class="paragraph">
+<p>First, check if a GLTF file contains Gaussian splats:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">bool has_gaussian_splats(const tinygltf::Model&amp; model)
+{
+    // Check if the extension is used
+    auto it = std::find(model.extensionsUsed.begin(),
+                        model.extensionsUsed.end(),
+                        "KHR_gaussian_splatting");
+    if (it == model.extensionsUsed.end())
+        return false;
+
+    // Check if any mesh primitive uses the extension
+    for (const auto&amp; mesh : model.meshes)
+    {
+        for (const auto&amp; primitive : mesh.primitives)
+        {
+            if (primitive.extensions.find("KHR_gaussian_splatting") !=
+                primitive.extensions.end())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_2_extracting_extension_data"><a class="anchor" href="#_step_2_extracting_extension_data"></a>6.2. Step 2: Extracting Extension Data</h3>
+<div class="paragraph">
+<p>Parse the extension JSON to get accessor indices:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct GaussianSplatExtension
+{
+    int position_accessor = -1;
+    int rotation_accessor = -1;
+    int scale_accessor = -1;
+    int opacity_accessor = -1;
+    int color_accessor = -1;
+    std::vector&lt;int&gt; sh_accessors;
+
+    int sh_degree = 0;
+    bool antialiased = false;
+    std::string color_space = "BT.709-sRGB";
+    std::string kernel = "ellipse";
+};
+
+GaussianSplatExtension parse_extension(const tinygltf::Model&amp; model, const tinygltf::Primitive&amp; primitive)
+{
+    GaussianSplatExtension ext;
+
+    // Helper to get attribute accessor index
+    auto get_attrib = [&amp;](const std::string&amp; name) {
+        auto it = primitive.attributes.find(name);
+        return (it != primitive.attributes.end()) ? it-&gt;second : -1;
+    };
+
+    // Get accessor indices from attributes (KHR spec)
+    ext.position_accessor = get_attrib("POSITION");
+    ext.rotation_accessor = get_attrib("KHR_gaussian_splatting:ROTATION");
+    ext.scale_accessor    = get_attrib("KHR_gaussian_splatting:SCALE");
+    ext.opacity_accessor  = get_attrib("KHR_gaussian_splatting:OPACITY");
+    ext.color_accessor    = get_attrib("KHR_gaussian_splatting:SH_DEGREE_0_COEF_0");
+
+    // Fallback to old draft names or COLOR_0 if needed
+    if (ext.color_accessor &lt; 0) ext.color_accessor = get_attrib("COLOR_0");
+
+    // Get properties from the extension object
+    auto it = primitive.extensions.find("KHR_gaussian_splatting");
+    if (it != primitive.extensions.end() &amp;&amp; it-&gt;second.IsObject())
+    {
+        const auto&amp; ext_value = it-&gt;second;
+        if (ext_value.Has("kernel"))
+            ext.kernel = ext_value.Get("kernel").Get&lt;std::string&gt;();
+        if (ext_value.Has("colorSpace"))
+            ext.color_space = ext_value.Get("colorSpace").Get&lt;std::string&gt;();
+        if (ext_value.Has("shDegree"))
+            ext.sh_degree = ext_value.Get("shDegree").Get&lt;int&gt;();
+        if (ext_value.Has("antialiased"))
+            ext.antialiased = ext_value.Get("antialiased").Get&lt;bool&gt;();
+    }
+
+    return ext;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_3_reading_buffer_data"><a class="anchor" href="#_step_3_reading_buffer_data"></a>6.3. Step 3: Reading Buffer Data</h3>
+<div class="paragraph">
+<p>GLTF stores data in buffers accessed through accessors:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">// Number of float components per accessor.type ("SCALAR", "VEC3", ...).
+size_t componentCount(const std::string&amp; type)
+{
+    if (type == "SCALAR") return 1;
+    if (type == "VEC2")   return 2;
+    if (type == "VEC3")   return 3;
+    if (type == "VEC4")   return 4;
+    if (type == "MAT3")   return 9;
+    if (type == "MAT4")   return 16;
+    return 0;
+}
+
+// Returns accessor.count * componentCount(accessor.type) floats.
+// Assumes a float component type; integer or normalized integer
+// accessors require their own dequantization path.
+std::vector&lt;float&gt; read_accessor_data(const tinygltf::Model&amp; model, int accessor_idx)
+{
+    if (accessor_idx &lt; 0 || accessor_idx &gt;= model.accessors.size())
+        return {};
+
+    const auto&amp; accessor = model.accessors[accessor_idx];
+    const auto&amp; buffer_view = model.bufferViews[accessor.bufferView];
+    const auto&amp; buffer = model.buffers[buffer_view.buffer];
+
+    size_t num_components = componentCount(accessor.type);
+    std::vector&lt;float&gt; data(accessor.count * num_components);
+
+    // Calculate byte stride
+    size_t byte_stride = buffer_view.byteStride;
+    if (byte_stride == 0)
+        byte_stride = accessor.ByteStride(buffer_view);
+
+    // Read data
+    const unsigned char* src = buffer.data.data() +
+                               buffer_view.byteOffset +
+                               accessor.byteOffset;
+
+    for (size_t i = 0; i &lt; accessor.count; i++)
+    {
+        float* dst = &amp;data[i * num_components];
+
+        // Handle different component types and normalization
+        if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_FLOAT)
+        {
+            memcpy(dst, src + i * byte_stride, num_components * sizeof(float));
+        }
+        else if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+        {
+            // Dequantize if normalized
+            const uint16_t* quantized = reinterpret_cast&lt;const uint16_t*&gt;(src + i * byte_stride);
+            if (accessor.normalized)
+            {
+                // Convert [0, 65535] to [0.0, 1.0]
+                for (size_t j = 0; j &lt; num_components; j++)
+                    dst[j] = quantized[j] / 65535.0f;
+            }
+        }
+        // Handle other component types...
+    }
+
+    return data;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_4_creating_gpu_buffers"><a class="anchor" href="#_step_4_creating_gpu_buffers"></a>6.4. Step 4: Creating GPU Buffers</h3>
+<div class="paragraph">
+<p>Transfer the loaded data to GPU buffers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::unique_ptr&lt;GaussianSplat&gt; create_gaussian_splat_from_gltf(
+    const tinygltf::Model&amp; model,
+    const tinygltf::Primitive&amp; primitive,
+    vkb::Device&amp; device)
+{
+    auto splat = std::make_unique&lt;GaussianSplat&gt;();
+
+    // Get extension data
+    auto ext_it = primitive.extensions.find("KHR_gaussian_splatting");
+    if (ext_it == primitive.extensions.end())
+        return nullptr;
+
+    GaussianSplatExtension ext = parse_extension(ext_it-&gt;second);
+
+    // Read positions (from standard POSITION attribute)
+    auto positions = read_accessor_data&lt;glm::vec3&gt;(
+        model, primitive.attributes.at("POSITION"));
+    splat-&gt;splat_count = positions.size();
+
+    // Read rotations
+    auto rotations = read_accessor_data&lt;glm::vec4&gt;(
+        model, ext.rotation_accessor);
+
+    // Read scales
+    auto scales = read_accessor_data&lt;glm::vec3&gt;(
+        model, ext.scale_accessor);
+
+    // Read opacities
+    auto opacities = read_accessor_data&lt;float&gt;(
+        model, ext.opacity_accessor);
+
+    // Read colors
+    auto colors = read_accessor_data&lt;glm::vec3&gt;(
+        model, primitive.attributes.at("COLOR_0"));
+
+    // Create GPU buffers
+    splat-&gt;position_buffer = create_device_buffer(
+        device, positions.data(),
+        positions.size() * sizeof(glm::vec3),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    splat-&gt;rotation_buffer = create_device_buffer(
+        device, rotations.data(),
+        rotations.size() * sizeof(glm::vec4),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    splat-&gt;scale_buffer = create_device_buffer(
+        device, scales.data(),
+        scales.size() * sizeof(glm::vec3),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    splat-&gt;opacity_buffer = create_device_buffer(
+        device, opacities.data(),
+        opacities.size() * sizeof(float),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    splat-&gt;color_buffer = create_device_buffer(
+        device, colors.data(),
+        colors.size() * sizeof(glm::vec3),
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+
+    // Store extension properties
+    splat-&gt;sh_degree = ext.sh_degree;
+    splat-&gt;antialiased = ext.antialiased;
+    splat-&gt;kernel = (ext.kernel == "sphere") ?
+        GaussianSplat::KernelType::Sphere :
+        GaussianSplat::KernelType::Ellipse;
+    splat-&gt;color_space = (ext.color_space == "linear") ?
+        GaussianSplat::ColorSpace::Linear :
+        GaussianSplat::ColorSpace::SRGB;
+
+    return splat;
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_step_5_handling_quantized_data"><a class="anchor" href="#_step_5_handling_quantized_data"></a>6.5. Step 5: Handling Quantized Data</h3>
+<div class="paragraph">
+<p>If the GLTF uses <code>KHR_mesh_quantization</code>, dequantization must be handled:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">// In vertex shader, dequantize positions
+layout(location = 0) in vec3 inPositionQuantized;  // uint16 normalized
+
+uniform vec3 quantization_min;
+uniform vec3 quantization_range;
+
+void main()
+{
+    // Dequantize: [0, 1] → [min, min + range]
+    vec3 position = quantization_min + inPositionQuantized * quantization_range;
+
+    // Continue with normal processing...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Or dequantize on CPU during loading:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">glm::vec3 dequantize_position(uint16_t x, uint16_t y, uint16_t z,
+                               const glm::vec3&amp; min, const glm::vec3&amp; range)
+{
+    return min + glm::vec3(
+        (float)x / 65535.0f * range.x,
+        (float)y / 65535.0f * range.y,
+        (float)z / 65535.0f * range.z
+    );
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_complete_loading_example"><a class="anchor" href="#_complete_loading_example"></a>6.6. Complete Loading Example</h3>
+<div class="paragraph">
+<p>The sample doesn&#8217;t route splats through a scene-graph component at all. Instead, <code>render_octomap::load_gaussian_splats_data()</code> parses each cell&#8217;s GLTF directly and appends the result into a single flat <code>std::vector&lt;SplatInstance&gt;</code> (see "Framework Integration" above), and <code>render_octomap::load_gaussian_splats_scene()</code> collects the per-cell GLTF files and drives the loop:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void render_octomap::load_gaussian_splats_scene(const std::string &amp;scene_dir)
+{
+    splat_instances_cpu.clear();
+    splat_instance_buffer.reset();
+
+    // Collect all *_cell_*.gltf files in the directory, then sort for
+    // deterministic order (the scene is stored as tiled grid cells).
+    std::vector&lt;std::string&gt; cell_files;
+    for (auto &amp;entry : std::filesystem::directory_iterator(full_dir))
+    {
+        std::string name = entry.path().filename().string();
+        if (name.find("_cell_") != std::string::npos &amp;&amp; name.ends_with(".gltf"))
+            cell_files.push_back(scene_dir + "/" + name);
+    }
+    std::sort(cell_files.begin(), cell_files.end());
+
+    for (auto &amp;f : cell_files)
+        load_gaussian_splats_data(f);        // appends into splat_instances_cpu
+
+    splat_count           = static_cast&lt;uint32_t&gt;(splat_instances_cpu.size());
+    splat_instance_buffer = std::make_unique&lt;vkb::core::BufferC&gt;(get_device(),
+                                                                 splat_instances_cpu.size() * sizeof(SplatInstance),
+                                                                 VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                                                                 VMA_MEMORY_USAGE_CPU_TO_GPU);
+    auto *buf = splat_instance_buffer-&gt;map();
+    memcpy(buf, splat_instances_cpu.data(), splat_instances_cpu.size() * sizeof(SplatInstance));
+    splat_instance_buffer-&gt;flush();
+    splat_instance_buffer-&gt;unmap();
+
+    create_splat_pipeline(render_pass);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>load_gaussian_splats_data()</code> reads the POSITION/ROTATION/SCALE/OPACITY/COLOR_0 accessors for a single cell straight out of the GLTF buffers (using the same accessor-decoding approach as "Step 3: Reading Buffer Data" above) and appends the resulting <code>SplatInstance</code> entries to <code>splat_instances_cpu</code>; the GPU buffer is only (re)built once, after all cells have loaded, in <code>load_gaussian_splats_scene()</code> above.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_error_handling_and_validation"><a class="anchor" href="#_error_handling_and_validation"></a>6.7. Error Handling and Validation</h3>
+<div class="paragraph">
+<p>The loader validates as it goes, logging and bailing out of the current cell rather than asserting, since a malformed cell shouldn&#8217;t take down the whole map:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">if (model.meshes.empty() || model.meshes[0].primitives.empty())
+{
+    LOGE("Splats gltf has no meshes/primitives: {}", filename);
+    return;
+}
+
+// ... resolve POSITION / ROTATION / SCALE / OPACITY / COLOR_0 accessors ...
+
+if (rot_accessor &lt; 0 || scale_accessor &lt; 0 || opacity_accessor &lt; 0 || col_accessor &lt; 0)
+{
+    LOGE("Splats gltf missing required KHR_gaussian_splatting accessors (ROTATION/SCALE/OPACITY/COLOR_0): {}", filename);
+    return;
+}
+
+const size_t count = model.accessors[pos_accessor].count;
+if (count == 0)
+{
+    LOGE("Splats gltf has 0 splats: {}", filename);
+    return;
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After all cells are loaded, <code>load_gaussian_splats_scene()</code> checks that at least one splat was found before creating GPU resources:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">if (splat_instances_cpu.empty())
+{
+    LOGE("No splat data loaded from {}", scene_dir);
+    return;
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rendering_gaussian_splats"><a class="anchor" href="#_rendering_gaussian_splats"></a>7. Rendering Gaussian Splats</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Now for the fun part: actually getting these splats on screen. The rendering process is surprisingly elegant once you understand what&#8217;s happening. We&#8217;re going to take 3D Gaussians floating in space and project them onto the 2D screen, then rasterize them as quads (like billboards), and finally evaluate the Gaussian function per-pixel to get smooth, blended results.</p>
+</div>
+<div class="sect2">
+<h3 id="_the_big_picture"><a class="anchor" href="#_the_big_picture"></a>7.1. The Big Picture</h3>
+<div class="paragraph">
+<p>Before we dive into shader code, let&#8217;s understand the pipeline:</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1 - Vertex Shader:</strong> For each splat, we need to figure out what it looks like on screen. This means projecting the 3D Gaussian to a 2D Gaussian on the screen, calculating how big it should appear, and generating a billboard quad to cover it.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2 - Rasterization:</strong> The GPU&#8217;s fixed-function hardware rasterizes our quads into pixels. Nothing special here - same as any other geometry.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3 - Fragment Shader:</strong> For each pixel, we evaluate the 2D Gaussian function. This gives us a smooth falloff from the center to the edges. We multiply by the opacity and color, output premultiplied alpha, and we&#8217;re done.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4 - Blending:</strong> The GPU blends all the quads together using alpha blending. Since we&#8217;re outputting premultiplied alpha, the blend equation is <code>result = src + dst * (1 - src.alpha)</code> — this is correct because <code>src.rgb</code> already has alpha baked in. This only produces the right result when splats are drawn back-to-front (depth sorted), which is why sorting is a required step before rendering.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_projection_math_dont_worry_ill_explain"><a class="anchor" href="#_the_projection_math_dont_worry_ill_explain"></a>7.2. The Projection Math (Don&#8217;t Worry, I&#8217;ll Explain)</h3>
+<div class="paragraph">
+<p>Here&#8217;s the tricky part: we have a 3D Gaussian blob floating in space with its 3D covariance matrix <span class="steminline"> <svg style="vertical-align: -0.375ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="3.946ex" height="1.92ex" role="img" focusable="false" viewBox="0 -683 1744 848.6"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="3A3" d="M666 247Q664 244 652 126T638 4V0H351Q131 0 95 0T57 5V6Q54 12 57 17L73 36Q89 54 121 90T182 159L305 299L56 644L55 658Q55 677 60 681Q63 683 351 683H638V679Q640 674 652 564T666 447V443H626V447Q618 505 604 543T559 605Q529 626 478 631T333 637H294H189L293 494Q314 465 345 422Q400 346 400 340Q400 338 399 337L154 57Q407 57 428 58Q476 60 508 68T551 83T575 103Q595 125 608 162T624 225L626 251H666V247Z"></path></g><g data-mml-node="TeXAtom" transform="translate(755,-150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path></g><g data-mml-node="mi" transform="translate(500,0)"><path data-c="1D437" d="M287 628Q287 635 230 637Q207 637 200 638T193 647Q193 655 197 667T204 682Q206 683 403 683Q570 682 590 682T630 676Q702 659 752 597T803 431Q803 275 696 151T444 3L430 1L236 0H125H72Q48 0 41 2T33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM703 469Q703 507 692 537T666 584T629 613T590 629T555 636Q553 636 541 636T512 636T479 637H436Q392 637 386 627Q384 623 313 339T242 52Q242 48 253 48T330 47Q335 47 349 47T373 46Q499 46 581 128Q617 164 640 212T683 339T703 469Z"></path></g></g></g></g></g></svg> </span>. We need to project it onto the 2D screen and figure out what its 2D covariance matrix <span class="steminline"> <svg style="vertical-align: -0.339ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="3.946ex" height="1.885ex" role="img" focusable="false" viewBox="0 -683 1744 833"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="3A3" d="M666 247Q664 244 652 126T638 4V0H351Q131 0 95 0T57 5V6Q54 12 57 17L73 36Q89 54 121 90T182 159L305 299L56 644L55 658Q55 677 60 681Q63 683 351 683H638V679Q640 674 652 564T666 447V443H626V447Q618 505 604 543T559 605Q529 626 478 631T333 637H294H189L293 494Q314 465 345 422Q400 346 400 340Q400 338 399 337L154 57Q407 57 428 58Q476 60 508 68T551 83T575 103Q595 125 608 162T624 225L626 251H666V247Z"></path></g><g data-mml-node="TeXAtom" transform="translate(755,-150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="mi" transform="translate(500,0)"><path data-c="1D437" d="M287 628Q287 635 230 637Q207 637 200 638T193 647Q193 655 197 667T204 682Q206 683 403 683Q570 682 590 682T630 676Q702 659 752 597T803 431Q803 275 696 151T444 3L430 1L236 0H125H72Q48 0 41 2T33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM703 469Q703 507 692 537T666 584T629 613T590 629T555 636Q553 636 541 636T512 636T479 637H436Q392 637 386 627Q384 623 313 339T242 52Q242 48 253 48T330 47Q335 47 349 47T373 46Q499 46 581 128Q617 164 640 212T683 339T703 469Z"></path></g></g></g></g></g></svg> </span> should be. If we get this wrong, the splat will look stretched or squashed on screen.</p>
+</div>
+<div class="paragraph">
+<p>The good news? There&#8217;s a closed-form solution using the Jacobian of the perspective projection. The formula is:</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -0.375ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="21.39ex" height="2.392ex" role="img" focusable="false" viewBox="0 -891.7 9454.3 1057.3"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="3A3" d="M666 247Q664 244 652 126T638 4V0H351Q131 0 95 0T57 5V6Q54 12 57 17L73 36Q89 54 121 90T182 159L305 299L56 644L55 658Q55 677 60 681Q63 683 351 683H638V679Q640 674 652 564T666 447V443H626V447Q618 505 604 543T559 605Q529 626 478 631T333 637H294H189L293 494Q314 465 345 422Q400 346 400 340Q400 338 399 337L154 57Q407 57 428 58Q476 60 508 68T551 83T575 103Q595 125 608 162T624 225L626 251H666V247Z"></path></g><g data-mml-node="TeXAtom" transform="translate(755,-150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g><g data-mml-node="mi" transform="translate(500,0)"><path data-c="1D437" d="M287 628Q287 635 230 637Q207 637 200 638T193 647Q193 655 197 667T204 682Q206 683 403 683Q570 682 590 682T630 676Q702 659 752 597T803 431Q803 275 696 151T444 3L430 1L236 0H125H72Q48 0 41 2T33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM703 469Q703 507 692 537T666 584T629 613T590 629T555 636Q553 636 541 636T512 636T479 637H436Q392 637 386 627Q384 623 313 339T242 52Q242 48 253 48T330 47Q335 47 349 47T373 46Q499 46 581 128Q617 164 640 212T683 339T703 469Z"></path></g></g></g><g data-mml-node="mo" transform="translate(2021.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mi" transform="translate(3077.6,0)"><path data-c="1D43D" d="M447 625Q447 637 354 637H329Q323 642 323 645T325 664Q329 677 335 683H352Q393 681 498 681Q541 681 568 681T605 682T619 682Q633 682 633 672Q633 670 630 658Q626 642 623 640T604 637Q552 637 545 623Q541 610 483 376Q420 128 419 127Q397 64 333 21T195 -22Q137 -22 97 8T57 88Q57 130 80 152T132 174Q177 174 182 130Q182 98 164 80T123 56Q115 54 115 53T122 44Q148 15 197 15Q235 15 271 47T324 130Q328 142 387 380T447 625Z"></path></g><g data-mml-node="mi" transform="translate(3710.6,0)"><path data-c="1D44A" d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g data-mml-node="msub" transform="translate(4758.6,0)"><g data-mml-node="mi"><path data-c="3A3" d="M666 247Q664 244 652 126T638 4V0H351Q131 0 95 0T57 5V6Q54 12 57 17L73 36Q89 54 121 90T182 159L305 299L56 644L55 658Q55 677 60 681Q63 683 351 683H638V679Q640 674 652 564T666 447V443H626V447Q618 505 604 543T559 605Q529 626 478 631T333 637H294H189L293 494Q314 465 345 422Q400 346 400 340Q400 338 399 337L154 57Q407 57 428 58Q476 60 508 68T551 83T575 103Q595 125 608 162T624 225L626 251H666V247Z"></path></g><g data-mml-node="TeXAtom" transform="translate(755,-150) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="mn"><path data-c="33" d="M127 463Q100 463 85 480T69 524Q69 579 117 622T233 665Q268 665 277 664Q351 652 390 611T430 522Q430 470 396 421T302 350L299 348Q299 347 308 345T337 336T375 315Q457 262 457 175Q457 96 395 37T238 -22Q158 -22 100 21T42 130Q42 158 60 175T105 193Q133 193 151 175T169 130Q169 119 166 110T159 94T148 82T136 74T126 70T118 67L114 66Q165 21 238 21Q293 21 321 74Q338 107 338 175V195Q338 290 274 322Q259 328 213 329L171 330L168 332Q166 335 166 348Q166 366 174 366Q202 366 232 371Q266 376 294 413T322 525V533Q322 590 287 612Q265 626 240 626Q208 626 181 615T143 592T132 580H135Q138 579 143 578T153 573T165 566T175 555T183 540T186 520Q186 498 172 481T127 463Z"></path></g><g data-mml-node="mi" transform="translate(500,0)"><path data-c="1D437" d="M287 628Q287 635 230 637Q207 637 200 638T193 647Q193 655 197 667T204 682Q206 683 403 683Q570 682 590 682T630 676Q702 659 752 597T803 431Q803 275 696 151T444 3L430 1L236 0H125H72Q48 0 41 2T33 11Q33 13 36 25Q40 41 44 43T67 46Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628ZM703 469Q703 507 692 537T666 584T629 613T590 629T555 636Q553 636 541 636T512 636T479 637H436Q392 637 386 627Q384 623 313 339T242 52Q242 48 253 48T330 47Q335 47 349 47T373 46Q499 46 581 128Q617 164 640 212T683 339T703 469Z"></path></g></g></g><g data-mml-node="msup" transform="translate(6502.6,0)"><g data-mml-node="mi"><path data-c="1D44A" d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g><g data-mml-node="mi" transform="translate(1136.2,413) scale(0.707)"><path data-c="1D447" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path></g></g><g data-mml-node="msup" transform="translate(8186.6,0)"><g data-mml-node="mi"><path data-c="1D43D" d="M447 625Q447 637 354 637H329Q323 642 323 645T325 664Q329 677 335 683H352Q393 681 498 681Q541 681 568 681T605 682T619 682Q633 682 633 672Q633 670 630 658Q626 642 623 640T604 637Q552 637 545 623Q541 610 483 376Q420 128 419 127Q397 64 333 21T195 -22Q137 -22 97 8T57 88Q57 130 80 152T132 174Q177 174 182 130Q182 98 164 80T123 56Q115 54 115 53T122 44Q148 15 197 15Q235 15 271 47T324 130Q328 142 387 380T447 625Z"></path></g><g data-mml-node="mi" transform="translate(719.9,413) scale(0.707)"><path data-c="1D447" d="M40 437Q21 437 21 445Q21 450 37 501T71 602L88 651Q93 669 101 677H569H659Q691 677 697 676T704 667Q704 661 687 553T668 444Q668 437 649 437Q640 437 637 437T631 442L629 445Q629 451 635 490T641 551Q641 586 628 604T573 629Q568 630 515 631Q469 631 457 630T439 622Q438 621 368 343T298 60Q298 48 386 46Q418 46 427 45T436 36Q436 31 433 22Q429 4 424 1L422 0Q419 0 415 0Q410 0 363 1T228 2Q99 2 64 0H49Q43 6 43 9T45 27Q49 40 55 46H83H94Q174 46 189 55Q190 56 191 56Q196 59 201 76T241 233Q258 301 269 344Q339 619 339 625Q339 630 310 630H279Q212 630 191 624Q146 614 121 583T67 467Q60 445 57 441T43 437H40Z"></path></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s break this down in English: <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="2.371ex" height="1.595ex" role="img" focusable="false" viewBox="0 -683 1048 705"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D44A" d="M436 683Q450 683 486 682T553 680Q604 680 638 681T677 682Q695 682 695 674Q695 670 692 659Q687 641 683 639T661 637Q636 636 621 632T600 624T597 615Q597 603 613 377T629 138L631 141Q633 144 637 151T649 170T666 200T690 241T720 295T759 362Q863 546 877 572T892 604Q892 619 873 628T831 637Q817 637 817 647Q817 650 819 660Q823 676 825 679T839 682Q842 682 856 682T895 682T949 681Q1015 681 1034 683Q1048 683 1048 672Q1048 666 1045 655T1038 640T1028 637Q1006 637 988 631T958 617T939 600T927 584L923 578L754 282Q586 -14 585 -15Q579 -22 561 -22Q546 -22 542 -17Q539 -14 523 229T506 480L494 462Q472 425 366 239Q222 -13 220 -15T215 -19Q210 -22 197 -22Q178 -22 176 -15Q176 -12 154 304T131 622Q129 631 121 633T82 637H58Q51 644 51 648Q52 671 64 683H76Q118 680 176 680Q301 680 313 683H323Q329 677 329 674T327 656Q322 641 318 637H297Q236 634 232 620Q262 160 266 136L501 550L499 587Q496 629 489 632Q483 636 447 637Q428 637 422 639T416 648Q416 650 418 660Q419 664 420 669T421 676T424 680T428 682T436 683Z"></path></g></g></g></svg> </span> is the rotation part of the view matrix (how the camera is oriented). <span class="steminline"> <svg style="vertical-align: -0.05ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="1.432ex" height="1.595ex" role="img" focusable="false" viewBox="0 -683 633 705"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D43D" d="M447 625Q447 637 354 637H329Q323 642 323 645T325 664Q329 677 335 683H352Q393 681 498 681Q541 681 568 681T605 682T619 682Q633 682 633 672Q633 670 630 658Q626 642 623 640T604 637Q552 637 545 623Q541 610 483 376Q420 128 419 127Q397 64 333 21T195 -22Q137 -22 97 8T57 88Q57 130 80 152T132 174Q177 174 182 130Q182 98 164 80T123 56Q115 54 115 53T122 44Q148 15 197 15Q235 15 271 47T324 130Q328 142 387 380T447 625Z"></path></g></g></g></svg> </span> is the Jacobian, which captures how perspective projection distorts things — objects closer to the camera project larger than distant objects.</p>
+</div>
+<div class="paragraph">
+<p>The Jacobian looks like this:</p>
+</div>
+<div class="stemblock">
+  <div class="content halign-center valign-middle" style="padding-top: 1rem">
+<svg style="vertical-align: -3.055ex; overflow: visible;" xmlns="http://www.w3.org/2000/svg" width="21.872ex" height="7.242ex" role="img" focusable="false" viewBox="0 -1850.4 9667.5 3200.8"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D43D" d="M447 625Q447 637 354 637H329Q323 642 323 645T325 664Q329 677 335 683H352Q393 681 498 681Q541 681 568 681T605 682T619 682Q633 682 633 672Q633 670 630 658Q626 642 623 640T604 637Q552 637 545 623Q541 610 483 376Q420 128 419 127Q397 64 333 21T195 -22Q137 -22 97 8T57 88Q57 130 80 152T132 174Q177 174 182 130Q182 98 164 80T123 56Q115 54 115 53T122 44Q148 15 197 15Q235 15 271 47T324 130Q328 142 387 380T447 625Z"></path></g><g data-mml-node="mo" transform="translate(910.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mrow" transform="translate(1966.6,0)"><g data-mml-node="mo" transform="translate(0 -0.5)"><path data-c="5B" d="M269 -1249V1750H577V1677H342V-1176H577V-1249H269Z"></path></g><g data-mml-node="mtable" transform="translate(583,0)"><g data-mml-node="mtr" transform="translate(0,866.9)"><g data-mml-node="mtd"><g data-mml-node="mfrac"><g data-mml-node="msub" transform="translate(220,485) scale(0.707)"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g></g><g data-mml-node="mi" transform="translate(401.2,-345) scale(0.707)"><path data-c="1D467" d="M347 338Q337 338 294 349T231 360Q211 360 197 356T174 346T162 335T155 324L153 320Q150 317 138 317Q117 317 117 325Q117 330 120 339Q133 378 163 406T229 440Q241 442 246 442Q271 442 291 425T329 392T367 375Q389 375 411 408T434 441Q435 442 449 442H462Q468 436 468 434Q468 430 463 420T449 399T432 377T418 358L411 349Q368 298 275 214T160 106L148 94L163 93Q185 93 227 82T290 71Q328 71 360 90T402 140Q406 149 409 151T424 153Q443 153 443 143Q443 138 442 134Q425 72 376 31T278 -11Q252 -11 232 6T193 40T155 57Q111 57 76 -3Q70 -11 59 -11H54H41Q35 -5 35 -2Q35 13 93 84Q132 129 225 214T340 322Q352 338 347 338Z"></path></g><rect width="891.2" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mtd" transform="translate(2426.3,0)"><g data-mml-node="mn"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path></g></g><g data-mml-node="mtd" transform="translate(4221.3,0)"><g data-mml-node="mo"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mfrac" transform="translate(778,0)"><g data-mml-node="mrow" transform="translate(220,485) scale(0.707)"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g></g><g data-mml-node="mi" transform="translate(977.5,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g></g><g data-mml-node="msup" transform="translate(449.1,-377.4) scale(0.707)"><g data-mml-node="mi"><path data-c="1D467" d="M347 338Q337 338 294 349T231 360Q211 360 197 356T174 346T162 335T155 324L153 320Q150 317 138 317Q117 317 117 325Q117 330 120 339Q133 378 163 406T229 440Q241 442 246 442Q271 442 291 425T329 392T367 375Q389 375 411 408T434 441Q435 442 449 442H462Q468 436 468 434Q468 430 463 420T449 399T432 377T418 358L411 349Q368 298 275 214T160 106L148 94L163 93Q185 93 227 82T290 71Q328 71 360 90T402 140Q406 149 409 151T424 153Q443 153 443 143Q443 138 442 134Q425 72 376 31T278 -11Q252 -11 232 6T193 40T155 57Q111 57 76 -3Q70 -11 59 -11H54H41Q35 -5 35 -2Q35 13 93 84Q132 129 225 214T340 322Q352 338 347 338Z"></path></g><g data-mml-node="mn" transform="translate(498,289) scale(0.707)"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g></g><rect width="1295.6" height="60" x="120" y="220"></rect></g></g></g><g data-mml-node="mtr" transform="translate(0,-965.3)"><g data-mml-node="mtd" transform="translate(315.6,0)"><g data-mml-node="mn"><path data-c="30" d="M96 585Q152 666 249 666Q297 666 345 640T423 548Q460 465 460 320Q460 165 417 83Q397 41 362 16T301 -15T250 -22Q224 -22 198 -16T137 16T82 83Q39 165 39 320Q39 494 96 585ZM321 597Q291 629 250 629Q208 629 178 597Q153 571 145 525T137 333Q137 175 145 125T181 46Q209 16 250 16Q290 16 318 46Q347 76 354 130T362 333Q362 478 354 524T321 597Z"></path></g></g><g data-mml-node="mtd" transform="translate(2131.2,0)"><g data-mml-node="mfrac"><g data-mml-node="msub" transform="translate(220,548.6) scale(0.707)"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><path data-c="1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mi" transform="translate(380.7,-345) scale(0.707)"><path data-c="1D467" d="M347 338Q337 338 294 349T231 360Q211 360 197 356T174 346T162 335T155 324L153 320Q150 317 138 317Q117 317 117 325Q117 330 120 339Q133 378 163 406T229 440Q241 442 246 442Q271 442 291 425T329 392T367 375Q389 375 411 408T434 441Q435 442 449 442H462Q468 436 468 434Q468 430 463 420T449 399T432 377T418 358L411 349Q368 298 275 214T160 106L148 94L163 93Q185 93 227 82T290 71Q328 71 360 90T402 140Q406 149 409 151T424 153Q443 153 443 143Q443 138 442 134Q425 72 376 31T278 -11Q252 -11 232 6T193 40T155 57Q111 57 76 -3Q70 -11 59 -11H54H41Q35 -5 35 -2Q35 13 93 84Q132 129 225 214T340 322Q352 338 347 338Z"></path></g><rect width="850.2" height="60" x="120" y="220"></rect></g></g><g data-mml-node="mtd" transform="translate(4270.8,0)"><g data-mml-node="mo"><path data-c="2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path></g><g data-mml-node="mfrac" transform="translate(778,0)"><g data-mml-node="mrow" transform="translate(220,548.6) scale(0.707)"><g data-mml-node="msub"><g data-mml-node="mi"><path data-c="1D453" d="M118 -162Q120 -162 124 -164T135 -167T147 -168Q160 -168 171 -155T187 -126Q197 -99 221 27T267 267T289 382V385H242Q195 385 192 387Q188 390 188 397L195 425Q197 430 203 430T250 431Q298 431 298 432Q298 434 307 482T319 540Q356 705 465 705Q502 703 526 683T550 630Q550 594 529 578T487 561Q443 561 443 603Q443 622 454 636T478 657L487 662Q471 668 457 668Q445 668 434 658T419 630Q412 601 403 552T387 469T380 433Q380 431 435 431Q480 431 487 430T498 424Q499 420 496 407T491 391Q489 386 482 386T428 385H372L349 263Q301 15 282 -47Q255 -132 212 -173Q175 -205 139 -205Q107 -205 81 -186T55 -132Q55 -95 76 -78T118 -61Q162 -61 162 -103Q162 -122 151 -136T127 -157L118 -162Z"></path></g><g data-mml-node="mi" transform="translate(523,-150) scale(0.707)"><path data-c="1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="mi" transform="translate(919.5,0)"><path data-c="1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g></g><g data-mml-node="msup" transform="translate(399.6,-377.4) scale(0.707)"><g data-mml-node="mi"><path data-c="1D467" d="M347 338Q337 338 294 349T231 360Q211 360 197 356T174 346T162 335T155 324L153 320Q150 317 138 317Q117 317 117 325Q117 330 120 339Q133 378 163 406T229 440Q241 442 246 442Q271 442 291 425T329 392T367 375Q389 375 411 408T434 441Q435 442 449 442H462Q468 436 468 434Q468 430 463 420T449 399T432 377T418 358L411 349Q368 298 275 214T160 106L148 94L163 93Q185 93 227 82T290 71Q328 71 360 90T402 140Q406 149 409 151T424 153Q443 153 443 143Q443 138 442 134Q425 72 376 31T278 -11Q252 -11 232 6T193 40T155 57Q111 57 76 -3Q70 -11 59 -11H54H41Q35 -5 35 -2Q35 13 93 84Q132 129 225 214T340 322Q352 338 347 338Z"></path></g><g data-mml-node="mn" transform="translate(498,289) scale(0.707)"><path data-c="32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path></g></g><rect width="1196.7" height="60" x="120" y="220"></rect></g></g></g></g><g data-mml-node="mo" transform="translate(7118,0) translate(0 -0.5)"><path data-c="5D" d="M5 1677V1750H313V-1249H5V-1176H240V1677H5Z"></path></g></g></g></g></svg>
+  </div>
+</div>
+<div class="paragraph">
+<p>Where <code>(x, y, z)</code> is where the splat is in view space (camera coordinates), and <code>(fₓ, fᵧ)</code> are the focal lengths from your projection matrix. Notice how everything is divided by z? That&#8217;s the perspective part - further away means smaller projection.</p>
+</div>
+<div class="paragraph">
+<p>You don&#8217;t need to memorize this formula. What matters is: we can compute exactly how a 3D Gaussian projects to 2D, which means our shader can do this in real-time.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_vertex_shader_where_the_magic_happens"><a class="anchor" href="#_the_vertex_shader_where_the_magic_happens"></a>7.3. The Vertex Shader: Where the Magic Happens</h3>
+<div class="paragraph">
+<p>Alright, let&#8217;s build the vertex shader that does all this math. This shader runs once per splat vertex (we&#8217;ll draw 4 vertices per splat to make a quad). The shader&#8217;s job is to:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Take the 3D splat data (position, rotation, scale)</p>
+</li>
+<li>
+<p>Build the 3D covariance matrix</p>
+</li>
+<li>
+<p>Project it to 2D using that Jacobian formula</p>
+</li>
+<li>
+<p>Figure out how big the splat appears on screen</p>
+</li>
+<li>
+<p>Generate a quad corner position</p>
+</li>
+<li>
+<p>Pass along everything the fragment shader needs</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s the complete implementation with comments explaining each step:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#version 450
+
+// Per-splat attributes
+layout(location = 0) in vec3 inPosition;    // Splat center
+layout(location = 1) in vec4 inRotation;    // Quaternion
+layout(location = 2) in vec3 inScale;       // Scale factors
+layout(location = 3) in float inOpacity;    // Opacity [0, 1]
+layout(location = 4) in vec3 inColor;       // RGB color
+
+// Uniform buffer
+layout(binding = 0) uniform UBO {
+    mat4 view;
+    mat4 proj;
+    vec2 viewport;  // Width, height
+    vec2 focal;     // fx, fy
+} ubo;
+
+// Output to fragment shader
+layout(location = 0) out vec3 outColor;
+layout(location = 1) out float outOpacity;
+layout(location = 2) out vec2 outCoord;  // Gaussian coordinates
+
+// Convert quaternion to rotation matrix
+mat3 quaternionToMatrix(vec4 q)
+{
+    float x = q.x, y = q.y, z = q.z, w = q.w;
+
+    return mat3(
+        1.0 - 2.0*(y*y + z*z),  2.0*(x*y - w*z),        2.0*(x*z + w*y),
+        2.0*(x*y + w*z),        1.0 - 2.0*(x*x + z*z),  2.0*(y*z - w*x),
+        2.0*(x*z - w*y),        2.0*(y*z + w*x),        1.0 - 2.0*(x*x + y*y)
+    );
+}
+
+// Compute Jacobian of perspective projection
+mat3 computeJacobian(vec3 viewPos, vec2 focal)
+{
+    float x = viewPos.x;
+    float y = viewPos.y;
+    float z = viewPos.z;
+    float z2 = z * z;
+
+    // Jacobian maps 3D displacements to 2D screen displacements
+    return mat3(
+        focal.x / z,  0.0,           -focal.x * x / z2,
+        0.0,          focal.y / z,   -focal.y * y / z2,
+        0.0,          0.0,            0.0  // We only need 2x3, pad with zeros
+    );
+}
+
+// Compute eigenvalues of 2x2 symmetric matrix (for radius calculation)
+vec2 eigenvalues2x2(mat2 m)
+{
+    float a = m[0][0];
+    float b = m[0][1];  // = m[1][0] since symmetric
+    float c = m[1][1];
+
+    float trace = a + c;
+    float det = a * c - b * b;
+    float discriminant = sqrt(max(0.0, trace * trace - 4.0 * det));
+
+    float lambda1 = 0.5 * (trace + discriminant);
+    float lambda2 = 0.5 * (trace - discriminant);
+
+    return vec2(lambda1, lambda2);
+}
+
+void main()
+{
+    // 1. Transform splat center to view space
+    vec4 viewPos = ubo.view * vec4(inPosition, 1.0);
+
+    // Cull splats behind camera
+    if (viewPos.z &gt; 0.0) {
+        gl_Position = vec4(0.0, 0.0, -1.0, 1.0);
+        return;
+    }
+
+    // 2. Build 3D covariance matrix from rotation and scale
+    mat3 R = quaternionToMatrix(inRotation);
+    mat3 S = mat3(
+        inScale.x, 0.0,       0.0,
+        0.0,       inScale.y, 0.0,
+        0.0,       0.0,       inScale.z
+    );
+
+    // Covariance: Σ = R S S^T R^T
+    mat3 M = R * S;
+    mat3 cov3D = M * transpose(M);
+
+    // 3. Project 3D covariance to 2D
+    mat3 J = computeJacobian(viewPos.xyz, ubo.focal);
+    mat3 W = mat3(ubo.view);  // Extract rotation part only
+    mat3 T = J * W;
+
+    // Σ₂D = T Σ₃D T^T (only need upper 2x2 block)
+    mat3 cov2Dfull = T * cov3D * transpose(T);
+    mat2 cov2D = mat2(
+        cov2Dfull[0][0], cov2Dfull[0][1],
+        cov2Dfull[1][0], cov2Dfull[1][1]
+    );
+
+    // Add small value to diagonal for numerical stability
+    cov2D[0][0] += 0.3;
+    cov2D[1][1] += 0.3;
+
+    // 4. Compute splat radius from eigenvalues
+    vec2 eigenvals = eigenvalues2x2(cov2D);
+    float maxEigenval = max(eigenvals.x, eigenvals.y);
+    float radius = ceil(3.0 * sqrt(maxEigenval));  // 3 sigma = 99.7% coverage
+
+    // 5. Generate billboard quad
+    // gl_VertexIndex tells us which corner of the quad we're generating
+    // Use instanced rendering with 4 vertices per splat
+    vec2 quadOffsets[4] = vec2[](
+        vec2(-1.0, -1.0),
+        vec2( 1.0, -1.0),
+        vec2(-1.0,  1.0),
+        vec2( 1.0,  1.0)
+    );
+
+    int cornerIndex = gl_VertexIndex % 4;
+    vec2 quadOffset = quadOffsets[cornerIndex];
+
+    // Compute inverse of 2D covariance for Gaussian evaluation
+    float det = cov2D[0][0] * cov2D[1][1] - cov2D[0][1] * cov2D[1][0];
+    mat2 cov2DInv = mat2(
+         cov2D[1][1] / det, -cov2D[0][1] / det,
+        -cov2D[1][0] / det,  cov2D[0][0] / det
+    );
+
+    // Transform quad corner by covariance for proper ellipse shape
+    // This makes the quad align with the Gaussian's principal axes
+    vec2 offsetPixels = radius * quadOffset;
+
+    // Convert to NDC offset
+    vec2 offsetNDC = offsetPixels / (0.5 * ubo.viewport);
+
+    // Project center to clip space
+    vec4 clipPos = ubo.proj * viewPos;
+    clipPos /= clipPos.w;
+
+    // Add offset in NDC space
+    clipPos.xy += offsetNDC * clipPos.w;
+
+    gl_Position = clipPos;
+
+    // 6. Output to fragment shader
+    outColor = inColor;
+    outOpacity = inOpacity;
+
+    // Pass Gaussian coordinates for fragment evaluation
+    // Transform to Gaussian space using inverse covariance
+    outCoord = cov2DInv * (offsetPixels);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Notice the structure: we transform to view space, build the 3D covariance, project to 2D, compute the radius, and generate quad corners. The key insight is that <code>cov2DInv</code> (the inverse of the 2D covariance matrix) is what the fragment shader needs to evaluate the Gaussian. By computing it here and transforming our quad coordinates with it, we&#8217;ve set up everything perfectly for the fragment shader.</p>
+</div>
+<div class="paragraph">
+<p>One more thing: notice we add 0.3 to the diagonal of <code>cov2D</code>? That&#8217;s for numerical stability - it prevents degenerate cases where the covariance matrix becomes singular (non-invertible). It&#8217;s a small epsilon that doesn&#8217;t affect visual quality but prevents crashes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_fragment_shader_evaluating_the_gaussian"><a class="anchor" href="#_the_fragment_shader_evaluating_the_gaussian"></a>7.4. The Fragment Shader: Evaluating the Gaussian</h3>
+<div class="paragraph">
+<p>The fragment shader is much simpler. By the time we get here, all the hard work is done. We just need to evaluate the 2D Gaussian function at this pixel&#8217;s location:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">#version 450
+
+layout(location = 0) in vec3 inColor;
+layout(location = 1) in float inOpacity;
+layout(location = 2) in vec2 inCoord;  // Gaussian coordinates
+
+layout(location = 0) out vec4 outColor;
+
+void main()
+{
+    // Evaluate 2D Gaussian function: exp(-0.5 * x^T Σ^(-1) x)
+    // inCoord already has Σ^(-1) applied, so just compute dot product
+    float power = -0.5 * dot(inCoord, inCoord);
+
+    // Clamp for numerical stability
+    power = max(power, -100.0);
+
+    // Evaluate Gaussian
+    float gaussian = exp(power);
+
+    // Apply opacity
+    float alpha = gaussian * inOpacity;
+
+    // Early discard for performance (skip nearly transparent fragments)
+    if (alpha &lt; 0.004)  // ~1/255
+        discard;
+
+    // Output with premultiplied alpha
+    // This is important for correct blending
+    outColor = vec4(inColor * alpha, alpha);
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Beautiful! That&#8217;s only 20 lines of actual code. We compute how far we are from the Gaussian&#8217;s center (that <code>dot(inCoord, inCoord)</code> operation), evaluate the exponential falloff, multiply by opacity, and output. The <code>discard</code> for low alpha values is an optimization allowing us to drop pixels that are too transparent to see.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_premultiplied_alpha"><a class="anchor" href="#_premultiplied_alpha"></a>7.5. Premultiplied Alpha</h3>
+<div class="paragraph">
+<p>Notice the output <code>vec4(inColor * alpha, alpha)</code> instead of the more common <code>vec4(inColor, alpha)</code>. This is called premultiplied alpha (or associated alpha), and it&#8217;s crucial for correct Gaussian splat rendering.</p>
+</div>
+<div class="paragraph">
+<p>Here&#8217;s why: when you blend multiple semi-transparent Gaussians on top of each other, you want them to additively accumulate. With premultiplied alpha (where <code>source.rgb</code> already contains <code>color × alpha</code>), the blend equation is:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">result = source.rgb + destination.rgb * (1 - source.alpha)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>With straight (non-premultiplied) alpha it would be:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">result = source.rgb * source.alpha + destination.rgb * (1 - source.alpha)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Premultiplied alpha eliminates that extra multiply. More importantly, a fully transparent pixel contributes <code>(0, 0, 0, 0)</code>, which adds nothing — there is no color bleeding from transparent regions. This is why premultiplied alpha is the correct choice for Gaussian splats.</p>
+</div>
+<div class="paragraph">
+<p>Note: this equation only composites correctly when fragments are drawn back-to-front (furthest splat first). That is why depth sorting is a mandatory step in the pipeline, not an optional optimisation.</p>
+</div>
+<div class="paragraph">
+<p>Plus, there&#8217;s a performance bonus: the blend equation is simpler without that extra multiply for the source color.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_vulkan_pipeline_configuration"><a class="anchor" href="#_vulkan_pipeline_configuration"></a>7.6. Vulkan Pipeline Configuration</h3>
+<div class="paragraph">
+<p>Setting up the complete Vulkan pipeline for Gaussian splat rendering:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void create_splat_pipeline()
+{
+    // 1. Vertex input state - one binding per attribute buffer
+    std::vector&lt;VkVertexInputBindingDescription&gt; bindings = {
+        {0, sizeof(glm::vec3), VK_VERTEX_INPUT_RATE_INSTANCE},  // Position
+        {1, sizeof(glm::vec4), VK_VERTEX_INPUT_RATE_INSTANCE},  // Rotation
+        {2, sizeof(glm::vec3), VK_VERTEX_INPUT_RATE_INSTANCE},  // Scale
+        {3, sizeof(float),     VK_VERTEX_INPUT_RATE_INSTANCE},  // Opacity
+        {4, sizeof(glm::vec3), VK_VERTEX_INPUT_RATE_INSTANCE},  // Color
+    };
+
+    std::vector&lt;VkVertexInputAttributeDescription&gt; attributes = {
+        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},     // Position
+        {1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0},  // Rotation
+        {2, 2, VK_FORMAT_R32G32B32_SFLOAT, 0},     // Scale
+        {3, 3, VK_FORMAT_R32_SFLOAT, 0},           // Opacity
+        {4, 4, VK_FORMAT_R32G32B32_SFLOAT, 0},     // Color
+    };
+
+    VkPipelineVertexInputStateCreateInfo vertexInputState = {};
+    vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputState.vertexBindingDescriptionCount = bindings.size();
+    vertexInputState.pVertexBindingDescriptions = bindings.data();
+    vertexInputState.vertexAttributeDescriptionCount = attributes.size();
+    vertexInputState.pVertexAttributeDescriptions = attributes.data();
+
+    // 2. Input assembly - triangle strip for quad generation
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
+    inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+    inputAssemblyState.primitiveRestartEnable = VK_FALSE;
+
+    // 3. Rasterization state
+    VkPipelineRasterizationStateCreateInfo rasterizationState = {};
+    rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+    rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+    rasterizationState.cullMode = VK_CULL_MODE_NONE;  // Don't cull, quads face camera
+    rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    rasterizationState.lineWidth = 1.0f;
+
+    // 4. Depth/stencil state - READ depth but DON'T WRITE (transparency!)
+    VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
+    depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencilState.depthTestEnable = VK_TRUE;
+    depthStencilState.depthWriteEnable = VK_FALSE;  // Critical for transparency
+    depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS;
+
+    // 5. Blend state - Premultiplied alpha blending
+    VkPipelineColorBlendAttachmentState blendAttachment = {};
+    blendAttachment.blendEnable = VK_TRUE;
+    blendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+    blendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+    blendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+    blendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+    blendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    blendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+                                     VK_COLOR_COMPONENT_G_BIT |
+                                     VK_COLOR_COMPONENT_B_BIT |
+                                     VK_COLOR_COMPONENT_A_BIT;
+
+    VkPipelineColorBlendStateCreateInfo colorBlendState = {};
+    colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlendState.attachmentCount = 1;
+    colorBlendState.pAttachments = &amp;blendAttachment;
+
+    // Create pipeline...
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Key configuration points:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Instanced rendering</strong>: Use <code>VK_VERTEX_INPUT_RATE_INSTANCE</code> to draw 4 vertices per splat</p>
+</li>
+<li>
+<p><strong>No backface culling</strong>: Quads always face camera</p>
+</li>
+<li>
+<p><strong>Depth test but no write</strong>: Essential for correct transparency ordering</p>
+</li>
+<li>
+<p><strong>Premultiplied alpha blending</strong>: <code>ONE</code> + <code>ONE_MINUS_SRC_ALPHA</code></p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_drawing_gaussian_splats"><a class="anchor" href="#_drawing_gaussian_splats"></a>7.7. Drawing Gaussian Splats</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void draw_gaussian_splats(VkCommandBuffer cmd, const GaussianSplat&amp; splat)
+{
+    // Bind pipeline
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, splat_pipeline);
+
+    // Bind uniform buffer (view, proj matrices, etc.)
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline_layout, 0, 1, &amp;descriptor_set, 0, nullptr);
+
+    // Bind vertex buffers (one per attribute)
+    VkBuffer buffers[] = {
+        splat.position_buffer-&gt;get_handle(),
+        splat.rotation_buffer-&gt;get_handle(),
+        splat.scale_buffer-&gt;get_handle(),
+        splat.opacity_buffer-&gt;get_handle(),
+        splat.color_buffer-&gt;get_handle(),
+    };
+    VkDeviceSize offsets[] = {0, 0, 0, 0, 0};
+    vkCmdBindVertexBuffers(cmd, 0, 5, buffers, offsets);
+
+    // Draw: 4 vertices per splat, instanced
+    vkCmdDraw(cmd, 4, splat.splat_count, 0, 0);
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_depth_sorting"><a class="anchor" href="#_depth_sorting"></a>8. Depth Sorting</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For correct rendering, splats must be sorted by depth (back-to-front). Common approaches:</p>
+</div>
+<div class="sect2">
+<h3 id="_cpu_sorting"><a class="anchor" href="#_cpu_sorting"></a>8.1. CPU Sorting</h3>
+<div class="paragraph">
+<p>Simple but can be slow for large splat counts:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">std::sort(splats.begin(), splats.end(), [&amp;](const Splat&amp; a, const Splat&amp; b) {
+    float depthA = glm::dot(viewDir, a.position - cameraPos);
+    float depthB = glm::dot(viewDir, b.position - cameraPos);
+    return depthA &gt; depthB;  // Back to front
+});</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_gpu_radix_sort"><a class="anchor" href="#_gpu_radix_sort"></a>8.2. GPU Radix Sort</h3>
+<div class="paragraph">
+<p>More efficient for large datasets using compute shaders.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tile_based_sorting"><a class="anchor" href="#_tile_based_sorting"></a>8.3. Tile-Based Sorting</h3>
+<div class="paragraph">
+<p>Divide screen into tiles and sort within each tile for better parallelism.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_performance_considerations"><a class="anchor" href="#_performance_considerations"></a>9. Performance Considerations</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_culling"><a class="anchor" href="#_culling"></a>9.1. Culling</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Frustum culling</strong>: Skip splats outside the view frustum</p>
+</li>
+<li>
+<p><strong>Size culling</strong>: Skip splats that project to less than 1 pixel</p>
+</li>
+<li>
+<p><strong>Opacity culling</strong>: Skip splats with very low opacity</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_level_of_detail"><a class="anchor" href="#_level_of_detail"></a>9.2. Level of Detail</h3>
+<div class="paragraph">
+<p>Reduce splat count for distant regions or lower quality settings.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_memory_layout"><a class="anchor" href="#_memory_layout"></a>9.3. Memory Layout</h3>
+<div class="paragraph">
+<p>Use structure-of-arrays (SoA) for better cache utilization:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">struct SplatBuffers {
+    std::vector&lt;glm::vec3&gt; positions;
+    std::vector&lt;glm::vec4&gt; rotations;
+    std::vector&lt;glm::vec3&gt; scales;
+    std::vector&lt;float&gt; opacities;
+    std::vector&lt;glm::vec3&gt; colors;
+};</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_sample_usage"><a class="anchor" href="#_sample_usage"></a>10. Sample Usage</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>The render_octomap sample demonstrates switching between different view modes:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-cpp hljs" data-lang="cpp">void render_octomap::on_view_state_changed(MapView::ViewState newState)
+{
+    if (current_view_state == newState)
+        return;
+
+    current_view_state = newState;
+
+    switch (newState)
+    {
+        case MapView::ViewState::Octomap:
+            // Octomap is already loaded, just need to rebuild command buffers
+            break;
+
+        case MapView::ViewState::GLTFRegular:
+            if (!gltf_scene)
+                load_gltf_scene("scenes/octmap_and_splats/savedMap_v1.2.0.gltf");
+            break;
+
+        case MapView::ViewState::GLTFSplats:
+            if (!splat_instance_buffer)
+                load_gaussian_splats_scene("scenes/octmap_and_splats");
+            break;
+    }
+
+    rebuild_command_buffers();
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_future_enhancements"><a class="anchor" href="#_future_enhancements"></a>11. Future Enhancements</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_spherical_harmonics"><a class="anchor" href="#_spherical_harmonics"></a>11.1. Spherical Harmonics</h3>
+<div class="paragraph">
+<p>For view-dependent color effects, implement SH evaluation:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-glsl hljs" data-lang="glsl">vec3 evaluateSH(vec3 dir, mat3 sh_coeffs) {
+    // Evaluate spherical harmonics basis functions
+    // and combine with coefficients
+    return vec3(x,y,z);
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_anti_aliasing"><a class="anchor" href="#_anti_aliasing"></a>11.2. Anti-Aliasing</h3>
+<div class="paragraph">
+<p>Implement the Mip-Splatting technique for anti-aliased rendering.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_streaming"><a class="anchor" href="#_streaming"></a>11.3. Streaming</h3>
+<div class="paragraph">
+<p>For large scenes, implement tile-based streaming of splat data.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_references"><a class="anchor" href="#_references"></a>12. References</h2>
+<div class="sectionbody">
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/">3D Gaussian Splatting for Real-Time Radiance Field Rendering</a></p>
+</li>
+<li>
+<p><a href="https://github.com/KhronosGroup/glTF/pull/2446">KHR_gaussian_splatting GLTF Extension Proposal</a></p>
+</li>
+<li>
+<p><a href="../README.adoc">render_octomap Sample README</a></p>
+</li>
+</ul>
+</div>
+<div class="sect2">
+<h3 id="_what_this_sample_demonstrates"><a class="anchor" href="#_what_this_sample_demonstrates"></a>12.1. What This Sample Demonstrates</h3>
+<div class="paragraph">
+<p>The <code>render_octomap</code> sample shows all of this in action. It loads GLTF files containing both traditional geometry (octomaps) and Gaussian splats, switches between different rendering modes, and demonstrates how splats integrate with existing rendering techniques. It&#8217;s a real-world SLAM reconstruction workflow where you capture an environment, process it into both mesh and splat representations, and render them side-by-side.</p>
+</div>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../../../_/js/site.js" data-ui-root-path="../../../../../../_"></script>
+<script async src="../../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../../.." data-snippet-length="100" data-stylesheet="../../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

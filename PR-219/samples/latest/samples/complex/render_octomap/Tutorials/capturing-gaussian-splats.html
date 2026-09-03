@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Capturing Gaussian Splats: A Practical Guide :: Vulkan Documentation Project</title>
+    <meta name="generator" content="Antora 3.1.10">
+    <script>
+      !function (theme) {
+        if (theme === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.add('light')
+      }(localStorage && localStorage.getItem('theme') || (matchMedia('(prefers-color-scheme: dark)')?.matches && 'dark'))
+    </script>
+    <link rel="stylesheet" href="../../../../../../../_/css/site.css">
+    <link rel="stylesheet" href="../../../../../../../_/css/vendor/tabs.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../../../../_/img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../../../../_/img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../../../../_/img/favicon-16x16.png">
+    <link rel="manifest" href="../../../../../../../_/site.webmanifest">
+    <link rel="mask-icon" href="../../../../../../../_/img/safari-pinned-tab.svg" color="#a41e22">
+    <meta name="msapplication-TileColor" content="#ffc40d">
+    <!-- 1. Site-specific variables. Set these before the CDN scripts load. -->
+    <script>
+    var klaroCookieDomain = '.vulkan.org';
+    var klaroGtmId = 'GTM-WVL3BDCB';
+    var klaroPrivacyPolicyUrl = 'https://www.khronos.org/legal/privacy';
+    </script>
+
+    <!-- 2. Shared CDN assets. Replace cdn.khronos.org with your CDN host and
+         always reference a pinned version path. -->
+    <link rel="stylesheet" href="https://cdn.khronos.org/cookies/v1/klaro.css">
+    <script defer src="https://cdn.khronos.org/cookies/v1/klaro-bundle.min.js"></script>
+    <!-- The GTM loader runs on every page view (Google Consent Mode advanced):
+         it reads the saved Klaro consent cookie and starts GTM with the matching
+         granted/denied consent default. Keep it after the Klaro bundle so the GPC
+         opt-out cookie is written before the loader reads it. -->
+    <script defer src="https://cdn.khronos.org/cookies/v1/gtm-loader.js"></script>
+  </head>
+  <body class="article">
+<!-- 3. GTM noscript fallback. The container ID must be hardcoded here because
+     noscript content cannot read JS variables. Keep it in sync with klaroGtmId. -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WVL3BDCB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<header class="header">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="../../../../../.."><img class="navbar-item" alt="Vulkan White Label" src="../../../../../../../_/Vulkan_Docs.svg" /></a>
+      <div class="navbar-item search hide-for-print">
+        <div id="search-field" class="field has-filter">
+          <label for="search-input"></label>
+          <input id="search-input" type="text" placeholder="Search the docs">
+          <label class="filter checkbox">
+            <input type="checkbox" data-facet-filter="component:samples" checked> In this component
+          </label>
+        </div>
+      </div>
+      <button class="navbar-burger" aria-controls="topbar-nav" aria-expanded="false" aria-label="Toggle main menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+    <div id="topbar-nav" class="navbar-menu">
+      <div class="navbar-end">
+        <!-- <a class="navbar-item" href="#">Home</a> -->
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Specs</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../../spec/latest/chapters/introduction.html">Vulkan API</a>
+            <a class="navbar-item" href="../../../../../../glsl/latest/index.html">GLSL</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/hlsl.html">HLSL</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/slang.html">Slang</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Education</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="../../../../../../refpages/latest/refpages/index.html">Vulkan Reference Pages</a>
+            <a class="navbar-item" href="../../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a>
+            <a class="navbar-item" href="../../../../../../guide/latest/index.html">Vulkan Guide</a>
+            <a class="navbar-item" href="../../../../../../samples/latest/README.html">Vulkan Samples</a>
+            <a class="navbar-item" href="../../../../../../tutorial/latest/index.html">Vulkan Tutorial</a>
+            <a class="navbar-item" href="../../../../../../glslext/latest/index.html">GLSL Extensions</a>
+            <a class="navbar-item" href="https://www.youtube.com/c/vulkan">YouTube</a>
+            <a class="navbar-item" href="https://vulkan.org">More Info at Vulkan.org</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Feedback</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://github.com/KhronosGroup/Vulkan-Site/issues/new/choose" target="_blank">Report a Problem</a>
+          </div>
+        </div>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link" href="#">Community</a>
+          <div class="navbar-dropdown is-right">
+            <a class="navbar-item" href="https://discord.gg/vulkan">Vulkan Discord</a>
+            <a class="navbar-item" href="https://reddit.com/r/vulkan">Reddit</a>
+            <a class="navbar-item" href="https://stackoverflow.com/questions/tagged/vulkan">Stack Overflow</a>
+            <a class="navbar-item" href="https://fosstodon.org/@vulkan">Mastodon</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <label class="theme-toggler">
+      <input type="checkbox" id="switch-theme-checkbox" name="switch-theme-checkbox"/>
+      <span class="icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="moon" class="svg-inline--fa fa-moon moon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"></path>
+        </svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sun" class="svg-inline--fa fa-sun sun" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M361.5 1.2c5 2.1 8.6 6.6 9.6 11.9L391 121l107.9 19.8c5.3 1 9.8 4.6 11.9 9.6s1.5 10.7-1.6 15.2L446.9 256l62.3 90.3c3.1 4.5 3.7 10.2 1.6 15.2s-6.6 8.6-11.9 9.6L391 391 371.1 498.9c-1 5.3-4.6 9.8-9.6 11.9s-10.7 1.5-15.2-1.6L256 446.9l-90.3 62.3c-4.5 3.1-10.2 3.7-15.2 1.6s-8.6-6.6-9.6-11.9L121 391 13.1 371.1c-5.3-1-9.8-4.6-11.9-9.6s-1.5-10.7 1.6-15.2L65.1 256 2.8 165.7c-3.1-4.5-3.7-10.2-1.6-15.2s6.6-8.6 11.9-9.6L121 121 140.9 13.1c1-5.3 4.6-9.8 9.6-11.9s10.7-1.5 15.2 1.6L256 65.1 346.3 2.8c4.5-3.1 10.2-3.7 15.2-1.6zM160 256a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zm224 0a128 128 0 1 0 -256 0 128 128 0 1 0 256 0z"></path>
+        </svg></span>
+    </label>
+  </nav>
+</header>
+<script>
+  window.onload = function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark");
+    e.checked ? e.parentElement.classList.add("active") : e.parentElement.classList.remove("active")
+  }
+  !function() {
+    let e = document.getElementById("switch-theme-checkbox")
+    e.checked = document.documentElement.classList.contains("dark")
+    e.addEventListener("change", function() {
+      if (document.documentElement.classList.contains("light")) {
+        document.documentElement.classList.remove("light")
+        document.documentElement.classList.add("dark")
+      } else if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark")
+        document.documentElement.classList.add("light")
+      } else {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.add("light")
+        }
+      }
+      document.documentElement.setAttribute("data-theme", this.checked ? "dark" : "light"),
+        function(e) {
+          window.localStorage && window.localStorage.setItem("theme", e)
+        }(this.checked ? "dark" : "light"), this.checked ? this.parentElement.classList.add("active") : this.parentElement.classList.remove("active")
+    }.bind(e))
+  }();
+</script>
+<div class="body">
+<div class="nav-container" data-component="samples" data-version="latest" id="split-0">
+  <aside class="nav">
+    <div class="panels">
+<div class="nav-panel-menu is-active" data-panel="menu">
+  <nav class="nav-menu">
+    <button class="nav-menu-toggle" aria-label="Toggle expand/collapse all" style="display: none"></button>
+    <h3 class="title"><a href="../../../../README.html">Vulkan Samples</a></h3>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="0">
+<ul class="nav-list">
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../README.html">Samples overview</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../vulkan_basics.html">Vulkan basics</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <a class="nav-link" href="../../../../shaders/README.html">Shaders</a>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../../framework/README.html">Sample framework</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../components/README.html">Framework components</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/README.html">Api usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/compute_nbody/README.html">Compute N-body</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_compute_nbody/README.html">Compute N-body (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/dynamic_uniform_buffers/README.html">Dynamic uniform buffers</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_dynamic_uniform_buffers/README.html">Dynamic Uniform Buffers (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hdr/README.html">HDR</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hdr/README.html">HDR (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hello_triangle/README.html">Hello Triangle</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hello_triangle/README.html">Hello Triangle (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/hello_triangle_1_3/README.html">Hello Triangle 1.3</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_hello_triangle_1_3/README.html">Hello Triangle 1.3(Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/instancing/README.html">Instancing</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_instancing/README.html">Instancing (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/separate_image_sampler/README.html">Separate image sampler</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_separate_image_sampler/README.html">Separate image sampler (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/terrain_tessellation/README.html">Terrain tessellation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_terrain_tessellation/README.html">Terrain tessellation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/texture_loading/README.html">Texture loading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_texture_loading/README.html">Texture loading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/texture_mipmap_generation/README.html">Texture mipmap generation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_texture_mipmap_generation/README.html">Texture mipmap generation (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/timestamp_queries/README.html">Timestamp queries</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_timestamp_queries/README.html">Timestamp queries (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/oit_linked_lists/README.html">OIT linked lists</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_oit_linked_lists/README.html">OIT linked lists (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../api/oit_depth_peeling/README.html">OIT depth peeling</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../api/hpp_oit_depth_peeling/README.html">OIT depth peeling (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../api/swapchain_present_timing/README.html">Swapchain present timing</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/README.html">Extension usage samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/buffer_device_address/README.html">Buffer device address</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/calibrated_timestamps/README.html">Calibrated timestamps</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/conditional_rendering/README.html">Conditional rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/compute_shader_derivatives/README.html">Compute shader derivatives</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/conservative_rasterization/README.html">Conservative rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/debug_utils/README.html">Debug utils</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/descriptor_buffer_basic/README.html">Descriptor buffer basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/descriptor_heap/README.html">Descriptor heap</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/descriptor_indexing/README.html">Descriptor indexing</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/device_fault/README.html">Device Fault</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_line_rasterization/README.html">Dynamic line rasterization</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_primitive_clipping/README.html">Dynamic primitive clipping</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_rendering/README.html">Dynamic rendering</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_rendering_local_read/README.html">Dynamic rendering local read</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/extended_dynamic_state2/README.html">Extended dynamic state2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_density_map/README.html">Fragment density map</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_shader_barycentric/README.html">Fragment shader barycentric</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_shading_rate/README.html">Fragment shading rate</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/fragment_shading_rate_dynamic/README.html">Fragment shading rate dynamic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/full_screen_exclusive/README.html">Full screen exclusive</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/graphics_pipeline_library/README.html">Graphics pipeline library</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/gshader_to_mshader/README.html">Geometry shader to mesh shader</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/host_image_copy/README.html">Host image copy</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/logic_op_dynamic_state/README.html">Logic op dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/memory_budget/README.html">Memory budget</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/mesh_shader_culling/README.html">Mesh shader culling</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/mesh_shading/README.html">Mesh shading</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/hpp_mesh_shading/README.html">Mesh shading (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/open_cl_interop/README.html">OpenCL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/open_cl_interop_arm/README.html">OpenCL interop (Arm)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/open_gl_interop/README.html">OpenGL interop</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/pipeline_binary/README.html">Pipeline Binary</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/portability/README.html">Portability</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/push_descriptors/README.html">Push descriptors</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/hpp_push_descriptors/README.html">Push descriptors (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/rasterization_order_attachment_access/README.html">Rasterization order attachment access</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_basic/README.html">Raytracing basic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_extended/README.html">Raytracing extended</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_invocation_reorder/README.html">Ray tracing invocation reorder (SER)</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_queries/README.html">Ray queries</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_reflection/README.html">Ray tracing reflection</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/ray_tracing_position_fetch/README.html">Ray tracing position fetch</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_object/README.html">Shader Object</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_quad_control/README.html">Shader quad control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_debugprintf/README.html">Shader Debug Printf</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/layer_settings/README.html">Layer settings</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/shader_relaxed_extended_instruction/README.html">Shader relaxed extended instruction</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/sparse_image/README.html">Sparse Image</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/synchronization_2/README.html">Synchronization 2</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/README.html">Tensor and Data Graph</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/simple_tensor_and_data_graph/README.html">Simple Tensor and Data Graph</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/graph_constants/README.html">Graph constants</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/compute_shaders_with_tensors/README.html">Compute shaders with tensors</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/tensor_image_aliasing/README.html">Tensor image aliasing</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../extensions/tensor_and_data_graph/postprocessing_with_vgf/README.html">Postprocessing with VGF</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/timeline_semaphore/README.html">Timeline semaphore</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/vertex_dynamic_state/README.html">Vertex dynamic state</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../extensions/dynamic_multisample_rasterization/README.html">Dynamic multisample rasterization</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/README.html">Performance samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/16bit_arithmetic/README.html">16bit arithmetic</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/16bit_storage_input_output/README.html">16bit storage input output</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/afbc/README.html">AFBC</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/async_compute/README.html">Async compute</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/command_buffer_usage/README.html">Command buffer usage</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/constant_data/README.html">Constant data</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/descriptor_management/README.html">Descriptor management</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/image_compression_control/README.html">Image compression control</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/layout_transitions/README.html">Layout transitions</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/msaa/README.html">MSAA</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/multithreading_render_passes/README.html">Multithreading render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/multi_draw_indirect/README.html">Multi draw indirect</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/pipeline_barriers/README.html">Pipeline barriers</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/pipeline_cache/README.html">Pipeline cache</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_pipeline_cache/README.html">Pipeline cache (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/render_passes/README.html">Render passes</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/specialization_constants/README.html">Specialization constants</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/subpasses/README.html">Subpasses</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/surface_rotation/README.html">Surface rotation</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/swapchain_images/README.html">Swapchain images</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_swapchain_images/README.html">Swapchain images (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/texture_compression_basisu/README.html">Texture compression basisu</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../performance/texture_compression_comparison/README.html">Texture compression comparison</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="../../../performance/hpp_texture_compression_comparison/README.html">Texture compression comparison (Vulkan-Hpp)</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../performance/wait_idle/README.html">Wait idle</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../tooling/README.html">Tooling samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../tooling/profiles/README.html">Profiles</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../general/README.html">General samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../general/mobile_nerf/README.html">Mobile NeRF</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../general/mobile_nerf_rayquery/README.html">Mobile NeRF Ray Query</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../README.html">Complex Samples</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../README.html">Gausssian Splat and Octomap Rendering</a>
+<ul class="nav-list">
+  <li class="nav-item is-current-page" data-depth="3">
+    <a class="nav-link" href="capturing-gaussian-splats.html">Capturing Gaussian Splats</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="gaussian-splats-rendering.html">Rendering Gaussian Splats</a>
+  </li>
+</ul>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="../../../../docs/README.html">General documentation</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/build.html">Build guide</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/memory_limits.html">Memory limits</a>
+  </li>
+  <li class="nav-item" data-depth="2">
+    <a class="nav-link" href="../../../../docs/misc.html">Miscellaneous</a>
+  </li>
+</ul>
+  </li>
+  <li class="nav-item" data-depth="1">
+    <span class="nav-text"><a href="https://github.com/KhronosGroup/Vulkan-Samples" target="_blank" rel="noopener">GitHub Repository</a></span>
+  </li>
+</ul>
+  </li>
+</ul>
+  </nav>
+</div>
+<div class="nav-panel-explore" data-panel="explore">
+  <div class="context">
+    <span class="title">Vulkan Samples</span>
+    <span class="version">latest</span>
+  </div>
+  <ul class="components">
+    <li class="component">
+      <div class="title"><a href="../../../../../../tutorial/latest/00_Introduction.html">Khronos Vulkan Tutorial</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../tutorial/latest/00_Introduction.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../glslext/latest/glslext/index.html">OpenGL Shading Language Extensions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../glslext/latest/glslext/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../glsl/latest/index.html">OpenGL Shading Language Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../glsl/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../refpages/latest/refpages/index.html">Vulkan API Reference Pages</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../refpages/latest/refpages/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../features/latest/features/index.html">Vulkan Feature Descriptions</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../features/latest/features/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../guide/latest/index.html">Vulkan Guide</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../guide/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component is-current">
+      <div class="title"><a href="../../../../README.html">Vulkan Samples</a></div>
+      <ul class="versions">
+        <li class="version is-current is-latest">
+          <a href="../../../../README.html">latest</a>
+        </li>
+      </ul>
+    </li>
+    <li class="component">
+      <div class="title"><a href="../../../../../../spec/latest/index.html">Vulkan Specification</a></div>
+      <ul class="versions">
+        <li class="version is-latest">
+          <a href="../../../../../../spec/latest/index.html">latest</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+    </div>
+  </aside>
+</div>
+<main class="article" id="split-1">
+<div class="toolbar" role="navigation">
+<button class="nav-toggle"></button>
+  <a href="../../../../../../spec/latest/index.html" class="home-link"></a>
+<nav class="breadcrumbs" aria-label="breadcrumbs">
+  <ul>
+    <li><a href="../../../../README.html">Vulkan Samples</a></li>
+    <li><a href="../../README.html">Complex Samples</a></li>
+    <li><a href="../README.html">Gausssian Splat and Octomap Rendering</a></li>
+    <li><a href="capturing-gaussian-splats.html">Capturing Gaussian Splats</a></li>
+  </ul>
+</nav>
+</div>
+  <div class="content">
+<aside class="toc sidebar" data-title="Contents" data-levels="2">
+  <div class="toc-menu"></div>
+</aside>
+<article class="doc">
+<h1 class="page">Capturing Gaussian Splats: A Practical Guide</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a></li>
+<li><a href="#_what_youre_actually_capturing">2. What You&#8217;re Actually Capturing</a></li>
+<li><a href="#_capture_method_1_photogrammetry_video_or_photo_sequence">3. Capture Method 1: Photogrammetry (Video or Photo Sequence)</a>
+<ul class="sectlevel2">
+<li><a href="#_how_it_works">3.1. How It Works</a></li>
+<li><a href="#_what_you_need">3.2. What You Need</a></li>
+<li><a href="#_the_capture_process">3.3. The Capture Process</a></li>
+<li><a href="#_processing_with_colmap">3.4. Processing with COLMAP</a></li>
+<li><a href="#_tips_for_better_results">3.5. Tips for Better Results</a></li>
+</ul>
+</li>
+<li><a href="#_capture_method_2_slam_simultaneous_localization_and_mapping">4. Capture Method 2: SLAM (Simultaneous Localization and Mapping)</a>
+<ul class="sectlevel2">
+<li><a href="#_how_it_works_2">4.1. How It Works</a></li>
+<li><a href="#_what_you_need_2">4.2. What You Need</a></li>
+<li><a href="#_the_capture_process_with_rtab_map">4.3. The Capture Process with RTAB-Map</a></li>
+</ul>
+</li>
+<li><a href="#_capture_method_3_structured_light_and_laser_scanning">5. Capture Method 3: Structured Light and Laser Scanning</a>
+<ul class="sectlevel2">
+<li><a href="#_how_it_works_3">5.1. How It Works</a></li>
+<li><a href="#_what_you_need_3">5.2. What You Need</a></li>
+<li><a href="#_when_to_use_this_method">5.3. When to Use This Method</a></li>
+</ul>
+</li>
+<li><a href="#_capture_method_4_multi_view_stereo_rigs">6. Capture Method 4: Multi-View Stereo Rigs</a>
+<ul class="sectlevel2">
+<li><a href="#_how_it_works_4">6.1. How It Works</a></li>
+<li><a href="#_what_you_need_4">6.2. What You Need</a></li>
+<li><a href="#_when_to_use_this_method_2">6.3. When to Use This Method</a></li>
+</ul>
+</li>
+<li><a href="#_from_capture_to_gaussian_splats_the_training_pipeline">7. From Capture to Gaussian Splats: The Training Pipeline</a>
+<ul class="sectlevel2">
+<li><a href="#_the_training_process">7.1. The Training Process</a></li>
+<li><a href="#_available_training_tools">7.2. Available Training Tools</a></li>
+<li><a href="#_data_format_getting_your_capture_into_the_right_format">7.3. Data Format: Getting Your Capture into the Right Format</a></li>
+<li><a href="#_training_tips">7.4. Training Tips</a></li>
+</ul>
+</li>
+<li><a href="#_practical_capture_scenarios">8. Practical Capture Scenarios</a>
+<ul class="sectlevel2">
+<li><a href="#_scenario_1_indoor_room_scan">8.1. Scenario 1: Indoor Room Scan</a></li>
+<li><a href="#_scenario_2_object_scanning">8.2. Scenario 2: Object Scanning</a></li>
+<li><a href="#_scenario_3_outdoor_environment">8.3. Scenario 3: Outdoor Environment</a></li>
+<li><a href="#_scenario_4_performanceface_capture">8.4. Scenario 4: Performance/Face Capture</a></li>
+</ul>
+</li>
+<li><a href="#_quality_checklist">9. Quality Checklist</a></li>
+<li><a href="#_common_problems_and_solutions">10. Common Problems and Solutions</a></li>
+<li><a href="#_recommended_workflows_for_beginners">11. Recommended Workflows for Beginners</a></li>
+<li><a href="#_advanced_topics">12. Advanced Topics</a>
+<ul class="sectlevel2">
+<li><a href="#_camera_calibration">12.1. Camera Calibration</a></li>
+<li><a href="#_mask_based_capture">12.2. Mask-Based Capture</a></li>
+<li><a href="#_multi_stage_captures">12.3. Multi-Stage Captures</a></li>
+<li><a href="#_dynamic_scenes">12.4. Dynamic Scenes</a></li>
+</ul>
+</li>
+<li><a href="#_exporting_for_use_in_this_sample">13. Exporting for Use in This Sample</a>
+<ul class="sectlevel2">
+<li><a href="#_using_community_tools">13.1. Using Community Tools</a></li>
+<li><a href="#_verifying_the_export">13.2. Verifying the Export</a></li>
+</ul>
+</li>
+<li><a href="#_summary_from_capture_to_rendering">14. Summary: From Capture to Rendering</a></li>
+<li><a href="#_further_resources">15. Further Resources</a></li>
+</ul>
+</div>
+<div class="sect1">
+<h2 id="_introduction"><a class="anchor" href="#_introduction"></a>1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>So you want to capture your own Gaussian splat scenes? Great! Whether you&#8217;re scanning a room, capturing outdoor environments, or digitizing objects, this tutorial will walk you through the process. We&#8217;ll cover the different capture methods, what hardware and software you need, and how to turn your raw data into beautiful Gaussian splats.</p>
+</div>
+<div class="paragraph">
+<p>The good news: you probably already have the most important tool - a decent camera or smartphone. The less good news: the processing pipeline has some complexity, and getting high-quality results takes practice. But don&#8217;t worry, we&#8217;ll walk through everything step by step.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_what_youre_actually_capturing"><a class="anchor" href="#_what_youre_actually_capturing"></a>2. What You&#8217;re Actually Capturing</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before we dive into methods and tools, let&#8217;s clarify what we need to capture. Gaussian splat training requires understanding the 3D structure of your scene <strong>and</strong> its appearance from multiple viewpoints. Fundamentally, you need:</p>
+</div>
+<div class="paragraph">
+<p><strong>Multiple images</strong> of the scene from different angles. The more viewpoints, the better. Think dozens to hundreds of photos, not just 5-10.</p>
+</div>
+<div class="paragraph">
+<p><strong>Camera poses</strong> for each image - where the camera was positioned and oriented when that photo was taken. This is the 3D structure part.</p>
+</div>
+<div class="paragraph">
+<p><strong>Camera parameters</strong> - focal length, lens distortion, image resolution. Modern tools can estimate these automatically, but knowing them helps.</p>
+</div>
+<div class="paragraph">
+<p>Optional but helpful:</p>
+</div>
+<div class="paragraph">
+<p><strong>Depth information</strong> - if you have a depth camera, this accelerates training and improves quality.</p>
+</div>
+<div class="paragraph">
+<p><strong>Mask information</strong> - defining what parts of the image contain your subject versus background.</p>
+</div>
+<div class="paragraph">
+<p>The capture process gets you the images and camera poses. The training process turns this into Gaussian splats. Let&#8217;s look at the different ways to do the capture part.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_capture_method_1_photogrammetry_video_or_photo_sequence"><a class="anchor" href="#_capture_method_1_photogrammetry_video_or_photo_sequence"></a>3. Capture Method 1: Photogrammetry (Video or Photo Sequence)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This is the most accessible method because it works with any camera - phone, DSLR, drone, whatever. You walk around your subject taking photos (or record a video and extract frames), and software figures out where the camera was for each shot.</p>
+</div>
+<div class="sect2">
+<h3 id="_how_it_works"><a class="anchor" href="#_how_it_works"></a>3.1. How It Works</h3>
+<div class="paragraph">
+<p>Photogrammetry software analyzes your images, finds common features (corners, edges, textures), and uses them to reconstruct both the camera positions and a 3D point cloud of the scene. This process is called Structure from Motion (SfM). Once you have camera poses, you can train Gaussian splats.</p>
+</div>
+<div class="paragraph">
+<p>The software is solving a chicken-and-egg problem: to know the 3D structure, it needs camera positions. To know camera positions, it needs the 3D structure. It solves this iteratively, starting with estimates and refining them.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_you_need"><a class="anchor" href="#_what_you_need"></a>3.2. What You Need</h3>
+<div class="paragraph">
+<p><strong>Hardware:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Any camera that can take reasonably sharp photos</p>
+</li>
+<li>
+<p>Smartphones work great - modern phone cameras are surprisingly good</p>
+</li>
+<li>
+<p>DSLRs/mirrorless give you more control and better quality</p>
+</li>
+<li>
+<p>360° cameras work too, though processing is different</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Software:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>COLMAP</strong> (free, open-source, industry standard for SfM)</p>
+</li>
+<li>
+<p><strong>Reality Capture</strong> (commercial, fast, excellent quality)</p>
+</li>
+<li>
+<p><strong>Metashape</strong> (formerly PhotoScan, commercial, photogrammetry focused)</p>
+</li>
+<li>
+<p><strong>Meshroom</strong> (free, open-source, user-friendly interface)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_capture_process"><a class="anchor" href="#_the_capture_process"></a>3.3. The Capture Process</h3>
+<div class="paragraph">
+<p>Let me walk you through capturing a room:</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1 - Plan your capture.</strong> Walk around the space first. Identify problematic areas: shiny surfaces (mirrors, glass), plain textures (white walls), moving objects (people, pets, curtains). These confuse photogrammetry. Cover or remove them if possible.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2 - Set up lighting.</strong> Consistent lighting is crucial. Close curtains to avoid changing sunlight. Turn on all lights. Avoid harsh shadows. If you&#8217;re outdoors, overcast days are actually better than bright sun - softer, more even lighting.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3 - Camera settings.</strong> If using a phone, lock exposure and focus. On a DSLR, shoot in manual mode: ISO 400-800, aperture f/5.6-f/8 (for good depth of field), shutter fast enough to avoid blur (1/60s minimum handheld, faster is better). Shoot in RAW if possible.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4 - Capture images.</strong> Here&#8217;s where technique matters:</p>
+</div>
+<div class="paragraph">
+<p>Walk around your subject in overlapping circles. Imagine you&#8217;re orbiting at different heights. Take a photo every few steps, keeping 70-80% overlap between consecutive images. If you took 100 photos and every point in your scene appears in at least 10 of them, you&#8217;re doing great.</p>
+</div>
+<div class="paragraph">
+<p>Keep the subject centered in frame. Avoid extreme angles initially (you can get creative once you have good coverage). Move smoothly - no sudden position jumps between shots.</p>
+</div>
+<div class="paragraph">
+<p>If shooting video instead, walk <strong>slowly</strong>. Like, uncomfortably slowly. 1 step per second kind of slow. Extract frames every 5-10 frames later (not every single frame - too much overlap and motion blur).</p>
+</div>
+<div class="paragraph">
+<p>For objects, place them on a turntable and rotate them while keeping the camera steady. Or keep the object still and move the camera around it. Either works.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 5 - Capture enough data.</strong> For a small object: 50-100 photos. For a room: 200-400 photos. For a large outdoor space: 500-1000+ photos. More is better, but beyond a point you&#8217;re just adding processing time.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_processing_with_colmap"><a class="anchor" href="#_processing_with_colmap"></a>3.4. Processing with COLMAP</h3>
+<div class="paragraph">
+<p>COLMAP is the standard tool for photogrammetry. Here&#8217;s the workflow:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># 1. Feature extraction - finds interesting points in each image
+colmap feature_extractor \
+  --database_path database.db \
+  --image_path images/ \
+  --ImageReader.single_camera 1 \
+  --ImageReader.camera_model SIMPLE_RADIAL
+
+# 2. Feature matching - finds the same points across different images
+colmap exhaustive_matcher \
+  --database_path database.db
+
+# 3. Structure from Motion - estimates camera poses and 3D structure
+colmap mapper \
+  --database_path database.db \
+  --image_path images/ \
+  --output_path sparse/
+
+# 4. (Optional) Dense reconstruction - creates a dense point cloud
+colmap image_undistorter \
+  --image_path images/ \
+  --input_path sparse/0 \
+  --output_path dense/
+
+colmap patch_match_stereo \
+  --workspace_path dense/
+
+colmap stereo_fusion \
+  --workspace_path dense/ \
+  --output_path dense/fused.ply</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This gives you camera poses and a point cloud. Now you&#8217;re ready to train Gaussian splats.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tips_for_better_results"><a class="anchor" href="#_tips_for_better_results"></a>3.5. Tips for Better Results</h3>
+<div class="paragraph">
+<p><strong>Texture is your friend.</strong> Photogrammetry needs visual features to track. Plain white walls? Terrible. Textured wallpaper? Great. If capturing an object with little texture, temporarily add some - tape newspaper to it, place it on a textured surface, whatever.</p>
+</div>
+<div class="paragraph">
+<p><strong>Avoid motion blur.</strong> Blurry images confuse the feature matching. Use a fast shutter speed or good lighting to keep everything sharp.</p>
+</div>
+<div class="paragraph">
+<p><strong>Watch out for reflections.</strong> Shiny surfaces show different things from different angles, which breaks the assumptions of photogrammetry. Cover mirrors, shoot glass at angles to minimize reflections, or mask them out in post.</p>
+</div>
+<div class="paragraph">
+<p><strong>Mind the scale.</strong> Photogrammetry reconstructs relative scale, not absolute. A dollhouse and a cathedral look the same to the algorithm. Include a known-size reference object if absolute measurements matter.</p>
+</div>
+<div class="paragraph">
+<p><strong>Check your coverage.</strong> After capturing, review your photos. Did you miss any angles? Any parts of the scene that appear in fewer than 5 photos? Go back and fill those gaps.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_capture_method_2_slam_simultaneous_localization_and_mapping"><a class="anchor" href="#_capture_method_2_slam_simultaneous_localization_and_mapping"></a>4. Capture Method 2: SLAM (Simultaneous Localization and Mapping)</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>SLAM is what robots and AR devices use to understand their environment in real-time. Unlike photogrammetry (which processes everything after capture), SLAM tracks the camera pose <strong>while</strong> you&#8217;re capturing. The <code>render_octomap</code> sample uses data generated by Holochip&#8217;s real-time SLAM.  Note, Holochip&#8217;s solution generates the GLTF with compressed, embedded Gaussian Splats in real-time without any extra tools required.</p>
+</div>
+<div class="sect2">
+<h3 id="_how_it_works_2"><a class="anchor" href="#_how_it_works_2"></a>4.1. How It Works</h3>
+<div class="paragraph">
+<p>SLAM tracks visual features frame-to-frame, building a map of the environment while simultaneously tracking the camera&#8217;s position in that map. Modern SLAM systems can run in real-time on a laptop, giving you immediate feedback about your capture quality.</p>
+</div>
+<div class="paragraph">
+<p>The advantage over photogrammetry? You see the reconstruction as you capture, so you know immediately if you&#8217;ve missed areas or if the tracking failed. The disadvantage? It&#8217;s more sensitive to fast motion and requires more setup.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_you_need_2"><a class="anchor" href="#_what_you_need_2"></a>4.2. What You Need</h3>
+<div class="paragraph">
+<p><strong>Hardware:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A camera with good frame rate (30+ FPS)</p>
+</li>
+<li>
+<p>Ideally, an RGB-D camera (color + depth) like:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Intel RealSense D435 / D455</p>
+</li>
+<li>
+<p>Microsoft Azure Kinect</p>
+</li>
+<li>
+<p>iPhone Pro or iPad Pro (with LiDAR sensor)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Or just a regular webcam/phone camera (visual SLAM only)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Software:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>ORB-SLAM3</strong> (open-source, state-of-the-art visual SLAM)</p>
+</li>
+<li>
+<p><strong>RTAB-Map</strong> (open-source, designed for RGB-D cameras, user-friendly)</p>
+</li>
+<li>
+<p><strong>Open3D</strong> (library with SLAM capabilities)</p>
+</li>
+<li>
+<p><strong>ARKit</strong> (iOS, for iPhone/iPad with LiDAR)</p>
+</li>
+<li>
+<p><strong>ARCore</strong> (Android, though less accurate for reconstruction)</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_the_capture_process_with_rtab_map"><a class="anchor" href="#_the_capture_process_with_rtab_map"></a>4.3. The Capture Process with RTAB-Map</h3>
+<div class="paragraph">
+<p>Let&#8217;s walk through capturing a scene with RTAB-Map and an RGB-D camera:</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 1 - Set up your camera.</strong> Connect your RGB-D camera (e.g., RealSense D435). Launch RTAB-Map and configure it to use your camera.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 2 - Start mapping.</strong> Click "Start" and you&#8217;ll see a live view with tracked features. As you move the camera, you&#8217;ll see the 3D map building in real-time.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 3 - Capture technique.</strong> This is different from photogrammetry:</p>
+</div>
+<div class="paragraph">
+<p>Move <strong>smoothly</strong> and <strong>slowly</strong>. SLAM tracks features frame-to-frame, so sudden movements break tracking. Think "sliding" not "stepping."</p>
+</div>
+<div class="paragraph">
+<p>Keep the camera roughly level.  Extreme movement is a weak point in many SLAM implementations.</p>
+</div>
+<div class="paragraph">
+<p>Look at areas with good texture first. SLAM needs to initialize by tracking features. Starting in front of a white wall? Bad. Starting looking at a bookshelf? Good.  The easier you are on your SLAM implementation, the better it can perform.  Several professional grade solutions account for bad practices experienced in the real world.</p>
+</div>
+<div class="paragraph">
+<p>Revisit areas - this helps SLAM "close loops" and reduce drift. If you capture a room, end where you started. SLAM will recognize it&#8217;s back at the beginning and correct any accumulated error.</p>
+</div>
+<div class="paragraph">
+<p>Watch the tracking status in the UI. If it says "lost tracking," stop, back up slightly, and let it reacquire. Don&#8217;t continue capturing while tracking is lost.</p>
+</div>
+<div class="paragraph">
+<p><strong>Step 4 - Save the map.</strong> When done, RTAB-Map saves:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Camera trajectory (poses for each frame)</p>
+</li>
+<li>
+<p>Point cloud reconstruction</p>
+</li>
+<li>
+<p>RGB-D image data</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Export the camera poses and images in a format Gaussian splat trainers understand (more on this later).</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_capture_method_3_structured_light_and_laser_scanning"><a class="anchor" href="#_capture_method_3_structured_light_and_laser_scanning"></a>5. Capture Method 3: Structured Light and Laser Scanning</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For high-precision captures of smaller objects, structured light scanners and laser scanners give you submillimeter accuracy. These are specialized devices, but worth mentioning.</p>
+</div>
+<div class="sect2">
+<h3 id="_how_it_works_3"><a class="anchor" href="#_how_it_works_3"></a>5.1. How It Works</h3>
+<div class="paragraph">
+<p>Structured light scanners project patterns (lines, grids, dots) onto your subject and capture how they deform. This directly gives you depth. Rotate the object (or scanner), capture from multiple angles, align the scans, and you have a complete 3D model.</p>
+</div>
+<div class="paragraph">
+<p>Laser scanners use a laser to measure distances, rotating to scan the entire field of view. They&#8217;re more common in architecture and industrial settings.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_you_need_3"><a class="anchor" href="#_what_you_need_3"></a>5.2. What You Need</h3>
+<div class="paragraph">
+<p><strong>Hardware:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Desktop scanners: Revopoint POP 3, Creality CR-Scan, Shining 3D (consumer, $300-$1000)</p>
+</li>
+<li>
+<p>Professional scanners: Artec Eva, Faro Focus (professional, $10,000+)</p>
+</li>
+<li>
+<p>DIY: You can build structured light scanners with projectors and cameras</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Software:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Usually included with the scanner</p>
+</li>
+<li>
+<p><strong>CloudCompare</strong> for point cloud processing</p>
+</li>
+<li>
+<p><strong>MeshLab</strong> for mesh processing</p>
+</li>
+<li>
+<p>Export point clouds and camera poses for Gaussian splat training</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_when_to_use_this_method"><a class="anchor" href="#_when_to_use_this_method"></a>5.3. When to Use This Method</h3>
+<div class="paragraph">
+<p>Object scanning where precision matters - jewelry, mechanical parts, small sculptures. You get extremely accurate geometry, which helps Gaussian splat training converge faster.</p>
+</div>
+<div class="paragraph">
+<p>Not practical for room-scale or outdoor captures. These scanners work at close range.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_capture_method_4_multi_view_stereo_rigs"><a class="anchor" href="#_capture_method_4_multi_view_stereo_rigs"></a>6. Capture Method 4: Multi-View Stereo Rigs</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>For professional productions, multi-camera rigs capture dozens or hundreds of synchronized views simultaneously. Think "bullet time" from The Matrix, but for 3D reconstruction.</p>
+</div>
+<div class="sect2">
+<h3 id="_how_it_works_4"><a class="anchor" href="#_how_it_works_4"></a>6.1. How It Works</h3>
+<div class="paragraph">
+<p>Mount 50-200+ cameras in a geodesic dome or along rails. Synchronize their shutters. Capture all views at once. Process with photogrammetry, but since you have so many simultaneous views, reconstruction is faster and more accurate.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_what_you_need_4"><a class="anchor" href="#_what_you_need_4"></a>6.2. What You Need</h3>
+<div class="paragraph">
+<p>This is specialized equipment:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Synchronized camera arrays (GoPros, machine vision cameras)</p>
+</li>
+<li>
+<p>Hardware trigger systems</p>
+</li>
+<li>
+<p>Serious computing power for processing</p>
+</li>
+<li>
+<p>Custom calibration workflows</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Companies like Microsoft (Volumetric Video), Intel (TrueView), and various studios use these setups.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_when_to_use_this_method_2"><a class="anchor" href="#_when_to_use_this_method_2"></a>6.3. When to Use This Method</h3>
+<div class="paragraph">
+<p>Performance capture - actors, athletes, dynamic scenes. Anywhere you need to capture a moment frozen in time from all angles.</p>
+</div>
+<div class="paragraph">
+<p>Not for most users due to cost and complexity, but it&#8217;s how professional volumetric video is captured.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_from_capture_to_gaussian_splats_the_training_pipeline"><a class="anchor" href="#_from_capture_to_gaussian_splats_the_training_pipeline"></a>7. From Capture to Gaussian Splats: The Training Pipeline</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Okay, you&#8217;ve captured your scene using one of the methods above. Now you have:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A collection of images</p>
+</li>
+<li>
+<p>Camera poses for each image</p>
+</li>
+<li>
+<p>(Optionally) a point cloud</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>How do you turn this into Gaussian splats?</p>
+</div>
+<div class="sect2">
+<h3 id="_the_training_process"><a class="anchor" href="#_the_training_process"></a>7.1. The Training Process</h3>
+<div class="paragraph">
+<p>Training Gaussian splats is an optimization process. It starts with a point cloud (either from your capture or random initialization), treats each point as a Gaussian splat, and iteratively adjusts the positions, rotations, scales, opacities, and colors to match your captured images.</p>
+</div>
+<div class="paragraph">
+<p>The algorithm renders the current splats from each camera pose, compares the result to your actual captured image, and adjusts the splats to minimize the difference. Repeat for thousands of iterations, and you get photorealistic Gaussian splats.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_available_training_tools"><a class="anchor" href="#_available_training_tools"></a>7.2. Available Training Tools</h3>
+<div class="paragraph">
+<p><strong>1. Original 3D Gaussian Splatting Implementation</strong></p>
+</div>
+<div class="paragraph">
+<p>The reference implementation from INRIA:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Clone the repo
+git clone https://github.com/graphdeco-inria/gaussian-splatting --recursive
+
+# Install dependencies
+cd gaussian-splatting
+conda create -n gaussian_splatting python=3.8
+conda activate gaussian_splatting
+pip install -r requirements.txt
+
+# Train on your data (must be in COLMAP format)
+python train.py -s /path/to/your/scene -m output/model
+
+# Render views
+python render.py -m output/model
+
+# Export to GLTF (using community tools)
+python convert_to_gltf.py -m output/model -o output/scene.gltf</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>2. Nerfstudio</strong></p>
+</div>
+<div class="paragraph">
+<p>Nerfstudio is a framework for training various neural rendering methods, including Gaussian splats:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Install nerfstudio
+pip install nerfstudio
+
+# Process your images with COLMAP
+ns-process-data images --data /path/to/images --output-dir /path/to/processed
+
+# Train Gaussian splats
+ns-train splatfacto --data /path/to/processed
+
+# View in browser
+ns-viewer --load-config outputs/.../config.yml</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Nerfstudio is more user-friendly with great visualization tools and a web viewer.</p>
+</div>
+<div class="paragraph">
+<p><strong>3. Gaussian Splatting Studio</strong></p>
+</div>
+<div class="paragraph">
+<p>A GUI application that wraps the training process:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Point-and-click interface</p>
+</li>
+<li>
+<p>Built-in COLMAP integration</p>
+</li>
+<li>
+<p>Real-time training preview</p>
+</li>
+<li>
+<p>Export options for various formats</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Perfect if you don&#8217;t want to touch the command line.</p>
+</div>
+<div class="paragraph">
+<p><strong>4. Luma AI</strong> (Cloud-based)</p>
+</div>
+<div class="paragraph">
+<p>Upload your images to Luma&#8217;s cloud service. They handle processing and training, then you download the result. Easiest option but requires internet and their service.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_data_format_getting_your_capture_into_the_right_format"><a class="anchor" href="#_data_format_getting_your_capture_into_the_right_format"></a>7.3. Data Format: Getting Your Capture into the Right Format</h3>
+<div class="paragraph">
+<p>Training tools expect data in a specific format. The most common is COLMAP format:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-asciidoc hljs" data-lang="asciidoc">scene/
+  images/
+    IMG_0001.jpg
+    IMG_0002.jpg
+    ...
+  sparse/
+    0/
+      cameras.bin
+      images.bin
+      points3D.bin</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If you captured with COLMAP, you already have this.</p>
+</div>
+<div class="paragraph">
+<p>If you captured with RTAB-Map or other SLAM:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Export images to <code>images/</code></p>
+</li>
+<li>
+<p>Export camera poses in COLMAP format (or TUM format and convert)</p>
+</li>
+<li>
+<p>Some tools provide conversion scripts</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>If you have video:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Extract frames: <code>ffmpeg -i video.mp4 -qscale:v 2 images/img_%04d.jpg</code></p>
+</li>
+<li>
+<p>Run COLMAP on the frames to get camera poses</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_training_tips"><a class="anchor" href="#_training_tips"></a>7.4. Training Tips</h3>
+<div class="paragraph">
+<p><strong>Start with lower resolution.</strong> Training at 1920x1080 is slow. Downsample to 960x540 for initial tests, verify quality, then do a final training run at full resolution.</p>
+</div>
+<div class="paragraph">
+<p><strong>Watch the metrics.</strong> Training tools report PSNR (Peak Signal-to-Noise Ratio) and SSIM (Structural Similarity). Higher is better. If they plateau early, something&#8217;s wrong with your capture.</p>
+</div>
+<div class="paragraph">
+<p><strong>Point cloud initialization matters.</strong> If you have a good point cloud from COLMAP or SLAM, use it. Random initialization works but takes longer.</p>
+</div>
+<div class="paragraph">
+<p><strong>Iterations and learning rate.</strong> Default settings are usually good (30,000 iterations), but you can adjust. More complex scenes might benefit from longer training.</p>
+</div>
+<div class="paragraph">
+<p><strong>Densification.</strong> During training, the algorithm adds new splats where needed and removes useless ones. This "densification" happens automatically but can be tuned.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_practical_capture_scenarios"><a class="anchor" href="#_practical_capture_scenarios"></a>8. Practical Capture Scenarios</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s walk through some common scenarios with specific advice.</p>
+</div>
+<div class="sect2">
+<h3 id="_scenario_1_indoor_room_scan"><a class="anchor" href="#_scenario_1_indoor_room_scan"></a>8.1. Scenario 1: Indoor Room Scan</h3>
+<div class="paragraph">
+<p><strong>Best method:</strong> Photogrammetry or RGB-D SLAM</p>
+</div>
+<div class="paragraph">
+<p><strong>Hardware:</strong> Smartphone or RGB-D camera (RealSense, iPhone with LiDAR, Android (some models))</p>
+</div>
+<div class="paragraph">
+<p><strong>Process:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Close curtains for consistent lighting</p>
+</li>
+<li>
+<p>Remove or mask moving objects (people, pets, fans)</p>
+</li>
+<li>
+<p>If using photogrammetry: Walk around taking 300-400 photos with 70% overlap</p>
+</li>
+<li>
+<p>If using SLAM: Walk around slowly with RGB-D camera, ending where you started</p>
+</li>
+<li>
+<p>Process with COLMAP or RTAB-Map</p>
+</li>
+<li>
+<p>Train with nerfstudio or Gaussian splatting implementation</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Common issues:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>White walls lack texture → Temporarily hang posters or place textured objects</p>
+</li>
+<li>
+<p>Mirrors and glass → Cover them or mask in post</p>
+</li>
+<li>
+<p>Windows showing outside → Mask them out or close curtains</p>
+</li>
+<li>
+<p>Large plain surfaces (floors) → Walk at different heights to get multiple angles</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scenario_2_object_scanning"><a class="anchor" href="#_scenario_2_object_scanning"></a>8.2. Scenario 2: Object Scanning</h3>
+<div class="paragraph">
+<p><strong>Best method:</strong> Photogrammetry with turntable, or structured light scanner</p>
+</div>
+<div class="paragraph">
+<p><strong>Hardware:</strong> Camera + turntable, or handheld RGB-D, or structured light scanner</p>
+</div>
+<div class="paragraph">
+<p><strong>Process:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Place object on turntable with textured (non-reflective) background</p>
+</li>
+<li>
+<p>Set up even, diffuse lighting from multiple angles</p>
+</li>
+<li>
+<p>If using turntable: Rotate 10° at a time, capture 36 photos for full 360°</p>
+</li>
+<li>
+<p>Repeat at different heights (horizontal ring, 30° above, 30° below)</p>
+</li>
+<li>
+<p>If object has top details, capture top-down views</p>
+</li>
+<li>
+<p>Process with COLMAP or scanner software</p>
+</li>
+<li>
+<p>Train Gaussian splats</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Common issues:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Shiny objects → Use polarized light or powder spray (removable)</p>
+</li>
+<li>
+<p>Transparent objects → Place on contrasting background, use back-lighting</p>
+</li>
+<li>
+<p>Thin structures (wires, hair) → Multiple passes from different angles</p>
+</li>
+<li>
+<p>Symmetrical objects → Add temporary asymmetric markers for tracking</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scenario_3_outdoor_environment"><a class="anchor" href="#_scenario_3_outdoor_environment"></a>8.3. Scenario 3: Outdoor Environment</h3>
+<div class="paragraph">
+<p><strong>Best method:</strong> Photogrammetry with drone or ground-level camera</p>
+</div>
+<div class="paragraph">
+<p><strong>Hardware:</strong> Drone with camera</p>
+</div>
+<div class="paragraph">
+<p><strong>Process:</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Choose overcast day for even lighting (or consistent time if training on sunny day data)</p>
+</li>
+<li>
+<p>If using drone: Fly in automated grid pattern at multiple altitudes</p>
+</li>
+<li>
+<p>If ground-level: Walk around perimeter, capturing overlapping images</p>
+</li>
+<li>
+<p>Capture 500-1000+ photos for large areas</p>
+</li>
+<li>
+<p>Process with COLMAP or Reality Capture (better for large scenes)</p>
+</li>
+<li>
+<p>Train Gaussian splats</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Common issues:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Moving vegetation (trees, grass) → Capture on calm day, or accept some blur</p>
+</li>
+<li>
+<p>Changing lighting (sun, clouds) → Capture quickly or on overcast day</p>
+</li>
+<li>
+<p>Sky/uniform areas → COLMAP struggles; mask sky or focus on ground features</p>
+</li>
+<li>
+<p>Scale and drift → Include ground control points with known positions</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_scenario_4_performanceface_capture"><a class="anchor" href="#_scenario_4_performanceface_capture"></a>8.4. Scenario 4: Performance/Face Capture</h3>
+<div class="paragraph">
+<p><strong>Best method:</strong> Multi-view stereo rig, or single-camera video with careful technique</p>
+</div>
+<div class="paragraph">
+<p><strong>Hardware:</strong> Multiple synchronized cameras, or high-frame-rate single camera</p>
+</div>
+<div class="paragraph">
+<p><strong>Process (single camera):</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Have subject stay still</p>
+</li>
+<li>
+<p>Move camera around them in smooth, slow orbit</p>
+</li>
+<li>
+<p>Capture 200-300 frames (video at 30-60fps for 5-10 seconds)</p>
+</li>
+<li>
+<p>Extract frames, process with COLMAP</p>
+</li>
+<li>
+<p>Train Gaussian splats</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Process (multi-camera):</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Calibrate all cameras</p>
+</li>
+<li>
+<p>Synchronize shutters</p>
+</li>
+<li>
+<p>Capture single moment from all angles</p>
+</li>
+<li>
+<p>Process with photogrammetry</p>
+</li>
+<li>
+<p>Train Gaussian splats</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Common issues:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Subject movement → Very hard to handle; need multi-camera setup or very patient subject</p>
+</li>
+<li>
+<p>Hair and fine details → Need many views and high resolution</p>
+</li>
+<li>
+<p>Expression capture → Requires video or very fast multi-camera capture</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_quality_checklist"><a class="anchor" href="#_quality_checklist"></a>9. Quality Checklist</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Before training, verify you have:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Sufficient overlap</strong> - Every point visible in 10+ images</p>
+</li>
+<li>
+<p><strong>Sharp images</strong> - No motion blur</p>
+</li>
+<li>
+<p><strong>Consistent lighting</strong> - No dramatic changes between shots</p>
+</li>
+<li>
+<p><strong>Good texture</strong> - Photogrammetry needs features to track</p>
+</li>
+<li>
+<p><strong>Complete coverage</strong> - No missing angles (especially backs of objects)</p>
+</li>
+<li>
+<p><strong>Proper exposure</strong> - No blown-out highlights or crushed blacks</p>
+</li>
+<li>
+<p><strong>Stable capture</strong> - Smooth motion for SLAM, no sudden camera jumps</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>After COLMAP/SLAM processing, check:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Camera poses look correct</strong> - Visualize in COLMAP GUI or CloudCompare</p>
+</li>
+<li>
+<p><strong>Point cloud looks recognizable</strong> - Should roughly resemble your scene</p>
+</li>
+<li>
+<p><strong>No obvious registration errors</strong> - Point cloud shouldn&#8217;t be split or misaligned</p>
+</li>
+<li>
+<p><strong>Reasonable number of reconstructed cameras</strong> - If you took 300 photos but only 50 registered, something&#8217;s wrong</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_common_problems_and_solutions"><a class="anchor" href="#_common_problems_and_solutions"></a>10. Common Problems and Solutions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Problem:</strong> COLMAP reconstructs very few cameras (only 20 out of 200 images)</p>
+</div>
+<div class="paragraph">
+<p><strong>Solution:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Images might be too blurry → Recapture with faster shutter</p>
+</li>
+<li>
+<p>Insufficient overlap → Images are too different; capture with more overlap</p>
+</li>
+<li>
+<p>Scene too uniform → Add temporary texture or capture different subject</p>
+</li>
+<li>
+<p>Wrong camera model → Try different models (SIMPLE_RADIAL, PINHOLE, RADIAL)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Problem:</strong> Point cloud looks disconnected or has multiple copies of the same thing</p>
+</div>
+<div class="paragraph">
+<p><strong>Solution:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Insufficient overlap between different parts of your capture path</p>
+</li>
+<li>
+<p>Include "connecting" shots that bridge the gaps</p>
+</li>
+<li>
+<p>Might need to capture more images showing the relationship between parts</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Problem:</strong> SLAM lost tracking during capture</p>
+</div>
+<div class="paragraph">
+<p><strong>Solution:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Movement was too fast → Recapture with slower, smoother motion</p>
+</li>
+<li>
+<p>Area was too featureless → Start in textured area, move to plain areas gradually</p>
+</li>
+<li>
+<p>Lighting was too dark or had extreme contrast → Improve lighting</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Problem:</strong> Gaussian splat training produces blurry results</p>
+</div>
+<div class="paragraph">
+<p><strong>Solution:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Camera poses might be wrong → Check COLMAP/SLAM output quality</p>
+</li>
+<li>
+<p>Not enough training iterations → Train longer</p>
+</li>
+<li>
+<p>Images are actually blurry → Recapture with better camera settings</p>
+</li>
+<li>
+<p>Insufficient views → Capture more images from more angles</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Problem:</strong> Gaussian splats look good from training views but bad from novel views</p>
+</div>
+<div class="paragraph">
+<p><strong>Solution:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Overfitting → Not enough training views; capture more diverse angles</p>
+</li>
+<li>
+<p>Poor coverage → Missing key viewpoints; recapture with better coverage</p>
+</li>
+<li>
+<p>Wrong camera parameters → COLMAP estimated wrong intrinsics</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_recommended_workflows_for_beginners"><a class="anchor" href="#_recommended_workflows_for_beginners"></a>11. Recommended Workflows for Beginners</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Easiest, Average Quality, and Real-time</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Use Holochip&#8217;s LAMA app</p>
+</li>
+<li>
+<p>Connect to the Holochip LAMA server</p>
+</li>
+<li>
+<p>Observe map populated in near realtime with Gaussian Splats</p>
+</li>
+<li>
+<p>Retrieve the GLTF with embedded Gaussian Splats and the GEOJSON output from the saved maps folder.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Easiest: Smartphone + Cloud Processing</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Use phone with Luma AI app</p>
+</li>
+<li>
+<p>Record video walking slowly around subject</p>
+</li>
+<li>
+<p>Upload to Luma AI for processing</p>
+</li>
+<li>
+<p>Download trained Gaussian splats</p>
+</li>
+<li>
+<p>Convert to GLTF if needed</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Best Quality: DSLR + COLMAP + Local Training</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Use DSLR/mirrorless camera with manual settings</p>
+</li>
+<li>
+<p>Capture 200-400 photos with 70-80% overlap</p>
+</li>
+<li>
+<p>Process with COLMAP for camera poses</p>
+</li>
+<li>
+<p>Train with nerfstudio locally</p>
+</li>
+<li>
+<p>Export to GLTF</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p><strong>Fastest: RGB-D Camera + RTAB-Map</strong></p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Buy Intel RealSense D435i (~$300)</p>
+</li>
+<li>
+<p>Capture with RTAB-Map in real-time</p>
+</li>
+<li>
+<p>Export camera poses and images</p>
+</li>
+<li>
+<p>Train with Gaussian splatting implementation</p>
+</li>
+<li>
+<p>Export to GLTF</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_advanced_topics"><a class="anchor" href="#_advanced_topics"></a>12. Advanced Topics</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_camera_calibration"><a class="anchor" href="#_camera_calibration"></a>12.1. Camera Calibration</h3>
+<div class="paragraph">
+<p>If COLMAP struggles or you want more control, pre-calibrate your camera:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Print checkerboard pattern
+# Capture 20+ images of checkerboard from different angles
+# Run OpenCV calibration:
+python calibrate_camera.py --images calibration_images/ --output camera_params.txt
+
+# Use these parameters in COLMAP:
+colmap feature_extractor \
+  --database_path database.db \
+  --image_path images/ \
+  --ImageReader.camera_params "f,cx,cy,k1"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Calibration is especially important for wide-angle lenses (lots of distortion) or specialized cameras.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_mask_based_capture"><a class="anchor" href="#_mask_based_capture"></a>12.2. Mask-Based Capture</h3>
+<div class="paragraph">
+<p>If you want to capture an object without the background, use masks:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Capture normally</p>
+</li>
+<li>
+<p>Use Photoshop, GIMP, or Segment Anything Model (SAM) to create masks for each image</p>
+</li>
+<li>
+<p>Place masks in <code>masks/</code> folder (same filename as images, but .png)</p>
+</li>
+<li>
+<p>Train with masks to ignore background</p>
+</li>
+<li>
+<p>Result: Clean object without background clutter</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_multi_stage_captures"><a class="anchor" href="#_multi_stage_captures"></a>12.3. Multi-Stage Captures</h3>
+<div class="paragraph">
+<p>For very large or complex scenes:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Capture in sections</p>
+</li>
+<li>
+<p>Process each section independently with COLMAP</p>
+</li>
+<li>
+<p>Merge point clouds in CloudCompare</p>
+</li>
+<li>
+<p>Align camera poses</p>
+</li>
+<li>
+<p>Train Gaussian splats on merged data</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>This keeps processing manageable for huge scenes.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_dynamic_scenes"><a class="anchor" href="#_dynamic_scenes"></a>12.4. Dynamic Scenes</h3>
+<div class="paragraph">
+<p>Capturing moving subjects or from a moving platform (ship at sea) is hard but possible:</p>
+</div>
+<div class="paragraph">
+<p><strong>Time-slice approach:</strong> Multi-camera rig captures one moment from all angles. Process as static scene.</p>
+</div>
+<div class="paragraph">
+<p><strong>Per-frame approach:</strong> Capture video + SLAM. Train separate Gaussian splats for each frame, then morph between them. Very expensive, but produces 4D (3D + time) results.</p>
+</div>
+<div class="paragraph">
+<p><strong>Sparse dynamic capture:</strong> Capture mostly-static scene with dynamic elements. Train static Gaussian splats for background, separate dynamic models for moving parts.</p>
+</div>
+<div class="paragraph">
+<p>This is an active research area with new techniques emerging regularly.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_exporting_for_use_in_this_sample"><a class="anchor" href="#_exporting_for_use_in_this_sample"></a>13. Exporting for Use in This Sample</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>After training, you need to export your Gaussian splats to GLTF format to use them in the <code>render_octomap</code> sample or other Vulkan applications.</p>
+</div>
+<div class="sect2">
+<h3 id="_using_community_tools"><a class="anchor" href="#_using_community_tools"></a>13.1. Using Community Tools</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash"># Clone the gltf export tools
+git clone https://github.com/antimatter15/splat
+cd splat
+
+# Convert from .ply (Gaussian splatting output) to GLTF
+python convert.py \
+  --input /path/to/point_cloud.ply \
+  --output scene.gltf \
+  --format gltf
+
+# Or use the COLMAP-to-GLTF converter
+python colmap_to_gltf.py \
+  --colmap_dir /path/to/colmap/sparse/0 \
+  --output scene.gltf</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_verifying_the_export"><a class="anchor" href="#_verifying_the_export"></a>13.2. Verifying the Export</h3>
+<div class="paragraph">
+<p>Load your GLTF in a viewer to verify:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>glTF Viewer (web-based)</p>
+</li>
+<li>
+<p>Babylon.js Sandbox (web-based)</p>
+</li>
+<li>
+<p>This Vulkan sample!</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Check that:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Splats appear in correct positions</p>
+</li>
+<li>
+<p>Colors look right</p>
+</li>
+<li>
+<p>No missing regions</p>
+</li>
+<li>
+<p>File size is reasonable (compression working)</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_summary_from_capture_to_rendering"><a class="anchor" href="#_summary_from_capture_to_rendering"></a>14. Summary: From Capture to Rendering</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Let&#8217;s trace the complete pipeline one more time:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><strong>Plan your capture</strong> - Choose method based on subject, hardware, and quality needs</p>
+</li>
+<li>
+<p><strong>Capture data</strong> - Photos, video, or RGB-D with camera poses</p>
+</li>
+<li>
+<p><strong>Process captures</strong> - COLMAP, RTAB-Map, or other tool to get camera poses and point cloud</p>
+</li>
+<li>
+<p><strong>Verify quality</strong> - Check reconstructed cameras and point cloud look correct</p>
+</li>
+<li>
+<p><strong>Train Gaussian splats</strong> - Run training for 20-30k iterations</p>
+</li>
+<li>
+<p><strong>Export to GLTF</strong> - Use conversion tools to create standardized file</p>
+</li>
+<li>
+<p><strong>Load and render</strong> - Use this sample or other viewer to visualize</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The whole process from capture to rendering can take as little as an hour for simple objects (with cloud processing) or several days for complex scenes with high-quality local training.</p>
+</div>
+<div class="paragraph">
+<p>The most important factors for success:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Good capture technique</strong> - Overlap, smooth motion, even lighting</p>
+</li>
+<li>
+<p><strong>Sufficient coverage</strong> - Every part of your scene from many angles</p>
+</li>
+<li>
+<p><strong>Quality verification</strong> - Check each stage before moving to the next</p>
+</li>
+<li>
+<p><strong>Patience</strong> - Training takes time; don&#8217;t rush it</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_further_resources"><a class="anchor" href="#_further_resources"></a>15. Further Resources</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><strong>Software:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="https://github.com/colmap/colmap">COLMAP</a> - Structure from Motion</p>
+</li>
+<li>
+<p><a href="https://github.com/graphdeco-inria/gaussian-splatting">3D Gaussian Splatting</a> - Original implementation</p>
+</li>
+<li>
+<p><a href="https://github.com/nerfstudio-project/nerfstudio">Nerfstudio</a> - User-friendly training framework</p>
+</li>
+<li>
+<p><a href="https://github.com/introlab/rtabmap">RTAB-Map</a> - RGB-D SLAM</p>
+</li>
+<li>
+<p><a href="https://github.com/raulmur/ORB_SLAM3">ORB-SLAM3</a> - Visual SLAM</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Tutorials:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Original 3DGS paper: "3D Gaussian Splatting for Real-Time Radiance Field Rendering"</p>
+</li>
+<li>
+<p>COLMAP documentation: Excellent tutorials on photogrammetry</p>
+</li>
+<li>
+<p>Nerfstudio documentation: Great getting-started guides</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Communities:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>r/photogrammetry on Reddit</p>
+</li>
+<li>
+<p>3DGS Discord servers</p>
+</li>
+<li>
+<p>COLMAP discussions on GitHub</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><strong>Related Tutorials:</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="gaussian-splats-rendering.adoc">Gaussian Splats Rendering Tutorial</a> - How to render what you&#8217;ve captured</p>
+</li>
+<li>
+<p><a href="../README.adoc">render_octomap Sample README</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</article>
+  </div>
+</main>
+</div>
+<footer class="footer">
+  <p><a href="#" onclick="klaro.show(); return false;">Manage cookie preferences</a></p>
+</footer>
+<script id="site-script" src="../../../../../../_/js/site.js" data-ui-root-path="../../../../../../_"></script>
+<script async src="../../../../../../../_/js/vendor/highlight.js"></script>
+<script src="../../../../../../../_/js/vendor/split.js"></script>
+<script>
+    // Splitter should only be visible in non-mobile layouts (where a hamburger menu is used for nav)
+    var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+    var mobileNav = (width < 1024);
+
+    if (!mobileNav) {
+        var sizes = localStorage.getItem('split-sizes')
+
+        if (sizes) {
+            sizes = JSON.parse(sizes)
+        } else {
+            sizes = [25, 75]
+        }
+
+        var split = Split(['#split-0', '#split-1'], {
+            sizes: sizes,
+            onDragEnd: function (sizes) {
+                localStorage.setItem('split-sizes', JSON.stringify(sizes))
+            },
+        })
+    }
+</script>
+<script src="../../../../../../../_/js/vendor/lunr.js" defer></script>
+<script src="https://cdn.jsdelivr.net/pako/1.0.3/pako.min.js" defer></script>
+<script src="../../../../../../../_/js/search-ui.js" id="search-ui-script" data-site-root-path="../../../../../.." data-snippet-length="100" data-stylesheet="../../../../../../../_/css/search.css" defer></script>
+<script>
+window.addEventListener('DOMContentLoaded', function(){
+  try {
+    var script = document.getElementById('search-ui-script');
+    var siteRoot = (script && script.getAttribute('data-site-root-path')) || '';
+    var manifestUrl = siteRoot + '/search-index/manifest.json';
+    fetch(manifestUrl)
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(new Error('manifest not found')) })
+      .then(function (manifest) { antoraSearch.bootstrap(lunr, manifest, siteRoot); })
+      .catch(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = siteRoot + '/search-index.js';
+        document.head.appendChild(s);
+      });
+  } catch (e) {
+    // Fallback to monolithic index if anything goes wrong
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = '../../../../../../search-index.js';
+    document.head.appendChild(s);
+  }
+});
+</script>
+<script async src="../../../../../../../_/js/vendor/tabs.js"></script>
+  </body>
+</html>

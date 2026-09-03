@@ -1,0 +1,40 @@
+# CAVE Architecture and Multi-GPU Synchronization: Introduction
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/OpenXR_Vulkan_Spatial_Computing/12_CAVE_Architecture/01_introduction.html
+
+## Table of Contents
+
+- [The Challenge of Room-Scale Spatial Tech](#_the_challenge_of_room_scale_spatial_tech)
+- [The_Challenge_of_Room-Scale_Spatial_Tech](#_the_challenge_of_room_scale_spatial_tech)
+- [Synchronizing the Cluster](#_synchronizing_the_cluster)
+- [Synchronizing_the_Cluster](#_synchronizing_the_cluster)
+
+## Content
+
+While most of our focus so far has been on head-mounted displays (HMDs), spatial computing also encompasses large-scale environments like **CAVEs** (Cave Automatic Virtual Environments). A CAVE is a room where the walls, floor, and sometimes the ceiling are high-resolution projection surfaces. The user typically wears lightweight shutter glasses and is tracked by a system of cameras, creating a shared, immersive 3D space.
+
+Architecting an engine for a CAVE is fundamentally different from a single-GPU headset. To drive six or more 4K projectors at 120Hz, we often need a **Networked Cluster** of powerful workstations, each equipped with one or more high-end GPUs. This introduces a massive synchronization challenge: every frame must be displayed on every screen at the exact same microsecond to avoid "tearing" at the corners of the room.
+
+In this chapter, we will dive into the engineering required for room-scale spatial technology:
+
+**Projector-Based Spatial Tech**: Understanding the geometry of a CAVE and how to architect an engine to handle multiple, non-standard projection surfaces.
+
+**Hardware Synchronization**: Utilizing the **VK_NV_present_barrier** extension and **Swap Groups** to ensure frame-perfect synchronization across networked cluster nodes.
+
+**Distributed Rendering**: Designing a data-parallel architecture where each node in the cluster renders its own slice of the 3D world while remaining in lock-step with the master simulation.
+
+In an HMD, the screens are physically attached to your head. In a CAVE, the screens are the walls. This means that as you move around the room, the **Asymmetric Frustums** for each projection surface must be recalculated in real-time based on your tracked eye position.
+
+Furthermore, because the images are being stitched together from multiple projectors, we must handle **Geometric Correction** and **Edge Blending**—concepts we will explore in the next chapter—to ensure the virtual world appears seamless as it wraps around the physical corners of the room.
+
+The "holy grail" of CAVE engineering is **Genlock** (Generator Lock) and **Swaplock**. Genlock ensures that the video signal from every GPU is sent to the projectors at the exact same time. Swaplock ensures that the command to swap the front and back buffers happens simultaneously across the entire cluster.
+
+Without these hardware-level guarantees, the "immersion" of a CAVE is quickly broken by jitter and visual discontinuities. We will look at how Vulkan 1.3 features and specialized hardware extensions allow us to achieve this level of precision.
+
+By the end of this chapter, you will understand how to scale your spatial engine from a single-user headset to a multi-node, room-scale immersive environment.
+
+[Previous](../11_Canted_Displays/04_incorporating_into_the_engine.html) | [Next](02_projector_based_spatial_tech.html)

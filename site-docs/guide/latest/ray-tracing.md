@@ -1,0 +1,403 @@
+# Ray Tracing
+
+## Metadata
+
+- **Component**: guide
+- **Version**: latest
+- **URL**: /guide/latest/extensions/ray_tracing.html
+
+## Table of Contents
+
+- [VK_KHR_acceleration_structure](#VK_KHR_acceleration_structure)
+- [VK_KHR_ray_tracing_pipeline](#VK_KHR_ray_tracing_pipeline)
+- [VK_KHR_ray_query](#VK_KHR_ray_query)
+- [VK_KHR_pipeline_library](#VK_KHR_pipeline_library)
+- [VK_KHR_deferred_host_operations](#VK_KHR_deferred_host_operations)
+- [Synchronization for Ray Tracing](#ray-tracing-synchronization)
+- [Synchronization_for_Ray_Tracing](#ray-tracing-synchronization)
+- [Ray Tracing Best Practices](#ray-tracing-best-practices)
+- [Ray_Tracing_Best_Practices](#ray-tracing-best-practices)
+- [Minimize the Number of Concurrently Active Ray Query Objects](#_minimize_the_number_of_concurrently_active_ray_query_objects)
+- [Minimize_the_Number_of_Concurrently_Active_Ray_Query_Objects](#_minimize_the_number_of_concurrently_active_ray_query_objects)
+- [Minimize the Size of Ray Payloads, Hit Attributes and Callable Data](#_minimize_the_size_of_ray_payloads_hit_attributes_and_callable_data)
+- [Minimize_the_Size_of_Ray_Payloads,_Hit_Attributes_and_Callable_Data](#_minimize_the_size_of_ray_payloads_hit_attributes_and_callable_data)
+- [Prefer Device-Local Memory](#_prefer_device_local_memory)
+- [Prefer_Device-Local_Memory](#_prefer_device_local_memory)
+
+## Content
+
+A set of five interrelated extensions provide ray tracing support in the Vulkan API.
+
+* 
+[VK_KHR_acceleration_structure](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_acceleration_structure.html)
+
+* 
+[VK_KHR_ray_tracing_pipeline](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_ray_tracing_pipeline.html)
+
+* 
+[VK_KHR_ray_query](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_ray_query.html)
+
+* 
+[VK_KHR_pipeline_library](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_pipeline_library.html)
+
+* 
+[VK_KHR_deferred_host_operations](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_deferred_host_operations.html)
+
+Additional SPIR-V and GLSL extensions also expose the necessary programmable functionality for shaders:
+
+* 
+[SPV_KHR_ray_tracing](http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_ray_tracing.html)
+
+* 
+[SPV_KHR_ray_query](http://htmlpreview.github.io/?https://github.com/KhronosGroup/SPIRV-Registry/blob/main/extensions/KHR/SPV_KHR_ray_query.html)
+
+* 
+[GLSL_EXT_ray_tracing](https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_ray_tracing.txt)
+
+* 
+[GLSL_EXT_ray_query](https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_ray_query.txt)
+
+* 
+[GLSL_EXT_ray_flags_primitive_culling](https://github.com/KhronosGroup/GLSL/blob/master/extensions/ext/GLSL_EXT_ray_flags_primitive_culling.txt)
+
+|  | Many ray tracing applications require large contiguous memory
+| --- | --- |
+allocations. Due to the limited size of the address space, this can prove
+challenging on 32-bit systems. Whilst implementations are free to expose ray
+tracing extensions on 32-bit systems, applications may encounter intermittent
+memory-related issues such as allocation failures due to fragmentation.
+Additionally, some implementations may opt not to expose ray tracing
+extensions on 32-bit drivers. |
+
+Acceleration structures are an implementation-dependent opaque representation
+of geometric objects, which are used for ray tracing.
+By building objects into acceleration structures, ray tracing can be performed
+against a known data layout, and in an efficient manner.
+The `VK_KHR_acceleration_structure` extension introduces functionality to build
+and copy acceleration structures, along with functionality to support
+serialization to/from memory.
+
+Acceleration structures are required for both ray pipelines
+(`VK_KHR_ray_tracing_pipeline`) and ray queries (`VK_KHR_ray_query`).
+
+To create an acceleration structure:
+
+* 
+Populate an instance of `VkAccelerationStructureBuildGeometryInfoKHR` with
+the acceleration structure type, geometry types, counts, and maximum sizes.
+The geometry data does not need to be populated at this point.
+
+* 
+Call `vkGetAccelerationStructureBuildSizesKHR` to get the memory size
+requirements to perform a build.
+
+* 
+Allocate buffers of sufficient size to hold the acceleration structure
+(`VkAccelerationStructureBuildSizesKHR::accelerationStructureSize`) and build
+scratch buffer (`VkAccelerationStructureBuildSizesKHR::buildScratchSize`)
+
+* 
+Call `vkCreateAccelerationStructureKHR` to create an acceleration structure
+at a specified location within a buffer
+
+* 
+Call `vkCmdBuildAccelerationStructuresKHR` to build the acceleration structure.
+The previously populated `VkAccelerationStructureBuildGeometryInfoKHR` should
+be used as a parameter here, along with the destination acceleration structure
+object, build scratch buffer, and geometry data pointers (for vertices,
+indices and transforms)
+
+The `VK_KHR_ray_tracing_pipeline` extension introduces ray tracing pipelines.
+This new form of rendering pipeline is independent of the traditional
+rasterization pipeline. Ray tracing pipelines utilize a dedicated set of shader
+stages, distinct from the traditional vertex/geometry/fragment stages. Ray tracing
+pipelines also utilize dedicated commands to submit rendering work
+(`vkCmdTraceRaysKHR` and `vkCmdTraceRaysIndirectKHR`). These commands can be
+regarded as somewhat analagous to the drawing commands in traditional
+rasterization pipelines (`vkCmdDraw` and `vkCmdDrawIndirect`).
+
+To trace rays:
+
+* 
+Bind a ray tracing pipeline using `vkCmdBindPipeline` with
+`VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR`
+
+* 
+Call `vkCmdTraceRaysKHR` or `vkCmdTraceRaysIndirectKHR`
+
+Ray tracing pipelines introduce several new shader domains. These are described
+below:
+
+![Ray Tracing Shaders](https://www.khronos.org/assets/uploads/blogs/2020-The-ray-tracing-mechanism-achieved-through-the-five-shader-stages-2.jpg)
+
+* 
+Ray generation shader represents the starting point for ray tracing. The ray tracing commands
+(`vkCmdTraceRaysKHR` and `vkCmdTraceRaysIndirectKHR`) launch a grid of shader invocations,
+similar to compute shaders. A ray generation shader constructs rays and begins tracing via
+the invocation of traceRayEXT(). Additionally, it processes the results from the hit group.
+
+* 
+Closest hit shaders are executed when the ray intersects the closest geometry. An application
+can support any number of closest hit shaders. They are typically used for carrying out
+lighting calculations and can recursively trace additional rays.
+
+* 
+Miss shaders are executed instead of a closest hit shader when a ray does not intersect any
+geometry during traversal. A common use for a miss shader is to sample an environment map.
+
+* 
+The built-in intersection test is a ray-triangle test. Intersection shaders allow for custom
+intersection handling.
+
+* 
+Similar to the closest hit shader, any-hit shaders are executed after an intersection is
+reported. The difference is that an any-hit shader are be invoked for any intersection in
+the ray interval defined by [tmin, tmax] and not the closest one to the origin of the ray.
+The any-hit shader is used to filter an intersection and therefore is often used to
+implement alpha-testing.
+
+The `VK_KHR_ray_query` extension provides support for tracing rays from all
+shader types, including graphics, compute, and ray tracing pipelines.
+
+Ray query requires that ray traversal code is explicitly included within the
+shader. This differs from ray tracing pipelines, where ray generation,
+intersection testing and handling of ray-geometry hits are represented as
+separate shader stages. Consequently, whilst ray query allows rays to be traced
+from a wider range of shader stages, it also restricts the range of optimizations
+that a Vulkan implementation might apply to the scheduling and tracing of rays.
+
+The extension does not introduce additional API entry-points. It simply provides
+API support for the related SPIR-V and GLSL extensions (`SPV_KHR_ray_query` and
+`GLSL_EXT_ray_query`).
+
+The functionality provided by `VK_KHR_ray_query` is complementary to that
+provided by `VK_KHR_ray_tracing_pipeline`, and the two extensions can be used
+together.
+
+rayQueryEXT rq;
+
+rayQueryInitializeEXT(rq, accStruct, gl_RayFlagsTerminateOnFirstHitEXT, cullMask, origin, tMin, direction, tMax);
+
+// Traverse the acceleration structure and store information about the first intersection (if any)
+rayQueryProceedEXT(rq);
+
+if (rayQueryGetIntersectionTypeEXT(rq, true) == gl_RayQueryCommittedIntersectionNoneEXT) {
+    // Not in shadow
+}
+
+`VK_KHR_pipeline_library` introduces pipeline libraries. A pipeline library is
+a special pipeline that was created using the `VK_PIPELINE_CREATE_LIBRARY_BIT_KHR`
+and cannot be bound and used directly. Instead, these are pipelines that
+represent a collection of shaders, shader groups and related state which can be
+linked into other pipelines.
+
+`VK_KHR_pipeline_library` does not introduce any new API functions directly, or
+define how to create a pipeline library. Instead, this functionality is left to
+other extensions which make use of the functionality provided by
+`VK_KHR_pipeline_library`.
+Currently, the only example of this is `VK_KHR_ray_tracing_pipeline`.
+`VK_KHR_pipeline_library` was defined as a separate extension to allow for the
+possibility of using the same functionality in other extensions in the future
+without introducing a dependency on the ray tracing extensions.
+
+To create a ray tracing pipeline library:
+
+* 
+Set `VK_PIPELINE_CREATE_LIBRARY_BIT_KHR` in `VkRayTracingPipelineCreateInfoKHR::flags`
+when calling `vkCreateRayTracingPipelinesKHR`
+
+To link ray tracing pipeline libraries into a full pipeline:
+
+* 
+Set `VkRayTracingPipelineCreateInfoKHR::pLibraryInfo` to point to an instance
+of `VkPipelineLibraryCreateInfoKHR`
+
+* 
+Populate `VkPipelineLibraryCreateInfoKHR::pLibraries` with the pipeline
+libraries to be used as inputs to linking, and set `VkPipelineLibraryCreateInfoKHR::libraryCount`
+to the appropriate value
+
+`VK_KHR_deferred_host_operations` introduces a mechanism for distributing expensive
+CPU tasks across multiple threads. Rather than introduce a thread pool into Vulkan
+drivers, `VK_KHR_deferred_host_operations` is designed to allow an application to
+create and manage the threads.
+
+As with `VK_KHR_pipeline_library`, `VK_KHR_deferred_host_operations` was defined
+as a separate extension to allow for the possibility of using the same functionality
+in other extensions in the future without introducing a dependency on the ray
+tracing extensions.
+
+Only operations that are specifically noted as supporting deferral may be deferred.
+Currently the only operations which support deferral are `vkCreateRayTracingPipelinesKHR`,
+`vkBuildAccelerationStructuresKHR`, `vkCopyAccelerationStructureKHR`,
+`vkCopyMemoryToAccelerationStructureKHR`, and `vkCopyAccelerationStructureToMemoryKHR`
+
+To request that an operation is deferred:
+
+* 
+Create a `VkDeferredOperationKHR` object by calling `vkCreateDeferredOperationKHR`
+
+* 
+Call the operation that you wish to be deferred, passing the `VkDeferredOperationKHR`
+as a parameter.
+
+* 
+Check the `VkResult` returned by the above operation:
+
+`VK_OPERATION_DEFERRED_KHR` indicates that the operation was successfully
+deferred
+
+* 
+`VK_OPERATION_NOT_DEFERRED_KHR` indicates that the operation successfully
+completed immediately
+
+* 
+Any error value indicates that an error occurred
+
+To join a thread to a deferred operation, and contribute CPU time to progressing
+the operation:
+
+* 
+Call `vkDeferredOperationJoinKHR` from each thread that you wish to participate
+in the operation
+
+* 
+Check the `VkResult` returned by `vkDeferredOperationJoinKHR`:
+
+`VK_SUCCESS` indicates that the operation is complete
+
+* 
+`VK_THREAD_DONE_KHR` indicates that there is no more work to assign to the
+calling thread, but that other threads may still have some additional work to
+complete. The current thread should not attempt to re-join by calling
+`vkDeferredOperationJoinKHR` again
+
+* 
+`VK_THREAD_IDLE_KHR` indicates that there is **temporarily** no work to assign
+to the calling thread, but that additional work may become available in the
+future. The current thread may perform some other useful work on the calling
+thread, and re-joining by calling `vkDeferredOperationJoinKHR` again later
+may prove beneficial
+
+After an operation has completed (i.e. `vkDeferredOperationJoinKHR` has returned
+`VK_SUCCESS`), call `vkGetDeferredOperationResultKHR` to get the result of the
+operation.
+
+* 
+For trace or query calls in a shader, use
+`VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR` with the relevant shader
+stage(s) for the acceleration structure
+
+* 
+For accesses to the shader binding table in the ray tracing pipeline, use
+`VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR` with either
+`VK_ACCESS_SHADER_READ_BIT` or `VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR`
+
+* 
+For acceleration structure builds, use
+`VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR` with access bits
+corresponding to the resource being accessed:
+
+Destination AS uses `VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR`
+
+* 
+Source AS (e.g. for updates) uses `VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR`
+
+* 
+Scratch buffers need both `VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR`
+and `VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR`
+
+* 
+Vertex/Index/Instance/Transform buffers use `VK_ACCESS_SHADER_READ_BIT`
+
+For acceleration structure copy commands, use
+`VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR` or
+`VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR`, again with access
+flags dependent on sources:
+
+* 
+Destination AS uses `VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR`
+
+* 
+Source AS uses `VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR`
+
+* 
+Destination buffer uses `VK_ACCESS_TRANSFER_WRITE_BIT`
+
+* 
+Source buffer uses `VK_ACCESS_TRANSFER_READ_BIT`
+
+For indirect trace calls, the indirect buffer is
+`VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT` with
+`VK_ACCESS_INDIRECT_COMMAND_READ_BIT`
+
+For indirect acceleration structure builds, the indirect buffer is
+`VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR` with
+`VK_ACCESS_INDIRECT_COMMAND_READ_BIT`
+
+For micromap builds, use `VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT` with
+access bits corresponding to which resource is being accessed:
+
+* 
+Destination micromap uses `VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT`
+
+* 
+Scratch buffers need both `VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT` and
+`VK_ACCESS_2_MICROMAP_READ_BIT_EXT`
+
+* 
+Input buffers use `VK_ACCESS_SHADER_READ_BIT`
+
+For micromap copy commands, use `VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT`,
+again with access flags dependent on sources:
+
+* 
+Destination micromap uses `VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT`
+
+* 
+Source micromap uses `VK_ACCESS_2_MICROMAP_READ_BIT_EXT`
+
+* 
+Destination buffer uses `VK_ACCESS_TRANSFER_WRITE_BIT`
+
+* 
+Source buffer uses `VK_ACCESS_TRANSFER_READ_BIT`
+
+|  | Unlike other copy operations, `VK_PIPELINE_STAGE_TRANSFER_BIT` does not
+| --- | --- |
+work for acceleration structure copies.
+
+Use of `VK_PIPELINE_STAGE_2_ACCELERATION_STRUCTURE_COPY_BIT_KHR`/
+`VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR` requires
+`VK_KHR_ray_tracing_maintenance1`.
+
+Use of `VK_PIPELINE_STAGE_2_MICROMAP_BUILD_BIT_EXT`/
+`VK_ACCESS_2_MICROMAP_WRITE_BIT_EXT`/`VK_ACCESS_2_MICROMAP_READ_BIT_EXT`
+requires `VK_EXT_opacity_micromap`. |
+
+Ray query objects may be expensive in terms of thread private storage, so for
+performance, it’s best to use as few as possible. In most cases it should be
+possible to use a single ray query object even if tracing multiple rays since a
+terminated ray that’s issuing a new ray can use the same object. Multiple ray
+queries in the same shader should only be needed when multiple traversals need
+to be active concurrently, and shaders should be designed to minimize the number
+of active traversals.
+
+The ray tracing shader stages can communicate parameters and results using ray
+payload structures between all traversal stages, hit attribute structures
+from the traversal control shaders, and callable data structures for callable
+shaders.
+
+All three of these structures consume driver-managed memory, the total quantity of
+which may scale based on the size of the structures themselves, the number
+of concurrently active rays, and additional factors such as levels of recursion.
+
+Shaders should aim to keep the size of these structures low.
+
+While acceleration structures can be built on any Vulkan memory heap,
+tracing rays on accelerations structures located in device-local memory should
+be expected to deliver the best performance, and should be preferred. The use of
+host-local memory (i.e. GPU accessible system memory) may be necessary in
+situations where applications are limited by the quantity of available
+device-local memory, but this is unlikely to deliver equivalent performance to
+tracing rays on device-local memory.

@@ -1,0 +1,17 @@
+# ML Inference with Cooperative Matrices
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/OpenXR_Vulkan_Spatial_Computing/17_ML_Inference_Spatial/01_introduction.html
+
+## Content
+
+As we’ve seen in the previous chapter, the sensors on a modern XR headset provide a flood of raw physical data. But capturing triangles is only half the battle. To create truly intelligent spatial applications, we need to "understand" that data in real-time.
+
+Is that moving cluster of vertices a user’s hand? Is it a cat jumping on the sofa? To answer these questions without stalling our rendering pipeline, we turn to **ML Inference** (Machine Learning). In this chapter, we’ll explore how to leverage the **Cooperative Matrices** in Vulkan 1.3 to perform high-speed neural network calculations directly on the GPU.
+
+By moving inference from the CPU to the GPU’s specialized matrix hardware (like **Tensor Cores** or **Matrix Accelerators**), we can achieve sub-millisecond latency for tasks like hand-pose refinement, semantic segmentation, and mesh reconstruction. We’ll learn how to integrate these ML kernels into our engine’s compute pipeline, turning noisy sensor data into clean, interactive inputs.
+
+[Previous](../16_Scene_Understanding/04_incorporating_into_the_engine.html) | [Next](02_on_gpu_inference.html)

@@ -1,0 +1,87 @@
+# Native Multiview
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/OpenXR_Vulkan_Spatial_Computing/08_Slang_Spatial_Shaders/02_native_multiview.html
+
+## Table of Contents
+
+- [Ecosystem Perspective](#_ecosystem_perspective)
+- [The CPU Overhead Win: Why We Hate Loops](#_the_cpu_overhead_win_why_we_hate_loops)
+- [The_CPU_Overhead_Win:_Why_We_Hate_Loops](#_the_cpu_overhead_win_why_we_hate_loops)
+- [View Masks and the Broadcast Mechanism](#_view_masks_and_the_broadcast_mechanism)
+- [View_Masks_and_the_Broadcast_Mechanism](#_view_masks_and_the_broadcast_mechanism)
+- [The_Hardware_Implementation:_SV_ViewID](#_the_hardware_implementation_sv_viewid)
+- [Advanced: View-Specific Scaling and Occlusion Culling](#_advanced_view_specific_scaling_and_occlusion_culling)
+- [Advanced:_View-Specific_Scaling_and_Occlusion_Culling](#_advanced_view_specific_scaling_and_occlusion_culling)
+
+## Content
+
+The technology behind **Single-Pass Stereo** is **Native Multiview** (`VK_KHR_multiview`). This feature allows a single draw call to be broadcast to multiple layers of an image array. For spatial computing, where we almost always have at least two views, this is a massive performance win.
+
+This chapter falls under the category: **Using Vulkan with an OpenXR Runtime**.
+
+Leveraging Vulkan’s native multiview support is the industry-standard way to implement high-performance stereo rendering in OpenXR. It allows you to satisfy the runtime’s multi-view requirements with minimum CPU overhead.
+
+To understand the value of multiview, look at the alternative: **The Multi-Pass Loop**.
+
+**Loop**: For each eye (0 to 1):
+
+**Bind**: Update the view/projection UBO for that eye.
+
+**Draw**: Re-issue all draw calls for the scene.
+
+In a complex scene, the CPU does twice the work, often becoming **CPU-Bound**. **Multiview kills the loop.** You issue the draw calls **once**, and the GPU’s fixed-function hardware handles the broadcast. The CPU overhead is cut in half, and the GPU can stay saturated.
+
+// Enabling Multiview in Vulkan 1.3 using designated initializers
+vk::RenderingInfo renderingInfo{
+    .renderArea = {{0, 0}, {xrWidth, xrHeight}},
+    .layerCount = 1, // Must be 1 when using multiview masks
+    .viewMask = 0b11, // Broadcast to Layer 0 (Left) and Layer 1 (Right)
+    .colorAttachmentCount = 1,
+    .pColorAttachments = &colorAttachment
+};
+
+commandBuffer.beginRendering(renderingInfo);
+
+In a standard Vulkan pipeline, a draw call targets a specific attachment. With multiview enabled, you specify a **View Mask** in your `vk::RenderingInfo`. A view mask is a bitmask where each set bit represents a layer in the output array.
+
+* 
+**Mask 0b11 (3)**: Renders to both Layer 0 (Left Eye) and Layer 1 (Right Eye).
+
+* 
+**Mask 0b1111 (15)**: Renders to four layers (used for Quad-Views).
+
+By using multiview, you are aligning your engine with how the runtime expects to receive data. Most runtimes prefer **Array-Based Swapchains** because they allow for better hardware-level parallelization and coherent caching between eyes.
+
+When multiview is active, the GPU executes the vertex shader for each bit set in the mask. Within the shader, you access the current view index using the `SV_ViewID` semantic.
+
+// Using the View ID in a Slang Shader
+struct VertexOutput {
+    float4 position : SV_Position;
+    uint viewID : SV_ViewID;
+};
+
+VertexOutput main(VertexInput input, uint viewID : SV_ViewID) {
+    VertexOutput output;
+    // Load the correct eye matrix using the viewID
+    float4x4 mvp = eyeMatrices[viewID];
+    output.position = mul(mvp, float4(input.position, 1.0));
+    output.viewID = viewID;
+    return output;
+}
+
+Vulkan allows for granular control that goes beyond the standard OpenXR multiview integration:
+
+* 
+**Per-View Attributes**: Vulkan’s **Multiview Per-View Attributes** allow you to use different resolutions or shader attributes for each view index within a single draw call. This enables optimizations like using lower-resolution geometry for peripheral views.
+
+* 
+**Cross-View Dependencies**: You can use Vulkan’s **Subgroup Operations** to share data between shader invocations across different views. This enables **Inter-View Occlusion Culling**, where the visibility test from one eye can be shared with the second, significantly reducing redundant work.
+
+|  | For more information on multiview, check out the official [Vulkan Specification](https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#VK_KHR_multiview), the [Vulkan Guide](https://docs.vulkan.org/guide/latest/index.html), and our [main tutorial series](00_introduction.adoc). |
+| --- | --- |
+
+[Previous](01_introduction.html) | [Next](03_slang_architecture.html)

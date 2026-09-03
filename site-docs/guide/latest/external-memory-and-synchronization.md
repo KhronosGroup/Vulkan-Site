@@ -1,0 +1,108 @@
+# External Memory and Synchronization
+
+## Metadata
+
+- **Component**: guide
+- **Version**: latest
+- **URL**: /guide/latest/extensions/external.html
+
+## Table of Contents
+
+- [Extension breakdown](#_extension_breakdown)
+- [Memory vs Synchronization](#_memory_vs_synchronization)
+- [Memory_vs_Synchronization](#_memory_vs_synchronization)
+- [Handle Types](#_handle_types)
+- [Capabilities](#_capabilities)
+- [External Memory](#_external_memory)
+- [Importing Memory](#_importing_memory)
+- [Exporting Memory](#_exporting_memory)
+- [Synchronization](#_synchronization)
+- [Importing and Exporting Synchronization Primitives](#_importing_and_exporting_synchronization_primitives)
+- [Importing_and_Exporting_Synchronization_Primitives](#_importing_and_exporting_synchronization_primitives)
+- [Example Workflow](#_example_workflow)
+
+## Content
+
+Sometimes not everything an application does related to the GPU is done in Vulkan. There are various situations where memory is written or read outside the scope of Vulkan. To support these use cases a set of external memory and synchronization functions was created
+
+While there may seem to be a lot of `VK_KHR_external_*` extensions, they are in practice, just nicely separating the logic apart.
+
+![external_extensions_2.png](../_images/extensions/external_extensions_2.png)
+
+There is a set of extensions to handle the importing/exporting of just the memory itself. The other set extensions are for the synchronization primitives (`VkFence` and `VkSemaphore`) used to control internal Vulkan commands. It is common practice that for each piece of memory imported/exported there is also a matching fence/semaphore to manage the memory access.
+
+![external_extensions_1.png](../_images/extensions/external_extensions_1.png)
+
+Depending on the platform there will be a specific handle used to communicate between Vulkan and the external platform. For example, POSIX `fd` are used for most non-Windows based platforms.
+
+The `VK_KHR_external_fence_capabilities`, `VK_KHR_external_semaphore_capabilities`, and `VK_KHR_external_memory_capabilities` are simply just ways to query information about what external support an implementation provides.
+
+The `VK_KHR_external_memory` extension is mainly to provide the `VkExternalMemoryHandleTypeFlagBits` enum which describes the type of memory being used externally.
+
+There are currently 3 supported ways to import/export memory
+
+* 
+`VK_KHR_external_memory_fd` for memory in a POSIX file descriptor
+
+* 
+`VK_KHR_external_memory_win32` for memory in a Windows handle
+
+* 
+`VK_ANDROID_external_memory_android_hardware_buffer` for memory in a AHardwareBuffer
+
+Each of these methods has their own detailed descriptions about limitations, requirements, ownership, etc.
+
+To import memory, there is a `VkImport*Info` struct provided by the given external memory extension. This is passed into `vkAllocateMemory` where Vulkan will now have a `VkDeviceMemory` handle that maps to the imported memory.
+
+// some external memory types require dedicated allocation
+VkMemoryDedicatedAllocateInfo dedicated_info;
+dedicated_info.buffer = buffer;
+
+VkImportMemoryFdInfoKHR import_info;
+import_info.pNext = &dedicated_info;
+import_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+import_info.fd = fd;
+
+VkMemoryAllocateInfo allocate_info;
+allocate_info.pNext = &import_info
+
+VkDeviceMemory device_memory;
+vkAllocateMemory(device, &allocate_info, nullptr, device_memory);
+
+To export memory, there is a `VkGetMemory*` function provided by the given external memory extension. This function will take in a `VkDeviceMemory` handle and then map that to the extension exposed object.
+
+VkExportMemoryAllocateInfo export_info;
+export_info.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+VkMemoryAllocateInfo allocate_info;
+allocate_info.pNext = &export_info
+
+VkDeviceMemory device_memory;
+vkAllocateMemory(device, &allocate_info, nullptr, device_memory);
+
+VkMemoryGetFdInfoKHR get_handle_info;
+get_handle_info.memory = device_memory;
+get_handle_info.handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT;
+
+int fd;
+vkGetMemoryFdKHR(device, &get_handle_info, &fd);
+
+External synchronization can be used in Vulkan for both `VkFence` and `VkSemaphores`. There is almost no difference between the two with regards to how it is used to import and export them.
+
+The `VK_KHR_external_fence` and `VK_KHR_external_semaphore` extension both expose a `Vk*ImportFlagBits` enum and `VkExport*CreateInfo` struct to describe the type a synchronization being imported/exported.
+
+There are currently 2 supported ways to import/export synchronization
+
+* 
+`VK_KHR_external_fence_fd` / `VK_KHR_external_semaphore_fd`
+
+* 
+`VK_KHR_external_fence_win32` / `VK_KHR_external_semaphore_win32`
+
+Each extension explains how it manages ownership of the synchronization primitives.
+
+There is a `VkImport*` function for importing and a `VkGet*` function for exporting. These both take the `VkFence`/`VkSemaphores` handle passed in along with the extension’s method of defining the external synchronization object.
+
+Here is a simple diagram showing the timeline of events between Vulkan and some other API talking to the GPU. This is used to represent a common use case for these external memory and synchronization extensions.
+
+![external_example.png](../_images/extensions/external_example.png)
