@@ -6,9 +6,15 @@
 name: CI
 
 # Controls when the action will run.
+#
+# Build runs here on `pull_request` (untrusted: no secrets, forked PR code is
+# safe to execute). Deployment (which needs write-scoped secrets) happens in
+# the separate ci-deploy.yml workflow, triggered by workflow_run once this
+# workflow completes successfully. This avoids checking out and executing
+# untrusted fork code in a context that has repo secrets (a "pwn request").
 on:
   push:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
@@ -91,17 +97,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+      cancel-in-progress: true
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can
-      # access it
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      # access it. No `repository`/`ref` override here: for the `pull_request`
+      # event the default checkout is already the PR head, and this job has
+      # no secrets, so it's safe to build untrusted fork code.
+      - uses: actions/checkout@v5
 
       - name: "REUSE license checker"
         uses: fsfe/reuse-action@v6
@@ -112,14 +119,14 @@ jobs:
 
       - name: "Cache UI bundle"
         id: cache-ui
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: build/ui-bundle.zip
           key: ${{ runner.os }}-ui-${{ hashFiles('src/**', 'package-lock.json', 'gulpfile.js') }}
 
       - name: "checkout GLSL"
         if: ${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/GLSL
           path: ./GLSL
@@ -127,7 +134,7 @@ jobs:
 
       - name: "checkout Vulkan Guide"
         if: ${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Guide
           path: ./Vulkan-Guide
@@ -135,7 +142,7 @@ jobs:
 
       - name: "Checkout Vulkan Docs"
         if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Docs
           path: ./Vulkan-Docs
@@ -143,7 +150,7 @@ jobs:
 
       - name: "Checkout Vulkan Samples"
         if: ${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Samples
           path: ./Vulkan-Samples
@@ -151,16 +158,16 @@ jobs:
 
       - name: "Checkout Vulkan Tutorial"
         if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
           ref: ${{ inputs.Tutorial_Commit_Hash > '' && inputs.Tutorial_Commit_Hash || 'main' }}
 
       - name: "setup npm"
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: '20.12.2'
+          node-version: '24.15.0'
           cache: 'npm'
           cache-dependency-path: |
             docs-site/package-lock.json
@@ -188,7 +195,7 @@ jobs:
           ./node_modules/gulp/bin/gulp.js bundle
 
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ui-bundle.zip
           path: build/ui-bundle.zip
@@ -197,22 +204,16 @@ jobs:
       - name: "copy ui-bundle.zip to vulkan-site"
         run: cp build/ui-bundle.zip docs-site/
 
-      - name: "Prepare Antora Playbook"
-        run: |
-          python3 docs-site/prepare_playbook.py \
-            --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
-            --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
-            --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
-            --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
-            --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
-            --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
-            --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
-
       - name: "prepare tutorials"
         if: ${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}
         working-directory: Vulkan-Tutorial/antora
         run: |
           make setup_tutorial
+
+      - name: "build test site"
+        # This should be a separate step from the overall site build, just here ATM for testing
+        working-directory: docs-site
+        run: npx antora uitest.yml --to-dir build/uitest --stacktrace
 
       - name: "prepare repos with make (parallel)"
         run: |
@@ -226,8 +227,19 @@ jobs:
         working-directory: Vulkan-Samples
         run: cmake -H"." -B"build/unix" -DVKB_GENERATE_ANTORA_SITE=ON
 
+      - name: "Prepare Antora Playbook"
+        run: |
+          python3 docs-site/prepare_playbook.py \
+            --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
+            --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
+            --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
+            --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
+            --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
+            --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
+            --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
+
       - name: "Cache Antora content"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: docs-site/.antora-cache
           key: ${{ runner.os }}-antora-${{ github.run_id }}
@@ -238,37 +250,44 @@ jobs:
         working-directory: docs-site
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
+          GOOGLE_TAG_MANAGER_KEY: "GTM-WVL3BDCB"
         run: |
-          npx antora antora-playbook.yml --cache-dir .antora-cache
+          npx antora antora-playbook.yml --cache-dir .antora-cache --key "google_tag_manager=${GOOGLE_TAG_MANAGER_KEY}"
           touch build/site/.nojekyll
 
       - name: 'Upload site artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fullSite
           path: docs-site/build
           retention-days: 5
 
-      - name: Publish to GitHub Pages
-        if: "${{ (github.event.inputs.Publish_Local || 'true') != 'false' && (github.event.pull_request || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}"
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs-site/build/site
-          destination_dir: ${{ (github.event.inputs.PR_Number != '' && format('PR-{0}', github.event.inputs.PR_Number)) || (github.event.pull_request && format('PR-{0}', github.event.number)) || '' }}
-          keep_files: true
-
-      - name: Comment on PR
-        if: github.event.pull_request && success()
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Write deploy metadata"
         run: |
-          PR_NUMBER=${{ github.event.number }}
-          PREVIEW_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/PR-${PR_NUMBER}/"
-          COMMENT_MARKER="<!-- preview-link-comment -->"
-          EXISTING_COMMENT=$(gh pr view $PR_NUMBER --json comments --jq ".comments[] | select(.body | contains(\"$COMMENT_MARKER\")) | .id")
-
-          if [ -z "$EXISTING_COMMENT" ]; then
-            gh pr comment $PR_NUMBER --body "$COMMENT_MARKER
-          Preview site published: $PREVIEW_URL"
+          set -euo pipefail
+          IS_PR="false"
+          PR_NUM=""
+          PR_URL=""
+          if [[ "${{ github.event.pull_request }}" != "" || "${{ github.event.inputs.PR_Number }}" != "" ]]; then
+            IS_PR="true"
+            PR_NUM="${{ github.event.inputs.PR_Number }}"
+            if [ -z "$PR_NUM" ]; then PR_NUM="${{ github.event.number }}"; fi
+            PR_URL="${{ github.event.pull_request.html_url }}"
           fi
+          mkdir -p deploy-metadata
+          cat > deploy-metadata/metadata.json <<EOF
+          {
+            "is_pr": "${IS_PR}",
+            "pr_num": "${PR_NUM}",
+            "pr_url": "${PR_URL}",
+            "publish_local": "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+          }
+          EOF
+          cat deploy-metadata/metadata.json
+
+      - name: "Upload deploy metadata"
+        uses: actions/upload-artifact@v7
+        with:
+          name: deploy-metadata
+          path: deploy-metadata/metadata.json
+          retention-days: 5
