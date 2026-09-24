@@ -1,0 +1,142 @@
+# Ways to Provide SPIR-V
+
+## Metadata
+
+- **Component**: guide
+- **Version**: latest
+- **URL**: /guide/latest/ways_to_provide_spirv.html
+
+## Table of Contents
+
+- [vkCreateShaderModule](#_vkcreateshadermodule)
+- [Inlining inside VkPipelineShaderStageCreateInfo](#_inlining_inside_vkpipelineshaderstagecreateinfo)
+- [Inlining_inside_VkPipelineShaderStageCreateInfo](#_inlining_inside_vkpipelineshaderstagecreateinfo)
+- [Shader Module Identifier](#_shader_module_identifier)
+- [Shader_Module_Identifier](#_shader_module_identifier)
+- [Graphics Pipeline Library](#_graphics_pipeline_library)
+- [Graphics_Pipeline_Library](#_graphics_pipeline_library)
+- [Shader Objects](#_shader_objects)
+- [vkCreateRayTracingPipelinesKHR::deferredOperation](#_vkcreateraytracingpipelineskhrdeferredoperation)
+
+## Content
+
+This chapter is designed for anyone who wants to write a tool to inspect, consume, edit, or do anything related to the SPIR-V modules passed into Vulkan.
+
+Over the years, more and more ways have been created to pass SPIR-V down to the driver and this chapter goes over them all
+
+In Vulkan 1.0 release, this was the only method there was to pass SPIR-V into Vulkan. It is a very simple workflow:
+
+VkShaderModuleCreateInfo shader_module_ci;
+shader_module_ci.pCode = spirv_source;
+shader_module_ci.codeSize = sizeof(spirv_source);
+
+VkShaderModule shader_module;
+vkCreateShaderModule(device, &shader_module_ci, NULL, &shader_module);
+
+// used to create VkPipeline
+VkPipelineShaderStageCreateInfo pipeline_stage_ci;
+pipeline_stage_ci.module = shader_module;
+
+The most common issue for tools or drivers consuming `vkCreateShaderModule` is there is still information missing:
+
+* 
+For graphics pipeline, what are the descriptor set layouts bound
+
+* 
+What are the other shader stages that will be linked up to this `VkShaderModule`
+
+* 
+If there are multiple entry-points, which one is set (via `VkPipelineShaderStageCreateInfo::pName`)
+
+* 
+What are the final Specialization Constant values
+
+If you have support for either `VK_KHR_maintenance5` or `VK_EXT_graphics_pipeline_library` you can just skip the `VkShaderModule` object completely.
+
+When creating the `VkPipeline` you can just pass in SPIR-V then:
+
+VkShaderModuleCreateInfo shader_module_ci;
+shader_module_ci.pCode = spirv_source;
+shader_module_ci.codeSize = sizeof(spirv_source);
+
+VkPipelineShaderStageCreateInfo pipeline_stage_ci;
+pipeline_stage_ci.pNext = &shader_module_ci
+pipeline_stage_ci.module = VK_NULL_HANDLE;
+
+The `VK_EXT_shader_module_identifier` extension allows the app to not even need the SPIR-V source anymore, instead the `VkShaderModule` can be cached on the disk and then in a future run of the application, a "ID" pointing to that cache can be used.
+
+The biggest challenge for tools is you don’t have a chance to see the original `vkGetShaderModuleIdentifierEXT` call, there will be no chance to know what is inside the SPIR-V
+
+The following is an example of the workflow an application will use:
+
+// First time running an application
+VkShaderModule shader_module;
+vkCreateShaderModule(device, &shader_module_ci, NULL, &shader_module);
+
+VkShaderModuleIdentifierEXT sm_identifier;
+vkGetShaderModuleIdentifierEXT(device, shader_module, &sm_identifier);
+
+SaveToDisk(sm_identifier);
+
+// -----------
+// Potentially a 2nd seperate application run
+// -----------
+
+VkShaderModuleIdentifierEXT sm_identifier;
+LoadFromDisk(sm_identifier);
+
+VkPipelineShaderStageModuleIdentifierCreateInfoEXT shader_module_id_ci;
+shader_module_id_ci.identifierSize = sm_identifier.identifierSize;
+shader_module_id_ci.pIdentifier = sm_identifier.identifier;
+
+// Inline when creating the pipeline
+VkPipelineShaderStageCreateInfo pipeline_stage_ci;
+pipeline_stage_ci.pNext = &shader_module_id_ci
+pipeline_stage_ci.module = VK_NULL_HANDLE;
+
+The `VK_EXT_graphics_pipeline_library` extension breaks up the pipeline into 4 smaller parts with the intent of allowing faster pipeline loading for applications reusing the same shaders or state in multiple pipelines.
+
+From a tools point a view, you may see up to 5 different `vkCreateGraphicsPipelines` calls, but only 2 of them will have SPIR-V in it. The following is an example workflow:
+
+// Will be no SPIR-V
+VkPipeline vertex_input_lib;
+vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, create_info, NULL, vertex_input_lib);
+VkPipeline fragment_output_lib;
+vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, create_info, NULL, fragment_output_lib);
+
+// Will be SPIR-V
+VkPipeline pre_raster_lib;
+vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, create_info, NULL, pre_raster_lib);
+
+// May be SPIR-V (can have pipelines without fragment shaders)
+VkPipeline fragment_shader_lib;
+vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, create_info, NULL, fragment_shader_lib);
+
+// Will be no SPIR-V when linking in pipeline library containing the SPIR-V already
+VkPipeline executable_pipeline;
+VkPipelineLibraryCreateInfoKHR library_ci;
+library_ci.pLibraries = [vertex_input_lib, pre_raster_lib, fragment_shader_lib, fragment_output_lib];
+create_info.pNext = &library_ci;
+vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, create_info, NULL, executable_pipeline);
+
+The `VK_EXT_shader_object` extension created a completely new flow to pass state information in the command buffer that doesn’t involve pipelines. The following is the workflow to pass in the SPIR-V.
+
+VkShaderCreateInfoEXT shader_ci;
+// Note that the SPIR-V can actually be passed in a binary blob
+shader_ci.codeType = VK_SHADER_CODE_TYPE_SPIRV_EXT;
+// Note that this is a void pointer unlike the uint32_t pointer found in VkShaderModuleCreateInfo
+shader_ci.pCode = spirv_source;
+shader_ci.codeSize = sizeof(spirv_source);
+
+VkShaderEXT shader_object;
+vkCreateShadersEXT(device, 1, &shader_ci, NULL, &shader_object);
+
+When dealing with Ray Tracing pipelines, it is important to note that a `VkDeferredOperationKHR` handle might be used to defer the creation of the pipeline to unblock the CPU thread.
+
+The [spec states](https://docs.vulkan.org/spec/latest/chapters/VK_KHR_deferred_host_operations/deferred_host_operations.html#deferred-host-operations-requesting)
+
+> 
+
+Parameters to the command requesting a deferred operation may be accessed by the implementation at any time until the deferred operation enters the complete state.
+
+In this particular case this means that if your tool is touching the SPIR-V being passed in, **all** parameters passed down to `vkCreateRayTracingPipelinesKHR`, including pointers, shader modules, inlined SPIR-V…​ must live until operation completion.

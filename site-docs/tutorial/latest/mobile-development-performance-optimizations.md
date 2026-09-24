@@ -1,0 +1,222 @@
+# Mobile Development: Performance Optimizations
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/Building_a_Simple_Engine/Mobile_Development/03_performance_optimizations.html
+
+## Table of Contents
+
+- [Performance Optimizations for Mobile](#_performance_optimizations_for_mobile)
+- [Performance_Optimizations_for_Mobile](#_performance_optimizations_for_mobile)
+- [Texture Optimizations](#_texture_optimizations)
+- [Efficient Texture Formats](#_efficient_texture_formats)
+- [Efficient_Texture_Formats](#_efficient_texture_formats)
+- [Memory Optimizations](#_memory_optimizations)
+- [Minimize Memory Allocations](#_minimize_memory_allocations)
+- [Minimize_Memory_Allocations](#_minimize_memory_allocations)
+- [Reduce Bandwidth Usage](#_reduce_bandwidth_usage)
+- [Reduce_Bandwidth_Usage](#_reduce_bandwidth_usage)
+- [Draw Call Optimizations](#_draw_call_optimizations)
+- [Draw_Call_Optimizations](#_draw_call_optimizations)
+- [Vendor-Specific Optimizations](#_vendor_specific_optimizations)
+- [Vendor-Specific GPU Optimizations](#_vendor_specific_gpu_optimizations)
+- [Vendor-Specific_GPU_Optimizations](#_vendor_specific_gpu_optimizations)
+- [Best Practices for Mobile Performance](#_best_practices_for_mobile_performance)
+- [Best_Practices_for_Mobile_Performance](#_best_practices_for_mobile_performance)
+
+## Content
+
+Mobile devices have significantly different hardware constraints compared to desktop systems. In this section, we’ll explore key performance optimizations that are essential for achieving good performance on mobile platforms.
+
+|  | This chapter covers general mobile performance. For practices that arise specifically because the GPU is tile-based (TBR), see [Rendering Approaches: Tile-Based Rendering](04_rendering_approaches.html). |
+| --- | --- |
+
+|  | We focus on mobile‑specific decisions here. For general Vulkan image creation, staging uploads, and descriptor setup, refer back to earlier chapters in the engine series—[Resource Management](../Engine_Architecture/04_resource_management.html), [Rendering Pipeline](../Engine_Architecture/05_rendering_pipeline.html)—or the Vulkan Guide ([https://docs.vulkan.org/guide/latest/](https://docs.vulkan.org/guide/latest/)). |
+| --- | --- |
+
+Textures are often the largest consumers of memory in a graphics application. Optimizing them is crucial for performance on both mobile and desktop.
+
+Choosing the right texture format is crucial across platforms; what differs is which formats are natively supported by a given device/driver:
+
+**Compressed Formats**: Use hardware-supported compressed formats whenever possible:
+
+* 
+**ASTC** (Adaptive Scalable Texture Compression): Widely supported on modern mobile GPUs and increasingly available on desktop; excellent quality-to-size ratio with flexible block sizes.
+
+* 
+**ETC2/EAC**: Required for OpenGL ES 3.0 and supported by most Android devices; commonly available on Vulkan stacks, too.
+
+* 
+**PVRTC**: Primarily supported on iOS devices with PowerVR GPUs.
+
+* 
+**BC** (Block Compression, a.k.a. DXT/BCn): Ubiquitous on desktop; supported by some mobile GPUs.
+
+**Format Selection Based on Content and Support**: Choose formats based on the type of texture and what the device reports:
+
+* 
+For high detail (normals, roughness): prefer ASTC 4x4 or 6x6 when supported; on desktop, BC5/BC7 are common alternatives.
+
+* 
+For albedo/basecolor: ASTC 6x6–8x8 works well when available; on desktop, BC1/BC7 are typical.
+
+* 
+For single-channel data: consider R8 or compressed single-channel alternatives when available.
+
+|  | This guidance is not mobile-only: block compression reduces memory footprint and bandwidth on all platforms. The Mobile chapter highlights it because bandwidth and power are tighter constraints on phones/tablets. On desktop, the same benefits apply; the primary difference is which formats are commonly available (e.g., BC on desktop, ASTC/ETC2 on many mobile devices). |
+| --- | --- |
+
+Here’s how to check for and use compressed formats in Vulkan:
+
+bool is_format_supported(vk::PhysicalDevice physical_device, vk::Format format, vk::ImageTiling tiling,
+                        vk::FormatFeatureFlags features) {
+    vk::FormatProperties props = physical_device.getFormatProperties(format);
+
+    if (tiling == vk::ImageTiling::eLinear) {
+        return (props.linearTilingFeatures & features) == features;
+    } else if (tiling == vk::ImageTiling::eOptimal) {
+        return (props.optimalTilingFeatures & features) == features;
+    }
+
+    return false;
+}
+
+vk::Format find_supported_format(vk::PhysicalDevice physical_device,
+                               const std::vector& candidates,
+                               vk::ImageTiling tiling,
+                               vk::FormatFeatureFlags features) {
+    for (vk::Format format : candidates) {
+        if (is_format_supported(physical_device, format, tiling, features)) {
+            return format;
+        }
+    }
+
+    throw std::runtime_error("Failed to find supported format");
+}
+
+Memory is a precious resource on all platforms. It tends to be more performance‑critical on mobile due to tighter bandwidth, power, and thermal budgets. Here are some key optimizations:
+
+**Pool Allocations**: Use memory pools to reduce the overhead of frequent allocations and deallocations.
+
+**Suballocate from Larger Blocks**: Instead of creating many small Vulkan memory allocations, allocate larger blocks and suballocate from them:
+
+class VulkanMemoryPool {
+public:
+    VulkanMemoryPool(vk::Device device, vk::PhysicalDevice physical_device,
+                    vk::DeviceSize block_size, uint32_t memory_type_index)
+        : device(device), block_size(block_size), memory_type_index(memory_type_index) {
+        allocate_new_block();
+    }
+
+    ~VulkanMemoryPool() {
+        for (auto& block : memory_blocks) {
+            device.freeMemory(block.memory);
+        }
+    }
+
+    struct Allocation {
+        vk::DeviceMemory memory;
+        vk::DeviceSize offset;
+        vk::DeviceSize size;
+    };
+
+    Allocation allocate(vk::DeviceSize size, vk::DeviceSize alignment) {
+        // Find a block with enough space
+        for (auto& block : memory_blocks) {
+            vk::DeviceSize aligned_offset = align(block.next_offset, alignment);
+            if (aligned_offset + size  memory_blocks;
+};
+
+**Minimize State Changes**: Group draw calls by material to reduce state changes.
+
+**Use Smaller Data Types**: Use 16-bit indices and half-precision floats where appropriate.
+
+**Optimize Vertex Formats**: Use packed vertex formats to reduce memory bandwidth:
+
+// Traditional vertex format (48 bytes per vertex)
+struct Vertex {
+    glm::vec3 position;   // 12 bytes
+    glm::vec3 normal;     // 12 bytes
+    glm::vec2 texCoord;   // 8 bytes
+    glm::vec4 color;      // 16 bytes
+};
+
+// Optimized vertex format (16 bytes per vertex)
+struct OptimizedVertex {
+    // Position: 3 components, 16-bit float each
+    uint16_t position[3]; // 6 bytes
+
+    // Normal: 2 components (can reconstruct Z), 8-bit signed normalized
+    int8_t normal[2];     // 2 bytes
+
+    // TexCoord: 2 components, 16-bit float each
+    uint16_t texCoord[2]; // 4 bytes
+
+    // Color: 4 components, 8-bit unsigned normalized
+    uint8_t color[4];     // 4 bytes
+};
+
+|  | If you are targeting tile-based GPUs (TBR), bandwidth can be heavily impacted by attachment load/store behavior and tile flushes. See [Rendering Approaches](04_rendering_approaches.html) — sections “Attachment Load/Store Operations on Tilers” and “Pipelining on Tilers: Subpass Dependencies and BY_REGION” for concrete guidance. |
+| --- | --- |
+
+Mobile GPUs are particularly sensitive to draw call overhead:
+
+**Instancing**: Use instancing to reduce draw calls for repeated objects.
+
+**Batching**: Combine multiple objects into a single mesh where possible.
+
+**Level of Detail (LOD)**: Implement LOD systems to reduce geometry complexity for distant objects.
+
+|  | On tile-based GPUs, reducing CPU overhead is important, but keeping work and data on-chip via proper pipelining and subpasses often yields larger gains. See [Rendering Approaches](04_rendering_approaches.html) — “Pipelining on Tilers: Subpass Dependencies and BY_REGION” for barrier/subpass patterns, and “Attachment Load/Store Operations on Tilers” for loadOp/storeOp guidance that avoids external memory traffic. |
+| --- | --- |
+
+Different mobile GPU vendors have specific architectures that may benefit from targeted optimizations.
+
+Different mobile GPU vendors have specific architectures that benefit from targeted optimizations:
+
+* 
+**Memory Management**: Many mobile SoCs have unified memory architecture:
+
+Use `VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT` memory when possible
+
+* 
+Take advantage of fast CPU-GPU memory transfers in unified memory architectures
+
+**Texture Compression**: Different devices support different texture
+compression formats:
+
+// Check for texture compression format support
+bool supports_texture_format(vk::PhysicalDevice physical_device, vk::Format format) {
+    vk::FormatProperties props = physical_device.getFormatProperties(format);
+    return (props.optimalTilingFeatures & vk::FormatFeatureFlagBits::eSampledImage);
+}
+
+// Get optimal texture format based on device capabilities
+vk::Format get_optimal_texture_format(vk::PhysicalDevice physical_device) {
+    vk::PhysicalDeviceProperties props = physical_device.getProperties();
+    vk::PhysicalDeviceFeatures features = physical_device.getFeatures();
+
+    // Check for ASTC support (widely supported on modern mobile GPUs)
+    // Most games are written with knowledge of what the assets were compressed with so it's standard practice to only ensure the required format is supported.
+    if (features.textureCompressionASTC_LDR) {
+        return vk::Format::eAstc8x8SrgbBlock;
+    }
+}
+
+* 
+**Performance Monitoring**: Most vendors provide performance monitoring tools
+that can help identify bottlenecks specific to their hardware.
+
+**Profile on Target Devices**: Performance characteristics vary widely across mobile devices. Test on a range of hardware from different manufacturers and with different GPU architectures.
+
+**Monitor Temperature**: Mobile devices throttle performance when they get hot. Design your engine to adapt to thermal throttling.
+
+**Balance Quality and Performance**: Provide graphics settings that allow users to balance quality and performance based on their device capabilities.
+
+**Implement Adaptive Resolution**: Dynamically adjust rendering resolution based on performance metrics.
+
+In the next section, we’ll explore different rendering approaches for mobile GPUs, focusing on the differences between Tile-Based Rendering (TBR) and Immediate Mode Rendering (IMR).
+
+[Previous: Platform Considerations](02_platform_considerations.html) | [Next: Rendering Approaches](04_rendering_approaches.html)

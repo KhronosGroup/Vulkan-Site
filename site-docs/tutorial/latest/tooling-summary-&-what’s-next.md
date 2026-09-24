@@ -1,0 +1,44 @@
+# Tooling: Summary & What’s Next
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/Advanced_glTF/Tooling_Production_Pipeline/05_conclusion.html
+
+## Table of Contents
+
+- [What We Established](#_what_we_established)
+- [What_We_Established](#_what_we_established)
+- [What Comes Next](#_what_comes_next)
+- [What_Comes_Next](#_what_comes_next)
+- [Verification: What to Look For](#_verification_what_to_look_for)
+- [Verification:_What_to_Look_For](#_verification_what_to_look_for)
+
+## Content
+
+This chapter was deliberately not about code. Instead, it was about process—the discipline that makes a character pipeline reliable and maintainable rather than a source of perpetual mystery.
+
+We established naming conventions as the unwritten contract between artist and engineer. Consistent bone naming—lowercase, underscore-separated, left/right suffixed—makes every system in the engine that needs to look up joints by name reliable by default. We discussed the specific Blender-side problems that corrupt skinning data on export: unnormalized weights, more than four influences per vertex, zero-weight ghost influences, and rest pose mismatches at export time. Each of these produces a specific class of visual artifact, and knowing which artifact corresponds to which cause makes diagnosis fast.
+
+We covered the physics extras workflow in depth: how custom properties written by a Python script in Blender’s Script Editor become JSON "extras" in the glTF file, and how that data flows into the collider and constraint parsing code from Chapter 2. Storing the configuration script alongside the blend file and in version control ensures that physics parameters are reproducible and auditable.
+
+The glTF export settings discussion covered the choices that matter most: binary vs. separate format (use binary for production), the leaf bones option (disable it), Apply Modifiers (on for final export), and Force Sampling for animations (off by default, with caveats for procedural drivers).
+
+The Khronos glTF-Validator provides a fast, authoritative check for spec compliance. Integrating it into the build pipeline ensures that invalid assets are caught at source rather than at runtime. The four output levels—Error, Warning, Info, Hint—provide a graduated view of asset quality; errors must be fixed, warnings should be investigated.
+
+Finally, reference viewers (the Khronos glTF Sample Viewer and Babylon.js Sandbox) provide the ground truth that makes engine debugging tractable. The discipline of checking assets in a reference viewer before concluding that a visual problem is in the engine code is one of the most useful habits a graphics programmer can develop.
+
+Chapter 8 closes the tutorial series with **Debugging and Visual Auditing**: the tools and techniques for identifying problems in the running engine itself. We have established that asset problems should be caught at source; Chapter 8 addresses what happens when the asset is correct and the problem is in the engine.
+
+We will implement engine-side debug drawers for the skeleton, collision shapes, and physics constraints—visual overlays that let you see the physics representation alongside the rendered character. We will cover skinning weight heatmaps, which render vertex bone influence as color to identify "pinched" geometry or incorrect weight painting that only becomes visible in motion. And we will walk through using RenderDoc to inspect the compute skinning output buffer, verifying that the post-skinning vertex positions and normals are correct before the rasterizer reads them.
+
+To verify your production pipeline:
+
+**Validator Green Light**: Every exported `.glb` should pass the **glTF-Validator** with zero errors and zero warnings.
+
+**Naming Consistency**: Check that your physics metadata `"parent_bone"` strings match the actual node names in the glTF JSON.
+
+**Export Settings**: Verify that **Custom Properties**, **Shape Keys**, and **Vertex Weights** are all included in your exported file by inspecting it in a third-party viewer like the Babylon.js sandbox.
+
+[Previous: glTF Viewer Audit](04_gltf_viewer_audit.html) | [Next: Debugging & Visual Auditing](../Debugging_Visual_Auditing/01_introduction.html)

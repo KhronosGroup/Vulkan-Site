@@ -1,0 +1,218 @@
+# VK_KHR_video_maintenance1
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_KHR_video_maintenance1.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [2.1. Relaxed video profile compatibility](#_relaxed_video_profile_compatibility)
+- [2.1._Relaxed_video_profile_compatibility](#_relaxed_video_profile_compatibility)
+- [2.2. Simplified video queries](#_simplified_video_queries)
+- [2.2._Simplified_video_queries](#_simplified_video_queries)
+- [3. Proposal](#_proposal)
+- [3.1. Video profile independent buffer creation](#_video_profile_independent_buffer_creation)
+- [3.1._Video_profile_independent_buffer_creation](#_video_profile_independent_buffer_creation)
+- [3.2. Video profile independent image creation](#_video_profile_independent_image_creation)
+- [3.2._Video_profile_independent_image_creation](#_video_profile_independent_image_creation)
+- [3.3. Inline video queries](#_inline_video_queries)
+- [3.3._Inline_video_queries](#_inline_video_queries)
+- [4. Examples](#_examples)
+- [4.1. Create video profile independent bitstream buffer](#_create_video_profile_independent_bitstream_buffer)
+- [4.1._Create_video_profile_independent_bitstream_buffer](#_create_video_profile_independent_bitstream_buffer)
+- [4.2. Create video profile independent image backing video picture resources](#_create_video_profile_independent_image_backing_video_picture_resources)
+- [4.2._Create_video_profile_independent_image_backing_video_picture_resources](#_create_video_profile_independent_image_backing_video_picture_resources)
+- [4.3. Using inline queries with a video session](#_using_inline_queries_with_a_video_session)
+- [4.3._Using_inline_queries_with_a_video_session](#_using_inline_queries_with_a_video_session)
+- [5. Issues](#_issues)
+- [6. Further Functionality](#_further_functionality)
+- [6._Further_Functionality](#_further_functionality)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+
+[2.1. Relaxed video profile compatibility](#_relaxed_video_profile_compatibility)
+[2.2. Simplified video queries](#_simplified_video_queries)
+
+[3. Proposal](#_proposal)
+
+[3.1. Video profile independent buffer creation](#_video_profile_independent_buffer_creation)
+[3.2. Video profile independent image creation](#_video_profile_independent_image_creation)
+[3.3. Inline video queries](#_inline_video_queries)
+
+[4. Examples](#_examples)
+
+[4.1. Create video profile independent bitstream buffer](#_create_video_profile_independent_bitstream_buffer)
+[4.2. Create video profile independent image backing video picture resources](#_create_video_profile_independent_image_backing_video_picture_resources)
+[4.3. Using inline queries with a video session](#_using_inline_queries_with_a_video_session)
+
+[5. Issues](#_issues)
+[6. Further Functionality](#_further_functionality)
+
+This proposal details and addresses the issues solved by the `VK_KHR_video_maintenance1` extension.
+
+Over time, a collection of minor features, none of which would warrant an entire extension of their own, and some of which have been identified after the final version of the first set of video coding extensions were released, justified the creation of a video maintenance extension:
+
+The following is a list of issues considered in this proposal:
+
+* 
+Relax the requirement for the application having to specify video profiles when creating buffer or image resources with video usage
+
+* 
+Simplify how queries work in video coding
+
+For buffers and images used in video coding, it is currently required that applications have to specify all video profiles which these resources will be used with. In case of video decoding, this requirement is not too limiting. However, in transcoding use cases it is very common for the application to not have a full list up-front of all possible video encode profiles the resources will be intended to be used with which may limit the application’s ability to reuse the decode output picture resources directly as the encode input picture resources.
+
+The motivation behind requiring the specification of all video profiles the created resources are planned to be used with is that knowing that information up-front enables implementations to use the optimal representation option when multiple choices may be available. In particular, image resources may be optimized both from memory usage and memory layout perspective specifically for that explicit list of video profiles, while not having that information available may result in representations that require worst case memory storage that may also suffer from suboptimal access performance.
+
+The following two main options have been considered to address this issue:
+
+Allow opting in to exclude certain subsets of video profile parameters from the video profile compatibility criteria
+
+Allow creating resources in an entirely video profile independent fashion
+
+Option 1 is problematic, because one would either have to draw an arbitrary line between parameters affecting the video profile compatibility criteria vs those which do not, or there would be a need to introduce multiple options and complex compatibility rules to allow more flexibility.
+
+In practice, most of the benefits of knowing the video profiles up-front are only important for DPB images, which are not expected to be shared between video sessions using different video profiles anyway, hence this extension follows option 2 with the restriction that image resources with only DPB video usage cannot be created as video profile independent resources.
+
+Nonetheless, while this extension enables creating video profile independent buffers with video usage, and creating video profile independent images with video decode output or video encode input usage, applications that do know the set of video profiles up-front should still prefer specifying those instead of creating video profile independent resources, as that may still provide some performance or memory usage benefits on certain implementations.
+
+Currently, queries performed in video coding scopes use the same scoped `vkCmdBegin/EndQuery` commands, as the ones used in the vast majority of the cases across the Vulkan API, with the notable exception timestamp queries and some ray tracing related queries.
+
+This poses some problems in the context of video coding for the following reasons:
+
+* 
+Query slots are consumed and query results are produced on a per video coding operation basis. While a scoped query is a good fit for queries that collect statistics over multiple commands (like occlusion queries and pipeline statistics queries), scoped queries are not a good fit for video coding operations as they allow for command sequences that are invalid (like recording multiple video coding operations within the scope of a query) or simply useless (like recording a `vkCmdBegin/EndQuery` command pair without issuing any video coding operations in between)
+
+* 
+This would only get more complicated if future video coding functionality would introduce the ability to issue multiple video coding operations through the recording of a single video coding command, and thus would need to consume more than a single query slot, as there are no variants of the `vkCmdBegin/EndQuery` commands that allow running more than one query within a scope (excluding the awkward corner case of query behavior with multiview rendering)
+
+* 
+In addition, as in practice the scope of video queries will only ever span a single video coding command, the additional overhead of calling the `vkCmdBegin/EndQuery` commands before/after the video coding command which the query will apply to is simply wasteful
+
+The straightforward answer to these problems is to provide the query information directly to the video coding command it applies to. Considering that some ray tracing related queries already follow this model, such an API change would not create a new precedence either.
+
+The following options have been considered to define the interaction between `vkCmdBegin/EndQuery`-style scoped queries and the newly introduced inline queries:
+
+Only allow inline queries when the features of this extension are enabled
+
+Allow mixing scoped queries and inline queries
+
+Make the use of scoped queries and inline queries mutually exclusive within a video coding scope
+
+Make the use of scoped queries and inline queries mutually exclusive on a per video session basis
+
+The problem with option 1 is that it could cause backward-compatibility issues for any legacy content that may automatically enable all features available on the implementation.
+
+Option 2 is the most flexible, but it would add a lot of unnecessary complexity to implementations.
+
+Between option 3 and 4, the only difference is the granularity at which the application has to choose between the use of scoped queries and inline queries. However, as in practice it is highly unlikely for an application to mix the two forms of queries, option 4 is preferred due to its simplicity.
+
+Going forward, applications should prefer to use inline queries, when available, as support for using scoped video queries is unlikely to be extended to be compatible with any future video coding functionalities that may require the use of multiple query slots.
+
+Items introduced by this extension are:
+
+The new `VK_BUFFER_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR` buffer creation flag enables creating buffers that can be used in video coding operations, independent of the used video profile.
+
+The new `VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR` image creation flag enables creating images (except for DPB-only video usage) that can be used in video coding operations, independent of the used video profile.
+
+When creating a video session with the new `VK_VIDEO_SESSION_CREATE_INLINE_QUERIES_BIT_KHR` flag, instead of using the `vkCmdBegin/EndQuery` commands, applications can issue queries inline with the video coding commands themselves by chaining the following new structure to the `pNext` chain of the corresponding video coding command’s input parameter structure (e.g. to `VkVideoDecodeInfoKHR` or `VkVideoEncodeInfoKHR`):
+
+typedef struct VkVideoInlineQueryInfoKHR {
+    VkStructureType    sType;
+    const void*        pNext;
+    VkQueryPool        queryPool;
+    uint32_t           firstQuery;
+    uint32_t           queryCount;
+} VkVideoInlineQueryInfoKHR;
+
+VkBuffer buffer = VK_NULL_HANDLE;
+
+VkBufferCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+    .pNext = NULL, // No need to specify video profile list
+    .flags = VK_BUFFER_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR,
+    ... // buffer creation parameters including one or more video-specific usage flags
+};
+
+vkCreateBuffer(device, &createInfo, NULL, &buffer);
+
+VkImage image = VK_NULL_HANDLE;
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = NULL, // No need to specify video profile list
+    .flags = VK_IMAGE_CREATE_VIDEO_PROFILE_INDEPENDENT_BIT_KHR,
+    ... // image creation parameters including one or more video-specific usage flags
+    // NOTE: usage must not contain DPB use as the only video-specific usage flag
+};
+
+vkCreateImage(device, &imageCreateInfo, NULL, &image);
+
+// Create video session with inline query support
+VkVideoSessionKHR videoSession = VK_NULL_HANDLE;
+
+VkVideoSessionCreateInfoKHR createInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR,
+    .pNext = NULL,
+    .queueFamilyIndex = ... // index of queue family that supports the video codec operation
+    .flags = VK_VIDEO_SESSION_CREATE_INLINE_QUERIES_BIT_KHR, // opt-in to use inline queries
+    ...
+};
+
+vkCreateVideoSessionKHR(device, &createInfo, NULL, &videoSession);
+
+// Create query pool as usual
+VkQueryPool queryPool = VK_NULL_HANDLE;
+
+VkVideoProfileInfoKHR profileInfo = {
+    ...
+};
+
+VkQueryPoolCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO,
+    .pNext = &profileInfo,
+    ...
+};
+
+vkCreateQueryPool(device, &createInfo, NULL, &queryPool);
+
+...
+vkBeginCommandBuffer(commandBuffer, ...);
+...
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+...
+
+// Execute single query inline with a video codec operation
+VkVideoInlineQueryInfoKHR inlineQueryInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_INLINE_QUERY_INFO_KHR,
+    .pNext = NULL,
+    .queryPool = queryPool,
+    .firstQuery = 0,
+    .queryCount = 1
+};
+
+// Include inlineQueryInfo in the pNext chain of the video codec command parameters
+// (e.g. VkVideoDecodeInfoKHR or VkVideoEncodeInfoKHR).
+
+// Issue video coding operation
+
+...
+vkCmdEndVideoCodingKHR(commandBuffer, ...);
+...
+vkEndCommandBuffer(commandBuffer);
+...
+
+None.
+
+None.

@@ -1,0 +1,72 @@
+# Unifying Synchronization: Replacing Fences and Binary Semaphores
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/Synchronization/Timeline_Semaphores/02_unifying_sync.html
+
+## Table of Contents
+
+- [The Simplification](#_the_simplification)
+- [Handling CPU Waits](#_handling_cpu_waits)
+- [Handling_CPU_Waits](#_handling_cpu_waits)
+- [Handling GPU Waits](#_handling_gpu_waits)
+- [Handling_GPU_Waits](#_handling_gpu_waits)
+- [Simple Engine: The Roadmap to Timeline](#_simple_engine_the_roadmap_to_timeline)
+- [Simple_Engine:_The_Roadmap_to_Timeline](#_simple_engine_the_roadmap_to_timeline)
+- [Navigation](#_navigation)
+
+## Content
+
+The most immediate benefit of moving to Timeline Semaphores is that you can effectively delete your code for handling fences and binary semaphores. Instead of maintaining separate sets of primitives, you create a single `vk::raii::Semaphore` and configure it to be a **Timeline** type.
+
+In the RAII context, this configuration happens through the `vk::SemaphoreTypeCreateInfo` which is passed as the `pNext` of the standard `vk::SemaphoreCreateInfo`.
+
+auto typeCreateInfo = vk::SemaphoreTypeCreateInfo{
+    .semaphoreType = vk::SemaphoreType::eTimeline,
+    .initialValue = 0
+};
+
+auto createInfo = vk::SemaphoreCreateInfo{
+    .pNext = &typeCreateInfo
+};
+
+auto timelineSemaphore = vk::raii::Semaphore(device, createInfo);
+
+Wait operations on the CPU, which used to require a `vk::Fence`, now use the `vk::Device::waitSemaphores` function. This function can wait for multiple semaphores simultaneously and will return as soon as all specified values have been reached.
+
+auto waitInfo = vk::SemaphoreWaitInfo{
+    .semaphoreCount = 1,
+    .pSemaphores = &(*timelineSemaphore),
+    .pValues = &targetValue
+};
+
+// Wait for the GPU to reach targetValue (equivalent to vkWaitForFences)
+auto result = device.waitSemaphores(waitInfo, timeoutInNanoseconds);
+
+The beauty here is that we can now query the current value of the semaphore at any time using `device.getSemaphoreCounterValue`. This allows for much more flexible engine logic than the binary "is it done yet?" state of a fence.
+
+GPU-to-GPU synchronization, which used to require binary semaphores, now happens within the `vk::SubmitInfo2` (part of Synchronization 2). You specify the timeline semaphore and the specific value that the queue must wait for before beginning execution.
+
+auto waitSemaphoreInfo = vk::SemaphoreSubmitInfo{
+    .semaphore = *timelineSemaphore,
+    .value = requiredValue,
+    .stageMask = vk::PipelineStageFlagBits2::eAllCommands
+};
+
+auto submitInfo = vk::SubmitInfo2{
+    .waitSemaphoreInfoCount = 1,
+    .pWaitSemaphoreInfos = &waitSemaphoreInfo,
+    // ...
+};
+
+queue.submit2(submitInfo);
+
+By using the same primitive for both, we eliminate the need to synchronize between fences and semaphores. The GPU signals the timeline, and both the CPU and other GPU queues can respond to that same signal by waiting for the appropriate value.
+
+Currently, `Simple Engine` uses the legacy combination of `inFlightFences` (for CPU-to-GPU sync) and `imageAvailableSemaphores` / `renderFinishedSemaphores` (for GPU-to-GPU sync). This requires us to carefully manage `MAX_FRAMES_IN_FLIGHT` sets of each primitive, leading to the "ping-pong" logic you’ve likely seen in `Renderer::Render`.
+
+Our next major architectural update will replace these with a single `Renderer::frameTimeline` semaphore. This will allow us to unify our wait logic. Instead of `device.waitForFences`, we will use `device.waitSemaphores` to wait for the specific frame index value. This significantly simplifies our `Renderer::Render` function and makes the frame loop much easier to reason about, especially as we introduce more complex asynchronous tasks.
+
+Previous: [Introduction](01_introduction.html) | Next: [The Monotonic Counter](03_monotonic_counter.html)

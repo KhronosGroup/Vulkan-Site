@@ -1,0 +1,321 @@
+# Multisampling
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/10_Multisampling.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Getting available sample count](#_getting_available_sample_count)
+- [Getting_available_sample_count](#_getting_available_sample_count)
+- [Setting up a render target](#_setting_up_a_render_target)
+- [Setting_up_a_render_target](#_setting_up_a_render_target)
+- [Using new attachments](#_using_new_attachments)
+- [Using_new_attachments](#_using_new_attachments)
+- [Quality improvements](#_quality_improvements)
+- [Next steps](#_next_steps)
+
+## Content
+
+Our program can now load multiple levels of detail for textures which fix artifacts when rendering objects far away from the viewer.
+The image is now a lot smoother, however; on closer inspection, you will notice jagged saw-like patterns along the edges of drawn geometric shapes.
+This is especially visible in one of our early programs when we rendered a quad:
+
+![texcoord visualization](_images/images/texcoord_visualization.png)
+
+This undesired effect is called "aliasing," and it’s a result of a limited number of pixels that are available for rendering.
+Since there are no displays out there with unlimited resolution, it will always be visible to some extent.
+There are a number of ways to fix this, and in this chapter we’ll focus on one of the more popular ones: [Multisample antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) (MSAA).
+
+In ordinary rendering, the pixel color is determined based on a single sample point which in most cases is the center of the target pixel on screen.
+If part of a drawn line passes through a certain pixel but doesn’t cover the sample point, that pixel will be left blank, leading to the jagged "staircase" effect.
+
+![aliasing](_images/images/aliasing.png)
+
+What MSAA does is it uses multiple sample points per pixel (hence the name) to determine its final color.
+As one might expect, more samples lead to better results, however, it is also more computationally expensive.
+
+![antialiasing](_images/images/antialiasing.png)
+
+In our implementation, we will focus on using the maximum available sample count.
+Depending on your application, this may not always be the best approach, and it might be better to use fewer samples for the sake of higher performance if the final result meets your quality demands.
+
+Let’s start off by determining how many samples our hardware can use.
+Most modern GPUs support at least eight samples, but this number is not guaranteed to be the same everywhere.
+We’ll keep track of it by adding a new class member:
+
+...
+vk::SampleCountFlagBits msaaSamples = vk::SampleCountFlagBits::e1;
+...
+
+By default, we’ll be using only one sample per pixel which is equivalent to no multisampling, in which case the final image will remain unchanged.
+The exact maximum number of samples can be extracted from `vk::PhysicalDeviceProperties` associated with our selected physical device.
+We’re using a depth buffer as well, so we have to take into account the sample count for both color and depth.
+The highest sample count that both support will be the maximum we can support.
+Add a function that will fetch this information for us:
+
+vk::SampleCountFlagBits getMaxUsableSampleCount()
+{
+  vk::PhysicalDeviceProperties physicalDeviceProperties = physicalDevice->getProperties();
+
+  vk::SampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+  if (counts & vk::SampleCountFlagBits::e64) { return vk::SampleCountFlagBits::e64; }
+  if (counts & vk::SampleCountFlagBits::e32) { return vk::SampleCountFlagBits::e32; }
+  if (counts & vk::SampleCountFlagBits::e16) { return vk::SampleCountFlagBits::e16; }
+  if (counts & vk::SampleCountFlagBits::e8) { return vk::SampleCountFlagBits::e8; }
+  if (counts & vk::SampleCountFlagBits::e4) { return vk::SampleCountFlagBits::e4; }
+  if (counts & vk::SampleCountFlagBits::e2) { return vk::SampleCountFlagBits::e2; }
+
+  return vk::SampleCountFlagBits::e1;
+}
+
+We will now use this function to set the `msaaSamples` variable during the physical device selection process.
+For this, we slightly extend the `pickPhysicalDevice` function:
+
+void pickPhysicalDevice()
+{
+  ...
+  physicalDevice = *devIter;
+  msaaSamples    = getMaxUsableSampleCount();
+  ...
+}
+
+In MSAA, each pixel is sampled in an offscreen buffer which is then rendered to the screen.
+This new buffer is slightly different from regular images we’ve been rendering to - they have to be able to store more than one sample per pixel.
+Once a multi-sampled buffer is created, it has to be resolved to the default framebuffer (which stores only a single sample per pixel).
+This is why we have to create an additional render target and modify our current drawing process.
+We only need one render target since only one drawing operation is active at a time, just like with the depth buffer.
+Add the following class members:
+
+...
+vk::raii::Image        colorImage       = nullptr;
+vk::raii::DeviceMemory colorImageMemory = nullptr;
+vk::raii::ImageView    colorImageView   = nullptr;
+...
+
+This new image will have to store the desired number of samples per pixel, so we need to pass this number to `vk::ImageCreateInfo` during the image creation process.
+Modify the `createImage` function by adding a `numSamples` parameter:
+
+std::pair
+    createImage(uint32_t                width,
+                uint32_t                height,
+                uint32_t                mipLevels,
+                vk::SampleCountFlagBits numSamples,
+                vk::Format              format,
+                vk::ImageTiling         tiling,
+                vk::ImageUsageFlags     usage,
+                vk::MemoryPropertyFlags properties)
+{
+  vk::ImageCreateInfo imageInfo{.imageType     = vk::ImageType::e2D,
+                                .format        = format,
+                                .extent        = {width, height, 1},
+                                .mipLevels     = mipLevels,
+                                .arrayLayers   = 1,
+                                .samples       = numSamples,
+                                .tiling        = tiling,
+                                .usage         = usage,
+                                .sharingMode   = vk::SharingMode::eExclusive,
+                                .initialLayout = vk::ImageLayout::eUndefined};
+    ...
+
+For now, update all calls to this function using `vk::SampleCountFlagBits::e1` - we will be replacing this with proper values as we progress with implementation:
+
+std::tie(depthImage, depthImageMemory) = createImage(swapChainExtent.width,
+                                                     swapChainExtent.height,
+                                                     1,
+                                                     vk::SampleCountFlagBits::e1,
+                                                     depthFormat,
+                                                     vk::ImageTiling::eOptimal,
+                                                     vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                                                     vk::MemoryPropertyFlagBits::eDeviceLocal);
+...
+std::tie(textureImage, textureImageMemory) =
+    createImage(texWidth,
+                texHeight,
+                mipLevels,
+                vk::SampleCountFlagBits::e1,
+                vk::Format::eR8G8B8A8Srgb,
+                vk::ImageTiling::eOptimal,
+                vk::ImageUsageFlagBits::eTransferSrc | vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
+                vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+We will now create a multi-sampled color buffer.
+Add a `createColorResources` function and note that we’re using `msaaSamples` here as a function parameter to `createImage`.
+We’re also using only one mip level, since this is enforced by the Vulkan specification in case of images with more than one sample per pixel.
+Also, this color buffer doesn’t need mipmaps since it’s not going to be used as a texture:
+
+void createColorResources()
+{
+  vk::Format colorFormat = swapChainSurfaceFormat.format;
+
+  std::tie(colorImage, colorImageMemory) = createImage(swapChainExtent.width,
+                                                       swapChainExtent.height,
+                                                       1,
+                                                       msaaSamples,
+                                                       colorFormat,
+                                                       vk::ImageTiling::eOptimal,
+                                                       vk::ImageUsageFlagBits::eTransientAttachment | vk::ImageUsageFlagBits::eColorAttachment,
+                                                       vk::MemoryPropertyFlagBits::eDeviceLocal);
+  colorImageView                         = createImageView(colorImage, colorFormat, vk::ImageAspectFlagBits::eColor, 1);
+}
+
+For consistency, call the function right before `createDepthResources`:
+
+void initVulkan()
+{
+  ...
+  createColorResources();
+  createDepthResources();
+  ...
+}
+
+Now that we have a multi-sampled color buffer in place, it’s time to take care of depth.
+Modify `createDepthResources` and update the number of samples used by the depth buffer:
+
+void createDepthResources()
+{
+  ...
+  std::tie(depthImage, depthImageMemory) = createImage(swapChainExtent.width,
+                                                       swapChainExtent.height,
+                                                       1,
+                                                       msaaSamples,
+                                                       depthFormat,
+                                                       vk::ImageTiling::eOptimal,
+                                                       vk::ImageUsageFlagBits::eDepthStencilAttachment,
+                                                       vk::MemoryPropertyFlagBits::eDeviceLocal);
+  ...
+}
+
+And update the `recreateSwapChain` so that the new color image can be recreated in the correct resolution when the window is resized:
+
+void recreateSwapChain()
+{
+  ...
+  createImageViews();
+  createColorResources();
+  createDepthResources();
+  ...
+}
+
+We made it past the initial MSAA setup, now we need to start using this new resource in our graphics pipeline and see the results!
+
+First, tell the graphics pipeline to use more than one sample by modifying `createGraphicsPipeline`:
+
+void createGraphicsPipeline()
+{
+  ...
+  vk::PipelineMultisampleStateCreateInfo multisampling{.rasterizationSamples = msaaSamples};
+  ...
+}
+
+Then we need to extend `recordCommandBuffer`.
+In addition to transitioning the `swapChainImages[imageIndex]` and the `depthImage` from `vk::ImageLayout::eUndefined` to
+`vk::ImageLayout::eColorAttachmentOptimal` and `vk::ImageLayout::eDepthAttachmentOptimal`, respectively, we need to transition the
+new multisampled `colorImage` from `vk::ImageLayout::eUndefined` to `vk::ImageLayout::eColorAttachmentOptimal`:
+
+void recordCommandBuffer(uint32_t imageIndex)
+{
+  ...
+  // Transition the multisampled color image to vk::ImageLayout::eColorAttachmentOptimal
+  transition_image_layout(
+      *colorImage,
+      vk::ImageLayout::eUndefined,
+      vk::ImageLayout::eColorAttachmentOptimal,
+      vk::AccessFlagBits2::eColorAttachmentWrite,
+      vk::AccessFlagBits2::eColorAttachmentWrite,
+      vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+      vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+      vk::ImageAspectFlagBits::eColor);
+  ...
+}
+
+Next, instead of using the `swapChainImageViews[imageIndex]` as the color attachment in the `vk::RenderingInfo` with
+`vk::CommandBuffer::beginRendering`, we’re using the `colorImageView` with the `swapChainImageViews[imageIndex]` as the resolve
+image view, using `vk::ResolveModeFlagBits::eAverage` as the resolve mode:
+
+void recordCommandBuffer(uint32_t imageIndex)
+{
+  ...
+  // Color attachment (multisampled) with resolve attachment
+  vk::RenderingAttachmentInfo colorAttachment = {
+      .imageView          = colorImageView,
+      .imageLayout        = vk::ImageLayout::eColorAttachmentOptimal,
+      .resolveMode        = vk::ResolveModeFlagBits::eAverage,
+      .resolveImageView   = swapChainImageViews[imageIndex],
+      .resolveImageLayout = vk::ImageLayout::eColorAttachmentOptimal,
+      .loadOp             = vk::AttachmentLoadOp::eClear,
+      .storeOp            = vk::AttachmentStoreOp::eStore,
+      .clearValue         = clearColor};
+  ...
+}
+
+Now run your program, and you should see the following:
+
+![multisampling](_images/images/multisampling.png)
+
+Just like with mipmapping, the difference may not be apparent straight away.
+On a closer look, you’ll notice that the edges are not as jagged anymore and the whole image seems a bit smoother compared to the original.
+
+![multisampling comparison](_images/images/multisampling_comparison.png)
+
+The difference is more noticeable when looking up close at one of the edges:
+
+![multisampling comparison2](_images/images/multisampling_comparison2.png)
+
+There are certain limitations of our current MSAA implementation that may impact the quality of the output image in more detailed scenes.
+For example, we’re currently not solving potential problems caused by shader aliasing, i.e.
+MSAA only smoothens out the edges of geometry but not the interior filling.
+This may lead to a situation when you get a smooth polygon rendered on screen, but the applied texture will still look aliased if it contains high contrasting colors.
+One way to approach this problem is to enable [Sample Shading](https://docs.vulkan.org/spec/latest/chapters/vertexpostproc.html#primsrast-sampleshading) which will improve the image quality even further, though at an additional performance cost:
+
+void createLogicalDevice()
+{
+  ...
+  vk::StructureChain featureChain = {
+      {.features = {.sampleRateShading = vk::True, .samplerAnisotropy = vk::True}},        // vk::PhysicalDeviceFeatures2
+  ...
+}
+
+void createGraphicsPipeline()
+{
+  ...
+  vk::PipelineMultisampleStateCreateInfo multisampling{
+      .rasterizationSamples = msaaSamples,
+      .sampleShadingEnable  = vk::True,        // enable sample shading in the pipeline
+      .minSampleShading     = 0.2f             // min fraction for sample shading; closer to one is smoother
+  };
+  ...
+}
+
+In this example, we’ll leave sample shading disabled, but in certain scenarios the quality improvement may be noticeable:
+
+![sample shading](_images/images/sample_shading.png)
+
+It has taken a lot of work to get to this point, but now you finally have a good base for a Vulkan program.
+This isn’t the end of the tutorial series, though - the knowledge of the basic principles of Vulkan that
+you now possess should be sufficient to start exploring more of the features, like:
+
+* 
+Push constants and instanced rendering, touched on in [Rendering multiple objects](16_Multiple_Objects.html)
+
+* 
+[Multithreaded command buffer generation](17_Multithreading.html)
+
+* 
+[Compute shaders](11_Compute_Shader.html)
+
+* 
+Dynamic uniforms, separate image and sampler descriptors, pipeline caches, and multiple subpasses - not
+covered by this series, but demonstrated in the Khronos-maintained
+[Vulkan-Samples](https://github.com/KhronosGroup/Vulkan-Samples) repository
+
+The current program can be extended in many ways, like adding Blinn-Phong lighting, post-processing effects, and shadow mapping.
+You should be able to learn how these effects work from tutorials for other APIs, because despite Vulkan’s explicitness, many concepts still work the same.
+
+[C++ code](_attachments/30_multisampling.cpp) /
+[slang shader](_attachments/27_shader_depth.slang) /
+[GLSL Vertex shader](_attachments/27_shader_depth.vert) /
+[GLSL Fragment shader](_attachments/27_shader_depth.frag)

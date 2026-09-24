@@ -1,0 +1,43 @@
+# Runtime-Owned Swapchains & Image Wrapping: Introduction
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/OpenXR_Vulkan_Spatial_Computing/03_Runtime_Owned_Swapchains/01_introduction.html
+
+## Table of Contents
+
+- [The "Wait-Acquire-Release" Rhythm](#_the_wait_acquire_release_rhythm)
+- [The_"Wait-Acquire-Release"_Rhythm](#_the_wait_acquire_release_rhythm)
+
+## Content
+
+In a standard Vulkan application, the engine is in total control of the swapchain. We create the `VkSwapchainKHR`, we decide the image count and format, and we own the memory. In spatial computing, this model is turned on its head.
+
+To achieve the near-zero latency required for a comfortable XR experience, the **XR Runtime** (the compositor) must own the final set of images. This allows the runtime to perform **Asynchronous Reprojection**—a late-stage warping of your image to match the user’s head pose at the exact moment the pixels are strobed onto the display—without needing to copy your data into its own memory space.
+
+In this chapter, we will explore the architectural shift from engine-owned to runtime-owned resources:
+
+**External Image Negotiation**: How to request swapchain images from OpenXR and handle the formats provided by the runtime.
+
+**RAII Resource Integration**: Wrapping raw `VkImage` handles provided by the runtime into our engine’s `vk::raii::Image` and `vk::raii::ImageView` abstractions.
+
+**Memory Ownership Lifecycle**: Mastering the **Wait-Acquire-Release** cycle, which replaces the standard `vkAcquireNextImageKHR` loop.
+
+The most significant change is how we access our render targets. In a desktop application, we ask the swapchain for an image index and render to it. In OpenXR, we must follow a strict three-step protocol:
+
+* 
+**Wait**: Block until the runtime is ready to give us a swapchain image.
+
+* 
+**Acquire**: Formally take ownership of a specific image index.
+
+* 
+**Release**: Hand the image back to the compositor once our command buffer is submitted.
+
+This rhythm ensures that we never render into an image that is currently being displayed or warped by the compositor, preventing tearing and ensuring the highest possible visual stability.
+
+By the end of this chapter, your engine will be able to render its spatial views directly into the headset’s compositor buffers, using our existing RAII wrappers while respecting the runtime’s ownership.
+
+[Previous](../02_OpenXR_Vulkan_Handshake/05_incorporating_into_the_engine.html) | [Next](02_external_image_negotiation.html)

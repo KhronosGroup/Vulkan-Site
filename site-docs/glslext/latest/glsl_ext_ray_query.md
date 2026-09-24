@@ -1,0 +1,547 @@
+# GLSL_EXT_ray_query
+
+## Metadata
+
+- **Component**: glslext
+- **Version**: latest
+- **URL**: /glslext/latest/glslext/ext/GLSL_EXT_ray_query.html
+
+## Content
+
+The original text file describing this extension as a set of diffs to the
+OpenGL Shading Language Specification follows.
+
+Name
+
+    EXT_ray_query
+
+Name Strings
+
+    GL_EXT_ray_query
+
+Contact
+
+    Daniel Koch (dkoch 'at' nvidia.com), NVIDIA
+
+Contributors
+
+    Ashwin Lele, NVIDIA
+    Daniel Koch, NVIDIA
+    Tobias Hector, AMD
+    Joshua Barczak, Intel
+    Tyler Nowicki, Huawei
+
+Status
+
+    Complete
+
+Version
+
+    Last Modified Date: 2022-05-27
+    Revision: 17
+
+Dependencies
+
+    This extension can be applied to OpenGL GLSL versions 4.60
+    (#version 460) and higher.
+
+    This extension is written against revision 5 of the OpenGL Shading Language
+    version 4.60, dated September 4, 2017.
+
+    This extension interacts with revision 43 of the GL_KHR_vulkan_glsl
+    extension, dated October 25, 2017.
+
+    This extension interacts with GLSL_EXT_ray_tracing.
+
+    This extension interacts with GLSL_EXT_ray_flags_primitive_culling.
+
+Overview
+
+    This extension document modifies GLSL to add support for ray tracing
+    which allows existing shader stages to execute ray intersection queries
+    without using separate dynamic shaders or shader bindings tables.
+
+    This extension document adds support for the following extensions to be used
+    within GLSL:
+
+    - GL_EXT_ray_query - enables ray query operations.
+
+    Mapping to SPIR-V
+    -----------------
+
+    For informational purposes (non-normative), the following is an
+    expected way for an implementation to map GLSL constructs to SPIR-V
+    constructs:
+
+      rayQueryEXT type -> OpTypeRayQueryKHR instruction
+      accelerationStructureEXT type -> OpTypeAccelerationStructureKHR instruction
+
+      gl_RayFlagsNoneEXT -> NoneKHR ray flag
+      gl_RayFlagsOpaqueEXT -> OpaqueKHR ray flag
+      gl_RayFlagsNoOpaqueEXT -> NoOpaqueKHR ray flag
+      gl_RayFlagsTerminateOnFirstHitEXT -> TerminateOnFirstHitKHR ray flag
+      gl_RayFlagsSkipClosestHitShaderEXT -> SkipClosestHitShaderKHR ray flag
+      gl_RayFlagsCullBackFacingTrianglesEXT -> CullBackFacingTrianglesKHR ray flag
+      gl_RayFlagsCullFrontFacingTrianglesEXT -> CullFrontFacingTrianglesKHR ray flag
+      gl_RayFlagsCullOpaqueEXT -> CullOpaqueKHR ray flag
+      gl_RayFlagsCullNoOpaqueEXT -> CullNoOpaqueKHR ray flag
+
+      The boolean  argument of any rayQueryGetIntersection* function
+      translates in SPIR-V to an  argument of
+      RayQueryCommittedIntersectionKHR if 'true' and
+      RayQueryCandidateIntersectionKHR if 'false'.
+
+      gl_RayQueryCommittedIntersectionNoneEXT -> RayQueryCommittedIntersectionNoneKHR enum
+      gl_RayQueryCommittedIntersectionTriangleEXT ->RayQueryCommittedIntersectionTriangleKHR enum
+      gl_RayQueryCommittedIntersectionGeneratedEXT -> RayQueryCommittedIntersectionGeneratedKHR enum
+
+      gl_RayQueryCandidateIntersectionTriangleEXT -> RayQueryCandidateIntersectionTriangleKHR flag
+      gl_RayQueryCandidateIntersectionAABBEXT -> RayQueryCandidateIntersectionAABBKHR flag
+
+      rayQueryEXT variable -> OpVariable instruction with type OpTypeRayQueryKHR
+
+      rayQueryInitializeEXT -> OpRayQueryInitializeKHR instruction
+      rayQueryProceedEXT -> OpRayQueryProceedKHR instruction
+      rayQueryTerminateEXT -> OpRayQueryTerminateKHR instruction
+      rayQueryGenerateIntersectionEXT -> OpRayQueryGenerateIntersectionKHR instruction
+      rayQueryConfirmIntersectionEXT -> OpRayQueryConfirmIntersectionKHR instruction
+
+      rayQueryGetIntersectionTypeEXT -> OpRayQueryGetIntersectionTypeKHR instruction
+
+      rayQueryGetRayTMinEXT -> OpRayQueryGetRayTMinKHR
+      rayQueryGetRayFlagsEXT -> OpRayQueryGetRayFlagsKHR
+      rayQueryGetWorldRayOriginEXT -> OpRayQueryGetWorldRayOriginKHR
+      rayQueryGetWorldRayDirectionEXT -> OpRayQueryGetWorldRayDirectionKHR
+
+      rayQueryGetIntersectionTEXT -> OpRayQueryGetIntersectionTKHR instruction
+      rayQueryGetIntersectionInstanceCustomIndexEXT -> OpRayQueryGetIntersectionInstanceCustomIndexKHR instruction
+      rayQueryGetIntersectionInstanceIdEXT -> OpRayQueryGetIntersectionInstanceIdKHR instruction
+      rayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetEXT -> OpRayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetKHR instruction
+      rayQueryGetIntersectionGeometryIndexEXT -> OpRayQueryGetIntersectionGeometryIndexKHR instruction
+      rayQueryGetIntersectionPrimitiveIndexEXT -> OpRayQueryGetIntersectionPrimitiveIndexKHR instruction
+      rayQueryGetIntersectionBarycentricsEXT -> OpRayQueryGetIntersectionBarycentricsKHR instruction
+      rayQueryGetIntersectionFrontFaceEXT -> OpRayQueryGetIntersectionFrontFaceKHR instruction
+      rayQueryGetIntersectionCandidateAABBOpaqueEXT -> OpRayQueryGetIntersectionCandidateAABBOpaqueKHR instruction
+      rayQueryGetIntersectionObjectRayDirectionEXT -> OpRayQueryGetIntersectionObjectRayDirectionKHR instruction
+      rayQueryGetIntersectionObjectRayOriginEXT -> OpRayQueryGetIntersectionObjectRayOriginKHR instruction
+      rayQueryGetIntersectionObjectToWorldEXT -> OpRayQueryGetIntersectionObjectToWorldKHR instruction
+      rayQueryGetIntersectionWorldToObjectEXT -> OpRayQueryGetIntersectionWorldToObjectKHR instruction
+
+    Note: When mapping to SPIR-V, ray query objects are always passed by pointer, and it is invalid to access the underlying object.
+    This differs from other arguments, notably including the acceleration structure handle used to initialize a ray query, which are passed by value.
+
+Modifications to the OpenGL Shading Language Specification, Version 4.60
+
+    Including the following line in a shader can be used to control the
+    language features described in this extension:
+
+      #extension GL_EXT_ray_query                          : 
+
+    where  is as specified in section 3.3.
+    New preprocessor #defines are added:
+
+      #define GL_EXT_ray_query                             1
+
+Changes to Chapter 3 of The OpenGL Shading Language Specification, Version 4.60
+
+    Modify Section 3.6, (Keywords)
+
+    (add the following to the list of reserved keywords)
+
+    accelerationStructureEXT
+    rayQueryEXT
+
+Changes to Chapter 4 of The OpenGL Shading Language Specification, Version 4.60
+
+    Add following to Section 4.1 (Basic Types)
+
+    Ray Query Opaque Types
+
+    Types                           Meaning
+    -----                           -------
+
+    accelerationStructureEXT        A handle representing acceleration structure
+                                    used for calculating intersection of rays with
+                                    geometry.
+
+    rayQueryEXT                     A handle representing a ray query object
+                                    to traverse acceleration structure and
+                                    query traversal information.
+
+    Change the following sentence in the first paragraph of 4.1.7 (Opaque
+    Types) from
+
+        They can only be declared as function parameters or in uniform-
+        qualified variables (see “Uniform  Variables”).
+
+    to
+
+        With the exception of rayQueryEXT (see "Ray Query Types"), they can
+        only be declared as function parameters or in uniform-qualified
+        variables (see “Uniform  Variables”).
+
+    Add two new sub-sections under Section 4.1.7 (Opaque Types)
+
+    4.1.7.x Acceleration Structure Types
+
+    accelerationStructureEXT is an opaque type representing a structure used during
+    ray tracing to accelerate queries of intersections of rays with scene geometry.
+    It is declared and behaves like above described opaque types. When aggregated
+    into arrays within a shader, accelerationStructureEXT can only be indexed with
+    a dynamically uniform integral expression, otherwise results are undefined.
+
+    [[If GL_EXT_nonuniform_qualifier is supported
+    When aggregated into arrays within a shader, accelerationStructureEXT can
+    be indexed with a non-uniform integral expressions, when decorated with the
+    nonuniformEXT qualifier.
+    
+
+    This type is used in the rayQueryInitializeEXT() builtin described in Section 8.19
+    Members of structures cannot be declared with this type.
+
+    4.1.7.y Ray Query Types
+
+    rayQueryEXT is an opaque type representing a ray query object used to
+    traverse acceleration structure and return traversal information.
+    It is declared and behaves like above described opaque types. When aggregated
+    into arrays within a shader, rayQueryEXT can only be indexed with
+    a dynamically uniform integral expression, otherwise results are undefined.
+    Unlike other opaque types, rayQueryEXT variables are declared with no storage
+    qualifiers, either in the global scope or within function scope.
+
+    [[If GL_EXT_nonuniform_qualifier is supported
+    When aggregated into arrays within a shader, rayQueryEXT can
+    be indexed with a non-uniform integral expressions, when decorated with the
+    nonuniformEXT qualifier.
+    
+
+    This type is used in various ray query builtins described in Section 8.19
+    Members of structure cannot be declared with this type.
+
+Additions to Chapter 7 of the OpenGL Shading Language Specification
+(Built-in Variables)
+
+    Modify Section 7.3, Built-in Constants
+
+    Add a new subsection 7.3.x, "Fixed Constants"
+
+    The following constants are provided in all shader stages when
+    extension is enabled
+
+    const uint gl_RayFlagsNoneEXT = 0U;
+    const uint gl_RayFlagsOpaqueEXT = 1U;
+    const uint gl_RayFlagsNoOpaqueEXT = 2U;
+    const uint gl_RayFlagsTerminateOnFirstHitEXT = 4U;
+    const uint gl_RayFlagsSkipClosestHitShaderEXT = 8U;
+    const uint gl_RayFlagsCullBackFacingTrianglesEXT = 16U;
+    const uint gl_RayFlagsCullFrontFacingTrianglesEXT = 32U;
+    const uint gl_RayFlagsCullOpaqueEXT = 64U;
+    const uint gl_RayFlagsCullNoOpaqueEXT = 128U;
+
+    These can be used as flags for the 'rayflags' argument for
+    traceRayEXT()/rayQueryInitializeEXT() call or for comparing values to
+    gl_IncomingRayFlagsEXT or the result of rayQueryGetRayFlagsEXT.
+
+    const uint gl_RayQueryCommittedIntersectionNoneEXT = 0U;
+    const uint gl_RayQueryCommittedIntersectionTriangleEXT = 1U;
+    const uint gl_RayQueryCommittedIntersectionGeneratedEXT = 2U;
+
+    These are used as return values for rayQueryGetIntersectionTypeEXT()
+    when "committed" is true.
+
+    const uint gl_RayQueryCandidateIntersectionTriangleEXT = 0U;
+    const uint gl_RayQueryCandidateIntersectionAABBEXT = 1U;
+
+    These are used as return values for rayQueryGetIntersectionTypeEXT()
+    when "committed" is false.
+
+Additions to Chapter 8 of the OpenGL Shading Language Specification
+(Built-in Functions)
+
+    Add Section 8.19, Ray Query Functions
+
+    Syntax:
+
+        void rayQueryInitializeEXT(rayQueryEXT rayQuery,
+               accelerationStructureEXT topLevel,
+               uint rayFlags, uint cullMask,  vec3 origin,
+               float tMin, vec3 direction, float tMax);
+
+    This function is available in all shader stages.
+
+    Initializes a ray query object but does not start traversal,
+    discarding all previous state. Traversal is considered incomplete.
+
+    The ray's origin and direction are specified by  and ,
+    and the valid parametric range on which intersections can occur is
+    specified by  and .
+
+    The components of  and  must all be finite values.
+     and  must be non-negative, and  must be less than or equal to .
+    The parameters , , , or  may not contain Nans.
+
+     is a bit-wise combination of the built-in constants as defined
+    in  Section 7.3.x "Fixed Constants". Behavior is undefined if:
+
+      * more than one of the gl_RayFlagsOpaqueEXT, gl_RayFlagsNoOpaqueEXT,
+        gl_RayFlagsCullOpaqueEXT, or gl_RayFlagsCullNoOpaqueEXT are set,
+      * both gl_RayFlagsCullBackFacingTrianglesEXT and
+        gl_RayFlagsCullFrontFacingTrianglesEXT are set,
+    [[if GL_EXT_ray_flags_primitive_culling is supported]]
+      * both gl_RayFlagsSkipTrianglesEXT and gl_RayFlagsSkipAABBEXT are set,
+      * more than one of gl_RayFlagsSkipTrianglesEXT, gl_RayFlagsCullBackFacingTrianglesEXT,
+        or gl_RayFlagsCullFrontFacingTrianglesEXT are set.
+    [[end if GL_EXT_ray_flags_primitive_culling]]
+
+     is a mask which specifies the instances to be intersected
+    i.e. visible to the traced ray. Only the 8 least-significant bits are used;
+    other bits are ignored. This mask will be combined with the mask field
+    specified in VkAccelerationStructureInstanceKHR as defined in the Ray
+    Traversal chapter of Vulkan Specification using a bitwise AND operation.
+    The instance is visible only if the result of the operation is non-zero.
+    The upper 24 bits of this value are ignored. If the value is zero, no
+    instances are visible.
+
+    Syntax:
+
+        bool rayQueryProceedEXT(rayQueryEXT q);
+
+    Allows traversal to proceed when traversal is incomplete.
+    Returns 'true' if traversal is incomplete after the operation, and 'false'
+    if traversal is complete.
+
+    Syntax:
+
+        void rayQueryTerminateEXT(rayQueryEXT q);
+
+    Terminates execution of ray query when traversal is incomplete.
+
+    Syntax:
+
+        void rayQueryGenerateIntersectionEXT(rayQueryEXT q, float tHit);
+
+    Generates and commits an intersection at . Only valid when a
+    candidate AABB intersection is found.
+
+     is the parametric value for intersection.
+
+    Syntax:
+
+        void rayQueryConfirmIntersectionEXT(rayQueryEXT q);
+
+    Commits current candidate triangle intersection to be included in
+    determination of the closest hit for a ray query. Only valid when a
+    candidate triangle intersection is found.
+
+    Syntax:
+
+        uint rayQueryGetIntersectionTypeEXT(rayQueryEXT q, bool committed);
+
+    Returns type of committed or candidate intersection.
+    The return values are described in Section 7.3.x.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        float rayQueryGetRayTMinEXT(rayQueryEXT q);
+
+    Returns the parametric  value for the ray query.
+
+    Syntax:
+
+        uint rayQueryGetRayFlagsEXT(rayQueryEXT q);
+
+    Returns the ray flags for the ray query, as described in Section 7.3.x.
+
+    Syntax:
+
+        vec3 rayQueryGetWorldRayOriginEXT(rayQueryEXT q);
+
+    Returns the world-space origin of ray for the ray query.
+
+    Syntax:
+
+        vec3 rayQueryGetWorldRayDirectionEXT(rayQueryEXT q);
+
+    Returns the world-space direction of ray for the ray query.
+
+    Syntax:
+
+        float rayQueryGetIntersectionTEXT(rayQueryEXT q, bool committed);
+
+    Returns the parametric  value for current intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        int rayQueryGetIntersectionInstanceCustomIndexEXT(rayQueryEXT q, bool committed);
+
+    Returns the custom index of the instance for current intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        int rayQueryGetIntersectionInstanceIdEXT(rayQueryEXT q, bool committed);
+
+    Returns the index of the instance for current intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+        uint rayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetEXT(rayQueryEXT q, bool committed);
+
+    Returns the application-specified
+    VkAccelerationStructureInstanceKHR::instanceShaderBindingTableRecordOffset
+    value from the bottom-level acceleration structure instance within the
+    top-level acceleration structure. For ray queries this member has no
+    functional effect, but is provided for completeness as the application
+    could use this to store arbitray instance data. When used
+    with ray tracing pipelines, this value is used in calculating
+    the hit shader binding table index.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+        int rayQueryGetIntersectionGeometryIndexEXT(rayQueryEXT q, bool committed);
+
+    Returns implementation defined index of geometry for current
+    intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        int rayQueryGetIntersectionPrimitiveIndexEXT(rayQueryEXT q, bool committed);
+
+    Returns the index of the primitive (triangle or bounding box) within the
+    geometry of the bottom-level acceleration structure being processed.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        vec2 rayQueryGetIntersectionBarycentricsEXT(rayQueryEXT q, bool committed);
+
+    Returns two component floating point barycentric coordinates of
+    current intersection of ray.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        bool rayQueryGetIntersectionFrontFaceEXT(rayQueryEXT q, bool committed);
+
+    Returns 'true' if the current intersection is a front facing triangle.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        bool rayQueryGetIntersectionCandidateAABBOpaqueEXT(rayQueryEXT q);
+
+    Returns 'true' if the current candidate intersection is an opaque AABB.
+
+    Syntax:
+
+        vec3 rayQueryGetIntersectionObjectRayDirectionEXT(rayQueryEXT q, bool committed);
+
+    Returns object-space direction of ray for current intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        vec3 rayQueryGetIntersectionObjectRayOriginEXT(rayQueryEXT q, bool committed);
+
+    Returns object-space origin of ray for current intersection
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        mat4x3 rayQueryGetIntersectionObjectToWorldEXT(rayQueryEXT q, bool committed);
+
+    Returns object to world transformation matrix for current intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+    Syntax:
+
+        mat4x3 rayQueryGetIntersectionWorldToObjectEXT(rayQueryEXT q, bool committed);
+
+    Returns world to object transformation matrix for current intersection.
+
+    If  is 'true'  returns value for committed intersection.
+    If  is 'false' returns value for candidate intersection.
+     must be a compile time constant value.
+
+Interactions with GLSL_EXT_ray_tracing
+
+    Acceleration structures and the various ray flags are added by both this
+    extension and GLSL_EXT_ray_tracing; they are intended to have identical
+    definitions, and can be enabled by either extension, for use with the
+    instructions added by that extension.
+
+Interactions with GL_EXT_ray_flags_primitive_culling
+
+    If GL_EXT_ray_flags_primitive_culling is supported, ray flags added
+    by this extension can be used as flags for the 'rayflags' argument
+    for rayQueryInitializeEXT() call, or the result of rayQueryGetRayFlagsEXT.
+
+Issues
+
+    TBD
+
+Revision History
+
+    Rev.  Date          Author     Changes
+    ----  -----------   ------     -------------------------------------------
+     1    2019-11-20    alele      Initial draft
+     2    2019-12-05    dgkoch     rename to ray query, address feedback from tobias
+     3    2020-02-12    tobias     Updates as per vulkan issue 1989 to better represent mapping to SPIR-V
+     4    2020-02-25    tobias     Added missing (and fairly important!) rayQueryGetIntersectionTEXT
+     5    2020-03-06    alele      Rename RayWorld to WorldRay for some builtins (#20), fix typo (!50)
+     6    2020-04-01    alele      Remove primitive culling ray flags (vulkan issue 2073)
+     7    2020-07-03    dgkoch     Fix SPIR-V mapping for rayQueryEXT
+     8    2020-07-10    tobias     Clarify valid bits for some parameters (GLSL!63)
+     9    2020-07-24    jbarczack  Add numeric limits on ray parameters (vulkan issue 2235)
+    10    2020-09-11    tobias     Clarify ray query storage class (GLSL!70), fix typo (github!135)
+    11    2020-09-16    dgkoch     Document ray flag exclusive combinations (vulkan #2286)
+    12    2020-11-10    dgkoch     correct reference to Vulkan structure containing the mask
+                                   (vulkan issue 2414)
+    13    2020-12-04    dgkoch     swap descriptions of rayQueryGetIntersectionObjectRay{Origin,
+                                   Direction}EXT (#143)
+                                   various typographical improvements (vulkan issue 2432)
+    14    2020-12-16    dgkoch     Add description for rayQueryGetIntersectionPrimitiveIndexEXT and
+                                   rayQueryGetIntersectionInstanceShaderBindingTableRecordOffsetEXT
+                                   (vulkan issue 2432)
+    15    2021-02-03    dgkoch     Clarify the SPIR-V mapping for the 'committed' arg (vulkan issue 2516)
+    16    2021-03-04    tnowicki   Clarify GetIntersectionFrontFace and GetIntersectionAABBOpaque
+    17    2022-05-27    dgkoch     Disallow more combinations of ray flags (vk-gl-cts#3647)

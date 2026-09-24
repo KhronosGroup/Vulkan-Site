@@ -1,0 +1,73 @@
+# VK_NV_display_stereo
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_NV_display_stereo.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [4. Further Functionality](#_further_functionality)
+- [4._Further_Functionality](#_further_functionality)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+[4. Further Functionality](#_further_functionality)
+
+This document proposes a new extension to configure stereo rendering on displays.
+
+The VK_KHR_display extension allows Vulkan to present directly to display devices without using an intermediate windowing system.
+However, on some platforms this means that there is not an easy way to configure hardware settings external to the app.
+There are many different types of 3D stereo hardware, and the driver needs to know which type of hardware is connected so that
+it can properly configure it. For some hardware, this is not automatically detectable and must be configured manually by the app or user.
+
+Also, for the case of HDMI_3D (HDMI Frame Packed Stereo), the monitors that support this stereo type may only support
+stereo rendering on a subset of the display modes they advertise, and will require the application to choose the correct display mode to
+enable stereo rendering.
+
+The driver could expect some configuration file or environment variable to do this selection, but that option is not very user friendly,
+and not very secure.
+
+On other platforms, such as Windows or on Linux with an X compositor, there can be a GUI for this selection.
+But, direct display on Linux DRM can still be used without a desktop environment at all.
+Also, in those other environments the windowing manager controls the display mode (refresh rate and resolution) of the display,
+while with direct display the Vulkan app controls the display mode.
+
+A Vulkan extension would allow the application to pick for itself what stereo 3D hardware it will be presenting to. And, it will
+annotate the allowed display modes for HDMI_3D.
+
+When doing stereo rendering on direct display, the behavior of the Vulkan presentation pipeline changes in two major ways:
+
+* 
+When `vkGetPhysicalDeviceSurfaceCapabilitiesKHR` is called, the driver **must** return `maxImageArrayLayers` of 2.
+
+* 
+When `vkQueuePresentKHR` is called, the driver **must** set the display mode on the display, including any stereo configuration.
+
+`vkGetPhysicalDeviceSurfaceCapabilitiesKHR` is a query on `VkSurfaceKHR`, so this extension will add the struct
+`VkDisplaySurfaceStereoCreateInfoNV` that extends `VkDisplaySurfaceCreateInfoKHR`.
+It will contain one new enum, `VkDisplaySurfaceStereoTypeNV`.
+If set, this enum will control how stereo 3D is presented on the display for this surface.
+
+This extension will also add the struct `VkDisplayModeStereoPropertiesNV` that extends `VkDisplayModeProperties2KHR`.
+It will contain one bool, `hdmi3DSupported`, to indicate if this display mode can be used for HDMI_3D stereo rendering.
+
+Like VUID-vkQueuePresentKHR-pSwapchains-01293 for display modes, there should only be one active stereo type for a display.
+There will be a similar VU on `vkQueuePresentKHR` that all active stereo types are the same for a display.
+
+It is possible more types will be added in the future.
+
+This functionality does not apply to other surface types, e.g. `vkCreateWin32SurfaceKHR` or `vkCreateXlibSurfaceKHR`,
+since the vulkan app does not control the display mode there like it does in direct display. Usually, stereo would be
+configured by the windowing manager on that platform.

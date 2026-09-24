@@ -1,0 +1,221 @@
+# Cleanup Extensions
+
+## Metadata
+
+- **Component**: guide
+- **Version**: latest
+- **URL**: /guide/latest/extensions/cleanup.html
+
+## Table of Contents
+
+- [VK_KHR_driver_properties](#VK_KHR_driver_properties)
+- [VK_EXT_host_query_reset](#VK_EXT_host_query_reset)
+- [VK_KHR_separate_depth_stencil_layouts](#VK_KHR_separate_depth_stencil_layouts)
+- [VK_KHR_depth_stencil_resolve](#VK_KHR_depth_stencil_resolve)
+- [VK_EXT_separate_stencil_usage](#VK_EXT_separate_stencil_usage)
+- [VK_KHR_dedicated_allocation](#VK_KHR_dedicated_allocation)
+- [VK_EXT_sampler_filter_minmax](#VK_EXT_sampler_filter_minmax)
+- [VK_KHR_sampler_mirror_clamp_to_edge](#VK_KHR_sampler_mirror_clamp_to_edge)
+- [VK_EXT_4444_formats and VK_EXT_ycbcr_2plane_444_formats](#VK_EXT_4444_formats-and-VK_EXT_ycbcr_2plane_444_formats)
+- [VK_EXT_4444_formats_and_VK_EXT_ycbcr_2plane_444_formats](#VK_EXT_4444_formats-and-VK_EXT_ycbcr_2plane_444_formats)
+- [VK_KHR_format_feature_flags2](#VK_KHR_format_feature_flags2)
+- [VK_EXT_rgba10x6_formats](#VK_EXT_rgba10x6_formats)
+- [Maintenance Extensions](#maintenance-extensions)
+- [pNext Expansions](#pnext-expansions)
+- [Example](#_example)
+- [It is fine to not use these](#_it_is_fine_to_not_use_these)
+- [It_is_fine_to_not_use_these](#_it_is_fine_to_not_use_these)
+
+## Content
+
+|  | These are extensions that are unofficially called “cleanup extension”. The Vulkan Guide defines them as cleanup extensions due to their nature of only adding a small bit of functionality or being very simple, self-explanatory extensions in terms of their purpose. |
+| --- | --- |
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+This extension adds more information to query about each implementation. The [VkDriverId](https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VkDriverId) will be a registered vendor’s ID for the implementation. The [VkConformanceVersion](https://docs.vulkan.org/spec/latest/chapters/devsandqueues.html#VkConformanceVersion) displays which version of [the Vulkan Conformance Test Suite](../vulkan_cts.html#vulkan-cts) the implementation passed.
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+This extension allows an application to call `vkResetQueryPool` from the host instead of needing to setup logic to submit `vkCmdResetQueryPool` since this is mainly just a quick write to memory for most implementations.
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+This extension allows an application when using a depth/stencil format to do an image translation on each the depth and stencil separately. Starting in Vulkan 1.2 this functionality is required for all implementations.
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+This extension adds support for automatically resolving multisampled depth/stencil attachments in a subpass in a similar manner as for color attachments.
+
+For more information please check out the GDC presentation. ([slides](https://www.khronos.org/assets/uploads/developers/presentations/Vulkan-Depth-Stencil-Resolve-GDC-Mar19.pdf) and [video](https://www.youtube.com/watch?v=GnnEmJFFC7Q&t=1980s))
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+There are formats that express both the usage of depth and stencil, but there was no way to list a different usage for them. The `VkImageStencilUsageCreateInfo` now lets an application pass in a separate `VkImageUsageFlags` for the stencil usage of an image. The depth usage is the original usage passed into `VkImageCreateInfo::usage` and without using `VkImageStencilUsageCreateInfo` the stencil usage will be the same as well.
+
+A good use case of this is when using the [VK_KHR_image_format_list](VK_KHR_image_format_list.html#VK_KHR_image_format_list) extension. This provides a way for the application to more explicitly describe the possible image views of their `VkImage` at creation time. This allows some implementations to possibly do implementation dependent optimization depending on the usages set.
+
+|  | Promoted to core in Vulkan 1.1 |
+| --- | --- |
+
+Normally applications allocate large chunks for `VkDeviceMemory` and then suballocate to various buffers and images. There are times where it might be better to have a dedicated allocation for `VkImage` or `VkBuffer`. An application can pass `VkMemoryDedicatedRequirements` into `vkGetBufferMemoryRequirements2` or `vkGetImageMemoryRequirements2` to find out if a dedicated allocation is preferred or required. When dealing with external memory it will often require a dedicated allocation.
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+By default, Vulkan samplers using linear filtering return a filtered texel value produced by computing a weighted average of a collection of texels in the neighborhood of the texture coordinate provided. This extension provides a new sampler parameter which allows applications to produce a filtered texel value by computing a component-wise minimum (`VK_SAMPLER_REDUCTION_MODE_MIN`) or maximum (`VK_SAMPLER_REDUCTION_MODE_MAX`) of the texels that would normally be averaged. This is similar to [GL EXT_texture_filter_minmax](https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_filter_minmax.txt).
+
+|  | Promoted to core in Vulkan 1.2 |
+| --- | --- |
+
+This extension adds a new sampler address mode (`VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE`) that effectively uses a texture map twice as large as the original image in which the additional half of the new image is a mirror image of the original image. This new mode relaxes the need to generate images whose opposite edges match by using the original image to generate a matching “mirror image”. This mode allows the texture to be mirrored only once in the negative `s`, `t`, and `r` directions.
+
+|  | Promoted to core in Vulkan 1.3 |
+| --- | --- |
+
+These extensions add new `VkFormat` that were not originally in the spec
+
+|  | Promoted to core in Vulkan 1.3 |
+| --- | --- |
+
+This extension adds a new `VkFormatFeatureFlagBits2KHR` 64bits format feature flag type to extend the existing `VkFormatFeatureFlagBits` which is limited to 31 flags.
+
+This extension adds an exception for `VK_FORMAT_R10X6G10X6B10X6A10X6_UNORM_4PACK16` in the [validation layers](https://github.com/KhronosGroup/Vulkan-ValidationLayers/pull/3397) to allow being able to render to the format.
+
+The maintenance extensions add a collection of minor features that were intentionally left out or overlooked from the original Vulkan 1.0 release.
+
+Currently, there are 6 maintenance extensions. The first 3 were bundled in Vulkan 1.1 as core. All the details for each are well defined in the extension appendix page.
+
+* 
+[VK_KHR_maintenance1](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance1.html) - core in Vulkan 1.1
+
+* 
+[VK_KHR_maintenance2](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance2.html) - core in Vulkan 1.1
+
+* 
+[VK_KHR_maintenance3](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance3.html) - core in Vulkan 1.1
+
+* 
+[VK_KHR_maintenance4](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance4.html) - core in Vulkan 1.3
+
+* 
+[VK_KHR_maintenance5](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance5.html) - core in Vulkan 1.4
+
+* 
+[VK_KHR_maintenance6](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance6.html) - core in Vulkan 1.4
+
+* 
+[VK_KHR_maintenance7](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance7.html) - extension only
+
+* 
+[VK_KHR_maintenance8](https://registry.khronos.org/vulkan/specs/latest/man/html/VK_KHR_maintenance8.html) - extension only
+
+There have been a few times where the Vulkan Working Group realized that some structs in the original 1.0 Vulkan spec were missing the ability to be extended properly due to missing `sType`/`pNext`.
+
+Keeping backward compatibility between versions is very important, so the best solution was to create an extension to amend the mistake. These extensions are mainly new structs, but also need to create new function entry points to make use of the new structs.
+
+The current list of extensions that fit this category are:
+
+* 
+`VK_KHR_get_memory_requirements2`
+
+Added to core in Vulkan 1.1
+
+`VK_KHR_get_physical_device_properties2`
+
+* 
+Added to core in Vulkan 1.1
+
+`VK_KHR_bind_memory2`
+
+* 
+Added to core in Vulkan 1.1
+
+`VK_KHR_create_renderpass2`
+
+* 
+Added to core in Vulkan 1.2
+
+`VK_KHR_copy_commands2`
+
+* 
+Added to core in Vulkan 1.3
+
+All of these are very simple extensions and were promoted to core in their respective versions to make it easier to use without having to query for their support.
+
+|  | `VK_KHR_get_physical_device_properties2` has additional functionality as it adds the ability to query feature support for extensions and newer Vulkan versions. It has become a requirement for most other Vulkan extensions because of this. |
+| --- | --- |
+
+Using `VK_KHR_bind_memory2` as an example, instead of using the standard `vkBindImageMemory`
+
+// VkImage images[3]
+// VkDeviceMemory memories[2];
+
+vkBindImageMemory(myDevice, images[0], memories[0], 0);
+vkBindImageMemory(myDevice, images[1], memories[0], 64);
+vkBindImageMemory(myDevice, images[2], memories[1], 0);
+
+They can now be batched together
+
+// VkImage images[3];
+// VkDeviceMemory memories[2];
+
+VkBindImageMemoryInfo infos[3];
+infos[0] = {VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO, NULL, images[0], memories[0], 0};
+infos[1] = {VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO, NULL, images[1], memories[0], 64};
+infos[2] = {VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO, NULL, images[2], memories[1], 0};
+
+vkBindImageMemory2(myDevice, 3, infos);
+
+Some extensions such as `VK_KHR_sampler_ycbcr_conversion` expose structs that can be passed into the `pNext`
+
+VkBindImagePlaneMemoryInfo plane_info[2];
+plane_info[0] = {VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO, NULL, VK_IMAGE_ASPECT_PLANE_0_BIT};
+plane_info[1] = {VK_STRUCTURE_TYPE_BIND_IMAGE_PLANE_MEMORY_INFO, NULL, VK_IMAGE_ASPECT_PLANE_1_BIT};
+
+// Can now pass other extensions structs into the pNext missing from vkBindImageMemory()
+VkBindImageMemoryInfo infos[2];
+infos[0] = {VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO, &plane_info[0], image, memories[0], 0};
+infos[1] = {VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO, &plane_info[1], image, memories[1], 0};
+
+vkBindImageMemory2(myDevice, 2, infos);
+
+Unless an application need to make use of one of the extensions that rely on the above extensions, it is normally ok to use the original function/structs still.
+
+One possible way to handle this is as followed:
+
+void HandleVkBindImageMemoryInfo(const VkBindImageMemoryInfo* info) {
+    // ...
+}
+
+//
+// Entry points into tool/implementation
+//
+void vkBindImageMemory(VkDevice device,
+                       VkImage image,
+                       VkDeviceMemory memory,
+                       VkDeviceSize memoryOffset)
+{
+    VkBindImageMemoryInfo info;
+    // original call doesn't have a pNext or sType
+    info.sType = VK_STRUCTURE_TYPE_BIND_IMAGE_MEMORY_INFO;
+    info.pNext = nullptr;
+
+    // Match the rest of struct the same
+    info.image = image;
+    info.memory = memory;
+    info.memoryOffset = memoryOffset;
+
+    HandleVkBindImageMemoryInfo(&info);
+}
+
+void vkBindImageMemory2(VkDevice device,
+                        uint32_t bindInfoCount,
+                        const VkBindImageMemoryInfo* pBindInfos)
+{
+    for (uint32_t i = 0; i
