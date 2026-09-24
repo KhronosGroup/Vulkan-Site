@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: Copyright 2026 Holochip Inc.
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * HTML to Markdown converter using node-html-markdown
  */
