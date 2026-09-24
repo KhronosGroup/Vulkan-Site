@@ -1,0 +1,114 @@
+/**
+ * HTML to Markdown converter using node-html-markdown
+ */
+
+// Import the node-html-markdown package
+const { NodeHtmlMarkdown } = require('node-html-markdown');
+
+// Create an instance of NodeHtmlMarkdown with custom options
+const nhm = new NodeHtmlMarkdown({
+  // Custom options for better conversion of Vulkan man pages
+  use: {
+    headingAnchor: false, // Don't add anchors to headings
+    codeBlockStyle: 'fenced' // Use fenced code blocks
+  },
+  // Customize heading levels
+  headingStyle: 'atx', // Use # style headings
+  // Preserve emphasis
+  strongDelimiter: '**',
+  emDelimiter: '*',
+  // Handle code blocks and inline code
+  codeBlockStyle: 'fenced',
+  // Handle line breaks
+  lineBreakStyle: 'soft'
+});
+
+/**
+ * Convert HTML content to Markdown format.
+ *
+ * @param {string} html - The HTML content to convert
+ * @returns {string} The converted Markdown content
+ */
+function htmlToMarkdown(html) {
+  if (!html) return '';
+
+  // First, remove any style, script, and link tags and their content
+  html = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+  html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  html = html.replace(/<link[^>]*>/gi, '');
+
+  // Remove meta tags
+  html = html.replace(/<meta[^>]*>/gi, '');
+
+  // Remove comments
+  html = html.replace(/<!--[\s\S]*?-->/g, '');
+
+  // Remove doctype
+  html = html.replace(/<!DOCTYPE[^>]*>/i, '');
+
+  // Remove elements with hidden attribute
+  html = html.replace(/<[^>]+hidden[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Remove elements with hidden class
+  html = html.replace(/<[^>]+class="[^"]*\bhidden\b[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  html = html.replace(/<[^>]+class='[^']*\bhidden\b[^']*'[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Remove elements with display:none style
+  html = html.replace(/<[^>]+style="[^"]*display:\s*none[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  html = html.replace(/<[^>]+style='[^']*display:\s*none[^']*'[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Remove elements with visibility:hidden style
+  html = html.replace(/<[^>]+style="[^"]*visibility:\s*hidden[^"]*"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  html = html.replace(/<[^>]+style='[^']*visibility:\s*hidden[^']*'[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+
+  // Try to extract the main content
+  // For man pages, we want to focus on the article content
+  const articleMatch = html.match(/<article[^>]*class="doc"[^>]*>([\s\S]*?)<\/article>/i);
+  if (articleMatch && articleMatch[1]) {
+    html = articleMatch[1];
+  } else {
+    // If we can't find an article with class="doc", look for any article
+    const anyArticleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+    if (anyArticleMatch && anyArticleMatch[1]) {
+      html = anyArticleMatch[1];
+    } else {
+      // If we can't find any article, look for the body content
+      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      if (bodyMatch && bodyMatch[1]) {
+        html = bodyMatch[1];
+      }
+    }
+  }
+
+  // Extract the title if available
+  let title = '';
+  const titleMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
+  if (titleMatch && titleMatch[1]) {
+    title = titleMatch[1].trim();
+  }
+
+  // Convert HTML to Markdown using node-html-markdown
+  let markdown = nhm.translate(html);
+
+  // If we extracted a title and it's not already at the beginning of the markdown
+  if (title && !markdown.startsWith('# ' + title)) {
+    markdown = '# ' + title + '\n\n' + markdown;
+  }
+
+  // Post-process markdown to ensure %5F is properly decoded in all contexts, especially in links/anchors
+  // Handle empty links with %5F in the anchor
+  markdown = markdown.replace(/\[\]\(#%5F([^)]*)\)/g, '[](_$1)');
+
+  // Handle links with text and %5F in the anchor
+  markdown = markdown.replace(/\[([^\]]*)\]\(#%5F([^)]*)\)/g, '[$1](_$2)');
+
+  // Handle headings with links containing %5F
+  markdown = markdown.replace(/(#+)\s+\[\]\(#%5F([^)]*)\)([^\n]*)/g, '$1 [](_$2)$3');
+
+  // Replace any remaining %5F with underscores
+  markdown = markdown.replace(/%5F/g, '_');
+
+  return markdown;
+}
+
+module.exports = { htmlToMarkdown };
