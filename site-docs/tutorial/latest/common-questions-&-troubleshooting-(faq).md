@@ -1,0 +1,56 @@
+# Common Questions & Troubleshooting (FAQ)
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/AI_Assisted_Vulkan/09_faq.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Privacy & IP Security](#_privacy_ip_security)
+- [Privacy_&_IP_Security](#_privacy_ip_security)
+- [Accuracy & Hallucinations](#_accuracy_hallucinations)
+- [Accuracy_&_Hallucinations](#_accuracy_hallucinations)
+- [Multimodal & Vision Limits](#_multimodal_vision_limits)
+- [Multimodal_&_Vision_Limits](#_multimodal_vision_limits)
+- [Hardware & VRAM Management](#_hardware_vram_management)
+- [Hardware_&_VRAM_Management](#_hardware_vram_management)
+- [Summary](#_summary)
+
+## Content
+
+As you work through AI-assisted Vulkan development, you’ll run into more than just technical bugs — privacy concerns, hallucinated code, and hardware contention all show up in practice. This chapter covers the most common issues and how to work around them.
+
+**Q: "I am working on a proprietary rendering engine. How do I ensure my source code doesn’t leak or get used to train other models?"**
+
+**A:** The most reliable way to keep code private is to run local inference (Ollama, LM Studio) as your daily driver. Running a model like Qwen 3-Coder on your own hardware means your shaders and C++ files never leave your machine. A common approach is to use local models for day-to-day implementation and reserve cloud models like Claude or GPT for higher-level system design, using API-based access (rather than a consumer chat product) so your data isn’t used for training.
+
+**Q: "The AI keeps suggesting invented extensions or legacy Vulkan 1.0 patterns. I’m spending more time fixing the AI’s code than writing my own."**
+
+**A:** This is almost always a context problem — the model doesn’t have the information it needs and is filling the gap with something plausible-sounding from its training data. Connect your assistant to the `vk.xml` registry via the Model Context Protocol (MCP) so it can check current struct and extension definitions instead of guessing. It also helps to start the session with an explicit baseline, e.g.: **"We are using Vulkan 1.3 with Dynamic Rendering. Do not suggest `VkRenderPass` or `VkFramebuffer` unless I explicitly ask for legacy support."** For projects with a strong house style, a small LoRA adapter can help the model default to your engine’s conventions and allocation patterns — see [Chapter 3.5](03_model_selection_specialization/05_fine_tuning_lora.html).
+
+**Q: "I sent a screenshot of a subtle banding issue in my skybox, but the AI says the image is clear. Why can’t it see the bug?"**
+
+**A:** Most multimodal models downscale input images, often to 1024x1024 or less, before processing them. An artifact that only spans a few pixels in a 4K frame can simply get smoothed away by that downscaling. Crop the screenshot so the artifact fills most of the frame before sending it — if the issue takes up 80% of the image instead of 2%, the model is much more likely to catch it.
+
+**Q: "My Vulkan app keeps crashing with a 'Device Lost' (TDR) error when the AI starts generating code. Do I need a new GPU?"**
+
+**A:** You’re likely hitting a Timeout Detection and Recovery (TDR) event because the AI and your renderer are both competing for the full GPU at once. Try a 4-bit (Q4_K_M) quantization to shrink the model’s VRAM footprint, and cap the number of GPU layers your inference engine (Ollama, LM Studio) offloads, leaving some headroom for the renderer. If you do a lot of this work, a second, older GPU dedicated to running the model (even something that can only host a 7-8B model) frees your primary card entirely for Vulkan.
+
+**Q: "I downloaded a model in Ollama, but it fails to run or crashes my system. What happened?"**
+
+**A:** Downloading a model doesn’t guarantee it fits in your VRAM. If you load something like a 30B model that exceeds available VRAM, Ollama may offload layers to system RAM, which is much slower and can cause a system-wide freeze or a Device Lost error in your Vulkan app. Check the model’s size against your VRAM budget (see [Chapter 3.3](03_model_selection_specialization/03_hardware_vram.html)) before loading it.
+
+**Q: "Should I use the Ollama WebUI (localhost) or the native app?"**
+
+**A:** The native app (or CLI) is generally the better choice for graphics development. It has direct access to the OS’s hardware scheduling and tends to have lower latency when talking to IDE extensions and agents like Goose. A browser-based WebUI is fine for managing and browsing models, but if you notice AI responses lagging while your renderer is active, switch to the native background service.
+
+**Q: "I added an extension (like Filesystem Access) to Goose, but it’s not working. How do I enable it?"**
+
+**A:** In some versions of Goose, adding an extension to the configuration isn’t enough — it also needs to be enabled in the active recipe. Check your Goose settings and confirm the extension is checked or allowed for the specific task profile you’re using. Without that, the agent may know the tool exists but not have permission to call it in your current session.
+
+Most of the problems above come down to the same few things: giving the model accurate context, giving it enough visual detail to work with, and not starving it (or your renderer) of GPU resources. None of it requires you to stop thinking about the Vulkan spec yourself — if anything, understanding these failure modes is what lets you use the tooling without getting burned by it.
+
+Next: [Final Project: AI-Assisted Graphics Lab](10_final_project.html)

@@ -1,0 +1,75 @@
+# Environment Setup
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/AI_Assisted_Vulkan/02_environment_setup/01_introduction.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [The problem it solves: the context gap](#_the_problem_it_solves_the_context_gap)
+- [The_problem_it_solves:_the_context_gap](#_the_problem_it_solves_the_context_gap)
+- [How much to delegate](#_how_much_to_delegate)
+- [How_much_to_delegate](#_how_much_to_delegate)
+- [IDE assistant vs. standalone agent](#_ide_assistant_vs_standalone_agent)
+- [IDE_assistant_vs._standalone_agent](#_ide_assistant_vs_standalone_agent)
+- [First step: building the Vulkan MCP server](#_first_step_building_the_vulkan_mcp_server)
+- [First_step:_building_the_Vulkan_MCP_server](#_first_step_building_the_vulkan_mcp_server)
+- [What’s next](#_whats_next)
+
+## Content
+
+In traditional graphics programming, setting up your environment is a one-time, one-way process: install a compiler (GCC/Clang/MSVC), configure a debugger, and point your IDE at the Vulkan SDK. The tools don’t know anything about your project beyond what you tell them at build time.
+
+An AI-assisted setup adds another layer: a **Context Bridge** that gives a model visibility into your codebase, your build configuration, and (via MCP) the Vulkan specification and your GPU’s actual limits. This chapter covers what that setup looks like and why it’s worth the effort.
+
+The most common frustration with AI coding tools is what we’ll call the **context gap**. You ask an assistant to "add a new image barrier," and it hands back a generic snippet using `VkImageMemoryBarrier` (Vulkan 1.0) instead of the `VkDependencyInfo` (Vulkan 1.3) pattern your engine actually uses. It may also drop the change in the wrong file relative to your engine’s conventions. Fixing that costs more time than writing it yourself would have, because now you’re explaining your engine’s abstractions after the fact instead of before.
+
+A properly configured setup narrows this gap along three axes:
+
+* 
+**Syntactic context** — the IDE’s own understanding of your codebase (its AST, macro expansions, included headers). If the AI knows your `Texture` class wraps a `vk::raii::Image`, it won’t suggest raw pointer operations that don’t compile.
+
+* 
+**Semantic context** — a live connection to the Vulkan specification and `vk.xml` registry via the Model Context Protocol (MCP), so the model can look up what a bitmask or extension actually means instead of relying on memorized training data.
+
+* 
+**Runtime context** — access to `vulkaninfo` output or your engine’s own logs, so the model can reason about why a pipeline creation call failed on your specific hardware rather than guessing in the abstract.
+
+It’s worth being explicit about the failure mode here: an agent that’s told to "write the engine" with no oversight will produce code you don’t understand and can’t maintain. The useful middle ground is delegating specific, bounded tasks and reviewing the output, rather than delegating architecture decisions wholesale.
+
+Two examples of that middle ground:
+
+**Boilerplate.** A single `VkGraphicsPipelineCreateInfo` can run 200 lines. Describing the intent — "a pipeline for a deferred G-buffer pass with 4x MSAA and depth testing enabled" — and having the model fill in the structure, then reviewing the result, is usually faster and no less correct than typing it by hand, provided you actually read what comes back.
+
+**Spec lookups.** If you’re debugging a synchronization issue, you can ask an assistant with MCP access something like "given our use of `VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL`, what access masks does a transition to `SHADER_READ_ONLY_OPTIMAL` need on an Adreno 750?" instead of tabbing over to the spec yourself. The value here is retrieval, not reasoning — it saves you a lookup, not a decision.
+
+There are two broad categories of tool, and most Vulkan workflows end up using both. An **in-IDE assistant** (JetBrains AI, GitHub Copilot) sits in your inner loop — autocomplete, quick explanations of the code under your cursor. A **task-oriented agent** (Goose, Aider) sits in your outer loop — you hand it something like "migrate descriptor management to descriptor buffers" and it works across files, runs the compiler, and iterates until the build passes.
+
+The line between these two categories is blurring as IDEs add more agentic features natively, but the distinction is still a useful way to think about which tool to reach for on a given task.
+
+Before the platform-specific chapters, there’s one prerequisite: build the **mcp-Vulkan** server. Every chapter that follows assumes it’s already built and points each tool at `/path/to/mcp-Vulkan/vulkan/build/index.js`.
+
+You’ll need **Node.js** (LTS) and **npm**. Get the LTS installer from [nodejs.org](https://nodejs.org/) if you don’t have them already.
+
+# Clone the repository
+git clone https://github.com/gpx1000/mcp-Vulkan.git
+
+# The package.json lives in the vulkan/ subdirectory
+cd mcp-Vulkan/vulkan
+
+# Install dependencies and build
+npm install
+npm run build
+
+Note the absolute path to the `mcp-Vulkan` directory (run `pwd` inside it) — every platform chapter needs it when registering the server.
+
+The following chapters cover the major development environments used in graphics programming. You don’t need to read all of them — pick the one that matches your setup.
+
+We start with **JetBrains CLion & Android Studio**, covering their code indexing and how it reduces AI hallucinations. For Windows, there’s a **Visual Studio** chapter focused on connecting its debugger state to chat-based assistants. For Apple developers, the **Xcode & Apple Silicon** chapter covers on-device inference and the memory advantages of M-series chips.
+
+After picking a primary IDE, every path converges on the **Goose & Agentic Workflows** chapter, which covers setting up an autonomous agent backed by a local model via **Ollama**. The last chapter in this section, **The Context Bridge**, covers using MCP to connect your AI directly to the Vulkan specification.
+
+[Previous: Introduction](../introduction.html) | [Next: JetBrains CLion & Android Studio](02_jetbrains_clion_android_studio.html)

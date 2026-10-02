@@ -1,0 +1,34 @@
+# Setting Realistic Expectations: The Limits of Vision
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/AI_Assisted_Vulkan/04_multimodal_ai/04_expectations_limits.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Pixels are not state](#_pixels_are_not_state)
+- [Pixels_are_not_state](#_pixels_are_not_state)
+- [Resolution limits](#_resolution_limits)
+- [Hardware differences](#_hardware_differences)
+- [Summary](#_summary)
+
+## Content
+
+By this point you have an assistant that can identify shadow acne, Z-fighting, and banding reasonably quickly. It’s worth being explicit about what it can’t do: it’s a diagnostic aid, not a compiler, and it doesn’t see your actual GPU state — only the pixels you gave it.
+
+A multimodal model only sees a 2D array of pixels from a screenshot. It has no access to your actual Vulkan objects unless you give it that context directly.
+
+For example, a flickering screen might get diagnosed as Z-fighting when the real cause is a synchronization hazard — a race condition where you’re reading from an image before a previous write finishes. From pixels alone, depth-fighting and a sync-related flicker can look nearly identical. Treat a visual diagnosis as a hypothesis to check against the validation layers and RenderDoc, not a confirmed answer.
+
+Most multimodal models downscale images before processing — a 4K screenshot might get compressed well before the vision encoder ever sees it. That can erase exactly the high-frequency detail you’re trying to diagnose: sub-pixel aliasing, micro-flickering, thin texture seams. If a model says an image looks fine despite a visible shimmering artifact, try cropping tightly to the affected area first — that gives the artifact more of the model’s effective resolution to work with.
+
+Vulkan is explicit, and the same bug can look different across vendors — an artifact on NVIDIA might present differently on AMD or on a mobile Adreno GPU. A model has no way to know which you’re targeting unless you tell it. If you’re working on mobile, say so directly: "I’m debugging on a tile-based deferred renderer (TBDR) architecture." That one line changes reasonable next steps from "check your barriers" to "check your subpass dependencies and load/store ops."
+
+A multimodal model is useful for quickly narrowing down which of the usual suspects you’re looking at. It’s not a substitute for verifying synchronization, memory safety, or driver-specific behavior yourself.
+
+That closes out this section on visual reasoning. Next, we bring this together with the rest of the toolset into a full workflow, from planning through implementation.
+
+Next: [Workflow: Architecture to Implementation](../05_workflow/01_introduction.html)

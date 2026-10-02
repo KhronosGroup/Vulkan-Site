@@ -1,0 +1,234 @@
+# From Hardcoded to Flexible
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/ML_Inference/Building_the_Inference_Engine/03_from_hardcoded_to_flexible.html
+
+## Table of Contents
+
+- [What’s the Same, What’s Different?](#_whats_the_same_whats_different)
+- [What’s_the_Same,_What’s_Different?](#_whats_the_same_whats_different)
+- [The Layer Abstraction](#_the_layer_abstraction)
+- [The_Layer_Abstraction](#_the_layer_abstraction)
+- [A Concrete Example: DenseLayer](#_a_concrete_example_denselayer)
+- [A_Concrete_Example:_DenseLayer](#_a_concrete_example_denselayer)
+- [Buffer Management](#_buffer_management)
+- [What About Convolution?](#_what_about_convolution)
+- [What_About_Convolution?](#_what_about_convolution)
+- [Activation Functions](#_activation_functions)
+- [The Pattern Emerges](#_the_pattern_emerges)
+- [The_Pattern_Emerges](#_the_pattern_emerges)
+- [What We’ve Gained](#_what_weve_gained)
+- [What_We’ve_Gained](#_what_weve_gained)
+
+## Content
+
+Look at the hardcoded implementation from the previous chapter. Three dense layers, nearly identical code repeated three times. Change the descriptors, update the push constants, dispatch. Barrier. Repeat.
+
+This works, but it’s brittle. Want to add a fourth layer? Copy-paste more code. Want to try a different architecture? Rewrite everything. Want to support convolution layers? Figure out where to insert them in the hardcoded sequence.
+
+The code is screaming at us: there’s a pattern here. Let’s extract it.
+
+Every layer execution follows this structure:
+
+Bind the pipeline (compute shader)
+
+Bind descriptor set (input/output buffers, weights)
+
+Set push constants (dimensions, parameters)
+
+Dispatch (workgroup count)
+
+Insert barrier for next layer
+
+The structure is identical. What changes?
+
+**Pipeline**: Dense layer uses dense.spv shader. Convolution would use conv2d.spv. ReLU uses relu.spv.
+
+**Descriptors**: Different buffers for input/output, different weight tensors. But the binding pattern is the same—input, weights, output.
+
+**Push constants**: Dimensions vary (128 outputs vs 64 outputs), but the mechanism is identical.
+
+**Dispatch size**: Calculated from output size, but the formula is predictable.
+
+If we can parameterize these differences, we can write the execution code once and reuse it for every layer.
+
+What if each layer was an object that knew how to execute itself? Something like:
+
+class Layer {
+public:
+    virtual void execute(
+        vk::raii::CommandBuffer& cmdBuffer,
+        const vk::raii::Buffer& inputBuffer,
+        const vk::raii::Buffer& outputBuffer
+    ) = 0;
+};
+
+Then our forward pass becomes:
+
+for (auto& layer : layers) {
+    layer->execute(cmdBuffer, currentBuffer, nextBuffer);
+    insertBarrier(cmdBuffer);
+    std::swap(currentBuffer, nextBuffer);
+}
+
+Much cleaner. Each layer encapsulates its specific behavior—which shader to use, how to calculate dispatch size, what parameters to set. The execution loop doesn’t care about those details.
+
+Let’s make this concrete with the dense layer:
+
+class DenseLayer : public Layer {
+public:
+    DenseLayer(
+        vk::raii::Device& device,
+        uint32_t inputSize,
+        uint32_t outputSize,
+        const std::vector& weights,
+        const std::vector& bias
+    ) : inputSize_(inputSize), outputSize_(outputSize) {
+        // Create weight and bias buffers
+        createWeightBuffer(device, weights);
+        createBiasBuffer(device, bias);
+
+        // Load shader and create pipeline
+        createPipeline(device, "shaders/dense.spv");
+    }
+
+    void execute(
+        vk::raii::CommandBuffer& cmdBuffer,
+        const vk::raii::Buffer& input,
+        const vk::raii::Buffer& output
+    ) override {
+        // Bind our pipeline
+        cmdBuffer.bindPipeline(vk::PipelineBindPoint::eCompute, *pipeline_);
+
+        // Bind descriptors (input, weights, bias, output)
+        cmdBuffer.bindDescriptorSets(/*...*/);
+
+        // Push constants
+        struct { uint32_t inSize, outSize; } params = {inputSize_, outputSize_};
+        cmdBuffer.pushConstants(/*...*/, params);
+
+        // Dispatch
+        uint32_t workgroups = (outputSize_ + 63) / 64;
+        cmdBuffer.dispatch(workgroups, 1, 1);
+    }
+
+private:
+    uint32_t inputSize_, outputSize_;
+    vk::raii::Buffer weightBuffer_;
+    vk::raii::Buffer biasBuffer_;
+    vk::raii::Pipeline pipeline_;
+    // ... memory, descriptors, etc.
+};
+
+Now creating our three-layer network is simple:
+
+std::vector> layers;
+
+layers.push_back(std::make_unique(
+    device, 784, 128, weights.fc1_weights, weights.fc1_bias
+));
+
+layers.push_back(std::make_unique(
+    device, 128, 64, weights.fc2_weights, weights.fc2_bias
+));
+
+layers.push_back(std::make_unique(
+    device, 64, 10, weights.fc3_weights, weights.fc3_bias
+));
+
+Much better. Want a four-layer network? Add another push_back. Want to insert a ReLU layer between dense layers? Create a ReLULayer class and insert it.
+
+Notice a problem with the execute signature? We’re passing input and output buffers, but what about the intermediate results between layers?
+
+Layer 1 outputs to some buffer. Layer 2 needs that as input. Layer 3 needs layer 2’s output. We need a way to manage these intermediate tensors.
+
+One approach: pre-allocate buffers and pass them explicitly. But this gets messy with branching architectures (skip connections, multiple outputs, etc.).
+
+Better approach: let each layer own its output buffer. During construction, layers allocate their output buffers. During execution, each layer writes to its own output buffer, and the next layer reads from it.
+
+This means layers need to know about each other’s buffers. That’s where a graph representation comes in—but we’re not there yet. For now, we’ll keep it simple with sequential execution and explicit buffer passing.
+
+Dense layers are straightforward. Convolution is more complex—it needs kernel size, stride, padding parameters. How does that fit our abstraction?
+
+Same pattern, more parameters:
+
+class Conv2DLayer : public Layer {
+public:
+    Conv2DLayer(
+        vk::raii::Device& device,
+        uint32_t inputChannels,
+        uint32_t outputChannels,
+        uint32_t kernelHeight,
+        uint32_t kernelWidth,
+        uint32_t stride,
+        uint32_t padding,
+        const std::vector& weights,
+        const std::vector& bias
+    ) { /* ... */ }
+
+    void execute(/*...*/) override {
+        // Bind conv2d.spv shader
+        // Push constants include kernel size, stride, padding
+        // Dispatch with 2D workgroups for spatial dimensions
+    }
+};
+
+Different parameters, different shader, different dispatch pattern. But the same interface—execute() does its job, the caller doesn’t need to know the details.
+
+Activation functions like ReLU are even simpler—they’re element-wise operations with no learned parameters:
+
+class ReLULayer : public Layer {
+public:
+    ReLULayer(vk::raii::Device& device, uint32_t elementCount)
+        : elementCount_(elementCount) {
+        createPipeline(device, "shaders/relu.spv");
+    }
+
+    void execute(/*...*/) override {
+        // Bind relu.spv
+        // Push element count
+        // Dispatch ((elementCount + 255) / 256) workgroups
+    }
+};
+
+No weights, no bias, just element count. The shader is trivial—`output[i] = max(0, input[i])`.
+
+Every layer type implements the same interface but with different internals:
+
+* 
+**DenseLayer**: Matrix multiply, needs weight matrix and bias vector
+
+* 
+**Conv2DLayer**: Convolution, needs kernels with spatial parameters
+
+* 
+**ReLULayer**: Element-wise max, no parameters
+
+* 
+**MaxPoolLayer**: Spatial pooling, needs pool size and stride
+
+* 
+**BatchNormLayer**: Normalization, needs mean/variance/scale/shift
+
+They all execute the same way from the caller’s perspective. The abstraction hides the complexity.
+
+This abstraction gives us:
+
+**Flexibility**: Easy to add new layer types—implement the interface, done.
+
+**Reusability**: The execution loop works for any sequence of layers.
+
+**Testability**: Can test each layer type in isolation.
+
+**Clarity**: The forward pass is now obviously "execute each layer in sequence" instead of pages of nearly-identical code.
+
+But we’ve only solved part of the problem. We still have to manually instantiate layers, manage buffer connections, and know the execution order. For a three-layer network, that’s fine. For ResNet-50 with skip connections and 50 layers? We need more structure.
+
+That’s where the graph representation comes in. Instead of a flat list of layers, we represent the network as a directed acyclic graph where nodes are operations and edges are data dependencies.
+
+Next chapter: building that graph representation.
+
+[Previous: Hardcoded Forward Propagation](02_hardcoded_forward_prop.html) | [Next: Model Representation](04_model_representation.html)

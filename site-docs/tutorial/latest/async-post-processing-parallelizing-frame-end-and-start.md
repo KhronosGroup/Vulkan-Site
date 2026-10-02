@@ -1,0 +1,83 @@
+# Async Post-Processing: Parallelizing Frame End and Start
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/Synchronization/Async_Compute_Overlap/03_async_post_processing.html
+
+## Table of Contents
+
+- [A Real-World Use Case](#_a_real_world_use_case)
+- [A_Real-World_Use_Case](#_a_real_world_use_case)
+- [Implementing the Overlap](#_implementing_the_overlap)
+- [Implementing_the_Overlap](#_implementing_the_overlap)
+- [Synchronization 2 Example](#_synchronization_2_example)
+- [Synchronization_2_Example](#_synchronization_2_example)
+- [Handling the Present](#_handling_the_present)
+- [Handling_the_Present](#_handling_the_present)
+- [Implementing in Simple Engine](#_implementing_in_simple_engine)
+- [Implementing_in_Simple_Engine](#_implementing_in_simple_engine)
+- [Navigation](#_navigation)
+
+## Content
+
+One of the most effective ways to use asynchronous compute is to run your post-processing pass (which is usually compute-bound) while the graphics unit is busy with the shadow or geometry pass of the **next** frame. This is a powerful pattern because post-processing typically happens at the very end of the frame, when the graphics units have finished their work. Instead of making the next frame wait for post-processing to complete, we move it to a dedicated compute queue.
+
+The implementation involves two different queues: a **Graphics Queue** for your geometry and shadow work, and an **Asynchronous Compute Queue** for your post-processing work (e.g., bloom, tonemapping, or temporal anti-aliasing).
+
+**Main Render Pass (Graphics Queue)**: Once your main rendering is complete, signal a "Graphics Complete" value on your graphics timeline.
+
+**Post-Processing Pass (Compute Queue)**: The compute queue waits for the "Graphics Complete" value. It then performs the post-processing work and signals a "Post-Processing Complete" value on its own compute timeline.
+
+**Frame Submission (CPU)**: The CPU can start recording and submitting the **next** frame to the graphics queue as soon as the previous frame’s geometry is submitted. It doesn’t need to wait for the post-processing to finish.
+
+Using `vk::DependencyInfo` and `vk::SubmitInfo2`, this coordination is clear and precise.
+
+// Compute Submit: wait for frame N graphics to finish, then run post-processing
+auto computeWaitInfo = vk::SemaphoreSubmitInfo{
+    .semaphore = *graphicsTimeline,
+    .value = frameN_graphics_finished,
+    .stageMask = vk::PipelineStageFlagBits2::eComputeShader
+};
+
+auto computeSignalInfo = vk::SemaphoreSubmitInfo{
+    .semaphore = *computeTimeline,
+    .value = frameN_postprocessing_finished,
+    .stageMask = vk::PipelineStageFlagBits2::eComputeShader
+};
+
+auto computeSubmit = vk::SubmitInfo2{
+    .waitSemaphoreInfoCount = 1,
+    .pWaitSemaphoreInfos = &computeWaitInfo,
+    .signalSemaphoreInfoCount = 1,
+    .pSignalSemaphoreInfos = &computeSignalInfo,
+    .commandBufferInfoCount = 1,
+    .pCommandBufferInfos = &postProcessCmdInfo
+};
+
+computeQueue.submit2(computeSubmit);
+
+The final step is the **Present** operation. On the CPU side, you must ensure that you don’t present the final image until both the graphics and compute work for that frame are complete.
+
+Specifically, because the presentation unit (WSI) doesn’t yet support timeline semaphores, you must use a **binary semaphore** for the final handshake. Your compute queue signals a binary semaphore upon completion of the post-processing pass. The `vk::PresentInfoKHR` then waits on this binary semaphore before displaying the image to the screen.
+
+This three-way handshake—graphics signals compute, compute signals present—ensures that the graphics units are always fed with new work (from the **next** frame), while the compute units handle the final look of the **current** frame. It’s a key strategy for maximizing your engine’s frame rate and keeping your GPU occupancy as high as possible.
+
+In `Simple Engine`, we will apply this async post-processing pattern to our **PBR Tonemapping** pass. Currently, the tonemapping is done at the end of `Renderer::Render` on the graphics queue. We will move this logic to a dedicated `postProcessComputePipeline` that runs on the `computeQueue`.
+
+To implement this:
+
+**Add Compute Pass**: We’ll update our `Renderer` to record the tonemapping compute shader (`shaders/tonemap.slang`) into a separate compute command buffer.
+
+**Wait for Graphics**: This compute command buffer will wait for the main rendering timeline to reach the `GeometryFinished` value.
+
+**Signal for Present**: Once the tonemapping is complete, it will signal a `PostProcessFinished` value.
+
+**Update Submit**: We’ll update our final `vk::SubmitInfo2` for the frame so that the present operation waits for this `PostProcessFinished` value on the compute timeline.
+
+By moving tonemapping to the compute queue, we can start the **next frame’s shadow pass** on the graphics queue while the current frame is still being tonemapped. This overlaps the raster-heavy shadow pass with the compute-heavy tonemapping pass, significantly improving our overall frame throughput.
+
+In the final section of this chapter, we’ll look at how to identify and eliminate the "bubbles" that can occur if your synchronization is too conservative.
+
+Previous: [Maximizing Throughput](02_maximizing_throughput.html) | Next: [The Bubble Problem](04_bubble_problem.html)
