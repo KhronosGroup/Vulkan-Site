@@ -1,0 +1,1276 @@
+# GLSL_EXT_ray_tracing
+
+## Metadata
+
+- **Component**: glslext
+- **Version**: latest
+- **URL**: /glslext/latest/glslext/ext/GLSL_EXT_ray_tracing.html
+
+## Content
+
+The original text file describing this extension as a set of diffs to the
+OpenGL Shading Language Specification follows.
+
+Name
+
+    EXT_ray_tracing
+
+Name Strings
+
+    GL_EXT_ray_tracing
+
+Contact
+    Daniel Koch (dkoch 'at' nvidia.com), NVIDIA
+
+Contributors
+
+    Eric Werness, NVIDIA
+    Ashwin Lele, NVIDIA
+    Christoph Kubisch, NVIDIA
+    Nuno Subtil, NVIDIA
+    Ignacio Llamas, NVIDIA
+    Martin Stich, NVIDIA
+    Steven Parker, NVIDIA
+    Robert Stepinski, NVIDIA
+    Daniel Koch, NVIDIA
+    Tobias Hector, AMD
+    Boris Zanin, Mobica
+    Tyler Nowicki, Huawei
+    Joshua Barczak, Intel
+
+Status
+
+    Complete
+
+Version
+
+    Last Modified Date: 2022-05-27
+    Revision: 24
+
+Dependencies
+
+    This extension can be applied to OpenGL GLSL versions 4.60
+    (#version 460) and higher.
+
+    This extension is written against revision 5 of the OpenGL Shading Language
+    version 4.60, dated September 4, 2017.
+
+    This extension interacts with revision 43 of the GL_KHR_vulkan_glsl
+    extension, dated October 25, 2017.
+
+    This extension interacts with GLSL_EXT_ray_query.
+
+    This extension interacts with GL_KHR_shader_subgroup.
+
+    This extension interacts with GL_NV_shader_subgroup_partitioned.
+
+    This extension interacts with GL_ARB_shader_ballot.
+
+    This extension interacts with GL_ARB_shader_group_vote.
+
+    This extension interacts with GL_ARB_shader_clock.
+
+    This extension interacts with GL_EXT_shader_realtime_clock.
+
+    This extension interacts with GL_KHR_memory_scope_semantics.
+
+    This extension interacts with GL_EXT_nonuniform_qualifier.
+
+    This extension interacts with GL_EXT_ray_flags_primitive_culling.
+
+    This extension interacts with GL_NV_shader_sm_builtins.
+
+    This extension interacts with GL_EXT_scalar_block_layout.
+
+Overview
+
+    This extension document modifies GLSL to add new shader stages to support ray tracing.
+    They are namely ray generation, intersection, any-hit, closest-hit, miss stages and
+    callable collectively referred as ray tracing stages.
+
+    This extension document adds support for the following extensions to be used
+    within GLSL:
+
+    - GL_EXT_ray_tracing - enables ray tracing stages.
+
+    Mapping to SPIR-V
+    -----------------
+
+    For informational purposes (non-normative), the following is an
+    expected way for an implementation to map GLSL constructs to SPIR-V
+    constructs:
+
+      ray generation shader -> RayGenerationKHR Execution model
+      intersection shader -> IntersectionKHR Execution model
+      any-hit shader -> AnyHitKHR Execution model
+      closest-hit shader -> ClosestHitKHR Execution model
+      miss shader -> MissKHR Execution model
+      callable shader -> CallableKHR Execution model
+
+      accelerationStructureEXT type -> OpTypeAccelerationStructureKHR instruction
+
+      rayPayloadEXT storage qualifier -> RayPayloadKHR storage class
+      rayPayloadInEXT storage qualifier -> IncomingRayPayloadKHR storage class
+      hitAttributeEXT storage qualifier -> HitAttributeKHR storage class
+      callableDataEXT storage qualifier -> CallableDataKHR storage class
+      callableDataInEXT storage qualifier -> IncomingCallableDataKHR storage class
+
+      shaderRecordEXT decorated buffer block -> ShaderRecordBufferKHR storage class
+
+      gl_LaunchIDEXT -> LaunchIdKHR decorated OpVariable
+      gl_LaunchSizeEXT -> LaunchSizeKHR decorated OpVariable
+      gl_PrimitiveID -> PrimitiveId decorated OpVariable
+      gl_InstanceID -> InstanceId decorated OpVariable
+      gl_InstanceCustomIndexEXT -> InstanceCustomIndexKHR decorated OpVariable
+      gl_GeometryIndexEXT -> RayGeometryIndexKHR decorated OpVariable
+      gl_WorldRayOriginEXT -> WorldRayOriginKHR decorated OpVariable
+      gl_WorldRayDirectionEXT -> WorldRayDirectionKHR decorated OpVariable
+      gl_ObjectRayOriginEXT -> ObjectRayOriginKHR decorated OpVariable
+      gl_ObjectRayDirectionEXT -> ObjectRayDirectionKHR decorated OpVariable
+      gl_RayTminEXT -> RayTminKHR decorated OpVariable
+      gl_RayTmaxEXT -> RayTmaxKHR decorated OpVariable
+      gl_IncomingRayFlagsEXT -> IncomingRayFlagsKHR decorated OpVariable
+      gl_HitTEXT -> RayTmaxKHR decorated OpVariable
+      gl_HitKindEXT -> HitKindKHR decorated OpVariable
+      gl_ObjectToWorldEXT -> ObjectToWorldKHR decorated OpVariable
+      gl_WorldToObjectEXT -> WorldToObjectKHR decorated OpVariable
+      gl_WorldToObject3x4EXT -> Transpose of WorldToObjectKHR decorated OpVariable
+      gl_ObjectToWorld3x4EXT -> Transpose of ObjectToWorldKHR decorated OpVariable
+
+      gl_RayFlagsNoneEXT -> NoneKHR ray flag
+      gl_RayFlagsOpaqueEXT -> OpaqueKHR ray flag
+      gl_RayFlagsNoOpaqueEXT -> NoOpaqueKHR ray flag
+      gl_RayFlagsTerminateOnFirstHitEXT -> TerminateOnFirstHitKHR ray flag
+      gl_RayFlagsSkipClosestHitShaderEXT -> SkipClosestHitShaderKHR ray flag
+      gl_RayFlagsCullBackFacingTrianglesEXT -> CullBackFacingTrianglesKHR ray flag
+      gl_RayFlagsCullFrontFacingTrianglesEXT -> CullFrontFacingTrianglesKHR ray flag
+      gl_RayFlagsCullOpaqueEXT -> CullOpaqueKHR ray flag
+      gl_RayFlagsCullNoOpaqueEXT -> CullNoOpaqueKHR ray flag
+
+      gl_HitKindFrontFacingTriangleEXT -> HitKindFrontFacingTriangleKHR hit kind
+      gl_HitKindBackFacingTriangleEXT -> HitKindBackFacingTriangleKHR hit kind
+
+      traceRayEXT -> OpTraceRayKHR instruction
+      reportIntersectionEXT -> OpReportIntersectionKHR instruction
+      ignoreIntersectionEXT keyword -> OpIgnoreIntersectionKHR instruction
+      terminateRayEXT keyword -> OpTerminateRayKHR instruction
+      executeCallableEXT -> OpExecuteCallableKHR instruction
+
+      shadercallcoherent -> NonPrivate{Pointer,Texel}KHR + Make{Pointer,Texel}{Available,Visible}KHR with scope = ShaderCallKHR
+
+      accelerationStructureEXT constructor -> OpConvertUToAccelerationStructureKHR
+
+      Any of the following built-in variables:
+        - gl_SubgroupSize, gl_SubgroupInvocationID, gl_SubgroupEqMask,
+          gl_SubgroupGeMask, gl_SubgroupGtMask, gl_SubgroupLeMask,
+          gl_SubgroupLtMask,
+        - gl_SubGroupSizeARB, gl_SubGroupInvocationARB, gl_SubGroupEqMaskARB,
+          gl_SubGroupGeMaskARB, gl_SubGroupGtMaskARB, gl_SubGroupLeMaskARB,
+          gl_SubGroupLtMaskARB
+        - gl_WarpIDNV, gl_SMIDNV
+      used in the ray generation, closest-hit, miss, intersection, and callable
+      shader stages, or
+        - gl_RayTmaxEXT
+      used in an intersection shader should also
+        - be decorated with Volatile if GL_KHR_memory_scope_semantics is not
+          enabled
+        - use the Volatile memory semantics for any OpLoad into one of these
+          variables if GL_KHR_memory_scope_semantics is enabled
+
+Modifications to the OpenGL Shading Language Specification, Version 4.60
+
+    Including the following line in a shader can be used to control the
+    language features described in this extension:
+
+      #extension GL_EXT_ray_tracing                          : 
+
+    where  is as specified in section 3.3.
+    New preprocessor #defines are added:
+
+      #define GL_EXT_ray_tracing                             1
+
+Additions to Chapter 2 of the OpenGL Shading Language Specification
+(Overview of OpenGL Shading)
+
+    Add Section 2.7, Ray Generation Processor
+
+    The  is a programmable unit that operates on an
+    incoming ray and its associated data. It runs independently from other
+    graphics and compute processors. Compilation units written in the
+    OpenGL Shading Language to run on this processor are called . When a set of ray generation shaders are successfully
+    compiled and linked, they result in a  that
+    runs on the ray generation processor.
+
+    The ray generation processor is similar to the compute processor. It is
+    used to execute ray tracing queries using traceRayEXT() calls and process the
+    results. It can pass data to other ray tracing stages through the ray
+    payload.
+
+    Add Section 2.8, Intersection Processor
+
+    The  is a programmable unit that evaluates
+    ray-primitive intersections and reports the results to other
+    programmable units. It runs independently from other graphics and compute
+    processors. Compilation units written in the OpenGL Shading Language to
+    run on this processor are called . When a set of
+    intersection shaders are successfully compiled and linked, they result in
+    an  that runs on the intersection processor.
+
+    The intersection processor will use an implementation-specific built-in
+    intersection shader if the ray query is operating on a triangle primitive.
+    Otherwise, an application defined intersection shader is used if the ray
+    query is operating on an axis-aligned bounding box. See the Ray Tracing
+    chapter of the Vulkan specification for more information.
+
+    The intersection processor operates on a single primitive at a time.
+
+    The intersection processor can generate data that can be read by any-hit
+    hit and closest-hit processors. The intersection processor cannot read or
+    modify the ray payload.
+
+    Add Section 2.9, Any-Hit Processor
+
+    The  is a programmable unit that operates on rays that
+    have had intersections reported and evaluates whether the intersection
+    should be accepted. It runs independently from other graphics and compute
+    processors. Compilation units written in the OpenGL Shading Language to
+    run on this processor are called . When a set of any-hit
+    shaders are successfully compiled and linked, they result in an
+     that runs on the any-hit processor.
+
+    The order in which intersections are found along a ray, and therefore the
+    order in which the any-hit processor is executed, is unspecified. The
+    any-hit shader or the closest-hit must be invoked at some point during
+    traversal, unless the ray is forcibly terminated.
+
+    Any-hit shaders have read-only access to the data generated by the
+    intersection processor. They may read and modify the incoming ray payload.
+
+    The application may specify flags to avoid executing any-hit shaders for
+    certain instances, primitives or rays in order to improve performance.
+
+    Add Section 2.10, Closest-Hit Processor
+
+    The  is a programmable unit that operates on rays
+    that have had intersections reported. It runs independently from other
+    graphics and compute processors. Compilation units written in the OpenGL
+    Shading Language to run on this processor are called .
+    When a set of closest-hit shaders are successfully compiled and linked, they
+    result in a  that runs on the closest-hit processor.
+
+    The closest-hit processor is executed at most one time when traversal is
+    finished and an intersection has accepted.
+
+    Closest hit shaders have read-only access to the data generated by the
+    intersection processor. They may read and modify the incoming ray payload.
+    They can also recursively generate a new ray query with a call to
+    traceRayEXT() that uses its own ray payload.
+
+    Add Section 2.11, Miss Processor
+
+    The  is a programmable unit that operates on rays that
+    have not had any intersections reported by other programmable units. It
+    runs independently from other graphics and compute processors. Compilation
+    units written in the OpenGL Shading Language to run on this processor are
+    called . When a set of miss shaders are successfully
+    compiled and linked, they result in a  that runs on the
+    miss processor.
+
+    The miss processor is invoked instead of the closest-hit processor if no
+    intersection is reported during traversal. Miss shaders can read and modify
+    the incoming ray payload but they cannot access data generated by the
+    intersection processor. They can also recursively generate a new ray query
+    with a call to traceRayEXT() that uses its own ray payload.
+
+    Add Section 2.12, Callable Processor
+
+    The  is a programmable unit that operates on arbitrary
+    data associated with a ray and invoked from other programmable units in the
+    ray tracing pipeline. It is similar in concept to an indirect function call
+    mechanism. It runs independently from other graphics and compute processors.
+    Compilation units written in the OpenGL Shading Language to run on this processor
+    are called .
+
+    The callable processor can be invoked from a ray-generation, closest-hit, miss
+    or another callable shader stage. They can only access data passed
+    in to the callable from parent stage. They can be invoked by indexing into
+    the shader binding table. Refer to Ray Tracing chapter of the Vulkan specification
+    for further details.
+
+Changes to Chapter 3 of The OpenGL Shading Language Specification, Version 4.60
+
+    Modify Section 3.6, (Keywords)
+
+    (add the following to the list of reserved keywords)
+
+    accelerationStructureEXT
+    rayPayloadEXT
+    rayPayloadInEXT
+    hitAttributeEXT
+    callableDataEXT
+    callableDataInEXT
+    ignoreIntersectionEXT
+    terminateRayEXT
+
+Changes to Chapter 4 of The OpenGL Shading Language Specification, Version 4.60
+
+    Add following to Section 4.1 (Basic Types)
+
+    Ray Tracing Opaque Types
+
+    Types                           Meaning
+    -----                           -------
+
+    accelerationStructureEXT        A handle representing acceleration structure
+                                    used for calculating intersection of rays with
+                                    geometry.
+
+    Add a new sub-section under Section 4.1.7 (Opaque Types)
+
+    4.1.7.x Acceleration Structure Types
+
+    accelerationStructureEXT is an opaque type representing a structure used during
+    ray tracing to accelerate queries of intersections of rays with scene geometry.
+    It is declared and behaves like above described opaque types. When aggregated
+    into arrays within a shader, accelerationStructureEXT can only be indexed with
+    a dynamically uniform integral expression, otherwise results are undefined.
+
+    [[If GL_EXT_nonuniform_qualifier is supported
+    When aggregated into arrays within a shader, accelerationStructureEXT can
+    be indexed with a non-uniform integral expressions, when decorated with the
+    nonuniformEXT qualifier.
+    
+
+    This type is used in traceRayEXT() builtin described in Section 8.19
+    Members of structures cannot be declared with this type.
+
+    Modify Section 4.3 (Storage Qualifiers)
+
+    Storage Qualifier              Meaning
+    -----------------              -------
+
+    rayPayloadEXT                  Ray generation, closest-hit, and miss shader only. Storage
+                                   that becomes associated with the incoming ray payload when
+                                   it's location layout qualifier is passed as an input to
+                                   traceRayEXT().
+
+    rayPayloadInEXT                Closest-hit, any-hit and miss shader only. Storage associated
+                                   with the incoming ray payload that can be read to and written
+                                   in the stages invoked by traceRayEXT().
+
+    hitAttributeEXT                Intersection, any-hit, and closest-hit shader only.
+                                   Storage associated with attributes of geometry
+                                   intersected by a ray.
+
+    callableDataEXT                Ray generation, closest-hit, miss and callable shader only.
+                                   Storage that becomes associated with the incoming callable data
+                                   when it's location layout qualifier is passed as an input to
+                                   executeCallableEXT().
+
+    callableDataInEXT              Callable shader only. Storage associated with the incoming
+                                   callable data can be read to or written in the callable stage.
+
+    Add a sub-section to Section 4.3 (Storage Qualifiers)
+
+    4.3.X rayPayloadEXT Variables
+
+    These are allowed only in ray generation, closest-hit, and miss shaders.
+    It is a compile time error to use them in any other stage. They can be both read
+    from and written to in ray generation, closest-hit, and miss shaders. They cannot have
+    any other storage qualifiers. It is a compile-time error to declare unsized arrays
+    of this type.
+
+    4.3.X hitAttributeEXT Variables
+
+    These are allowed only in intersection, any-hit, and closest-hit shaders.
+    It is a compile-time error to use them in any other stage. They can be read
+    in any-hit, and closest-hit shaders. They can be written to and read from
+    only in intersection shaders (values are undefined before being written to).
+    There can be only a single variable at global scope with this qualifier
+    in stages where this qualifier is permitted. If multiple variables are present,
+    the results of reportIntersectionEXT() are undefined. They cannot have any other
+    storage qualifiers. It is a compile-time error to declare unsized arrays
+    of this type.
+
+    For the case of triangle geometry with no custom intersection shaders, any-hit and
+    closest-hit shaders can access barycentric weights of the point of intersection of
+    ray with triangle by declaring a hitAttributeEXT variable of two 32-bit floating
+    point elements
+
+    For example, (either of)
+        hitAttributeEXT vec2 baryCoord;
+        hitAttributeEXT block { vec2 baryCoord; }
+        hitAttributeEXT float baryCoord[2];
+
+    4.3.X rayPayloadInEXT Variables
+
+    These are allowed only in any-hit, closest-hit, and miss shaders.
+    It is a compile-time error to use them in any other stage.
+    They can be read from and written to in any-hit, closest-hit, and miss shaders
+    There can be only a single variable at global scope with this qualifier in
+    stages where this qualifier is permitted. If multiple variables are present
+    results of accessing these variables are undefined. They cannot have any other
+    storage qualifiers.
+    It is a compile-time error to declare unsized arrays of this type.
+    The type of this variable must match the type of the rayPayloadEXT variable
+    as passed with its location layout qualifier to traceRayEXT(), otherwise the
+    results are undefined.
+
+    4.3.X callableDataEXT Variables
+
+    These are allowed only in ray generation, closest-hit, miss and callable shaders.
+    It is a compile-time error to use them in any other stage. They can be both read
+    from and written to in the supported stages. They cannot have any other storage
+    qualifiers. It is a compile-time error to declare unsized arrays of this type.
+
+    4.3.X callableDataInEXT Variables
+
+    These are allowed only in callable shaders. It is a compile-time error to use them
+    in any other stage. They can be both read from and written to in callable shaders.
+    They cannot have any other storage qualifiers. There can be only a single variable
+    at global scope with this qualifier. If multiple variables are present, result
+    of accessing these variables is undefined. It is a compile-time error to declare
+    unsized arrays of this type.
+    The type of this variable must match the type of the callableDataEXT variable
+    as passed with its location layout qualifier to executeCallableEXT(), otherwise
+    the results are undefined.
+
+    Add following to Section 4.3.4 (Input Variables)
+
+    Ray tracing stages do not permit user defined input variables. They support
+    some built-in inputs as described in Section 7. All other inputs are
+    retrieved explicitly from image loads, texture fetches, loads from
+    uniform or storage buffers, or other user supplied code. It is
+    illegal to redeclare these built-in input variables.
+
+    Add following to Section 4.3.6 (Output Variables)
+
+    Ray tracing stages do not have any built-in outputs nor permit any user
+    defined output variables.
+
+    Add following to Section 4.3.8 (Shared Variables)
+
+    Ray tracing stages do not permit declaring variables with 'shared' storage
+    qualifier.
+
+    Add the following to Section 4.3.9 (Interface Blocks)
+
+    "Input, output, uniform, *rayPayloadEXT, *rayPayloadInEXT*, *hitAttributeEXT*,
+    *callableDataEXT*, *callableDataInEXT* and buffer variable declarations can
+    be grouped into named interface blocks..."
+
+    "It is compile time error to use input, output or patch interface qualifier
+    for blocks in ray tracing shader stages"
+
+    Modify table in Section 4.4 (Layout Qualifiers)
+
+    Layout Qualifier  Qualifier  Individual   Block    Block      Allowed
+                        Only      Variable             Member    Interface
+    ----------------  ---------  ----------   ------   ------    ---------
+
+    location                          X         X                rayPayloadEXT
+                                                                 rayPayloadInEXT
+                                                                 callableDataEXT
+                                                                 callableDataInEXT
+
+    shaderRecordEXT                             X                buffer
+
+    Add new sub-section to Section 4.4
+
+    4.4.X rayPayloadEXT Layout Qualifiers
+
+    The layout qualifiers are :
+
+    layout-qualifier-id :
+        location = integer-constant-expression
+
+    Non-block variables declared with these qualifiers must have a valid location
+    layout qualifier. For interface blocks, only top level block declaration can
+    have valid location layout qualifier. It is illegal to have layout qualifier
+    on members of the block.
+
+    4.4.X rayPayloadInEXT Layout Qualifiers
+
+    The layout qualifiers are :
+
+    layout-qualifier-id :
+        location = integer-constant-expression
+
+    Non-block variables declared with these qualifiers must have a valid location
+    layout qualifier. For interface blocks, only top level block declaration can
+    have valid location layout qualifier. It is illegal to have layout qualifier
+    on members of the block.
+
+    4.4.X hitAttributeEXT Layout Qualifiers
+
+    No layout qualifiers are allowed on variables of this type.
+
+    4.4.X callableDataEXT Layout Qualifiers
+
+    The layout qualifiers are :
+
+    layout-qualifier-id :
+        location = integer-constant-expression
+
+    Non-block variables declared with these qualifiers must have a valid location
+    layout qualifier. For interface blocks, only top level block declaration can
+    have valid location layout qualifier. It is illegal to have layout qualifier
+    on members of the block.
+
+    4.4.X callableDataInEXT Layout Qualifiers
+
+    The layout qualifiers are :
+
+    layout-qualifier-id :
+        location = integer-constant-expression
+
+    Non-block variables declared with these qualifiers must have a valid location
+    layout qualifier. For interface blocks, only top level block declaration can
+    have valid location layout qualifier. It is illegal to have layout qualifier
+    on members of the block.
+
+    Add to end of section 4.4.5, Uniform and Shader Storage Block Layout Qualifiers
+
+    The "shaderRecordEXT" qualifier is used to declare a buffer block and
+    represents a buffer within a shader record as defined in the API in Ray
+    Tracing chapter of the Vulkan specification. It is supported only in ray
+    tracing stages. It is a compile-time error to apply this to any block type
+    other than buffer. A buffer block declared with layout(shaderRecordEXT)
+    can be optionally declared with an instance.
+
+    There can be only one shaderRecordEXT buffer block per stage otherwise a
+    link/compile time error will be generated. It is a compile time error to
+    use the "binding" and "set" layout qualifiers along with shaderRecordEXT.
+    All other layout qualifiers (including std430, std140, and scalar) can be
+    used along with shaderRecordEXT to affect the placement of variables in
+    the block and the global default layouts apply as with any other shader
+    storage block.
+
+    These blocks can only be read from and not written to. It is a compile-time
+    error to modify members of such blocks. These blocks are initialized
+    by a separate API as specified in Ray Tracing chapter of the Vulkan
+    specification.
+
+Modifications to Chapter 5 of the OpenGL Shading Language Specification
+(Operators and Expressions)
+
+    Modify section 5.4.1 (Conversion and Scalar Constructors)
+
+    Add to the end of the section:
+
+      Acceleration structure types can be constructed only from a single uint64_t
+      value or from a uvec2 value. Other types cannot be constructed from
+      acceleration structure types.
+
+      example:
+
+        layout(shaderRecordEXT) buffer sbt
+        {
+            uint64_t as_va;
+            uvec2    as_va2;
+        };
+
+        void main()
+        {
+            ...
+            if (some_condition) {
+                traceRayEXT(accelerationStructureEXT(as_va), ... );
+            } else {
+                traceRayEXT(accelerationStructureEXT(as_va2), ... );
+            }
+            ...
+        }
+
+Modifications to Chapter 6 of the OpenGL Shading Language Specification
+(Statements and Structure)
+
+    Modify section 6.4 (Jumps)
+
+    Add to the jump_statement rule:
+
+        ignoreIntersectionEXT ; // in the any-hit shading language only
+        terminateRayEXT ;       // in the any-hit shading language only
+
+    Add to the end of the section:
+
+    The `ignoreIntersectionEXT` keyword is only allowed within any-hit shaders.
+    This keyword terminates the calling any-hit shader and continues the ray
+    query without modifying gl_RayTmaxEXT and gl_HitKindEXT.
+
+    The `terminateRayEXT` keyword is only allowed within any-hit shaders.
+    This keyword terminates the calling any-hit shader, stops the ray
+    traversal, and invokes the closest-hit shader.
+
+Additions to Chapter 7 of the OpenGL Shading Language Specification
+(Built-in Variables)
+
+    Modify Section 7.1, Built-in Languages Variables
+
+    In the ray generation shading language, built-in variables are declared as follows
+
+        // Work dimensions
+        in    uvec3  gl_LaunchIDEXT;
+        in    uvec3  gl_LaunchSizeEXT;
+
+    In the any-hit and closest-hit shading languages, built-in variables are declared
+    as follows
+
+        // Work dimensions
+        in    uvec3  gl_LaunchIDEXT;
+        in    uvec3  gl_LaunchSizeEXT;
+
+        // Geometry instance ids
+        in     int   gl_PrimitiveID;
+        in     int   gl_InstanceID;
+        in     int   gl_InstanceCustomIndexEXT;
+        in     int   gl_GeometryIndexEXT;
+
+        // World space parameters
+        in    vec3   gl_WorldRayOriginEXT;
+        in    vec3   gl_WorldRayDirectionEXT;
+        in    vec3   gl_ObjectRayOriginEXT;
+        in    vec3   gl_ObjectRayDirectionEXT;
+
+        // Ray parameters
+        in    float  gl_RayTminEXT;
+        in    float  gl_RayTmaxEXT;
+        in    uint   gl_IncomingRayFlagsEXT;
+
+        // Ray hit info
+        in    float  gl_HitTEXT;
+        in    uint   gl_HitKindEXT;
+
+        // Transform matrices
+        in    mat4x3 gl_ObjectToWorldEXT;
+        in    mat3x4 gl_ObjectToWorld3x4EXT;
+        in    mat4x3 gl_WorldToObjectEXT;
+        in    mat3x4 gl_WorldToObject3x4EXT;
+
+    In the intersection language, built-in variables are declared as follows
+
+        // Work dimensions
+        in    uvec3  gl_LaunchIDEXT;
+        in    uvec3  gl_LaunchSizeEXT;
+
+        // Geometry instance ids
+        in     int   gl_PrimitiveID;
+        in     int   gl_InstanceID;
+        in     int   gl_InstanceCustomIndexEXT;
+        in     int   gl_GeometryIndexEXT;
+
+        // World space parameters
+        in    vec3   gl_WorldRayOriginEXT;
+        in    vec3   gl_WorldRayDirectionEXT;
+        in    vec3   gl_ObjectRayOriginEXT;
+        in    vec3   gl_ObjectRayDirectionEXT;
+
+        // Ray parameters
+        in          float  gl_RayTminEXT;
+        in volatile float  gl_RayTmaxEXT;
+        in          uint   gl_IncomingRayFlagsEXT;
+
+        // Transform matrices
+        in    mat4x3 gl_ObjectToWorldEXT;
+        in    mat3x4 gl_ObjectToWorld3x4EXT;
+        in    mat4x3 gl_WorldToObjectEXT;
+        in    mat3x4 gl_WorldToObject3x4EXT;
+
+    In the miss shading language, built-in variables are declared as follows
+
+        // Work dimensions
+        in    uvec3  gl_LaunchIDEXT;
+        in    uvec3  gl_LaunchSizeEXT;
+
+        // World space parameters
+        in    vec3   gl_WorldRayOriginEXT;
+        in    vec3   gl_WorldRayDirectionEXT;
+
+        // Ray parameters
+        in    float  gl_RayTminEXT;
+        in    float  gl_RayTmaxEXT;
+        in    uint   gl_IncomingRayFlagsEXT;
+
+    In the callable shading language, built-in variables are declared as follows
+
+        // Work Dimensions
+        in    uvec3  gl_LaunchIDEXT;
+        in    uvec3  gl_LaunchSizeEXT;
+
+    Add the following description for gl_LaunchIDEXT:
+
+    The input variable gl_LaunchIDEXT is available in the ray generation,
+    intersection, any-hit, closest-hit, miss, and callable languages to
+    specify the index of the work item being processed. One work item is
+    generated for each of the  times  times  items
+    dispatched by a vkCmdTraceRaysKHR call.
+    All shader invocations inherit the same value for gl_LaunchIDEXT.
+
+    Add the following description for gl_LaunchSizeEXT:
+
+    The input variable gl_LaunchSizeEXT is available in the ray generation,
+    intersection, any-hit, closest-hit, miss, and callable languages to
+    specify the  and  and  dimensions passed into a
+    vkCmdTraceRaysKHR call.
+
+    Add the following description for gl_PrimitiveID:
+
+    gl_PrimitiveID is available in the intersection, any-hit and closest-hit
+    shaders to specify the index of the triangle or bounding box being
+    processed. See the Ray Tracing chapter of the Vulkan specification for more
+    details.
+
+    Add the following description for gl_InstanceCustomIndexEXT:
+
+    gl_InstanceCustomIndex is available in the intersection, any-hit and
+    closest-hit shaders to specify the application defined value of the
+    instance that intersects the current ray. The value provided in this
+    built-in is obtained from the lower 24 bits of the variable, the upper
+    8 bits are zero. See the Ray Tracing chapter of the Vulkan specification
+    for more details.
+
+    Add the following description for gl_GeometryIndexEXT:
+
+    gl_GeometryIndex is available in the intersection, any-hit and closest-hit
+    shaders to specify the implementation-defined index of the geometry instance
+    used to determine which entry in the  is executed for
+    this geometry instance. See the Ray Tracing chapter of the Vulkan specification
+    for more details.
+
+    Add the following description for gl_InstanceID:
+
+    gl_InstanceID is available in the intersection, any-hit, and closest-hit
+    shaders to specify the index of the instance that intersects the
+    current ray. See the Ray Tracing chapter of the Vulkan specification for
+    more details.
+
+    Add the following description for gl_WorldRayOriginEXT, gl_WorldRayDirectionEXT,
+    gl_ObjectRayOriginEXT, and gl_ObjectRayDirectionEXT:
+
+    The variables gl_WorldRayOriginEXT and gl_WorldRayDirectionEXT are available
+    in the intersection, any-hit, closest-hit, and miss shaders to specify the
+    origin and direction of the ray being processed in world space.
+
+    The variables gl_ObjectRayOriginEXT and gl_ObjectRayDirectionEXT are available
+    in the intersection, any-hit, and closest-hit shaders to specify the
+    origin and direction of the ray being processed in object space.
+
+    Add the following description for gl_RayTminEXT and gl_RayTmaxEXT:
+
+    The variables gl_RayTminEXT and gl_RayTmaxEXT are available in the intersection,
+    any-hit, closest-hit, and miss shaders to specify the parametric 
+    and  values of the ray being processed. The values are independent
+    of the space in which the ray and origin exist.
+
+    The  value remains constant for the duration of the ray query, while
+    the  value changes throughout the lifetime of the ray query that
+    produced the intersection. In the closest-hit shader, the value reflects
+    the closest distance to the intersected primitive. In the any-hit shader,
+    it reflects the distance to the primitive currently being intersected. In
+    the intersection shader, it reflects the distance to the closest primitive
+    intersected so far. The value can change in the intersection shader after
+    calling reportIntersectionEXT() if the corresponding any-hit shader does not
+    ignore the intersection. In a miss shader, the value is identical to the
+    parameter passed into traceRayEXT().
+
+    Add the following description for gl_IncomingRayFlagsEXT:
+
+    gl_IncomingRayFlagsEXT is available in intersection, closest-hit, any-hit, and miss,
+    shaders to specify the current ray's flags as passed via the 'rayflags' argument of
+    traceRayEXT() call resulting in invocation of current shader stage.
+
+    Add the following description for gl_HitTEXT:
+
+    gl_HitTEXT is available only in the any-hit and closest-hit shaders. This is an
+    alias of gl_RayTmaxEXT added to closest-hit and any-hit shaders for convenience.
+
+    Add the following description for gl_HitKindEXT:
+
+    gl_HitKindEXT is available in the any-hit and closest-hit languages to
+    describe the intersection that triggered the execution of the current
+    shader. Values are sent from the intersection shader. For triangle
+    geometry, gl_HitKindEXT is set to gl_HitKindFrontFacingTriangleEXT if the
+    intersection was with front-facing geometry, and
+    gl_HitKindBackFacingTriangleEXT if the intersection was with back-facing
+    geometry.
+
+    Add the following description for gl_ObjectToWorldEXT and
+    gl_WorldToObjectEXT:
+
+    The matrices gl_ObjectToWorldEXT and gl_WorldToObjectEXT are available in the
+    intersection, any-hit, and closest-hit shaders to specify the current
+    object-to-world and world-to-object transformation matrices respectively, which are
+    determined by the instance of the current intersection. See the Ray Tracing
+    chapter of the Vulkan specification for more details.
+
+    Add the following description for gl_ObjectToWorld3x4EXT and
+    gl_WorldToObject3x4EXT:
+
+    The matrices gl_ObjectToWorld3x4EXT and gl_WorldToObject3x4EXT are available
+    in the intersection, any-hit, and closest-hit shaders. They are transposes
+    of object-to-world and world-to-object transformation matrices
+    gl_ObjectToWorldEXT and gl_WorldToObjectEXT respectively.
+
+    Add a new subsection 7.3.2, "Fixed Constants"
+
+    The following constants are provided in all ray tracing shader stages
+
+    const uint gl_RayFlagsNoneEXT = 0U;
+    const uint gl_RayFlagsOpaqueEXT = 1U;
+    const uint gl_RayFlagsNoOpaqueEXT = 2U;
+    const uint gl_RayFlagsTerminateOnFirstHitEXT = 4U;
+    const uint gl_RayFlagsSkipClosestHitShaderEXT = 8U;
+    const uint gl_RayFlagsCullBackFacingTrianglesEXT = 16U;
+    const uint gl_RayFlagsCullFrontFacingTrianglesEXT = 32U;
+    const uint gl_RayFlagsCullOpaqueEXT = 64U;
+    const uint gl_RayFlagsCullNoOpaqueEXT = 128U;
+
+    These can be used as flags for the 'rayflags' argument for traceRayEXT() call,
+    or for comparing value to gl_IncomingRayFlagsEXT.
+
+    const uint gl_HitKindFrontFacingTriangleEXT = 0xFEU;
+    const uint gl_HitKindBackFacingTriangleEXT = 0xFFU;
+
+    These are used as the values of gl_HitKindEXT when intersecting with
+    triangle geometry from the built-in intersection shader for triangle
+    primitives.
+
+Additions to Chapter 8 of the OpenGL Shading Language Specification
+(Built-in Functions)
+
+    Add Section 8.19, Ray Tracing Functions
+
+    A _shader call_ is an function which directly or indirectly invokes another
+    shader. An _invocation repack_ function is a shader call where the
+    implementation may repack shader invocations, before and/or after execution
+    of the called ray tracing shader. The invocations of the invoking shader
+    call and the called shader are considered shader-call-related. The
+    traceRayEXT(), reportIntersectionEXT(), and executeCallableEXT() functions
+    are invocation repack functions.
+
+    [[if any of the subgroup or invocation-level clock extensions are supported:]]
+    The results of subgroup operations (such as ballot) and invocation-level
+    clock operations may not be consistent across an invocation repack function
+    and care must be exercised when using these with shader calls.
+    [[if GL_KHR_shader_subgroup is supported::]]
+    The gl_SubgroupSize, gl_SubgroupInvocationID, gl_SubgroupEqMask,
+    gl_SubgroupGeMask, gl_SubgroupGtMask, gl_SubgroupLeMask, and
+    gl_SubgroupLtMask variables must be treated as volatile across shader
+    calls.
+    [[if GL_ARB_shader_ballot is supported::]]
+    The gl_SubGroupSizeARB, gl_SubGroupInvocationARB, gl_SubGroupEqMaskARB,
+    gl_SubGroupGeMaskARB, gl_SubGroupGtMaskARB, gl_SubGroupLeMaskARB, and
+    gl_SubGroupLtMaskARB variables must be treated as volatile across shader
+    calls.
+    [[if GL_NV_shader_sm_builtins is supported::]]
+    The gl_WarpIDNV and gl_SMIDNV variables must be treated as volatile across
+    shader calls.
+    
+
+    Syntax:
+
+        void traceRayEXT(accelerationStructureEXT topLevel,
+                   uint rayFlags,
+                   uint cullMask,
+                   uint sbtRecordOffset,
+                   uint sbtRecordStride,
+                   uint missIndex,
+                   vec3 origin,
+                   float Tmin,
+                   vec3 direction,
+                   float Tmax,
+                   int payload);
+
+    This function is only available in the ray generation, closest-hit, and
+    miss shaders.
+
+    Initiates a ray query against a top-level 
+    structure, triggering the execution of various intersection and any-hit
+    shaders as ray-geometry intersections are being evaluated, and finally
+    the execution of either a closest-hit or miss shader, depending on whether
+    an intersection was found.
+
+    The ray's origin and direction are specified by  and ,
+    and the valid parametric range on which intersections can occur is
+    specified by  and .
+
+    The components of  and  must all be finite values.
+     and  must be non-negative, and  must be less than or equal to .
+    The parameters , , , or  may not contain Nans.
+
+     is a bit-wise combination of the built-in constants as defined
+    in Section 7.3.2 "Built-In Constants". Behavior is undefined if
+
+      * more than one of the gl_RayFlagsOpaqueEXT, gl_RayFlagsNoOpaqueEXT,
+        gl_RayFlagsCullOpaqueEXT, or gl_RayFlagsCullNoOpaqueEXT are set,
+      * both gl_RayFlagsCullBackFacingTrianglesEXT and
+        gl_RayFlagsCullFrontFacingTrianglesEXT are set,
+    [[if GL_EXT_ray_flags_primitive_culling is supported]]
+      * both gl_RayFlagsSkipTrianglesEXT and gl_RayFlagsSkipAABBEXT are set,
+      * more than one of gl_RayFlagsSkipTrianglesEXT, gl_RayFlagsCullBackFacingTrianglesEXT,
+        or gl_RayFlagsCullFrontFacingTrianglesEXT are set.
+    [[end if GL_EXT_ray_flags_primitive_culling]]
+
+     is a mask which specifies the instances to be intersected
+    i.e visible to the traced ray. Only the 8 least-significant bits are used;
+    other bits are ignored. This mask will be combined with the mask field
+    specified in VkAccelerationStructureInstanceKHR as defined in the Ray
+    Traversal chapter of Vulkan Specification using a bitwise AND operation.
+    The instance is visible only if the result of the operation is non-zero.
+    The upper 24 bits of this value are ignored. If the value is zero, no
+    instances are visible.
+
+    Associated with the ray is  which is a compile-time constant to select
+    a shader defined structure containing data that will be passed to other
+    shader stages. This can be accessed for reading and writing by each any-hit shader
+    invoked along the ray, and by the miss or closest-hit shader at the end of the query.
+    It is possible for a shader to contain multiple invocations of traceRayEXT() using
+    different payload types, as long as the shaders executed in the trace call have
+    defined compatible payload types. Different payload types are chosen based on
+    the different values of the compile-time constant  which correspond to
+    the rayPayload/rayPayloadIn qualified variables having the same value for the
+    location layout qualifier.
+
+    The  and  parameters influence the
+    computation of record indices of the  that locate
+    the intersection, any-hit, and closest-hit shaders during a trace query. Only
+    the 4 least-significant bits are used; other bits are ignored. See
+    the Ray Tracing chapter of the Vulkan specification for more information.
+
+    The  parameter influences computation of indices into the
+     to locate a miss shader during a trace query. Only
+    the 16 least-significant bits are used; other bits are ignored. See
+    the Ray Tracing chapter of the vulkan specification for more information.
+
+    Syntax:
+
+        bool reportIntersectionEXT(float hitT, uint hitKind);
+
+    This function is only available in intersection shaders.
+
+    Invokes the current hit shader once an intersection shader has determined
+    that a ray intersection has occurred. If the intersection occurred within
+    the current ray interval, the any-hit shader corresponding to the current
+    intersection shader is invoked. If the intersection is not ignored in the
+    any-hit shader,  is committed as the new gl_RayTmaxEXT value of the
+    current ray,  is committed as the new value for gl_HitKindEXT, and
+    true is returned. If either of those checks fails, then false is returned.
+    If the value of  falls outside the current ray interval, the hit is
+    rejected and false is returned.
+
+    Syntax:
+
+        void executeCallableEXT(uint sbtRecordIndex, int callable)
+
+    This function is available only in ray generation, closest-hit, miss, and
+    callable stage. Invokes the callable located at 'sbtRecordIndex' in the
+    shader binding table. Refer to Ray Tracing chapter of Vulkan specification
+    for details.
+
+     is a compile-time constant used to select a shader defined structure
+    containing data that will be passed to a callable shader stage and can be accessed
+    for reading and writing by the callable. It is possible for a shader to contain
+    multiple invocations of executeCallableEXT() using different types, as long as the
+    shaders executed in the callable have defined compatible callableDataInEXT types.
+    Different callable data types are chosen based on the different values of the
+    compile-time constant  which corresponds to callableDataEXT/callableDataInEXT
+    qualified variables having the same value for the location layout qualifier.
+
+Additions to Chapter 9 of the OpenGL Shading Language Specification
+(Shading Language Grammar)
+
+    Add the tokens IGNORE_INTERSECTION and TERMINATE_RAY.
+
+    Under the rule for jump_statement, add:
+
+        | IGNORE_INTERSECTION SEMICOLON // any-hit shader only
+        | TERMINATE_RAY SEMICOLON       // any-hit shader only
+
+Example :
+
+    Ray Generation Shader :
+
+    #version 460 core
+    #extension GL_EXT_ray_tracing : enable
+    layout(location = 0) rayPayloadEXT vec4 payload;
+    layout(location = 0) callableDataEXT float blendColor;
+    layout(binding = 0, set = 0) uniform accelerationStructureEXT acc;
+    layout(binding = 1, rgba32f) uniform image2D img;
+    layout(binding = 2, set = 0) uniform rayParams
+    {
+        vec3 rayOrigin;
+        vec3 rayDir;
+        uint sbtOffset;
+        uint sbtStride;
+        uint missIndex;
+        uint callableSbtIndex;
+    };
+    vec3 computeDir(vec3 inDir, uvec3 launchID, uvec3 launchSize) {
+        inDir = ...
+        return inDir;
+    }
+    void main()
+    {
+       vec4 imgColor = vec4(0);
+       traceRayEXT(acc, gl_RayFlagsOpaqueEXT, 0xff, sbtOffset,
+                    sbtStride, missIndex, rayOrigin, 0.0,
+                    computeDir(rayDir, gl_LaunchIDEXT, gl_LaunchSizeEXT), 100.0f, 0 /* payload */);
+       executeCallableEXT(callableSbtIndex, 0 /* blendColor */);
+       imgColor = payload + vec4(blendColor) ;
+       imageStore(img, ivec2(gl_LaunchIDEXT), imgColor);
+
+    }
+
+    Callable Shader:
+
+    #version 460 core
+    #extension GL_EXT_ray_tracing : enable
+    layout(location = 0) callableDataInEXT float outColor;
+    layout(shaderRecordEXT) buffer block
+    {
+         uvec2 blendWeight;
+    };
+    void main()
+    {
+        outColor = float((blendWeight.x >> 5U) & 0x7U + blendWeight.y & 0x3U);
+    }
+
+Interactions with GL_KHR_memory_scope_semantics
+
+    If GL_KHR_memory_scope_semantics is supported, add the following to
+    the list of Memory Qualifiers in Section 4.10 (as modified by the
+    GL_KHR_memory_scope_semantics extension):
+
+        shadercallcoherent: memory variable where writes have automatic
+            availability operations and reads have automatic visibility
+            operations to the shader call instance domain
+
+    Add the following description:
+
+    "Similarly, variables declared using the shadercallcoherent qualifier
+    have implicit availability or visibility operations which allow them to
+    be used to share data with other shader invocations that are
+    shader-call-related (See Vulkan API spec). However, relative to accesses
+    via invocations in other shaders, such variables behave the same as
+    unqualified (non-coherent) variables."
+
+    Modify the sentence that begins "It is a compile-time error to decorate
+    a variable with more than one of ..."  and add "shadercallcoherent" to the
+    list.
+
+    Modify the sentence that begins "When accessing memory using variables not
+    declared as ..." and add "shadercallcoherent" to the list.
+
+    Modify the sentence: "devicecoherent, queuefamilycoherent, workgroupcoherent,
+    and subgroupcoherent variables are all implicitly nonprivate." and add
+    "shadercallcoherent" to the list.
+
+    Add: "The memory qualifier shadercallcoherent may be used in the declaration
+    of buffer variables."
+
+    Modify the sentence: "Variables qualified with ... may not be passed to
+    functions whose formal parameters lack such qualifiers." and add
+    "shadercallcoherent" to the list.
+
+    Modify section 8.11 Atomic Memory Functions and add "shadercallcoherent"
+    to the list of memory qualifiers that are implicitly accepted.
+
+    Modify the new section "Scope and Semantics" and add the following constant
+    integer value:
+
+        const int gl_ScopeShaderCallEXT = 6;
+
+    Modify section 8.12 Image Functions and add "shadercallcoherent" to the
+    list of memory qualifiers that are implicitly accepted.
+
+Interactions with GL_KHR_shader_subgroup
+
+    If GL_KHR_shader_subgroup is supported, the following built-in variables
+    are available in the ray generation, intersection, any-hit, closest-hit,
+    miss, and callable shading languages:
+
+        mediump in uint  gl_SubgroupSize;
+        mediump in uint  gl_SubgroupInvocationID;
+        highp   in uvec4 gl_SubgroupEqMask;
+        highp   in uvec4 gl_SubgroupGeMask;
+        highp   in uvec4 gl_SubgroupGtMask;
+        highp   in uvec4 gl_SubgroupLeMask;
+        highp   in uvec4 gl_SubgroupLtMask;
+
+    and have the same sematics.
+
+    Additionally, all the "Shader Invocation Group Functions" that are
+    not listed as compute-only are available in the ray generation,
+    intersection, any-hit, closest-hit, miss, and callable shading languages.
+
+Interactions with GLSL_EXT_ray_query
+
+    Acceleration structures and the various ray flags are added by both this
+    extension and GLSL_EXT_ray_query; they are intended to have identical
+    definitions, and can be enabled by either extension, for use with the
+    instructions added by that extension.
+
+Interactions with GL_NV_shader_subgroup_partitioned
+
+    If GL_NV_shader_subgroup_partitioned is supported, subgroupPartitionNV()
+    and all the subgroupPartitioned*NV() builtin functions are available in
+    the ray generation, intersection, any-hit, closest-hit, miss, and callable
+    shading languages.
+
+Interactions with GL_NV_shaders_sm_builtins
+
+    If GL_NV_shader_sm_builtins is supported, the builtin variables added by
+    this extension are available in the ray generation, intersection, any-hit,
+    closest-hit, miss, and callable shading languages.
+
+Interactions with GL_ARB_shader_ballot
+
+    If GL_ARB_shader_ballow is supported, the builtin variables and functions
+    added by this extension are available in the ray generation, intersection,
+    any-hit, closest-hit, miss, and callable shading languages.
+
+Interactions with GL_ARB_shader_group_vote
+
+    If GL_ARB_shader_group_vote is supported, the builtin functions added by
+    this extension are available in the ray generation, intersection, any-hit,
+    closest-hit, miss, and callable shading languages.
+
+Interactions with GL_ARB_shader_clock
+
+    If GL_ARB_shader_clock is supported, the new timing functions added by
+    this extension are available in the ray generation, intersection, any-hit,
+    closest-hit, miss, and callable shading languages.
+
+Interactions with GL_EXT_shader_realtime_clock
+
+    If GL_EXT_shader_realtime_clock is supported, the new timing functions
+    added by this extension are available in the ray generation, intersection,
+    any-hit, closest-hit, miss, and callable shading languages.
+
+Interactions with GL_EXT_nonuniform_qualifier
+
+    If GL_EXT_nonuniform_qualifier is supported, arrays of
+    accelerationStructureEXT can be indexed with non-unform integral
+    expressions when they are decorated with the nonuniformEXT qualifier.
+
+Interactions with GL_EXT_scalar_block_layout
+
+    If GL_EXT_scalar_block_layout is supported, buffer blocks with
+    a layout of shaderRecordEXT can also be laid out using the scalar
+    block layout.
+
+Interactions with GL_EXT_ray_flags_primitive_culling
+
+    If GL_EXT_ray_flags_primitive_culling is supported, ray flags added
+    by this extension can be used as flags for the 'rayflags' argument
+    for traceRayEXT() call, or for comparing value to gl_IncomingRayFlagsEXT.
+
+Issues
+
+    1) Do we need to specify the GL_EXT_ray_tracing as enabled for these new
+       shader stages?
+
+       RESOLVED : Yes, needs to be specified in shaders.
+
+    2) How are we going to specify callable shaders?
+
+       RESOLVED : Callables are implemented as a separate shader stage.
+
+    3) Where should we define GLSL flags that are used to define ray types and
+       built in hit kinds?
+
+       RESOLVED : Added them as built-in constants to Section 7.3
+
+    4) Should we allow type polymorphism in the traceRayEXT() call for the ray
+       payload?
+
+       RESOLVED : GLSL does not allow usage of templates, traceRayEXT() builtin has
+       last argument as 'int payload'. This corresponds to location qualifier
+       assigned to any rayPayloadEXT qualified variables which in turn allows
+       dispatching traceRayEXT calls with different payload types.
+
+    5) Where should we specify how attribute data is passed between the
+       different ray tracing stages?
+
+       RESOLVED: rayPayloadEXT/rayPayloadInEXT/hitAttributeEXT/callableDataEXT
+                 callableDataInEXT
+
+    6) This extension adds gl_InstanceID for the intersection, any-hit, and
+       closest-hit shaders, but in KHR_vulkan_glsl, gl_InstanceID is replaced
+       with gl_InstanceIndex. Which should be used for Vulkan in this
+       extension?
+
+       RESOLVED: This extension uses gl_InstanceID and maps it to InstanceId
+       in SPIR-V. It is acknowledged that this is different than other shader
+       stages in Vulkan. There are two main reasons for the difference here:
+       - symmetry with gl_PrimitiveID which is also available in these shaders
+       - there is no "baseInstance" relevant for these shaders, and so ID makes
+         it more obvious that this is zero-based.
+
+    7) Are subgroup operations supported in ray tracing stages?
+
+       RESOLVED: Yes. All the non-compute-only builtin variables and functions
+       are available in all of the ray tracing shader stages. That is,
+       everything except: gl_NumSubgroups, gl_SubgroupID, and
+       subgroupMemoryBarrierShared().
+
+    8) How does this extension differ from GLSL_NV_ray_tracing?
+
+       RESOLVED: This extension has the following differences:
+        - uses the EXT vendor prefix/suffix instead of NV
+        - defined built-in constants for gl_RayFlags*EXT
+        - defined built-in constants for gl_HitKind*FacingTriangleEXT
+        - adds gl_GeometryIndexEXT built-in variable
+        - rename trace*() to traceRay*()
+        - defined interactions with subgroup and clock functions
+        - defined interactions with KHR_memory_scope_semantics and a new
+          shadercallcoherent memory qualifier and gl_ScopeShaderCallEXT
+          scope constant
+
+Revision History
+
+    Rev.  Date          Author     Changes
+    ----  -----------   ------     -------------------------------------------
+     1    2019-05-23    dgkoch     Fork from v6 of NV_ray_tracing, add ray flag mapping
+     2    2019-05-30    dgkoch     Add interactions with subgroups and clock functions.
+     3    2019-06-20    tobias     Add gl_GeometryIndexEXT
+     4    2019-11-19    dgkoch     Import changes from v7 of NV_ray_tracing
+                                   Fix various typos and formatting.
+                                   Fixes to sample code.
+                                   Rename trace -> traceRay.
+                                   Add gl_HitKind*FacingTriangleEXT constants.
+     5    2019-11-24    dgkoch     Add interactions with KHR_memory_scope_semantics.
+     6    2019-11-27    dgkoch     Allow arrays of acceleration structures to have
+                                   non-uniform indexing (vulkan #1673).
+     7    2020-02-19    alele      Added mat3x4 versions of gl_ObjectToWorld and
+                                   gl_WorldToObject (GLSL #17)
+     8    2020-02-20    ewerness   Miss shaders do not have gl_ObjectRay* parameters (GLSL #18)
+     9    2020-02-21    tobias     Clarified interactions with GLSL_EXT_ray_query
+    10    2020-02-22    tobias     gl_HitTEXT now maps to RayTmaxKHR
+    11    2020-04-01    alele      Remove primitive culling ray flags (vulkan issue 2073)
+    12    2020-06-04    tnowicki   Remove mentions of any-hit shader being able to access
+                                   rayPayloadEXT, clarify relationships rayPayloadEXT/rayPayloadInEXT
+                                   and callableDataEXT/callableDataInEXT, grammatical fixes
+    13    2020-06-05    dgkoch     further grammatical and typo fixes, fix descriptions of
+                                   gl_LaunchIDEXT and gl_LaunchSizeEXT, fix example.
+    14    2020-06-02    dgkoch     Add interactions with GL_NV_shader_sm_builtins.
+                                   Add volatile recommendations for subgroup and sm builtins.
+    15    2020-06-09    dgkoch     Add the ability to construct accelerationStructureEXT type from
+                                   uint64_t or uvec2.
+    16    2020-07-10    tobias     Clarify valid bits for some parameters (GLSL !63)
+    17    2020-07-22    dgkoch     Mark gl_RayTmaxEXT volatile in intersection shaders
+                                   (vulkan #2268)
+    18    2020-07-24    jbarczack  Add numeric limits on ray parameters (vulkan issue 2235)
+    19    2020-08-21    dgkoch     Clarify that shaderRecordEXT can be used with most other layout
+                                   qualifiers to control block layout, and add interactions with
+                                   GL_EXT_scalar_block_layout (Vulkan issue 2230)
+    20    2020-09-24    dgkoch     Document ray flag exclusive combinations (vulkan #2286)
+                                   Clarity valid bits for gl_InstanceCustomIndex (GLSL #19)
+                                   Clarify reportIntersectionEXT behaviour when hitT is out of
+                                   range (vulkan #2359)
+    21    2020-10-21    dgkoch     ignoreIntersectionEXT and terminateRayEXT are jump statements
+                                   instead of builtin functions (vulkan #2374)
+    22    2020-11-10    dgkoch     correct reference to Vulkan structure containing the mask
+                                   (vulkan #2414)
+    23    2022-05-25    tnowicki   rayPayloadInEXT can have no additional storage qualifiers
+                                   (vulkan #3076)
+    24    2022-05-27    dgkoch     Disallow more combinations of ray flags (vk-gl-cts#3647)

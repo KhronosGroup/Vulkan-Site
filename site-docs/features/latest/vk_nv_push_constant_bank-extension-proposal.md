@@ -1,0 +1,233 @@
+# VK_NV_push_constant_bank Extension Proposal
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_NV_push_constant_bank.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. SPIR-V Example](#_spir_v_example)
+- [3.1._SPIR-V_Example](#_spir_v_example)
+- [3.2. New GLSL Capabilities](#_new_glsl_capabilities)
+- [3.2._New_GLSL_Capabilities](#_new_glsl_capabilities)
+- [4. API changes](#_api_changes)
+- [4._API_changes](#_api_changes)
+- [4.1. Structure Definitions](#_structure_definitions)
+- [4.1._Structure_Definitions](#_structure_definitions)
+- [4.2. Basic Usage](#_basic_usage)
+- [4.2._Basic_Usage](#_basic_usage)
+- [4.3. Usage with VkPushConstantsInfo](#_usage_with_vkpushconstantsinfo)
+- [4.3._Usage_with_VkPushConstantsInfo](#_usage_with_vkpushconstantsinfo)
+- [4.4. Usage with VkIndirectCommandsLayoutTokenEXT](#_usage_with_vkindirectcommandslayouttokenext)
+- [4.4._Usage_with_VkIndirectCommandsLayoutTokenEXT](#_usage_with_vkindirectcommandslayouttokenext)
+- [5. Issues](#_issues)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. SPIR-V Example](#_spir_v_example)
+[3.2. New GLSL Capabilities](#_new_glsl_capabilities)
+
+[4. API changes](#_api_changes)
+
+[4.1. Structure Definitions](#_structure_definitions)
+[4.2. Basic Usage](#_basic_usage)
+[4.3. Usage with VkPushConstantsInfo](#_usage_with_vkpushconstantsinfo)
+[4.4. Usage with VkIndirectCommandsLayoutTokenEXT](#_usage_with_vkindirectcommandslayouttokenext)
+
+[5. Issues](#_issues)
+
+The VK_NV_push_constant_bank extension allows applications to specify a bank and offset for push constant data, enabling more flexible push constant management in descriptor set scenarios.
+
+NVIDIA hardware supports multiple banks for push constant or push data, and this extension gives applications a way to utilize that hardware.
+
+* 
+Some (NV) hardware can support multiple banks of push data simultaneously
+
+* 
+Descriptor sets/heaps only provide support for a single set of push data
+
+* 
+On hardware that supports multiple banks, making use of these additional banks can give applications greater flexibility and access to a larger set of total push data
+
+These limitations prevent applications from fully leveraging hardware capabilities in advanced descriptor set scenarios, particularly when shaders need to access different root descriptors with different push constant requirements.
+
+This extension integrates with the descriptor sets mapping through structure chaining.
+
+The extension integrates with the existing VK_EXT_descriptor_heap extension by allowing VkPushConstantBankInfoNV to be chained to VkDescriptorSetAndBindingMappingEXT, VkPushDataInfoEXT, VkPushConstantsInfo, and VkIndirectCommandsLayoutTokenEXT structures. This enables applications to specify push constant placement as part of their descriptor heap mapping configuration, traditional push constant operations, and indirect command layouts.
+
+When push constant bank information is provided:
+
+* 
+Push constants are placed in the specified bank at the specified offset
+
+* 
+The existing push constant API continues to work normally
+
+* 
+Applications can use the same shaders with different push constant placements by varying the descriptor mapping
+
+The following SPIR-V demonstrates usage of this extension:
+
+               OpCapability Shader
+               OpCapability PushConstantBanksNV
+               OpExtension "SPV_NV_push_constant_bank"
+               OpMemoryModel Logical GLSL450
+               OpEntryPoint Fragment %main "main"
+               OpExecutionMode %main OriginUpperLeft
+
+               ; Decorate the push constant block
+               OpDecorate %block Block
+               OpDecorate %pc BankNV 0
+               OpDecorate %pc MemberOffsetNV 64
+               OpMemberDecorate %block 0 Offset 0    ; a at byte 64 in bank 0
+               OpMemberDecorate %block 1 Offset 16   ; b at byte 80 in bank 0
+
+       %void = OpTypeVoid
+      %float = OpTypeFloat 32
+    %v4float = OpTypeVector %float 4
+      %block = OpTypeStruct %v4float %v4float
+%ptr_pc_block = OpTypePointer PushConstant %block
+         %pc = OpVariable %ptr_pc_block PushConstant
+
+   %void_func = OpTypeFunction %void
+       %main = OpFunction %void None %void_func
+      %entry = OpLabel
+               OpReturn
+               OpFunctionEnd
+
+The extension enables GLSL shaders to use bank and member_offset qualifiers:
+
+layout(push_constant, bank=2, member_offset=32) uniform PushUBO {
+    vec4 color;
+    layout(offset=48) mat4 transform;
+} pushConstants;
+
+The extension introduces three new structures and associated functionality:
+
+**VkPushConstantBankInfoNV**: A structure that can be chained to VkDescriptorSetAndBindingMappingEXT, VkPushDataInfoEXT, VkPushConstantsInfo, or VkIndirectCommandsLayoutTokenEXT to specify the bank where push constants should be placed within the descriptor heap.
+
+**VkPhysicalDevicePushConstantBankFeaturesNV**: A feature structure to query and enable push constant bank functionality.
+
+**VkPhysicalDevicePushConstantBankPropertiesNV**: A properties structure to query implementation-dependent limits, including the maximum number of push constant banks and push data banks supported for graphics and compute shaders separately.
+
+typedef struct VkPushConstantBankInfoNV {
+    VkStructureType    sType;
+    const void*        pNext;
+    uint32_t           bank;
+} VkPushConstantBankInfoNV;
+
+typedef struct VkPhysicalDevicePushConstantBankFeaturesNV {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           pushConstantBank;
+} VkPhysicalDevicePushConstantBankFeaturesNV;
+
+typedef struct VkPhysicalDevicePushConstantBankPropertiesNV {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           maxGraphicsPushConstantBanks;
+    uint32_t           maxComputePushConstantBanks;
+    uint32_t           maxGraphicsPushDataBanks;
+    uint32_t           maxComputePushDataBanks;
+} VkPhysicalDevicePushConstantBankPropertiesNV;
+
+// Check for extension support
+VkPhysicalDevicePushConstantBankFeaturesNV features = {};
+features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_CONSTANT_BANK_FEATURES_NV;
+
+VkPhysicalDeviceFeatures2 features2 = {};
+features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+features2.pNext = &features;
+
+vkGetPhysicalDeviceFeatures2(physicalDevice, &features2);
+
+// Query implementation limits
+VkPhysicalDevicePushConstantBankPropertiesNV properties = {};
+properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_CONSTANT_BANK_PROPERTIES_NV;
+
+VkPhysicalDeviceProperties2 properties2 = {};
+properties2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+properties2.pNext = &properties;
+
+vkGetPhysicalDeviceProperties2(physicalDevice, &properties2);
+
+if (features.pushConstantBank) {
+    // Ensure the requested bank is within the supported range for graphics
+    assert(2 
+
+VkPushConstantBankInfoNV bankInfo1 = {
+    .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANT_BANK_INFO_NV,
+    .bank = 1
+};
+
+VkDescriptorSetAndBindingMappingEXT mapping1 = {
+    .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_AND_BINDING_MAPPING_EXT,
+    .pNext = &bankInfo1,
+    .descriptorSet = 0,
+    .source = VK_DESCRIPTOR_MAPPING_SOURCE_PUSH_DATA_EXT,
+    // ... other fields
+};
+
+// Configure push constant bank information
+VkPushConstantBankInfoNV bankInfo = {
+    .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANT_BANK_INFO_NV,
+    .bank = 1
+};
+
+// Chain to VkPushConstantsInfo
+VkPushConstantsInfoKHR pushInfo = {
+    .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANTS_INFO,
+    .pNext = &bankInfo,
+    .layout = pipelineLayout,
+    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT,
+    .size = 64,
+    .pValues = pushData
+};
+
+vkCmdPushConstants2(commandBuffer, &pushInfo);
+
+// Configure push constant bank information for indirect commands
+VkPushConstantBankInfoNV bankInfo = {
+    .sType = VK_STRUCTURE_TYPE_PUSH_CONSTANT_BANK_INFO_NV,
+    .bank = 1
+};
+
+// Chain to VkIndirectCommandsLayoutTokenEXT
+VkIndirectCommandsPushConstantTokenEXT pushConstantToken = {
+    .updateRange = {
+        .shaderStages = VK_SHADER_STAGE_ALL,  // Required for push data
+        .offset = 0,
+        .size = 64
+    }
+};
+
+VkIndirectCommandsLayoutTokenEXT layoutToken = {
+    .sType = VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_TOKEN_EXT,
+    .pNext = &bankInfo,
+    .type = VK_INDIRECT_COMMANDS_TOKEN_TYPE_PUSH_DATA_EXT,
+    .data = { .pPushConstant = &pushConstantToken },
+    .offset = 0
+};
+
+// Use in indirect commands layout
+VkIndirectCommandsLayoutCreateInfoEXT layoutInfo = {
+    .sType = VK_STRUCTURE_TYPE_INDIRECT_COMMANDS_LAYOUT_CREATE_INFO_EXT,
+    .tokenCount = 1,
+    .pTokens = &layoutToken,
+    // ... other fields
+};
+
+None.

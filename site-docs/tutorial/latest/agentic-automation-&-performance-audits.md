@@ -1,0 +1,185 @@
+# Agentic Automation & Performance Audits
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/AI_Assisted_Vulkan/07_advanced_mcp/03_agentic_automation_qa.html
+
+## Table of Contents
+
+- [Introduction: Automated system verification](#_introduction_automated_system_verification)
+- [Introduction:_Automated_system_verification](#_introduction_automated_system_verification)
+- [What’s different about an autonomous agent here](#_whats_different_about_an_autonomous_agent_here)
+- [What’s_different_about_an_autonomous_agent_here](#_whats_different_about_an_autonomous_agent_here)
+- [Example: tracking down a nightly test failure](#_example_tracking_down_a_nightly_test_failure)
+- [Example:_tracking_down_a_nightly_test_failure](#_example_tracking_down_a_nightly_test_failure)
+- [Running an agent in CI](#_running_an_agent_in_ci)
+- [Running_an_agent_in_CI](#_running_an_agent_in_ci)
+- [Configuring the GitHub Action](#_configuring_the_github_action)
+- [Configuring_the_GitHub_Action](#_configuring_the_github_action)
+- [The diagnosis script](#_the_diagnosis_script)
+- [The_diagnosis_script](#_the_diagnosis_script)
+- [GitHub Copilot Autofix](#_github_copilot_autofix)
+- [GitHub_Copilot_Autofix](#_github_copilot_autofix)
+- [Semantic merge conflict resolution](#_semantic_merge_conflict_resolution)
+- [Semantic_merge_conflict_resolution](#_semantic_merge_conflict_resolution)
+- [Running a GPU state audit](#_running_a_gpu_state_audit)
+- [Running_a_GPU_state_audit](#_running_a_gpu_state_audit)
+- [Step 1: Capture and export](#_step_1_capture_and_export)
+- [Step_1:_Capture_and_export](#_step_1_capture_and_export)
+- [Step 2: Running the audit](#_step_2_running_the_audit)
+- [Step_2:_Running_the_audit](#_step_2_running_the_audit)
+- [Step 3: Reviewing the findings](#_step_3_reviewing_the_findings)
+- [Step_3:_Reviewing_the_findings](#_step_3_reviewing_the_findings)
+- [Summary](#_summary)
+
+## Content
+
+Vulkan development involves a lot of ongoing correctness and performance work, not just the initial implementation. This section covers using AI agents (like **Goose**) for higher-level, cross-file tasks — the kind that involve tracing something across your whole engine rather than a single file open in the IDE.
+
+An agent working this way can help surface inefficiencies and hard-to-reproduce failures that are easy to miss when you’re focused on one file at a time. It’s not infallible, and its suggestions still need review, but it can do the tedious cross-referencing work faster than doing it by hand.
+
+Unlike an IDE assistant answering questions about the file you have open, an autonomous agent can hold your build system state, test logs, and source code together in context at once. That makes it useful for two kinds of tasks:
+
+* 
+**Reading CI/CD logs.** Nightly "headless" build logs can be long and hard to parse by eye. An agent can go through them and try to identify the actual cause of a failure on specific hardware.
+
+* 
+**Scanning for inefficiencies.** It can look across your command buffer recording logic for redundant state changes or synchronization barriers that are broader than they need to be.
+
+Treat its output as a starting point for investigation, not a verified diagnosis — check the specific claim against the log or the code before acting on it.
+
+Vulkan engines often run automated test suites on remote hardware farms. When a test fails on specific hardware (say, a Mali GPU runner), the logs can run tens of thousands of lines, which makes manual debugging slow.
+
+A typical workflow: a nightly run fails, you point the agent at the log and ask it to investigate, and it uses your Context Bridge setup to check the hardware limits of the specific device that failed.
+
+In one case, the agent found that the failing runner reported a `maxComputeWorkGroupInvocations` limit that a bloom shader exceeded — the shader was hardcoded to 512 threads per group, but the device only supports 256. It proposed refactoring the shader to use a specialization constant for the workgroup size, updated the C++ side to set that constant at runtime, and triggered a new CI build to check the fix. This kind of result is worth double-checking rather than merging blind, but it saved the time of manually diffing hardware limit tables against shader constants.
+
+Agentic automation doesn’t have to stay on your local machine — you can run it in your CI/CD pipeline too. Using **Goose** in a headless environment (like a GitHub Actions runner), you can automate a first pass at diagnosing build failures.
+
+This workflow triggers an agent-based diagnosis when your build job fails:
+
+name: Agentic Build Guard
+on:
+  workflow_run:
+    workflows: ["Build and Test"]
+    types: [completed]
+
+jobs:
+  agentic-diagnosis:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Goose
+        run: |
+          curl -fsSL https://github.com/block/goose/releases/download/stable/goose-linux-amd64 -o goose
+          chmod +x goose
+          sudo mv goose /usr/local/bin/
+      - name: Run Diagnosis
+        env:
+          GOOSE_PROVIDER: openrouter
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          ./scripts/agentic_ci_diagnosis.sh
+
+`agentic_ci_diagnosis.sh` gives the agent the build log and the PR diff, and asks it to identify the cause of the failure:
+
+#!/bin/bash
+# scripts/agentic_ci_diagnosis.sh
+
+# 1. Collect context: The build failure log and the current diff
+BUILD_LOG=$(cat build_output.txt | tail -n 100)
+PR_DIFF=$(git diff origin/main...HEAD)
+
+# 2. Command the agent to resolve the failure
+goose session --instruction "
+I have a build failure in my Vulkan engine CI.
+BUILD LOG EXCERPT:
+$BUILD_LOG
+
+PR DIFF:
+$PR_DIFF
+
+Identify the cause of the failure. If it is a compilation error or a
+Vulkan validation error (VUID), propose a fix in a new branch
+'fix/ci-failure' and create a PR comment with the explanation.
+"
+
+Treat the resulting PR comment or branch as a proposed fix to review, not something to auto-merge — that’s true of any agent-generated change, but especially one produced from a truncated log excerpt.
+
+Separately from a Goose-based CI step, **GitHub Copilot Autofix** can catch a different category of issue: static-analysis findings from CodeQL, such as an unchecked `vkMapMemory` result or a potential buffer overflow in a descriptor update.
+
+**Configure code scanning.** Add a GitHub Actions workflow at `.github/workflows/codeql.yml` to run CodeQL, which produces the alerts Copilot Autofix works from.
+
+name: "CodeQL Analysis"
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: 'cpp'
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+**Enable Autofix in repository settings.** Go to **Settings > Code security and analysis** and toggle **GitHub Copilot Autofix** on.
+
+**Review a suggested fix.** When CodeQL flags something on a pull request, Copilot Autofix appends a "Propose a fix" section to the alert. Click **"Fix with Copilot"** to review the suggested change before committing it to your branch — review it the same way you would any other suggested patch.
+
+Goose in CI and Copilot Autofix cover different ground: Goose is better suited to larger, multi-file changes you explicitly ask it to investigate, while Autofix reacts to specific static-analysis alerts as they come up. Neither replaces normal code review.
+
+Merge conflicts in a graphics engine often touch synchronization logic or resource management in ways a text-based merge tool can’t reason about safely. An agent can look at what each branch is actually trying to do and propose a merge that keeps both changes intact — though as with any merge, it’s worth checking the result for race conditions or ordering issues the agent may have missed.
+
+# Example command for semantic conflict resolution
+goose session --instruction "
+The current PR has merge conflicts with 'main' in 'Renderer.cpp'.
+Analyze the conflicting blocks. One side introduces Descriptor Buffers
+while the other refactors the Command Pool management.
+Resolve the conflict by integrating both features, ensuring that the new
+Descriptor Buffer paths correctly use the updated Command Pool lifecycle.
+"
+
+You can also ask an agent to check, before merging, whether two branches are likely to conflict at a semantic level — pipeline incompatibilities or synchronization hazards that wouldn’t show up as a textual conflict.
+
+A performance audit here means looking for redundant work, not correctness bugs. You can pair **Goose** with the **RenderDoc CLI (`rdc-cli`)** to automate a first pass over a captured frame.
+
+Generate a RenderDoc capture (`.rdc`) of your frame, then export the command list to a text format the agent can read:
+
+# Export the draw calls and their state to a structured text file
+rdc-cli replay --cmds --pipeline-state output_state.txt capture_frame.rdc
+
+Point Goose at `output_state.txt` with a specific question:
+
+Goose, audit 'output_state.txt'.
+Look for redundant 'vkCmdBindPipeline' calls in the 'ShadowPass'.
+Also, identify any 'vkCmdPipelineBarrier' calls that use
+'VK_PIPELINE_STAGE_ALL_COMMANDS_BIT' and suggest more specific
+alternatives for a depth-only pass.
+
+In one run, the agent found the shadow pipeline was being bound three times per frame because draw calls were sorted by material rather than pipeline state, and recommended reordering the `DrawBucket` sort to group by pipeline first. It also flagged a depth-buffer barrier using `BOTTOM_OF_PIPE_BIT` that was stalling the GPU, and suggested narrowing it to `LATE_FRAGMENT_TESTS_BIT` so the next pass could start its vertex work earlier. Both are worth confirming against a profiler before assuming they’re correct, but they’re reasonable starting points for a specific investigation you’d otherwise do by scanning the state dump manually.
+
+Once you’ve reviewed the findings, you can ask Goose to apply the refactor directly to `Renderer.cpp`.
+
+Agent-driven automation is useful for the data-heavy, cross-file verification work that’s tedious to do manually: reading long CI logs, scanning command buffer state for waste, or checking a design against hardware limits. It doesn’t replace review, and its output should be checked rather than merged on trust, but it can meaningfully cut down the time spent on that kind of lookup and cross-referencing across a large engine.
+
+In the next section, we move to deployment, covering how these AI-assisted workflows apply to Android, iOS, and embedded targets.
+
+Next: [Desktop, Mobile, and Embedded Deployment](../08_deployment/01_introduction.html)
