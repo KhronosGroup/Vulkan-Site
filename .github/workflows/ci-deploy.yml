@@ -49,10 +49,12 @@ jobs:
           PR_NUM=$(jq -r '.pr_num' deploy-metadata/metadata.json)
           PR_URL=$(jq -r '.pr_url' deploy-metadata/metadata.json)
           PUBLISH_LOCAL=$(jq -r '.publish_local' deploy-metadata/metadata.json)
+          GENERATE_MAN_PAGES=$(jq -r '.generate_man_pages // "false"' deploy-metadata/metadata.json)
           echo "is_pr=${IS_PR}" >> "$GITHUB_OUTPUT"
           echo "pr_num=${PR_NUM}" >> "$GITHUB_OUTPUT"
           echo "pr_url=${PR_URL}" >> "$GITHUB_OUTPUT"
           echo "publish_local=${PUBLISH_LOCAL}" >> "$GITHUB_OUTPUT"
+          echo "generate_man_pages=${GENERATE_MAN_PAGES}" >> "$GITHUB_OUTPUT"
 
       - name: "Download site artifact"
         if: steps.meta.outputs.publish_local == 'true'
@@ -255,3 +257,44 @@ jobs:
             gh pr comment "$PR_URL" --body "$COMMENT_MARKER
           Preview site published: $PREVIEW_URL"
           fi
+
+      # Publishes the Vulkan docs MCP index (built by ci.yml's opt-in
+      # generate-man-pages job) as a GitHub Release asset that the box
+      # hosting the Vulkan docs MCP server fetches on a timer (see
+      # gpx1000/mcp-Vulkan's docs-index/README.md). Deliberately restricted
+      # to a trusted push-to-main build of this repo itself: never a PR
+      # (including same-repo PRs) and never a fork's head_repository, since
+      # this step uses write-scoped secrets and a PR build's inputs/artifact
+      # shouldn't be able to overwrite the production index.
+      - name: "Download Vulkan docs MCP index artifact"
+        if: >-
+          steps.meta.outputs.generate_man_pages == 'true' &&
+          steps.meta.outputs.is_pr != 'true' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.head_repository.full_name == github.repository
+        uses: actions/download-artifact@v8
+        with:
+          name: vulkanDocsIndex
+          path: vulkan-docs-index
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Publish Vulkan docs MCP index release asset"
+        if: >-
+          steps.meta.outputs.generate_man_pages == 'true' &&
+          steps.meta.outputs.is_pr != 'true' &&
+          github.event.workflow_run.head_branch == 'main' &&
+          github.event.workflow_run.head_repository.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="vulkan-docs-index-latest"
+          FILE="vulkan-docs-index/vulkan-docs-index.db"
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --title "Vulkan docs MCP index (latest)" \
+              --notes "Rolling release: always the most recently built Vulkan docs index for the Vulkan docs MCP server. Not a versioned release." \
+              --prerelease
+          fi
+          gh release upload "$TAG" "$FILE" --clobber
