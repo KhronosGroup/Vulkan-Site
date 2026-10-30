@@ -1,0 +1,61 @@
+# Model Selection & Specialization: Introduction
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/AI_Assisted_Vulkan/03_model_selection_specialization/01_introduction.html
+
+## Table of Contents
+
+- [Choosing a Model Strategy](#_choosing_a_model_strategy)
+- [Choosing_a_Model_Strategy](#_choosing_a_model_strategy)
+- [Base weights vs. live context](#_base_weights_vs_live_context)
+- [Base_weights_vs._live_context](#_base_weights_vs_live_context)
+- [Why this matters for Vulkan](#_why_this_matters_for_vulkan)
+- [Why_this_matters_for_Vulkan](#_why_this_matters_for_vulkan)
+- [What’s ahead in this section](#_whats_ahead_in_this_section)
+- [What’s_ahead_in_this_section](#_whats_ahead_in_this_section)
+
+## Content
+
+In the previous section we set up the context bridge: the infrastructure that lets an AI see your code, your build system, and the Vulkan specification. The next question is which model to actually use, and for what.
+
+Not all LLMs are equally suited to this work. Some are strong at reasoning and architectural questions but slow; others are tuned for fast C++23 code completion but weaker on high-level design. This section is about matching a model to a task rather than defaulting to whichever one is popular.
+
+There’s a useful distinction between what a model knows from training and what it can see at inference time:
+
+**The base model.** This is the model as shipped, trained on some snapshot of public C++ code and the Vulkan spec as it existed at training time.
+
+**Added context.** This is how you give the model information specific to your project. The main mechanisms are:
+
+* 
+**MCP (Model Context Protocol):** real-time access to the current Vulkan spec and your local project files.
+
+* 
+**RAG (Retrieval-Augmented Generation):** a searchable index of your engine’s internal docs, coding standards, and past decisions.
+
+* 
+**Fine-tuning (LoRA):** a small trained adjustment that teaches the model your naming conventions — for example, that this engine uses `vk::raii` and never raw pointers.
+
+Vulkan changes fairly often — new extensions land regularly, and recommended practice shifts over time (dynamic rendering over render passes, descriptor buffers over descriptor sets, and so on). A couple of practical consequences follow:
+
+* 
+A general-purpose model can suggest an older pattern simply because it was more common in its training data.
+
+* 
+Graphics code is unforgiving of small mistakes in memory offsets, alignment, and synchronization. A model that’s usually right but occasionally wrong on these details can cost you more debugging time than it saves, unless it also knows your engine’s specific wrappers.
+
+The next few chapters walk through selecting and adapting a model:
+
+We start with **selecting a base model**, comparing options like Qwen 3-Coder, Mistral-Nemo, and Llama 4, and looking at which ones are worth the latency cost for architectural work versus which are better suited to fast autocomplete and shader iteration.
+
+Then we cover **hardware and VRAM budgeting**. Running models locally has a real cost in GPU memory, and we’ll go through the arithmetic — including the KV cache and quantization — for figuring out how much you actually have to work with alongside a Vulkan application.
+
+After that, **MCP and RAG specialization**: using MCP to point your AI at the live Vulkan registry (`vk.xml`), and RAG to index your own engine’s code and docs, so suggestions stay both spec-correct and consistent with your codebase.
+
+Finally, for anyone who wants to go further, **fine-tuning with LoRA** — using a stronger cloud model to help generate training data, then training a small adapter that bakes your engine’s conventions into a local model so it doesn’t need constant reminding.
+
+By the end of this section you’ll have a model setup that’s aware of both the Vulkan spec in general and your codebase in particular, rather than a generic assistant with no project context.
+
+Next: [Selecting the Base Model](02_base_models.html)

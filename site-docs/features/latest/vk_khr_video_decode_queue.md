@@ -1,0 +1,828 @@
+# VK_KHR_video_decode_queue
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_KHR_video_decode_queue.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Solution Space](#_solution_space)
+- [2._Solution_Space](#_solution_space)
+- [3. Proposal](#_proposal)
+- [3.1. Video Decode Queues](#_video_decode_queues)
+- [3.1._Video_Decode_Queues](#_video_decode_queues)
+- [3.2. Video Decode Profiles](#_video_decode_profiles)
+- [3.2._Video_Decode_Profiles](#_video_decode_profiles)
+- [3.3. New Pipeline Stage and Access Flags](#_new_pipeline_stage_and_access_flags)
+- [3.3._New_Pipeline_Stage_and_Access_Flags](#_new_pipeline_stage_and_access_flags)
+- [3.4. New Buffer and Image Usage Flags](#_new_buffer_and_image_usage_flags)
+- [3.4._New_Buffer_and_Image_Usage_Flags](#_new_buffer_and_image_usage_flags)
+- [3.5. New Format Feature Flags](#_new_format_feature_flags)
+- [3.5._New_Format_Feature_Flags](#_new_format_feature_flags)
+- [3.6. Basic Operation](#_basic_operation)
+- [3.6._Basic_Operation](#_basic_operation)
+- [3.7. Decode Output Picture](#_decode_output_picture)
+- [3.7._Decode_Output_Picture](#_decode_output_picture)
+- [3.8. Reconstructed Picture](#_reconstructed_picture)
+- [3.8._Reconstructed_Picture](#_reconstructed_picture)
+- [3.9. Reference Pictures](#_reference_pictures)
+- [3.9._Reference_Pictures](#_reference_pictures)
+- [3.10. Capabilities](#_capabilities)
+- [3.11. Usage Summary](#_usage_summary)
+- [3.11._Usage_Summary](#_usage_summary)
+- [4. Examples](#_examples)
+- [4.1. Select queue family with video decode support for a given video codec operation](#_select_queue_family_with_video_decode_support_for_a_given_video_codec_operation)
+- [4.1._Select_queue_family_with_video_decode_support_for_a_given_video_codec_operation](#_select_queue_family_with_video_decode_support_for_a_given_video_codec_operation)
+- [4.2. Check support and query the capabilities for a video decode profile](#_check_support_and_query_the_capabilities_for_a_video_decode_profile)
+- [4.2._Check_support_and_query_the_capabilities_for_a_video_decode_profile](#_check_support_and_query_the_capabilities_for_a_video_decode_profile)
+- [4.3. Select decode output and DPB formats supported by the video decode profile](#_select_decode_output_and_dpb_formats_supported_by_the_video_decode_profile)
+- [4.3._Select_decode_output_and_DPB_formats_supported_by_the_video_decode_profile](#_select_decode_output_and_dpb_formats_supported_by_the_video_decode_profile)
+- [4.4. Create bitstream buffer](#_create_bitstream_buffer)
+- [4.4._Create_bitstream_buffer](#_create_bitstream_buffer)
+- [4.5. Create decode output image and image view](#_create_decode_output_image_and_image_view)
+- [4.5._Create_decode_output_image_and_image_view](#_create_decode_output_image_and_image_view)
+- [4.6. Create DPB image and image view](#_create_dpb_image_and_image_view)
+- [4.6._Create_DPB_image_and_image_view](#_create_dpb_image_and_image_view)
+- [4.7. Record decode operation (video session without DPB slots)](#_record_decode_operation_video_session_without_dpb_slots)
+- [4.7._Record_decode_operation_(video_session_without_DPB_slots)](#_record_decode_operation_video_session_without_dpb_slots)
+- [4.8. Record decode operation with reconstructed picture information (DISTINCT mode)](#_record_decode_operation_with_reconstructed_picture_information_distinct_mode)
+- [4.8._Record_decode_operation_with_reconstructed_picture_information_(DISTINCT_mode)](#_record_decode_operation_with_reconstructed_picture_information_distinct_mode)
+- [4.9. Record decode operation with reconstructed picture information (COINCIDE mode)](#_record_decode_operation_with_reconstructed_picture_information_coincide_mode)
+- [4.9._Record_decode_operation_with_reconstructed_picture_information_(COINCIDE_mode)](#_record_decode_operation_with_reconstructed_picture_information_coincide_mode)
+- [4.10. Record decode operation with reference picture list](#_record_decode_operation_with_reference_picture_list)
+- [4.10._Record_decode_operation_with_reference_picture_list](#_record_decode_operation_with_reference_picture_list)
+- [5. Issues](#_issues)
+- [5.1. Why is there no VK_PIPELINE_STAGE_VIDEO_DECODE_BIT_KHR?](#_why_is_there_no_vk_pipeline_stage_video_decode_bit_khr)
+- [5.1._Why_is_there_no_VK_PIPELINE_STAGE_VIDEO_DECODE_BIT_KHR?](#_why_is_there_no_vk_pipeline_stage_video_decode_bit_khr)
+- [5.2. Are the decode output picture data and reconstructed picture data used to activate a DPB slot written to the same resource?](#_are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_dpb_slot_written_to_the_same_resource)
+- [5.2._Are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_DPB_slot_written_to_the_same_resource?](#_are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_dpb_slot_written_to_the_same_resource)
+- [5.3. How can layered codec-specific decode extensions enable applications to provide the necessary codec-specific picture information, parameter sets, etc. that may be needed to perform the video coding operations?](#_how_can_layered_codec_specific_decode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations)
+- [5.3._How_can_layered_codec-specific_decode_extensions_enable_applications_to_provide_the_necessary_codec-specific_picture_information,_parameter_sets,_etc._that_may_be_needed_to_perform_the_video_coding_operations?](#_how_can_layered_codec_specific_decode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations)
+- [5.4. Can vkCmdVideoDecodeKHR only decode frames? What about field decoding, slice decoding, etc.?](#_can_vkcmdvideodecodekhr_only_decode_frames_what_about_field_decoding_slice_decoding_etc)
+- [5.4._Can_vkCmdVideoDecodeKHR_only_decode_frames?_What_about_field_decoding,_slice_decoding,_etc.?](#_can_vkcmdvideodecodekhr_only_decode_frames_what_about_field_decoding_slice_decoding_etc)
+- [5.5. What is the effect of the flags provided in VkVideoDecodeUsageInfoKHR::videoUsageHints?](#_what_is_the_effect_of_the_flags_provided_in_vkvideodecodeusageinfokhrvideousagehints)
+- [5.5._What_is_the_effect_of_the_flags_provided_in_VkVideoDecodeUsageInfoKHR::videoUsageHints?](#_what_is_the_effect_of_the_flags_provided_in_vkvideodecodeusageinfokhrvideousagehints)
+- [5.6. When is it mandatory to specify reconstructed picture information in VkVideoDecodeInfoKHR::pSetupReferenceSlot?](#_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot)
+- [5.6._When_is_it_mandatory_to_specify_reconstructed_picture_information_in_VkVideoDecodeInfoKHR::pSetupReferenceSlot?](#_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot)
+- [5.7. Does always requiring the specification of reconstructed picture information in VkVideoDecodeInfoKHR::pSetupReferenceSlot have any undesired performance consequences?](#_does_always_requiring_the_specification_of_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot_have_any_undesired_performance_consequences)
+- [5.7._Does_always_requiring_the_specification_of_reconstructed_picture_information_in_VkVideoDecodeInfoKHR::pSetupReferenceSlot_have_any_undesired_performance_consequences?](#_does_always_requiring_the_specification_of_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot_have_any_undesired_performance_consequences)
+- [6. Further Functionality](#_further_functionality)
+- [6._Further_Functionality](#_further_functionality)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Solution Space](#_solution_space)
+[3. Proposal](#_proposal)
+
+[3.1. Video Decode Queues](#_video_decode_queues)
+[3.2. Video Decode Profiles](#_video_decode_profiles)
+[3.3. New Pipeline Stage and Access Flags](#_new_pipeline_stage_and_access_flags)
+[3.4. New Buffer and Image Usage Flags](#_new_buffer_and_image_usage_flags)
+[3.5. New Format Feature Flags](#_new_format_feature_flags)
+[3.6. Basic Operation](#_basic_operation)
+[3.7. Decode Output Picture](#_decode_output_picture)
+[3.8. Reconstructed Picture](#_reconstructed_picture)
+[3.9. Reference Pictures](#_reference_pictures)
+[3.10. Capabilities](#_capabilities)
+[3.11. Usage Summary](#_usage_summary)
+
+[4. Examples](#_examples)
+
+[4.1. Select queue family with video decode support for a given video codec operation](#_select_queue_family_with_video_decode_support_for_a_given_video_codec_operation)
+[4.2. Check support and query the capabilities for a video decode profile](#_check_support_and_query_the_capabilities_for_a_video_decode_profile)
+[4.3. Select decode output and DPB formats supported by the video decode profile](#_select_decode_output_and_dpb_formats_supported_by_the_video_decode_profile)
+[4.4. Create bitstream buffer](#_create_bitstream_buffer)
+[4.5. Create decode output image and image view](#_create_decode_output_image_and_image_view)
+[4.6. Create DPB image and image view](#_create_dpb_image_and_image_view)
+[4.7. Record decode operation (video session without DPB slots)](#_record_decode_operation_video_session_without_dpb_slots)
+[4.8. Record decode operation with reconstructed picture information (DISTINCT mode)](#_record_decode_operation_with_reconstructed_picture_information_distinct_mode)
+[4.9. Record decode operation with reconstructed picture information (COINCIDE mode)](#_record_decode_operation_with_reconstructed_picture_information_coincide_mode)
+[4.10. Record decode operation with reference picture list](#_record_decode_operation_with_reference_picture_list)
+
+[5. Issues](#_issues)
+
+[5.1. Why is there no `VK_PIPELINE_STAGE_VIDEO_DECODE_BIT_KHR`?](#_why_is_there_no_vk_pipeline_stage_video_decode_bit_khr)
+[5.2. Are the decode output picture data and reconstructed picture data used to activate a DPB slot written to the same resource?](#_are_the_decode_output_picture_data_and_reconstructed_picture_data_used_to_activate_a_dpb_slot_written_to_the_same_resource)
+[5.3. How can layered codec-specific decode extensions enable applications to provide the necessary codec-specific picture information, parameter sets, etc. that may be needed to perform the video coding operations?](#_how_can_layered_codec_specific_decode_extensions_enable_applications_to_provide_the_necessary_codec_specific_picture_information_parameter_sets_etc_that_may_be_needed_to_perform_the_video_coding_operations)
+[5.4. Can `vkCmdVideoDecodeKHR` only decode frames? What about field decoding, slice decoding, etc.?](#_can_vkcmdvideodecodekhr_only_decode_frames_what_about_field_decoding_slice_decoding_etc)
+[5.5. What is the effect of the flags provided in `VkVideoDecodeUsageInfoKHR::videoUsageHints`?](#_what_is_the_effect_of_the_flags_provided_in_vkvideodecodeusageinfokhrvideousagehints)
+[5.6. When is it mandatory to specify reconstructed picture information in `VkVideoDecodeInfoKHR::pSetupReferenceSlot`?](#_when_is_it_mandatory_to_specify_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot)
+[5.7. Does always requiring the specification of reconstructed picture information in `VkVideoDecodeInfoKHR::pSetupReferenceSlot` have any undesired performance consequences?](#_does_always_requiring_the_specification_of_reconstructed_picture_information_in_vkvideodecodeinfokhrpsetupreferenceslot_have_any_undesired_performance_consequences)
+
+[6. Further Functionality](#_further_functionality)
+
+This document outlines a proposal to enable performing video decode operations in Vulkan.
+
+Integrating video decode operations into Vulkan applications enable a wide set of new usage scenarios including, but not limited to, the following examples:
+
+* 
+Applying post-processing on top of video frames decoded from a compressed video stream
+
+* 
+Sourcing dynamic texture data from compressed video streams
+
+It is also not uncommon for Vulkan capable devices to feature dedicated hardware acceleration for video decompression.
+
+The goal of this proposal is to enable these use cases, expose the underlying hardware capabilities, and provide tight integration with other functionalities of the Vulkan API.
+
+The following options have been considered:
+
+Rely on external sharing capabilities to interact with existing video decode APIs
+
+Add new dedicated APIs to Vulkan specific to video decoding
+
+Build upon a common set of APIs that enable video coding operations in general
+
+As discussed in the proposal for the `VK_KHR_video_queue` extension, reusing a common, shared infrastructure across all video coding functionalities that leverage existing Vulkan capabilities was preferred, hence this extension follows option 3.
+
+Further sub-options were considered whether a common set of APIs could be used to enable video decoding in general, upon which codec-specific extensions can be built. As the possibility of API reuse is similarly possible within the domain of video decoding as it is for video coding in general, this proposal follows the same principle to extend `VK_KHR_video_queue` with codec-independent video decoding capabilities.
+
+While `VK_KHR_video_queue` already includes support for a more fine grained query to determine the set of supported video codec operations for a given queue family, this extension introduces an explicit queue flag called `VK_QUEUE_VIDEO_DECODE_BIT_KHR` to indicate support for video decoding.
+
+Applications can use this flag bit to identify video decode capable queue families in general, if needed, before querying more details about the individual video codec operations supported through the use of the `VkQueueFamilyVideoPropertiesKHR` structure. It also indicates support for the set of command buffer commands available on video decode queues, which include the following:
+
+* 
+Pipeline barrier and event handling commands used for synchronization
+
+* 
+Basic query commands to begin, end, and reset queries
+
+* 
+Timestamp write commands
+
+* 
+Generic video coding commands
+
+* 
+The new video decode command introduced by this extension
+
+For the full list of individual commands supported by video decode queues, and whether any command is supported inside/outside of video coding scopes, refer to the manual page of the corresponding command.
+
+Video decode profiles are defined using a `VkVideoProfileInfoKHR` structure that specifies a `videoCodecOperation` value identifying a video decode operation. This extension does not introduce any video decode operation flags, as that is left to the codec-specific decode extensions.
+
+On the other hand, this extension allows the application to specify usage hints specific to video decoding by chaining the following new structure to `VkVideoProfileInfoKHR`:
+
+typedef struct VkVideoDecodeUsageInfoKHR {
+    VkStructureType               sType;
+    const void*                   pNext;
+    VkVideoDecodeUsageFlagsKHR    videoUsageHints;
+} VkVideoDecodeUsageInfoKHR;
+
+The hint flags introduced by this extension are as follows:
+
+* 
+`VK_VIDEO_DECODE_USAGE_TRANSCODING_BIT_KHR` should be used in video transcoding use cases
+
+* 
+`VK_VIDEO_DECODE_USAGE_OFFLINE_BIT_KHR` should be used when decoding local video content
+
+* 
+`VK_VIDEO_DECODE_USAGE_STREAMING_BIT_KHR` should be used when decoding video content streamed over network
+
+These usage hints do not provide any restrictions or guarantees, so any combination of flags can be used, but they allow the application to better communicate the intended use case scenario so that implementations can make appropriate choices based on it.
+
+Logically, however, it is part of the video profile definition, so capabilities may vary across video decode profiles that only differ in terms of video decode usage hints, and it also affects video profile compatibility between resources and video sessions, so the same `VkVideoDecodeUsageInfoKHR` structure has to be included everywhere where the specific video decode profile is used.
+
+This extension also introduces a new pipeline stage identified by the `VK_PIPELINE_STAGE_2_VIDEO_DECODE_BIT_KHR` flag to enable synchronizing video decode operations with respect to other Vulkan operations.
+
+In addition, two new access flags are introduced to indicate reads and writes, respectively, performed by the video decode pipeline stage:
+
+* 
+`VK_ACCESS_2_VIDEO_DECODE_READ_BIT_KHR`
+
+* 
+`VK_ACCESS_2_VIDEO_DECODE_WRITE_BIT_KHR`
+
+As these flags did no longer fit into the legacy 32-bit enums, this extension requires the `VK_KHR_synchronization2` extension and relies on the 64-bit versions of the pipeline stage and access mask flags to handle synchronization specific to video decode operations.
+
+This extension introduces the following new buffer usage flags:
+
+* 
+`VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR` allows using the buffer as a video bitstream buffer in video decode operations
+
+* 
+`VK_BUFFER_USAGE_VIDEO_DECODE_DST_BIT_KHR` is reserved for future use
+
+This extension also introduces the following new image usage flags:
+
+* 
+`VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR` is reserved for future use
+
+* 
+`VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR` allows using the image as a decode output picture
+
+* 
+`VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR` allows using the image as a decode DPB picture (reconstructed/reference picture)
+
+Specifying these usage flags alone is not sufficient to create a buffer or image that is compatible with a video session created against any particular video profile. In fact, when specifying any of these usage flags at resource creation time, the application has to include a `VkVideoProfileListInfoKHR` structure in the `pNext` chain of the corresponding create info structure with `VkVideoProfileListInfoKHR::pProfiles` including a video decode profile. The created resources will be compatible only with that single video decode profile (and any additional video encode profiles that may have been specified in the list).
+
+To indicate which formats are compatible with video decode usage, the following new format feature flags are introduced:
+
+* 
+`VK_FORMAT_FEATURE_VIDEO_DECODE_OUTPUT_BIT_KHR` indicates support for decode output picture usage
+
+* 
+`VK_FORMAT_FEATURE_VIDEO_DECODE_DPB_BIT_KHR` indicates support for decode DPB picture usage
+
+The presence of the format flags alone, as returned by the various format queries, is not sufficient to indicate that an image with that format is usable with video decoding using any particular video decode profile. Actual compatibility with a specific video decode profile has to be verified using the `vkGetPhysicalDeviceVideoFormatPropertiesKHR` command.
+
+Video decode operations can be recorded into command buffers allocated from command pools created against queue families that support the `VK_QUEUE_VIDEO_DECODE_BIT_KHR` flag.
+
+Recording video decode operations happens through the use of the following new command:
+
+VKAPI_ATTR void VKAPI_CALL vkCmdDecodeVideoKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkVideoDecodeInfoKHR*                 pDecodeInfo);
+
+The common, codec-independent parameters of the video decode operation are provided using the following new structure:
+
+typedef struct VkVideoDecodeInfoKHR {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkVideoDecodeFlagsKHR                 flags;
+    VkBuffer                              srcBuffer;
+    VkDeviceSize                          srcBufferOffset;
+    VkDeviceSize                          srcBufferRange;
+    VkVideoPictureResourceInfoKHR         dstPictureResource;
+    const VkVideoReferenceSlotInfoKHR*    pSetupReferenceSlot;
+    uint32_t                              referenceSlotCount;
+    const VkVideoReferenceSlotInfoKHR*    pReferenceSlots;
+} VkVideoDecodeInfoKHR;
+
+Executing such a video decode operation results in the decompression of a single picture (unless otherwise defined by layered extensions), and, if there is an active `VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR` query, the status of the video decode operation is recorded into the active query slot.
+
+If the decode operation requires additional codec-specific parameters, then such parameters are provided in the `pNext` chain of the structure above. Whether such codec-specific information is necessary, and what it may contain is up to the codec-specific extensions.
+
+`srcBuffer`, `srcBufferOffset`, and `srcBufferRange` provide information about the used video bitstream buffer range. The video decode operation reads the compressed picture data from this buffer range.
+
+The application has to create the video bitstream buffer with the new `VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR` usage flag, and must also include the used video session’s video profile in the `VkVideoProfileListInfoKHR` structure specified at buffer creation time.
+
+The expected contents of the video bitstream buffer range depends on the specific video codec used, as defined by corresponding codec-specific extensions built upon this proposal.
+
+The `dstPictureResource`, `pSetupReferenceSlot`, and `pReferenceSlots` members specify the decode output picture, reconstructed picture, and reference pictures, respectively, used by the video decode operation, as discussed in later sections of this proposal.
+
+`dstPictureResource` defines the parameters of the video picture resource to use as the decode output picture. The video decode operation writes the picture data resulting from the decompression of the bitstream data to this video picture resource. As such it is a mandatory parameter of the operation.
+
+The application has to create the image view specified in `dstPictureResource.imageViewBinding` with the new `VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR` usage flag, and must also include the used video session’s video profile in the `VkVideoProfileListInfoKHR` structure specified at image creation time.
+
+The image subresource backing the decode output picture has to be in the new `VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR` layout at the time the video decode operation is executed, except if it matches the reconstructed picture, as discussed later, in which case the image subresource has to be in the new `VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR` layout.
+
+`pSetupReferenceSlot` is an optional parameter specifying the video picture resource and DPB slot index to use for the reconstructed picture. Implementations use the reconstructed picture for one of the following purposes:
+
+When the decoded picture is requested to be set up as a reference, according to the codec-specific semantics, the video decode operation will output the raw decoding results to this picture and activate the reconstructed picture’s DPB slot with it in order to enable using the picture as a reference picture in future video decode operations. Content-wise, this picture is generally identical to the decode output picture unless the decode output picture contains any sort of post-processing (e.g. film grain).
+
+When the decoded picture is not requested to be set up as a reference, implementations may use the reconstructed picture’s resource and/or DPB slot for intermediate data required by the decoding process.
+
+Accordingly, `pSetupReferenceSlot` must never be `NULL`, except when the video session was created without any DPB slots.
+
+|  | The original version of this extension only required the specification of the reconstructed picture information (i.e. a non-`NULL` `pSetupReferenceSlot`) when the application intended to set up a reference picture by activating a DPB slot. Consequently, the presence of reconstructed picture information always implied DPB slot activation. This was changed in revision 8 of the extension, and whether DPB slot activation happens is now subject to codec-specific semantics. More details on this change are discussed in the corresponding issue in this proposal document. |
+| --- | --- |
+
+In summary, for decoded pictures requested to be set up as a reference, this parameter can be used to add new reference pictures to the DPB, and change the association between DPB slot indices and video picture resources. That also implies that the application has to specify a video picture resource in `pSetupReferenceSlot→pPictureResource` that was included in the set of bound reference picture resources specified when the video coding scope was started (in one of the elements of `VkVideoBeginCodingInfoKHR::pReferenceSlots`). No similar requirement exists for the decode output picture specified by `dstPictureResource` which can refer to any video picture resource.
+
+The application has to create the image view specified in `pSetupReferenceSlot→pPictureResource→imageViewBinding` with the new `VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR` usage flag, and must also include the used video session’s video profile in the `VkVideoProfileListInfoKHR` structure specified at image creation time.
+
+The image subresource backing the reconstructed picture has to be in the new `VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR` layout at the time the video decode operation is executed.
+
+Implementations diverge in the way they handle reconstructed pictures:
+
+* 
+On some implementations the decode output picture and reconstructed picture have to be *distinct* video picture resources, even if the picture data written by the video decode operation to the two resources is identical.
+
+* 
+On other implementations the decode output picture and reconstructed picture have to *coincide*, i.e. both have to refer to the same video picture resource.
+
+* 
+Some other implementations may actually support both modes.
+
+Support for the individual modes is indicated by the `VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_COINCIDE_BIT_KHR` and `VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR` capability flags. Implementations are only required to support one of the two modes, hence portable applications have to make sure that they support both options. Dealing with this implementation divergence, however, is fairly simple.
+
+Generally speaking, the application has to create the following images in order to decode a video stream:
+
+* 
+One or more images usable as reconstructed pictures, some of which will contain the reference pictures associated with the DPB.
+
+* 
+Optionally, an additional image usable as the decode output picture when the reconstructed picture has to be *distinct* or when using video sessions without any DPB slots.
+
+|  | In practice, applications will typically allocate more than one decode output pictures for buffering purposes and/or to minimize synchronization overhead resulting from having to prevent write-after-write hazards across subsequent video decode operations targeting the same decode output picture resource. Some applications may also allocate more resources for reference pictures than the number of DPB slots for similar reasons. |
+| --- | --- |
+
+The application should always create the image(s) backing the DPB with the `VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR` usage flag. If only the *coincide* mode is supported for reconstructed pictures, then the DPB image(s) that may be used as a reconstructed picture in a video decode operation have to also include the `VK_IMAGE_USAGE_VIDEO_DECODE_DST_KHR` usage flag to allow them to be used as coinciding decode output and reconstructed pictures.
+
+The image backing the decode output picture should always be created with the `VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR` usage flag set.
+
+The DPB image(s) are expected to be in the `VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR` layout while in use by video decode operations, while the decode output image is expected to be in the `VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR` layout.
+
+Here we have two cases to consider:
+
+When a reconstructed picture is specified; and
+
+When one is not needed (as the video session was created without any DPB slots)
+
+In case of (2), the application can use the image created for the decode output picture in `dstPictureResource`, regardless of whether the *distinct* or *coincide* mode is used.
+
+In case of (1), the behavior is as follows:
+
+* 
+In *distinct* mode the decode output picture’s image should be used in `dstPictureResource`, and (one of) the DPB image(s) should be referred to in `pSetupReferenceSlot`, as it would naturally follow.
+
+* 
+In *coincide* mode both `dstPictureResource` and `pSetupReferenceSlot` should refer to a video picture resource in (one of) the DPB image(s).
+
+In the latter situation the decoded picture will be written only to the DPB image, and the image created for decode-output-only use remains unused. If the application wants to concurrently use the decoded picture while also performing video decode operations using the same picture as reference, it can manually copy the decoded picture stored in the DPB image to the otherwise unused decode output image, if needed. This way it practically mimics the behavior of an implementation supporting the *distinct* mode. However, in most use cases that is not necessary, hence on implementations supporting the *coincide* mode the application can avoid having two copies of the decoded pictures, even if they are used as reference pictures later on.
+
+If the video profile in use requires additional codec-specific parameters for the reconstructed picture, then such parameters are provided in the `pNext` chain of `pSetupReferenceSlot`. Whether such codec-specific reconstructed picture information is necessary, and what it may contain is up to the codec-specific extensions.
+
+If the video session allows, reference pictures can be specified in the `pReferenceSlots` array to provide predictions of the values of samples of the decoded picture.
+
+Each entry in the `pReferenceSlots` array adds one or more pictures, currently associated with the DPB slot specified in the element’s `slotIndex` member and stored in the video picture resource specified in the element’s `pPictureResource` member, to the list of active reference pictures to use in the video decode operation.
+
+The application has to make sure to specify each video picture resource used as a reference picture in a video decode operation, beforehand, in the set of bound reference picture resources specified when the video coding scope was started (in one of the elements of `VkVideoBeginCodingInfoKHR::pReferenceSlots`).
+
+The application has to create the image view specified in `pPictureResource→imageViewBinding` of the elements of `pReferenceSlots` with the new `VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR` usage flag, and must also include the used video session’s video profile in the `VkVideoProfileListInfoKHR` structure specified at image creation time.
+
+The image subresources backing the reference pictures have to be in the new `VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR` layout at the time the video decode operation is executed.
+
+Typically the number of elements in `pReferenceSlots` equals the number of reference pictures added, but in certain cases (depending on the used video codec and video profile) there may be multiple pictures in the same DPB slot resource.
+
+If the video profile in use requires additional codec-specific parameters for the reference pictures, then such parameters are provided in the `pNext` chain of the elements of `pReferenceSlots`. Whether such codec-specific reference picture information is necessary, and what it may contain is up to the codec-specific extensions.
+
+Querying capabilities specific to video decoding happens through the query mechanisms introduced by the `VK_KHR_video_queue` extension.
+
+Support for individual video decode operations can be retrieved for each queue family using the `VkQueueFamilyVideoPropertiesKHR` structure, as discussed earlier.
+
+The application can also use the `vkGetPhysicalDeviceVideoCapabilitiesKHR` command to query the capabilities of a specific video decode profile. In case of video decode profiles, the following new structure has to be included in the `pNext` chain of the `VkVideoCapabilitiesKHR` structure used to retrieve the general video decode capabilities:
+
+typedef struct VkVideoDecodeCapabilitiesKHR {
+    VkStructureType                    sType;
+    void*                              pNext;
+    VkVideoDecodeCapabilityFlagsKHR    flags;
+} VkVideoDecodeCapabilitiesKHR;
+
+This structure only contains a new decode-specific `flags` member that indicates support for various video decode capabilities, like the support for the *distinct* and *coincide* modes for reconstructed pictures, as discussed earlier.
+
+The `vkGetPhysicalDeviceVideoFormatPropertiesKHR` command can be used to query the supported image/picture formats for a given set of video profiles, as described in the `VK_KHR_video_queue` extension.
+
+In particular, if the application would like to query the list of format properties supported for decode output pictures, then it should include the new `VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR` usage flag in `VkPhysicalDeviceVideoFormatInfoKHR::imageUsage`.
+
+Similarly, to query the list of format properties supported for decode DPB pictures (reconstructed/reference pictures), then it should include the new `VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR` usage flag in `VkPhysicalDeviceVideoFormatInfoKHR::imageUsage`.
+
+When using the *coincide* mode, the application will need DPB pictures that support both decode output and DPB usage, hence it should call `vkGetPhysicalDeviceVideoFormatPropertiesKHR` with `VkPhysicalDeviceVideoFormatInfoKHR::imageUsage` including both `VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR` and `VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR`.
+
+To summarize the usage of the video decoding features introduced by this extension, let us take a look at a typical usage scenario when using this extension to decode a video stream.
+
+Before the application can start recording command buffers with video decode operations, it has to do the following:
+
+Ensure that the implementation can decode the video content at hand by first querying the video codec operations supported by each queue family using the `vkGetPhysicalDeviceQueueFamilyProperties2` command and the `VkQueueFamilyVideoPropertiesKHR` output structure.
+
+If needed, the application has to also retrieve the `VkQueueFamilyQueryResultStatusPropertiesKHR` output structure for the queue family to check support for `VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR` queries.
+
+Construct the `VkVideoProfileInfoKHR` structure describing the entire video profile, including the video codec operation, chroma subsampling, bit depths, and any other usage or codec-specific parameters.
+
+Ensure that the specific video profile is supported by the implementation using the `vkGetPhysicalDeviceVideoCapabilitiesKHR` command and retrieve the general, decode-specific, and codec-specific capabilities at the same time.
+
+Query the list of supported image/picture format properties supported for the video profile using the `vkGetPhysicalDeviceVideoFormatPropertiesKHR` structure, and select a suitable format for the DPB and decode output pictures.
+
+If needed, create one or more images corresponding to the decode output picture(s) and/or DPB picture(s) with the appropriate usage flags and video profile list, as described earlier, and bind suitable device memory to them. Also create any image views with the appropriate usage flags to use in the video decode operations.
+
+Create a buffer with the `VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR` usage flag and the video profile list, to use as the source video bitstream buffer. If the buffer is expected to be populated using the CPU, consider binding compatible host-visible device memory to the buffer.
+
+If result status queries are needed and supported (as determined earlier), create a query pool with the `VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR` query type and the used video decode profile.
+
+Create the video session using the video decode profile and appropriate parameters within the capabilities supported by the profile, as determined earlier. Bind suitable device memory to each memory binding index of the video session.
+
+If needed, create a video session parameters object for the video session.
+
+Recording video decode operations into command buffers typically consists of the following sequence:
+
+Start a video coding scope with the created video session (and parameters) object using the `vkCmdBeginVideoCodingKHR` command. Make sure to include all video picture resources in `VkVideoBeginCodingInfoKHR::pReferenceSlots` that may be used as reconstructed or reference pictures within the video coding scope, and ensure that the DPB slots specified for each reflect the current DPB slot association for the resource.
+
+If this is the first video coding scope the video session is used in, reset the video session to the initial state by recording a `vkCmdControlVideoCodingKHR` command with the `VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR` flag.
+
+If needed, start a `VK_QUERY_TYPE_RESULT_STATUS_ONLY_KHR` query using `vkCmdBeginQuery`. Reset the query using `vkCmdResetQueryPool`, beforehand, as needed.
+
+Issue a video decode operation using the `vkCmdDecodeVideoKHR` command with appropriate parameters, as discussed earlier.
+
+If needed, end the started query using `vkCmdEndQuery`.
+
+Record any further control or decode operations into the video coding scope, as needed.
+
+End the video coding scope using the `vkCmdEndVideoCodingKHR` command.
+
+VkVideoCodecOperationFlagBitsKHR neededVideoDecodeOp = ...
+uint32_t queueFamilyIndex;
+uint32_t queueFamilyCount;
+
+vkGetPhysicalDeviceQueueFamilyProperties2(physicalDevice, &queueFamilyCount, NULL);
+
+VkQueueFamilyProperties2* props = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyProperties2));
+VkQueueFamilyVideoPropertiesKHR* videoProps = calloc(queueFamilyCount,
+    sizeof(VkQueueFamilyVideoPropertiesKHR));
+
+for (queueFamilyIndex = 0; queueFamilyIndex 
+
+VkResult result;
+
+// We also include the optional decode usage hints here
+VkVideoDecodeUsageInfoKHR profileUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_USAGE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific profile structure
+    .videoUsageHints = VK_VIDEO_DECODE_USAGE_DEFAULT_KHR,
+};
+
+VkVideoProfileInfoKHR profileInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+    .pNext = &profileUsageInfo
+    .videoCodecOperation = ... // used video decode operation
+    .chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+    .lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+    .chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR
+};
+
+VkVideoDecodeCapabilitiesKHR decodeCapabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR,
+    .pNext = ... // pointer to codec-specific capability structure
+}
+
+VkVideoCapabilitiesKHR capabilities = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR,
+    .pNext = &decodeCapabilities
+};
+
+result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physicalDevice, &profileInfo, &capabilities);
+
+if (result == VK_SUCCESS) {
+    // Profile is supported, check additional capabilities
+    ...
+} else {
+    // Profile is not supported, result provides additional information about why
+    ...
+}
+
+VkVideoProfileInfoKHR profileInfo = {
+    ...
+};
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = 1,
+    .pProfiles = &profileInfo
+};
+
+VkPhysicalDeviceVideoFormatInfoKHR formatInfo = {
+    .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR,
+    .pNext = &profileListInfo
+};
+
+VkVideoFormatPropertiesKHR* formatProps = NULL;
+
+// First query decode output formats
+formatInfo.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+
+vkGetPhysicalDeviceVideoFormatPropertiesKHR(physicalDevice, &formatInfo, &formatCount, NULL);
+formatProps = calloc(formatCount, sizeof(VkVideoFormatPropertiesKHR));
+for (uint32_t i = 0; i 
+
+VkBuffer bitstreamBuffer = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the bitstream buffer with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkBufferCreateInfo createInfo = {
+    .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+    .pNext = &profileListInfo,
+    ...
+    .usage = VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR | ... // any other usages that may be needed
+    ...
+};
+
+vkCreateBuffer(device, &createInfo, NULL, &bitstreamBuffer);
+
+VkImage outputImage = VK_NULL_HANDLE;
+VkImageView outputImageView = VK_NULL_HANDLE;
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the decode output image with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = &profileListInfo,
+    ...
+    .usage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR | ... // any other usages that may be needed
+    ...
+};
+
+vkCreateImage(device, &imageCreateInfo, NULL, &outputImage);
+
+VkImageViewUsageCreateInfo imageViewUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+    .pNext = NULL,
+    .usage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR
+};
+
+VkImageViewCreateInfo imageViewCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = &imageViewUsageInfo,
+    .flags = 0,
+    .image = outputImage,
+    .viewType = ... // image view type (only 2D or 2D_ARRAY is supported)
+    ... // other image view creation parameters
+};
+
+vkCreateImageView(device, &imageViewCreateInfo, NULL, &outputImageView);
+
+// NOTE: This example creates a single image and image view that is used to back all DPB pictures
+// but, depending on the support of the VK_VIDEO_CAPABILITY_SEPARATE_REFERENCE_IMAGES_BIT_KHR
+// capability flag, the application can choose to create separate images for each DPB slot or
+// picture
+
+VkImage dpbImage = VK_NULL_HANDLE;
+VkImageView dpbImageView = VK_NULL_HANDLE;
+
+VkImageUsage dpbImageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DPB_BIT_KHR;
+
+// If DISTINCT mode is not supported or if COINCIDE mode is supported and preferred, then the DPB
+// images generally have to be created to be usable both as decode output and DPB pictures
+if ((decodeCapabilities.flags & VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR) == 0 || preferCoincideMode) {
+    dpbImageUsage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+}
+
+VkVideoProfileListInfoKHR profileListInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR,
+    .pNext = NULL,
+    .profileCount = ... // number of video profiles to use the decode DPB image with
+    .pProfiles = ... // pointer to an array of video profile information structure chains
+};
+
+VkImageCreateInfo imageCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+    .pNext = &profileListInfo,
+    ...
+    .usage = dpbImageUsage | ... // any other usages that may be needed
+    ...
+    .arrayLayers = // typically equal to the DPB slot count
+};
+
+vkCreateImage(device, &imageCreateInfo, NULL, &dpbImage);
+
+VkImageViewUsageCreateInfo imageViewUsageInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO,
+    .pNext = NULL,
+    .usage = dpbImageUsage
+};
+
+VkImageViewCreateInfo imageViewCreateInfo = {
+    .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+    .pNext = &imageViewUsageInfo,
+    .flags = 0,
+    .image = dpbImage,
+    .viewType = ... // image view type (only 2D or 2D_ARRAY is supported)
+    ... // other image view creation parameters
+};
+
+vkCreateImageView(device, &imageViewCreateInfo, NULL, &dpbImageView);
+
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR decodeOutputPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of decoded picture (typically the video frame size)
+    .baseArrayLayer = 0,
+    .imageViewBinding = outputImageView
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    .flags = 0,
+    .srcBuffer = bitstreamBuffer,
+    .srcBufferOffset = ... // offset of picture data in the video bitstream buffer
+    .srcBufferRange = ... // size of picture data in the video bitstream buffer
+    .dstPictureResource = decodeOutputPictureResource,
+    .pSetupReferenceSlot = NULL,
+    .referenceSlotCount = 0,
+    .pReferenceSlots = NULL
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);
+
+// Bound reference resource list provided has to include reconstructed picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR decodeOutputPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of decoded picture (typically the video frame size)
+    .baseArrayLayer = 0,
+    .imageViewBinding = outputImageView
+};
+
+VkVideoPictureResourceInfoKHR reconstructedPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of reconstructed picture (typically the video frame size)
+    .baseArrayLayer = ... // layer to use for setup picture in DPB
+    .imageViewBinding = dpbImageView
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = ... // pointer to codec-specific reconstructed picture information structure
+    .slotIndex = ... // DPB slot index to use with the reconstructed picture
+                     // (optionally activated per the codec-specific semantics)
+    .pPictureResource = &reconstructedPictureResource
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .dstPictureResource = decodeOutputPictureResource,
+    .pSetupReferenceSlot = &setupSlotInfo,
+    ...
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);
+
+// Bound reference resource list provided has to include reconstructed picture resource
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR reconstructedPictureResource = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+    .pNext = NULL,
+    .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+    .codedExtent = ... // extent of decoded picture (typically the video frame size)
+    .baseArrayLayer = ... // layer to use for setup picture in DPB
+    .imageViewBinding = dpbImageView
+};
+
+VkVideoReferenceSlotInfoKHR setupSlotInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+    .pNext = ... // pointer to codec-specific reconstructed picture information structure
+    .slotIndex = ... // DPB slot index to use with the reconstructed picture
+                     // (optionally activated per the codec-specific semantics)
+    .pPictureResource = &reconstructedPictureResource
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .dstPictureResource = reconstructedPictureResource,
+    .pSetupReferenceSlot = &setupSlotInfo,
+    ...
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);
+
+// Bound reference resource list provided has to include all used reference picture resources
+vkCmdBeginVideoCodingKHR(commandBuffer, ...);
+
+VkVideoPictureResourceInfoKHR referencePictureResources[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+        .pNext = NULL,
+        .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+        .codedExtent = ... // extent of reference picture (typically the video frame size)
+        .baseArrayLayer = ... // layer of first reference picture resource
+        .imageViewBinding = dpbImageView
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR,
+        .pNext = NULL,
+        .codedOffset = ... // offset within the image subresource (typically { 0, 0 })
+        .codedExtent = ... // extent of reference picture (typically the video frame size)
+        .baseArrayLayer = ... // layer of second reference picture resource
+        .imageViewBinding = dpbImageView
+    },
+    ...
+};
+// NOTE: Individual resources do not have to refer to the same image view, e.g. if different
+// image views are created for each picture resource, or if the
+// VK_VIDEO_CAPABILITY_SEPARATE_REFERENCE_IMAGES_BIT_KHR capability is supported and the
+// application created separate images for the reference pictures.
+
+VkVideoReferenceSlotInfoKHR referenceSlotInfo[] = {
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = ... // pointer to codec-specific reference picture information structure
+        .slotIndex = ... // DPB slot index of the first reference picture
+        .pPictureResource = &referencePictureResource[0]
+    },
+    {
+        .sType = VK_STRUCTURE_TYPE_VIDEO_REFERENCE_SLOT_INFO_KHR,
+        .pNext = ... // pointer to codec-specific reference picture information structure
+        .slotIndex = ... // DPB slot index of the second reference picture
+        .pPictureResource = &referencePictureResource[1]
+    },
+    ...
+};
+
+VkVideoDecodeInfoKHR decodeInfo = {
+    .sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR,
+    .pNext = ... // pointer to codec-specific picture information structure
+    ...
+    .referenceSlotCount = sizeof(referenceSlotInfo) / sizeof(referenceSlotInfo[0]),
+    .pReferenceSlots = &referenceSlotInfo[0]
+};
+
+vkCmdDecodeVideoKHR(commandBuffer, &decodeInfo);
+
+vkCmdEndVideoCodingKHR(commandBuffer, ...);
+
+This extension requires the `VK_KHR_synchronization2` extension because the new access flags introduced did not fit in the 32-bit enum `VkAccessFlagBits`. Accordingly, all new pipeline stage and access flags have been added to the corresponding 64-bit enums and no new flags have been added to the legacy 32-bit enums. While the new pipeline stage flag introduced uses bit #26 which would also fit in the legacy `VkPipelineStageFlagBits` enum, there is no real benefit to include it. Instead the bit is marked reserved.
+
+When activating DPB slots with reconstructed pictures (reference picture setup), decode operations have to write the decompressed picture data to a DPB-capable video picture resource.
+
+Behavior varies across implementations in this case:
+
+* 
+Some implementations write the outputs of the picture decompression to two separate resources: the decoded output picture and the reconstructed picture
+
+* 
+Some other implementations only write picture decompression results to one place, which in this case has to be a DPB picture (as it must be usable as a reference picture later on)
+
+A separate output could be useful if e.g. the application intends to use the decode output picture for other purposes (e.g. for window-system presentation or for texture sampling), while using the reconstructed picture in parallel to continue decoding. However, such concurrent use of the outputs is not always necessary.
+
+Trying to mandate a uniform behavior across such implementations could have negative performance implications:
+
+* 
+If separate outputs would be required, then implementations using a single output would have to perform additional copies even though the application use cases might not need to have one.
+
+* 
+If a single output would be required, then applications would have to do copies if they wanted to do such concurrent processing and would not be able to take advantage of implementations that already can write separate outputs in an optimized fashion.
+
+Instead, this extension allows implementations to support either of these modes of operations (separate or single output), as indicated by the `VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_DISTINCT_BIT_KHR` and `VK_VIDEO_DECODE_CAPABILITY_DPB_AND_OUTPUT_COINCIDE_BIT_KHR` capability flags, respectively. Implementations are required to support only one of these two modes, and the extension even allows for implementations that may support both modes of operation.
+
+There are multiple points where codec-specific picture information can be provided to a video decode operation. This extension suggests the following convention:
+
+* 
+Codec-specific decode parameters are expected to be provided in the `pNext` chain of `VkVideoDecodeInfoKHR`.
+
+* 
+Codec-specific reconstructed picture information is expected to be provided in the `pNext` chain of `VkVideoDecodeInfoKHR::pSetupReferenceSlot`.
+
+* 
+Codec-specific reference picture information is expected to be provided in the `pNext` chain of the elements of the `VkVideoDecodeInfoKHR::pReferenceSlots` array.
+
+This extension does not define the types of pictures or sub-picture content that can be decoded by a `vkCmdVideoDecodeKHR` command. It is expected that the codec-specific decode extensions built upon this extension define the types of pictures that can be decoded. Furthermore, both codec-specific and codec-independent extensions can expand the set of capabilities introduced here to enable more advanced use cases, as needed.
+
+There are no specific behavioral effects associated with any of the video decode usage hints, so the application can specify any combination of these flags. They are included to enable the application to better communicate the intended use case scenario to the implementation.
+
+However, just like any other additional video profile information included in the `pNext` chain of `VkVideoProfileInfoKHR` structures, they are part of the video profile definition, hence whenever matching video profiles have to be provided to an API call, let that be queries or resource creation structures, the application must provide identical video decode usage hint values. This also applies if the application does not include the `VkVideoDecodeUsageInfoKHR` structure, which is treated equivalently to specifying the structure with `videoUsageHints` equal to `VK_VIDEO_DECODE_USAGE_DEFAULT_KHR` (or zero), per the usual conventions of Vulkan.
+
+In the original version of this extension, specifying a non-`NULL` `pSetupReferenceSlot` parameter was only required for activating DPB slots with reference pictures, but no shipping implementation actually supported specifying `NULL` for `pSetupReferenceSlot`. In the end, some implementations turned out to require a reconstructed picture resource and/or DPB slot, even when the decoded picture is not expected to be used as a reference picture by future video decode operations, so this extension has been changed with revision 8 as follows:
+
+Specifying reconstructed picture information (i.e. a non-`NULL` `pSetupReferenceSlot`) is made mandatory for all cases except when the video session was created with no DPB slots
+
+Reference picture setup (and, inherently, DPB slot activation) was changed to be subject to codec-specific behavior, meaning that specifying a non-`NULL` `pSetupReferenceSlot` will only trigger reference picture setup if the appropriate codec-specific parameters or semantics indicate so (typically in the form of marking the decoded picture as reference)
+
+(2) was necessary in order to avoid unnecessary DPB slot activation and the cost of populating the reconstructed picture resource when it is distinct from the decode output and the reconstructed picture is not intended to be used as a reference picture by future video decode operations. However, as some implementations may use the reconstructed picture resource and/or DPB slot as transient storage during the decoding process, if a non-`NULL` `pSetupReferenceSlot` is specified but no reference picture setup is requested, then the contents of the reconstructed picture resource become undefined and some of the picture references associated with the reconstructed picture’s DPB slot may get invalidated.
+
+While this change breaks backward-compatibility, no implementation actually supported the removed behavior, thus it should not have any effect on shipping applications.
+
+There may be performance implications when using *distinct* mode, i.e. using a reconstructed picture resource that is distinct from the decode output picture. As discussed in the previous issue, the explicit codec-specific opt-in for reference picture setup allows implementations to avoid consuming twice as much memory bandwidth to also write out the reconstructed picture when it is otherwise not needed. However, as it is implementation-specific whether the reconstructed picture is written to, even when no reference picture setup takes place, the reconstructed picture becomes a shared resource that the application has to synchronize in order to avoid write-after-write hazards. Accordingly, depending on the implementation, there may be some performance implications to always requiring the specification of reconstructed picture information.
+
+This extension is meant to provide only common video decode functionality, thus support for individual video decode profiles using specific video compression standards is left for extensions layered on top of the infrastructure provided here.
+
+Currently the following layered extensions are available:
+
+* 
+`VK_KHR_video_decode_h264` - adds support for decoding H.264/AVC video sequences
+
+* 
+`VK_KHR_video_decode_h265` - adds support for decoding H.265/HEVC video sequences
+
+* 
+`VK_KHR_video_decode_vp9` - adds support for decoding VP9 video sequences
+
+* 
+`VK_KHR_video_decode_av1` - adds support for decoding AV1 video sequences

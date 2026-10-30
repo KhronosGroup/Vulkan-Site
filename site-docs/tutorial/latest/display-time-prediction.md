@@ -1,0 +1,78 @@
+# Display Time Prediction
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/OpenXR_Vulkan_Spatial_Computing/05_Predictive_Frame_Loop/03_display_time_prediction.html
+
+## Table of Contents
+
+- [Ecosystem Perspective](#_ecosystem_perspective)
+- [1. Locating the User (xrLocateViews)](#_1_locating_the_user_xrlocateviews)
+- [1._Locating_the_User_(xrLocateViews)](#_1_locating_the_user_xrlocateviews)
+- [2. Simulation Alignment: Syncing Physics](#_2_simulation_alignment_syncing_physics)
+- [2._Simulation_Alignment:_Syncing_Physics](#_2_simulation_alignment_syncing_physics)
+- [Advanced: Correlating GPU Time and Physics Poses](#_advanced_correlating_gpu_time_and_physics_poses)
+- [Advanced:_Correlating_GPU_Time_and_Physics_Poses](#_advanced_correlating_gpu_time_and_physics_poses)
+- [The Danger of Clock Drift](#_the_danger_of_clock_drift)
+- [The_Danger_of_Clock_Drift](#_the_danger_of_clock_drift)
+- [Next Steps: Minimizing Latency](#_next_steps_minimizing_latency)
+- [Next_Steps:_Minimizing_Latency](#_next_steps_minimizing_latency)
+
+## Content
+
+The key to a stable and immersive spatial experience is aligning our engine’s internal state with the future point in time when the user will actually see the frame. This is where `predictedDisplayTime` from `XrFrameState` comes into play. We must use this timestamp for two critical tasks: **Locating the User’s Head (the View)** and **Calculating our Simulation (Physics and Animation)**.
+
+This chapter falls under the category: **Using Vulkan with an OpenXR Runtime**.
+
+Correctly utilizing the predicted display time is a mandatory requirement for XR applications. Failing to align your simulation and rendering with this timestamp will lead to "swim" and motion sickness.
+
+When we render our views, we need to know exactly where the user’s eyes will be. If we use the "current" head pose, the frame will appear to lag. We use `xrLocateViews` to ask the runtime to predict the user’s pose for the future `displayTime`.
+
+// Predicting where the user will be at the moment of display
+XrViewLocateInfo viewLocateInfo{
+    .type = XR_TYPE_VIEW_LOCATE_INFO,
+    .viewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO,
+    .displayTime = frameState.predictedDisplayTime,
+    .space = xrAppSpace
+};
+
+XrViewState viewState{XR_TYPE_VIEW_STATE};
+uint32_t viewCountOutput;
+std::vector views(viewCount, {XR_TYPE_VIEW});
+xrLocateViews(xrSession, &viewLocateInfo, &viewState, viewCount, &viewCountOutput, views.data());
+
+The resulting `XrView` array contains the predicted **Pose** and **FOV**. Note that FOV can change—some headsets use dynamic lenses that shift based on focus, so we must update our projection matrices **every frame** using these values.
+
+It’s not just the camera that must be predicted; our entire world simulation (physics, animations, and particle systems) must be aligned with `predictedDisplayTime`.
+
+If we use a different delta time for our simulation (like a fixed 60Hz update) than for our view prediction, objects in the world will appear to "jitter" relative to the user’s head movement. In our engine, we calculate our simulation’s delta time based on the difference between the predictions of the current and previous frames.
+
+double deltaTime = static_cast(currentPredictedTime - lastPredictedTime) / 1e9; // Convert nanoseconds to seconds
+engine.update(deltaTime);
+
+While the runtime provides the best-guess pose, Vulkan allows you to refine the alignment further:
+
+* 
+**Correlating GPU Execution Time**: You can correlate GPU-side execution time with the OpenXR system clock. This enables you to measure exactly how long your vertex shaders take to transform the scene, allowing for "Dynamic Complexity" scaling to keep your engine’s render time perfectly within the predicted display window.
+
+* 
+**Physics-Aware Pose Adjustments**: If the user’s head is about to clip through a virtual wall, you can use Vulkan **Compute Shaders** to perform real-time "Pose Clamping," adjusting the OpenXR prediction based on your engine’s physics data before the final rendering pass.
+
+A common mistake in XR development is to use `std::chrono::now()` or `glfwGetTime()` to drive simulation. These clocks are decoupled from the XR runtime’s heartbeat.
+
+* 
+**System Clock**: Measures real-world wall time.
+
+* 
+**XR Clock**: Measures the display strobes of the headset hardware.
+
+Even if they start at the same time, they will eventually **Drift**. After 30 minutes of gameplay, your physics engine might be 5ms ahead or behind the display’s actual refresh cycle. This drift is what causes "random" stutters and hitches that are impossible to debug if you don’t use the `predictedDisplayTime` consistently.
+
+|  | For more information on time prediction, check out the official [OpenXR Specification](https://registry.khronos.org/OpenXR/specs/1.1/html/xpspec.html#xrLocateViews), the [Vulkan Guide](https://docs.vulkan.org/guide/latest/index.html), and our [main tutorial series](00_introduction.adoc). |
+| --- | --- |
+
+Now that our frame loop is correctly paced and our simulation is aligned with the future, we have established the foundation for a high-quality spatial experience. In the next chapter, we will explore **Late Latching** and how **Timeline Semaphores** can help us shave off those final microseconds of "swim."
+
+[Previous](02_xr_lifecycle.html) | [Next](04_incorporating_into_the_engine.html)

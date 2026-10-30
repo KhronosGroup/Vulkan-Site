@@ -1,0 +1,40 @@
+# Loading Models: Introduction
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/Building_a_Simple_Engine/Loading_Models/01_introduction.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Prerequisites](#_prerequisites)
+
+## Content
+
+Welcome to the "Loading Models" chapter of our "Building a Simple Engine" series! After exploring engine architecture and camera systems in the previous chapters, we’re now ready to focus on handling 3D assets within our engine framework.
+
+In this chapter, we’ll set up a robust model loading system that can handle modern 3D assets. Building upon the engine architecture we’ve established and the camera system we’ve implemented, we’ll now add the ability to load and render complex 3D models. In the [chapter on glTF and KTX2](../../15_GLTF_KTX2_Migration.html) from the main tutorial, we learned about migrating from OBJ to glTF format and the basics of loading glTF models. Now, we’ll integrate that knowledge into our engine structure to create a more complete implementation.
+
+This chapter will transform your understanding of 3D asset handling from simple model loading to sophisticated engine-level systems. We’ll begin by building a scene graph, which provides the hierarchical organization that complex 3D scenes require. This foundation enables you to group objects logically, apply transformations at different levels, and efficiently manage scene complexity.
+
+Animation support forms a crucial part of modern 3D applications. We’ll implement a system that can handle glTF’s skeletal animations, giving life to your 3D models through smooth character movement, object animations, and complex multi-part systems.
+
+The PBR material system we’ll create bridges the gap between the lighting concepts from previous chapters and real-world asset integration. You’ll see how to map glTF material properties to your shaders seamlessly, creating a workflow that artists can understand and use effectively.
+
+Rendering multiple objects with different transformations presents both technical and organizational challenges. We’ll solve these through careful engine architecture that can batch similar objects efficiently while maintaining the flexibility to handle unique materials and transformations per object.
+
+Throughout this implementation, we’ll structure our code with engine-level thinking rather than tutorial-style solutions. This approach will serve you well as your projects grow in complexity and scope, providing a solid foundation for creating complex scenes with animated models.
+
+This chapter builds on the foundation established in the main Vulkan tutorial, particularly Chapter 16 (Multiple Objects), as we’ll extend those concepts to handle more complex scene organization and asset management. The multiple objects chapter introduced the basic concepts of rendering different geometry, which we’ll now scale up to handle complete 3D models with materials and animations.
+
+You’ll need solid familiarity with core Vulkan concepts that form the backbone of our model loading system. [Command buffers](../../03_Drawing_a_triangle/03_Drawing/01_Command_buffers.html) become more complex when handling multiple models with different materials, as we’ll need to manage descriptor sets and push constants efficiently. Understanding [graphics pipelines](../../03_Drawing_a_triangle/02_Graphics_pipeline_basics/00_Introduction.html) is crucial since different materials might require different pipeline configurations.
+
+Experience with [vertex](../../04_Vertex_buffers/00_Vertex_input_description.html) and [index buffers](../../04_Vertex_buffers/03_Index_buffer.html) translates directly to model loading, where glTF files contain vertex data in specific formats that we’ll need to parse and upload to GPU buffers. [Uniform buffers](../../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html) knowledge becomes essential as we’ll use them for transformation matrices, lighting information, and material properties.
+
+[Texture mapping](../../06_Texture_mapping/00_Images.html) skills are particularly important since glTF models often include multiple textures per material (diffuse, normal, metallic-roughness, etc.), and we’ll need to load and bind these textures efficiently.
+
+Finally, basic 3D math understanding (matrices, vectors, quaternions) is crucial for handling model transformations, animations, and scene hierarchies. If you need a refresher, see the [Camera Transformations chapter](../Camera_Transformations/02_math_foundations.html) for detailed coverage of these mathematical concepts.
+
+[Previous: GUI](../GUI/06_conclusion.html) | [Next: Setting Up the Project](02_project_setup.html)
