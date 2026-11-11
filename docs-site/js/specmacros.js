@@ -515,6 +515,32 @@ module.exports.register = function register (registry) {
         })
     }
 
+    // Generated section labels such as "Valid Usage (Implicit)" and the
+    // "Note"/"Warning" labels of admonition blocks look like headings but are
+    // plain <div class="title"> elements, so they are missing from a screen
+    // reader's heading list. Emit them as headings one level below the
+    // heading that precedes them. (The page's own <h1> is added by the UI, so
+    // content before the first section heading starts below level 1.)
+    const BLOCK_TITLES = new Set(['Valid Usage (Implicit)', 'Valid Usage', 'Return Codes',
+        'Structure Chaining', 'Host Synchronization', 'Command Properties', 'Conditional Rendering'])
+    const ADMONITION_LABELS = new Set(['Note', 'Tip', 'Warning', 'Caution', 'Important'])
+    const titlesAsHeadings = function () {
+        this.process(function (doc, output) {
+            let level = 1
+            return output.replace(
+                /<h([1-6])[ >]|(<td class="icon">\s*)?<div class="title">([^<]*)<\/div>/g,
+                function (match, headingLevel, iconCell, text) {
+                    if (headingLevel) {
+                        level = Number(headingLevel)
+                        return match
+                    }
+                    if (!(iconCell ? ADMONITION_LABELS.has(text) : BLOCK_TITLES.has(text))) return match
+                    const tag = 'h' + Math.min(level + 1, 6)
+                    return (iconCell || '') + '<' + tag + ' class="title block-title">' + text + '</' + tag + '>'
+                })
+        })
+    }
+
     const extensions = [
         // Normative macros
         normativeInlineMacro,
@@ -555,6 +581,7 @@ module.exports.register = function register (registry) {
                 this.inlineMacro(element)
             }
             this.postprocessor(flattenNestedLinks)
+            this.postprocessor(titlesAsHeadings)
 
             //for (name of [ 'tmod' ]) {
             //    registerNameMacro.call(this, name)
@@ -567,6 +594,7 @@ module.exports.register = function register (registry) {
             registry.inlineMacro(element)
         }
         registry.postprocessor(flattenNestedLinks)
+        registry.postprocessor(titlesAsHeadings)
 
         //registry.inlineMacro(normativeInlineMacro)
         //for (name of [ 'tmod' ]) {
