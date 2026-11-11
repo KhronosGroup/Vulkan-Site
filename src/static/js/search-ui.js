@@ -329,6 +329,36 @@
   const searchResultContainer = document.createElement('div');
   searchResultContainer.classList.add('search-result-dropdown-menu');
   searchInput.parentNode.appendChild(searchResultContainer);
+  searchResultContainer.id = 'search-results';
+  const searchStatus = document.getElementById('search-status');
+  let announceTimer;
+  function syncSearchA11y () {
+    const open = searchResultContainer.childElementCount > 0;
+    searchInput.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      searchResultContainer.setAttribute('role', 'dialog');
+      searchResultContainer.setAttribute('aria-label', 'Search results');
+    } else {
+      searchResultContainer.removeAttribute('role');
+      searchResultContainer.removeAttribute('aria-label');
+    }
+    if (!searchStatus) return
+    clearTimeout(announceTimer);
+    announceTimer = setTimeout(function () {
+      if (searchResultContainer.childElementCount === 0) {
+        searchStatus.textContent = '';
+      } else if (searchResultContainer.querySelector('.search-result-loading-notice')) {
+        searchStatus.textContent = 'Loading search results';
+      } else {
+        const noResult = searchResultContainer.querySelector('.search-result-document-hit strong');
+        const count = searchResultContainer.querySelectorAll('.search-result-document-hit a').length;
+        searchStatus.textContent = noResult && !count ? noResult.textContent : count + (count === 1 ? ' result' : ' results') + ' found';
+      }
+    }, 500);
+  }
+  if (typeof MutationObserver !== 'undefined') {
+    new MutationObserver(syncSearchA11y).observe(searchResultContainer, { childList: true, subtree: true });
+  }
   const facetFilterInput = document.querySelector('#search-field input[type=checkbox][data-facet-filter]');
 
   function appendStylesheet (href) {
@@ -424,7 +454,7 @@
       const highlightingResult = highlightHit(metadata, sectionTitle, doc);
       const componentVersion = store.componentVersions[`${doc.component}/${doc.version}`];
       if (componentVersion !== undefined && currentComponent !== componentVersion) {
-        const searchResultComponentHeader = document.createElement('div');
+        const searchResultComponentHeader = document.createElement('h2');
         searchResultComponentHeader.classList.add('search-result-component-header');
         const { title, displayVersion } = componentVersion;
         const componentVersionText = `${title}${doc.version && displayVersion ? ` ${displayVersion}` : ''}`;

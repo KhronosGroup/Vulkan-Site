@@ -504,6 +504,17 @@ module.exports.register = function register (registry) {
     //console.log('file family: ', file.src.family)         // page
     //console.log('file relative: ', file.src.relative)     // index.adoc
 
+    // A spec cross-reference whose label is itself an API macro, e.g.
+    // <<anchor,ename:NAME>>, produces a link nested inside a link. Browsers
+    // split that into an empty outer link (announced by screen readers as an
+    // unnamed link) plus the real one. Keep only the inner link, which is the
+    // one users get today.
+    const flattenNestedLinks = function () {
+        this.process(function (doc, output) {
+            return output.replace(/<a [^>]*>(<a [^>]*>(?:(?!<\/a>).)*<\/a>)((?:(?!<\/a>|<a ).)*)<\/a>/gs, '$1$2')
+        })
+    }
+
     const extensions = [
         // Normative macros
         normativeInlineMacro,
@@ -543,6 +554,7 @@ module.exports.register = function register (registry) {
             for (const element of extensions) {
                 this.inlineMacro(element)
             }
+            this.postprocessor(flattenNestedLinks)
 
             //for (name of [ 'tmod' ]) {
             //    registerNameMacro.call(this, name)
@@ -554,6 +566,7 @@ module.exports.register = function register (registry) {
         for (const element of extensions) {
             registry.inlineMacro(element)
         }
+        registry.postprocessor(flattenNestedLinks)
 
         //registry.inlineMacro(normativeInlineMacro)
         //for (name of [ 'tmod' ]) {

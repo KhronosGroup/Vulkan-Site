@@ -11,7 +11,7 @@
   var uiRootPath = (config.uiRootPath == null ? window.uiRootPath : config.uiRootPath) || '.'
 
   ;[].slice.call(document.querySelectorAll('.doc pre.highlight, .doc .literalblock pre')).forEach(function (pre) {
-    var code, language, lang, copy, toast, toolbox
+    var code, language, lang, copy, toast, toolbox, status
     if (pre.classList.contains('highlight')) {
       code = pre.querySelector('code')
       if ((language = code.dataset.lang) && language !== 'console') {
@@ -34,7 +34,10 @@
     if (lang) toolbox.appendChild(lang)
     if (supportsCopy) {
       ;(copy = document.createElement('button')).className = 'copy-button'
+      copy.setAttribute('type', 'button')
       copy.setAttribute('title', 'Copy to clipboard')
+      var langName = language && language !== 'console' ? language.toUpperCase() + ' ' : ''
+      copy.setAttribute('aria-label', 'Copy ' + langName + 'code to clipboard')
       if (svgAs === 'svg') {
         var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
         svg.setAttribute('class', 'copy-icon')
@@ -45,17 +48,21 @@
       } else {
         var img = document.createElement('img')
         img.src = uiRootPath + '/img/octicons-16.svg#view-clippy'
-        img.alt = 'copy icon'
+        img.alt = ''
         img.className = 'copy-icon'
         copy.appendChild(img)
       }
       ;(toast = document.createElement('span')).className = 'copy-toast'
       toast.appendChild(document.createTextNode('Copied!'))
+      toast.setAttribute('aria-hidden', 'true')
       copy.appendChild(toast)
       toolbox.appendChild(copy)
+      ;(status = document.createElement('span')).className = 'sr-only'
+      status.setAttribute('role', 'status')
+      toolbox.insertBefore(status, toolbox.firstChild) // keeps the copy button last so no separator follows it
     }
     pre.parentNode.appendChild(toolbox)
-    if (copy) copy.addEventListener('click', writeToClipboard.bind(copy, code))
+    if (copy) copy.addEventListener('click', writeToClipboard.bind(copy, code, status))
   })
 
   function extractCommands (text) {
@@ -65,7 +72,7 @@
     return cmds.join(' && ')
   }
 
-  function writeToClipboard (code) {
+  function writeToClipboard (code, status) {
     var text = code.innerText.replace(TRAILING_SPACE_RX, '')
     if (code.dataset.lang === 'console' && text.startsWith('$ ')) text = extractCommands(text)
     window.navigator.clipboard.writeText(text).then(
@@ -73,6 +80,8 @@
         this.classList.add('clicked')
         this.offsetHeight // eslint-disable-line no-unused-expressions
         this.classList.remove('clicked')
+        status.textContent = 'Copied!'
+        setTimeout(function () { status.textContent = '' }, 2000)
       }.bind(this),
       function () {}
     )
