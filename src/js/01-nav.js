@@ -27,6 +27,8 @@
 
   find(menuPanel, '.nav-item-toggle').forEach(function (btn) {
     var li = btn.parentElement
+    var itemLabel = findNextElement(btn, '.nav-link, .nav-text')
+    if (itemLabel) btn.setAttribute('aria-label', 'Toggle ' + itemLabel.textContent.trim() + ' section')
     btn.addEventListener('click', toggleActive.bind(li))
     var navItemSpan = findNextElement(btn, '.nav-text')
     if (navItemSpan) {
@@ -39,9 +41,12 @@
     navMenuToggle.style.display = ''
     navMenuToggle.addEventListener('click', function () {
       var collapse = !this.classList.toggle('is-active')
+      this.setAttribute('aria-expanded', !collapse)
+      this.setAttribute('aria-label', collapse ? 'Expand all navigation items' : 'Collapse all navigation items')
       find(menuPanel, '.nav-item > .nav-item-toggle').forEach(function (btn) {
         collapse ? btn.parentElement.classList.remove('is-active') : btn.parentElement.classList.add('is-active')
       })
+      syncExpanded()
       if (currentPageItem) {
         if (collapse) activateCurrentPath(currentPageItem)
         scrollItemToMidpoint(menuPanel, currentPageItem.querySelector('.nav-link'))
@@ -57,6 +62,7 @@
       find(nav, '[data-panel]').forEach(function (panel) {
         panel.classList.toggle('is-active')
       })
+      this.setAttribute('aria-expanded', explorePanel.classList.contains('is-active'))
     })
   }
 
@@ -97,7 +103,11 @@
     find(menuPanel, '.nav-item.is-active').forEach(function (el) {
       el.classList.remove('is-active', 'is-current-path', 'is-current-page')
     })
+    find(menuPanel, '.nav-link[aria-current]').forEach(function (el) {
+      el.removeAttribute('aria-current')
+    })
     navItem.classList.add('is-current-page')
+    if (navLink) navLink.setAttribute('aria-current', 'location')
     currentPageItem = navItem
     activateCurrentPath(navItem)
     scrollItemToMidpoint(menuPanel, navLink)
@@ -106,6 +116,12 @@
   if (menuPanel.querySelector('.nav-link[href^="#"]')) {
     if (window.location.hash) onHashChange()
     window.addEventListener('hashchange', onHashChange)
+  }
+
+  function syncExpanded () {
+    find(menuPanel, '.nav-item-toggle').forEach(function (btn) {
+      btn.setAttribute('aria-expanded', btn.parentElement.classList.contains('is-active'))
+    })
   }
 
   function activateCurrentPath (navItem) {
@@ -118,10 +134,13 @@
       ancestor = ancestor.parentNode
     }
     navItem.classList.add('is-active')
+    syncExpanded()
   }
 
   function toggleActive () {
-    if (this.classList.toggle('is-active')) {
+    var isActive = this.classList.toggle('is-active')
+    syncExpanded()
+    if (isActive) {
       var padding = parseFloat(window.getComputedStyle(this).marginTop)
       var rect = this.getBoundingClientRect()
       var menuPanelRect = menuPanel.getBoundingClientRect()
@@ -136,6 +155,7 @@
     var html = document.documentElement
     html.classList.add('is-clipped--nav')
     navToggle.classList.add('is-active')
+    navToggle.setAttribute('aria-expanded', 'true')
     navContainer.classList.add('is-active')
     var bounds = nav.getBoundingClientRect()
     var expectedHeight = window.innerHeight - Math.round(bounds.top)
@@ -148,6 +168,7 @@
     var html = document.documentElement
     html.classList.remove('is-clipped--nav')
     navToggle.classList.remove('is-active')
+    navToggle.setAttribute('aria-expanded', 'false')
     navContainer.classList.remove('is-active')
     html.removeEventListener('click', hideNav)
   }
