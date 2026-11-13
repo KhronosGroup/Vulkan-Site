@@ -593,6 +593,37 @@
     return result
   }
 
+  // Weight given to titles marked with the `search-boost` role. Keep in sync with
+  // BOOSTED_TITLE_BOOST in the antora-lunr-extension index generator.
+  const BOOSTED_TITLE_BOOST = 3;
+
+  /**
+   * Build a temporary Lunr index for a subset of documents.
+   * Each document's section titles (including anchored blocks such as API declarations)
+   * are added as their own entries, as the generated index does, so they can be found
+   * and linked to directly.
+   * @param {Object[]} documents
+   * @returns {lunr.Index}
+   */
+  function buildFilteredIndex (documents) {
+    return globalThis.lunr(function () {
+      this.ref('id');
+      this.field('title', { boost: 10 });
+      this.field('name');
+      this.field('text');
+      this.field('component');
+      this.field('keyword', { boost: 5 });
+      documents.forEach((doc) => {
+        (doc.titles || []).forEach((title) => {
+          const entry = { id: `${doc.id}-${title.id}`, title: title.text };
+          if (title.kind === 'boost') this.add(entry, { boost: BOOSTED_TITLE_BOOST });
+          else this.add(entry);
+        });
+        this.add(doc);
+      });
+    });
+  }
+
   function searchIndex (index, trie, store, text) {
     clearSearchResults(false);
     if (text.trim() === '') {
@@ -622,15 +653,7 @@
         });
         if (filteredDocuments.length > 0) {
           // Rebuild a temporary index only with the filtered documents
-          const tempLunrIndex = globalThis.lunr(function () {
-            this.ref('id');
-            this.field('title', { boost: 10 });
-            this.field('name');
-            this.field('text');
-            this.field('component');
-            this.field('keyword', { boost: 5 });
-            filteredDocuments.forEach((doc) => this.add(doc));
-          });
+          const tempLunrIndex = buildFilteredIndex(filteredDocuments);
           lunrResults = search(tempLunrIndex, filteredDocuments, text);
           if (recheck) {
             result = search(index, store.documents, text.replace(/\s/g, '_'));
@@ -1040,6 +1063,7 @@
   exports.getTermPosition = getTermPosition;
   exports.findTermPosition = findTermPosition;
   exports.search = search;
+  exports.buildFilteredIndex = buildFilteredIndex;
   exports.filter = filter;
   exports.highlightHit = highlightHit;
   exports.highlightText = highlightText;
