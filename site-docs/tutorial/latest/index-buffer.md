@@ -1,0 +1,138 @@
+# Index buffer
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/04_Vertex_buffers/03_Index_buffer.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Index buffer creation](#_index_buffer_creation)
+- [Index_buffer_creation](#_index_buffer_creation)
+- [Using an index buffer](#_using_an_index_buffer)
+- [Using_an_index_buffer](#_using_an_index_buffer)
+
+## Content
+
+The 3D meshes you’ll be rendering in a real world application will often share vertices between multiple triangles.
+This already happens even with something simple like drawing a rectangle:
+
+![vertex vs index](../_images/images/vertex_vs_index.svg)
+
+Drawing a rectangle takes two triangles, which means that we need a vertex buffer with six vertices.
+The problem is that the data of two vertices needs to be duplicated, resulting in 50% redundancy.
+It only gets worse with more complex meshes, where vertices are reused in an average number of three triangles.
+The solution to this problem is to use an *index buffer*.
+
+An index buffer is essentially an array of pointers into the vertex buffer.
+It allows you to reorder the vertex data, and reuse existing data for multiple vertices.
+The illustration above demonstrates what the index buffer would look like for the rectangle if we have a vertex buffer containing each of the four unique vertices.
+The first three indices define the upper-right triangle, and the last three indices define the vertices for the bottom-left triangle.
+
+In this chapter we’re going to modify the vertex data and add index data to draw a rectangle like the one in the illustration.
+Modify the vertex data to represent the four corners:
+
+const std::vector vertices = {
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+
+The top-left corner is red, top-right is green, bottom-right is blue and the bottom-left is white.
+We’ll add a new array `indices` to represent the contents of the index buffer.
+It should match the indices in the illustration to draw the upper-right triangle and bottom-left triangle.
+
+const std::vector indices = {
+    0, 1, 2, 2, 3, 0
+};
+
+It is possible to use either `uint16_t` or `uint32_t` for your index buffer depending on the number of entries in `vertices`.
+We can stick to `uint16_t` for now because we’re using less than 65535 unique vertices.
+
+Just like the vertex data, the indices need to be uploaded into a `vk::raii::Buffer` for the GPU to be able to access them.
+Define two new class members to hold the resources for the index buffer:
+
+vk::raii::Buffer       vertexBuffer       = nullptr;
+vk::raii::DeviceMemory vertexBufferMemory = nullptr;
+vk::raii::Buffer       indexBuffer        = nullptr;
+vk::raii::DeviceMemory indexBufferMemory  = nullptr;
+
+The `createIndexBuffer` function that we’ll add now is almost identical to `createVertexBuffer`:
+
+void initVulkan()
+{
+    ...
+    createVertexBuffer();
+    createIndexBuffer();
+    ...
+}
+
+void createIndexBuffer()
+{
+		vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+		auto [stagingBuffer, stagingBufferMemory] =
+		    createBuffer(bufferSize, vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+
+		void *data = stagingBufferMemory.mapMemory(0, bufferSize);
+		memcpy(data, indices.data(), (size_t) bufferSize);
+		stagingBufferMemory.unmapMemory();
+
+		std::tie(indexBuffer, indexBufferMemory) =
+		    createBuffer(bufferSize, vk::BufferUsageFlagBits::eIndexBuffer | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+}
+
+There are only two notable differences.
+The `bufferSize` is now equal to the number of indices times the size of the index type, either `uint16_t` or `uint32_t`.
+The usage of the `indexBuffer` should be `vk::BufferUsageFlagBits::eIndexBuffer` instead of `vk::BufferUsageFlagBits::eVertexBuffer`, which makes sense.
+Other than that, the process is exactly the same.
+We create a staging buffer to copy the contents of `indices` to and then copy it to the final device local index buffer.
+
+Using an index buffer for drawing involves two changes to `recordCommandBuffer`.
+We first need to bind the index buffer, just like we did for the vertex buffer.
+The difference is that you can only have a single index buffer.
+It’s unfortunately not possible to use different indices for each vertex attribute, so we do still have to completely duplicate vertex data even if just one attribute varies.
+
+commandBuffers[frameIndex].bindVertexBuffers(0, *vertexBuffer, {0});
+commandBuffers[frameIndex].bindIndexBuffer(*indexBuffer, 0, vk::IndexType::eUint16);
+
+An index buffer is bound with `vk::raii::CommandBuffer::bindIndexBuffer` which has the index buffer, a byte offset into it, and the type of index data as parameters.
+As mentioned before, the possible types are `vk::IndexType::eUint16` and `vk::IndexType::eUint32`.
+
+Just binding an index buffer doesn’t change anything yet, we also need to change the drawing command to tell Vulkan to use the index buffer.
+Remove the `vk::raii::CommandBuffer::draw` line and replace it with `vk::raii::CommandBuffer::drawIndexed`:
+
+commandBuffer.drawIndexed(static_cast(indices.size()), 1, 0, 0, 0);
+
+A call to this function is very similar to `vk::raii::CommandBuffer::draw`.
+The first two parameters specify the number of indices and the number of instances.
+We’re not using instancing, so just specify `1` instance.
+The number of indices represents the number of vertices that will be passed to the vertex shader.
+The next parameter specifies an offset into the index buffer, using a value of `1` would cause the graphics card to start reading at the second index.
+The second to last parameter specifies an offset to add to the vertex index before indexing into the vertex buffer.
+The final parameter specifies an offset for instancing, which we’re not using.
+
+Now run your program, and you should see the following:
+
+![indexed rectangle](../_images/images/indexed_rectangle.png)
+
+You now know how to save memory by reusing vertices with index buffers.
+This will become especially important in a future chapter where we’re going to load complex 3D models.
+
+The previous chapter already mentioned that you should allocate multiple resources like buffers from a single memory allocation, but in fact you should go a step further.
+[Driver developers recommend](https://developer.nvidia.com/vulkan-memory-management) that you also store multiple buffers, like the vertex and index buffer, into a single `vk::raii::Buffer` and use offsets in commands like `vk::raii::CommandBuffer::bindVertexBuffers`.
+The advantage is that your data is more cache friendly in that case, because it’s closer together.
+It is even possible to reuse the same chunk of memory for multiple resources if they are not used during the same render operations, provided that their data is refreshed, of course.
+This is known as *aliasing* and some Vulkan functions have explicit flags to specify that you want to do this.
+
+The [next chapter](../05_Uniform_buffers/00_Descriptor_set_layout_and_buffer.html) we’ll learn how to pass frequently changing parameters to the GPU.
+
+[C++ code](../_attachments/21_index_buffer.cpp) /
+[slang shader](../_attachments/19_shader_vertexbuffer.slang) /
+[GLSL Vertex shader](../_attachments/19_shader_vertexbuffer.vert) /
+[GLSL Fragment shader](../_attachments/19_shader_vertexbuffer.frag)

@@ -1,0 +1,118 @@
+# AI-Assisted Trace Analysis: GFXReconstruct
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/AI_Assisted_Vulkan/06_debugging/05_gfxreconstruct_ai.html
+
+## Table of Contents
+
+- [Introduction](#_introduction)
+- [Why pair AI with GFXReconstruct](#_why_pair_ai_with_gfxreconstruct)
+- [Why_pair_AI_with_GFXReconstruct](#_why_pair_ai_with_gfxreconstruct)
+- [The trace audit workflow](#_the_trace_audit_workflow)
+- [The_trace_audit_workflow](#_the_trace_audit_workflow)
+- [Building a GFXReconstruct MCP server](#_building_a_gfxreconstruct_mcp_server)
+- [Building_a_GFXReconstruct_MCP_server](#_building_a_gfxreconstruct_mcp_server)
+- [Example: a layout hazard that only shows up on one driver](#_example_a_layout_hazard_that_only_shows_up_on_one_driver)
+- [Example:_a_layout_hazard_that_only_shows_up_on_one_driver](#_example_a_layout_hazard_that_only_shows_up_on_one_driver)
+- [Checking manually](#_checking_manually)
+- [Using the trace](#_using_the_trace)
+- [Using_the_trace](#_using_the_trace)
+- [Summary](#_summary)
+
+## Content
+
+RenderDoc is built around a single frozen frame, which means it can miss bugs that only show up across multiple frames — synchronization hazards, resource lifecycle issues, and driver-specific regressions during initialization, for example.
+
+**GFXReconstruct** captures and replays a full stream of Vulkan API calls, from the first `vkCreateInstance` to the final `vkDestroyDevice`. Feeding that stream to an AI assistant turns a multi-gigabyte trace file into something you can actually query, instead of scrolling through by hand.
+
+GFXReconstruct gives you the raw call data; the AI helps you search it. A trace can run to millions of calls, and an assistant can scan that stream for things like:
+
+* 
+**Initialization hazards.** Did you enable an extension unsupported on the target hardware? The assistant can cross-reference `gfxrecon-info` output against your `vk.xml` registry context.
+
+* 
+**Resource lifecycle issues.** Are you destroying a buffer before its last use in a command buffer? The assistant can parse a JSON-converted trace to find the exact call sequence where the object became invalid.
+
+* 
+**Driver regression comparisons.** If a trace works on one driver but not another, the assistant can look for undefined behavior that one driver happens to tolerate and another doesn’t.
+
+To let an agent like Goose reason over a GFXReconstruct trace, convert the binary capture to JSON first.
+
+**Capture the trace.**
+Run your application with the GFXReconstruct layer enabled.
+
+# On Windows/Linux
+vkconfig # Use the GUI to enable GFXReconstruct
+# OR use environment variables
+VK_INSTANCE_LAYERS=VK_LAYER_LUNARG_gfxreconstruct ./VulkanApp
+
+This generates a file like `vulkan_capture_20260313_174700.gfxr`.
+
+**Convert to JSON.**
+Use `gfxrecon-convert` to turn the binary trace into structured text. For long traces, filter to a specific frame range so you don’t blow past the model’s context window.
+
+# Convert frames 100 to 110 to JSON
+gfxrecon-convert --to-json --frames 100-110 capture.gfxr capture_frames.json
+
+**Ask the agent to audit it.**
+In your Goose session, ask it to check the JSON for specific hazards.
+
+Goose, I have converted a GFXReconstruct trace to JSON.
+Analyze 'capture_frames.json' and find all 'vkCmdPipelineBarrier' calls.
+Compare the 'oldLayout' and 'newLayout' of the 'GBuffer_Diffuse' image.
+Is there any point where we are transitioning FROM 'UNDEFINED'
+after the first frame? If so, this is a redundant clear hazard.
+
+If you want your assistant to query trace files without you running the CLI by hand each time, you can wrap the GFXReconstruct CLI in a small MCP server.
+
+Here’s a minimal Python implementation using the MCP SDK:
+
+import subprocess
+import json
+from mcp.server import McpServer
+
+# Initialize the server
+server = McpServer("GFXReconstruct-Connector")
+
+@server.tool()
+def get_trace_info(file_path: str):
+    """Prints hardware and extension requirements for a .gfxr trace."""
+    result = subprocess.run(
+        ["gfxrecon-info", file_path],
+        capture_output=True, text=True
+    )
+    return result.stdout
+
+@server.tool()
+def extract_frame_json(file_path: str, frame_range: str):
+    """Extracts a range of frames (e.g., '10-15') from a trace to JSON."""
+    output_file = "temp_audit.json"
+    subprocess.run([
+        "gfxrecon-convert", "--to-json",
+        "--frames", frame_range,
+        file_path, output_file
+    ])
+    with open(output_file, "r") as f:
+        return f.read(50000) # Return the first 50k chars for reasoning
+
+if __name__ == "__main__":
+    server.run()
+
+Once this server is registered in your `goose/config.yaml`, you can ask things like: **"Goose, analyze the hardware requirements of 'crash.gfxr' and tell me if it uses any extensions that are missing on the M4 Max GPU."**
+
+Say you’re porting your engine from Windows (NVIDIA) to Android (Qualcomm). It works fine on Windows, but you see flickering in the shadow maps on Android.
+
+You spend a day going over your barriers by hand. Everything looks correct, and you suspect a driver difference, but you don’t have proof yet.
+
+You capture a trace and ask the agent: **"Analyze the trace for any 'VkImageMemoryBarrier' that uses 'VK_IMAGE_LAYOUT_UNDEFINED' as the 'oldLayout' on a resource that already contains valid data."**
+
+Scanning the calls, it finds that your cascaded shadow map pass resets the layout to `UNDEFINED` for the second cascade — discarding the first cascade’s data in the process. NVIDIA’s driver happened to tolerate the undefined transition; Qualcomm’s tile-based renderer correctly discarded the tile memory instead, which is why the bug only showed up there.
+
+The agent points to the exact line in `ShadowRenderer.cpp` and proposes the fix: `oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL`.
+
+GFXReconstruct gives you the full timeline instead of a single frame, and an AI assistant makes that timeline searchable rather than something you scroll through by hand. It’s a useful tool for cross-driver bugs and multi-frame hazards that RenderDoc alone won’t catch.
+
+Next: [Advanced MCP Tooling & Automation](../07_advanced_mcp/01_introduction.html)

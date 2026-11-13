@@ -1,0 +1,45 @@
+# VkOffset3D(3)
+
+## Metadata
+
+- **Component**: refpages
+- **Version**: latest
+- **URL**: /refpages/latest/refpages/source/VkOffset3D.html
+
+## Table of Contents
+
+- [Name](#_name)
+- [C Specification](#_c_specification)
+- [Members](#_members)
+- [Description](#_description)
+- [See Also](#_see_also)
+- [Document Notes](#_document_notes)
+
+## Content
+
+VkOffset3D - Structure specifying a three-dimensional offset
+
+A three-dimensional offset is defined by the structure:
+
+// Provided by VK_VERSION_1_0
+typedef struct VkOffset3D {
+    int32_t    x;
+    int32_t    y;
+    int32_t    z;
+} VkOffset3D;
+
+* 
+`x` is the x offset.
+
+* 
+`y` is the y offset.
+
+* 
+`z` is the z offset.
+
+[VK_VERSION_1_0](VK_VERSION_1_0.html), [VkBufferImageCopy](VkBufferImageCopy.html), [VkBufferImageCopy2](VkBufferImageCopy2.html), [VkCopyMemoryToImageIndirectCommandKHR](VkCopyMemoryToImageIndirectCommandKHR.html), [VkDeviceMemoryImageCopyKHR](VkDeviceMemoryImageCopyKHR.html), [VkImageBlit](VkImageBlit.html), [VkImageBlit2](VkImageBlit2.html), [VkImageCopy](VkImageCopy.html), [VkImageCopy2](VkImageCopy2.html), [VkImageResolve](VkImageResolve.html), [VkImageResolve2](VkImageResolve2.html), [VkImageToMemoryCopy](VkImageToMemoryCopy.html), [VkMemoryToImageCopy](VkMemoryToImageCopy.html), [VkSparseImageMemoryBind](VkSparseImageMemoryBind.html)
+
+For more information, see the [Vulkan Specification](../../../../spec/latest/chapters/fundamentals.html#VkOffset3D).
+
+This page is extracted from the Vulkan Specification.
+Fixes and changes should be made to the Specification, not directly.

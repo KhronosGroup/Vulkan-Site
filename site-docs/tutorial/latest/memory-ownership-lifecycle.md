@@ -1,0 +1,108 @@
+# Memory Ownership Lifecycle
+
+## Metadata
+
+- **Component**: tutorial
+- **Version**: latest
+- **URL**: /tutorial/latest/OpenXR_Vulkan_Spatial_Computing/03_Runtime_Owned_Swapchains/04_memory_ownership_lifecycle.html
+
+## Table of Contents
+
+- [Ecosystem Perspective](#_ecosystem_perspective)
+- [The Three-Step Dance: Syncing with the Compositor](#_the_three_step_dance_syncing_with_the_compositor)
+- [The_Three-Step_Dance:_Syncing_with_the_Compositor](#_the_three_step_dance_syncing_with_the_compositor)
+- [1. Wait (xrWaitSwapchainImage)](#_1_wait_xrwaitswapchainimage)
+- [1._Wait_(xrWaitSwapchainImage)](#_1_wait_xrwaitswapchainimage)
+- [2. Acquire (xrAcquireSwapchainImage)](#_2_acquire_xracquireswapchainimage)
+- [2._Acquire_(xrAcquireSwapchainImage)](#_2_acquire_xracquireswapchainimage)
+- [3. Synchronization and Layout Transitions](#_3_synchronization_and_layout_transitions)
+- [3._Synchronization_and_Layout_Transitions](#_3_synchronization_and_layout_transitions)
+- [4. Release (xrReleaseSwapchainImage)](#_4_release_xrreleaseswapchainimage)
+- [4._Release_(xrReleaseSwapchainImage)](#_4_release_xrreleaseswapchainimage)
+- [Advanced: Coordinating Asynchronous Compute](#_advanced_coordinating_asynchronous_compute)
+- [Advanced:_Coordinating_Asynchronous_Compute](#_advanced_coordinating_asynchronous_compute)
+
+## Content
+
+In a standard desktop Vulkan application, we use `vkAcquireNextImageKHR` to get an image index from the swapchain. When we are done, we call `vkQueuePresentKHR`. In OpenXR, this is replaced by a more explicit three-step lifecycle: **Wait**, **Acquire**, and **Release**.
+
+This chapter falls under the category: **Using Vulkan with an OpenXR Runtime**.
+
+The Wait-Acquire-Release cycle is the core synchronization mechanism for OpenXR frame processing. Implementing this correctly is mandatory for any high-performance spatial engine.
+
+Unlike a desktop window, which can handle images whenever the GPU is ready, an XR headset is a rigid, time-sensitive display. The compositor manages high-frequency tasks like **Asynchronous Reprojection** while keeping our engine’s rendering pipeline efficient through a three-step lifecycle:
+
+**Wait**: "Is there an image available for me to start drawing into?"
+
+**Acquire**: "Give me the index of that image and lock it for my use."
+
+**Release**: "I’m done drawing; you can have it back now."
+
+This dance ensures that the engine and the compositor never attempt to access the same memory at the same time, preventing "tearing" or "stuttering."
+
+The first step is `xrWaitSwapchainImage`. This call is a blocking operation that waits until the XR runtime is ready for the application to begin writing to the next image in the swapchain.
+
+XrSwapchainImageWaitInfo waitInfo{
+    .type = XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO,
+    .timeout = XR_INFINITE_DURATION
+};
+xrWaitSwapchainImage(xrSwapchain, &waitInfo);
+
+**Pacing and Exhaustion**: If your engine is rendering faster than the headset’s refresh rate, `xrWaitSwapchainImage` will block your engine thread, acting as a natural pacing mechanism. However, if you don’t release images in a timely manner, this call will block indefinitely, causing your entire engine to stall.
+
+Once the wait is satisfied, we call `xrAcquireSwapchainImage`. This function identifies which specific image index in our swapchain we should render into.
+
+uint32_t imageIndex;
+XrSwapchainImageAcquireInfo acquireInfo{
+    .type = XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO
+};
+xrAcquireSwapchainImage(xrSwapchain, &acquireInfo, &imageIndex);
+
+After this call, our application formally "owns" the image at `imageIndex`. This is the Vulkan-level guarantee that the compositor is no longer reading from this specific piece of VRAM.
+
+Even though OpenXR manages the ownership, we are still responsible for Vulkan-side synchronization. We use **Synchronization 2** (Vulkan 1.3) to transition the image to `VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL` before use.
+
+vk::ImageMemoryBarrier2 barrier{
+    .srcStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+    .srcAccessMask = {},
+    .dstStageMask = vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+    .dstAccessMask = vk::AccessFlagBits2::eColorAttachmentWrite,
+    .oldLayout = vk::ImageLayout::eUndefined,
+    .newLayout = vk::ImageLayout::eColorAttachmentOptimal,
+    .image = framebuffers[imageIndex].image,
+    .subresourceRange = {
+        .aspectMask = vk::ImageAspectFlagBits::eColor,
+        .baseMipLevel = 0,
+        .levelCount = 1,
+        .baseArrayLayer = 0,
+        .layerCount = 1
+    }
+};
+
+vk::DependencyInfo depInfo{
+    .imageMemoryBarrierCount = 1,
+    .pImageMemoryBarriers = &barrier
+};
+commandBuffer.pipelineBarrier2(depInfo);
+
+Finally, once our command buffer has been submitted to the GPU, we call `xrReleaseSwapchainImage`. This tells the XR runtime: "I am finished writing to this image; you may take it back for composition."
+
+XrSwapchainImageReleaseInfo releaseInfo{
+    .type = XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO
+};
+xrReleaseSwapchainImage(xrSwapchain, &releaseInfo);
+
+**Asynchronous Reprojection**: After you `Release` the image, the runtime takes it into its own high-priority queue. If your engine misses its next frame deadline, the runtime will take the **last** released image and "warp" it based on the user’s latest head movement, maintaining comfort even during performance dips.
+
+While OpenXR manages the acquisition cycle, Vulkan’s **Timeline Semaphores** allow you to create a granular synchronization relationship with your own asynchronous compute or physics queues.
+
+* 
+**Granular Release**: You can ensure that an image is only released after both the render pass and a secondary compute pass (such as real-time audio synthesis based on the frame data) are complete.
+
+* 
+**Latency Monitoring**: You can use Vulkan **Query Pools** to monitor your own GPU timing and ensure you are releasing resources fast enough to avoid stalling the engine.
+
+|  | For more details, consult the official [OpenXR Specification](https://registry.khronos.org/OpenXR/specs/1.1/html/xpspec.html#xrWaitSwapchainImage), the [Vulkan Guide](https://docs.vulkan.org/guide/latest/index.html), and our [main tutorial series](00_introduction.adoc). |
+| --- | --- |
+
+[Previous](03_raii_resource_integration.html) | [Next](05_incorporating_into_the_engine.html)

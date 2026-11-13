@@ -1,0 +1,112 @@
+# VK_KHR_maintenance12
+
+## Metadata
+
+- **Component**: features
+- **Version**: latest
+- **URL**: /features/latest/features/proposals/VK_KHR_maintenance12.html
+
+## Table of Contents
+
+- [1. Problem Statement](#_problem_statement)
+- [1._Problem_Statement](#_problem_statement)
+- [2. Proposal](#_proposal)
+- [2.1. Allowing single-aspected depth/stencil blits and resolves](#_allowing_single_aspected_depthstencil_blits_and_resolves)
+- [2.1._Allowing_single-aspected_depth/stencil_blits_and_resolves](#_allowing_single_aspected_depthstencil_blits_and_resolves)
+- [2.2. Allow non-uniform indexing of push constants](#_allow_non_uniform_indexing_of_push_constants)
+- [2.2._Allow_non-uniform_indexing_of_push_constants](#_allow_non_uniform_indexing_of_push_constants)
+- [2.3. New Input Attachment Index Limit](#_new_input_attachment_index_limit)
+- [2.3._New_Input_Attachment_Index_Limit](#_new_input_attachment_index_limit)
+- [2.4. Optional queue priorities](#_optional_queue_priorities)
+- [2.4._Optional_queue_priorities](#_optional_queue_priorities)
+- [3. Issues](#_issues)
+
+## Content
+
+Table of Contents
+
+[1. Problem Statement](#_problem_statement)
+[2. Proposal](#_proposal)
+
+[2.1. Allowing single-aspected depth/stencil blits and resolves](#_allowing_single_aspected_depthstencil_blits_and_resolves)
+[2.2. Allow non-uniform indexing of push constants](#_allow_non_uniform_indexing_of_push_constants)
+[2.3. New Input Attachment Index Limit](#_new_input_attachment_index_limit)
+[2.4. Optional queue priorities](#_optional_queue_priorities)
+
+[3. Issues](#_issues)
+
+This proposal details and addresses the issues solved by the
+`VK_KHR_maintenance12` extension.
+
+Over time, a collection of minor features, none of which would warrant an
+entire extension of their own, requires the creation of a maintenance
+extension.
+
+The following is a list of issues considered in this proposal:
+
+* 
+Allowing single-aspected depth/stencil blits and resolves
+
+* 
+Allow non-uniform indexing of push constants
+
+* 
+Add dedicated limit for input attachment indices
+
+* 
+Make specifying queue priorities optional
+
+Items introduced by this extension are:
+
+Other graphics APIs like OpenGL allow blitting and resolving either the depth or the stencil aspect
+using transfer operations. Allowing this functionality in Vulkan brings performance parity for those cases.
+
+`VUID-RuntimeSpirv-None-04745` requires that any index used to access a
+value within a variable with a `PushConstant` storage class be dynamically
+uniform. This applies equally to array element, vector component, and
+matrix column indexing. When the `maintenance12` feature is enabled, this
+restriction is removed and such accesses can use non-uniform indices.
+
+It was previously identified that there is no limit on the number of input
+attachments an application can use across all shaders in a render pass, and
+that a number of implementations did not support arbitrary input attachment
+indices.
+This led to repurposing the `maxPerStageDescriptorInputAttachments` limit to
+cover these, drastically reducing the total number of input attachments that
+could be used compared to what was originally intended.
+
+A new limit is added, indicating the maximum input attachment index that can
+be used, both in dynamic rendering and with render pass objects.
+
+typedef struct VkPhysicalDeviceMaintenance12PropertiesKHR {
+    VkStructureType         sType;
+    void*                   pNext;
+    uint32_t                maxInputAttachmentIndex;
+} VkPhysicalDeviceMaintenance12PropertiesKHR;
+
+A consistent application developer criticism of Vulkan’s explicit design has
+been the amount of boilerplate that application developers need to write for
+even the simplest use cases. One such developer pain point has been a need
+to specify explicit values for queue priorities during `VkDevice` creation.
+As a consequence of the somewhat underspecified nature of queue priorities
+in the core API along with the recent introduction of global queue
+priorities, the queue priority mechanism has become a source of developer
+friction in the Vulkan API.
+
+`VkDeviceQueueCreateInfo::pQueuePriorities` is now allowed to be `NULL`.
+When this is the case, the priorities of the queues being created relative
+to each other are treated as if they all share the same value. The actual
+value is implementation-defined.
+
+This relaxation is primarily intended to simplify the common application use
+case of creating a single queue per queue family, where applications should
+not observe any difference between creating a single queue with `NULL`
+`pQueuePriorities` and creating that same queue with `pQueuePriorities`
+pointing to an arbitrary value between 0.0 and 1.0.
+
+When creating multiple queues with `pQueuePriorities` set to `NULL`, the
+implementation makes no guarantees about the queue priorities of the created
+queues relative to the priorities of other queues belonging to the same
+queue family of the same physical device.
+
+None.
