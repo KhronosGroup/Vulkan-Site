@@ -281,16 +281,17 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
     // Is this a refpage?
     isRefpage = parent.getDocument().getAttribute('cross-file-links')
 
-    breaktarget = 'VkScopeNV'
-    breakpoint = (target == breaktarget)
-
-    if (breakpoint) {
-        parent.getLogger().warn(`makeAPIlink: target = VkScopeNV supported = ${supported(target)}`)
-        parent.getLogger().warn(`makeAPIlink: nonexistent = ${nonexistent.hasOwnProperty(target)}`)
-        parent.getLogger().warn(`makeAPIlink: alias = ${alias.hasOwnProperty(target)}`)
-
-        //debugger
-    }
+    //@ Debugging stuff in flight
+    // breaktarget = 'VkScopeNV'
+    // breakpoint = (target == breaktarget)
+    //
+    // if (breakpoint) {
+    //     parent.getLogger().warn(`makeAPIlink: target = VkScopeNV supported = ${supported(target)}`)
+    //     parent.getLogger().warn(`makeAPIlink: nonexistent = ${nonexistent.hasOwnProperty(target)}`)
+    //     parent.getLogger().warn(`makeAPIlink: alias = ${alias.hasOwnProperty(target)}`)
+    //
+    //     //debugger
+    // }
     if (!supported(linkxref)) {
         // If the macro target (possibly rewritten)
         // is not in this build but has an alias, substitute the alias.
@@ -298,10 +299,11 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
         if (nonexistent.hasOwnProperty(linkxref)) {
             oldxref = linkxref
             linkxref = nonexistent[oldxref]
-            if (breakpoint) {
-                msg = `Rewriting nonexistent link macro target ${macroname}:${linkname} to ${linkxref}`
-                parent.getLogger().info(msg)
-            }
+            //@ Debugging stuff in flight
+            //if (breakpoint) {
+            //    msg = `Rewriting nonexistent link macro target ${macroname}:${linkname} to ${linkxref}`
+            //    parent.getLogger().info(msg)
+            //}
             // Fall through
         } else {
             // Suppress warnings for apiext: macros as this is such a common case
@@ -321,10 +323,11 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
     if (alias.hasOwnProperty(linkxref) && isRefpage) {
         linkxref = alias[linkxref]
 
-        if (breakpoint) {
-            msg = `Rewriting aliased link macro linkxref ${linkname} to ${linkxref}`
-            parent.getLogger().info(msg)
-        }
+        //@ Debugging stuff in flight
+        //if (breakpoint) {
+        //    msg = `Rewriting aliased link macro linkxref ${linkname} to ${linkxref}`
+        //    parent.getLogger().info(msg)
+        //}
     }
 
     // If the (possibly aliased) target is still not supported, this is
@@ -356,17 +359,20 @@ function makeAPIlink(context, parent, target, attrs, supported, alias, nonexiste
         const page = pageMap.pageMap[xreflabel]
         //return context.createInline(parent, 'quoted', `${linkxref} -> ${xreflabel} -> ${page}`)
 
-        if (breakpoint) {
-            msg = `makeAPIlink: ${linkxref} is in xrefMap -> page ${page}`
-            parent.getLogger().warn(msg)
-        }
+        //@ Debugging stuff in flight
+        //if (breakpoint) {
+        //    msg = `makeAPIlink: ${linkxref} is in xrefMap -> page ${page}`
+        //    parent.getLogger().warn(msg)
+        //}
 
         if (isRefpage) {
             // Generate an Antora xref to another refpage.
-            if (breakpoint) {
-                msg = `makeAPIlink: rewriting ${linkxref} -> xref:source/${linkxref}.adoc[${linkname}]`
-                parent.getLogger().warn(msg)
-            }
+
+            //@ Debugging stuff in flight
+            //if (breakpoint) {
+            //    msg = `makeAPIlink: rewriting ${linkxref} -> xref:source/${linkxref}.adoc[${linkname}]`
+            //    parent.getLogger().warn(msg)
+            //}
 
             return context.createInline(parent, 'quoted', `xref:source/${linkxref}.adoc[${linkname}]`, normalAttribs)
         } else {

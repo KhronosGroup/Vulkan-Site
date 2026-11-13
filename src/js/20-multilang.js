@@ -3,8 +3,8 @@
   'use strict'
 
   function parseMultilang (text) {
-    const startRe = /^\s*\/\/\s*START\s+([A-Za-z0-9_-]+)/i
-    const endRe = /^\s*\/\/\s*END\s+([A-Za-z0-9_-]+)/i
+    const startRe = /^\s*\/\/\s*START\s+([A-Za-z0-9_+#-]+)/i
+    const endRe = /^\s*\/\/\s*END\s+([A-Za-z0-9_+#-]+)/i
     const lines = text.replace(/\r\n?/g, '\n').split('\n')
     const blocks = {}
     const order = []
@@ -13,16 +13,14 @@
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
-      const mStart = line.match(startRe)
+      // Only treat a START marker as a real language switch when we're not already
+      // inside a block - an ordinary comment that happens to start with "// Start ..."
+      // partway through a language's content (e.g. "// Start worker threads") must not
+      // be mistaken for a new marker, or it would swallow the real END that follows it.
+      const mStart = curr === null ? line.match(startRe) : null
       if (mStart) {
-        // flush any stray buffer (ignored)
-        if (curr && buf.length) {
-          blocks[curr] = (blocks[curr] || '') + (blocks[curr] ? '\n' : '') + buf.join('\n')
-          buf = []
-        }
         curr = mStart[1]
         if (!Object.prototype.hasOwnProperty.call(blocks, curr)) order.push(curr)
-        // reset buffer for this lang
         buf = []
         continue
       }
@@ -149,9 +147,11 @@
     var blocks = document.querySelectorAll('pre > code')
     blocks.forEach(function (code) {
       var pre = code.parentNode
-      // only process if language is marked as multilang or content contains markers
+      // only process if language is marked as multilang or content contains matching
+      // START/END marker pairs (an ordinary comment like "// Start worker threads" must
+      // not be enough on its own - it needs a "// END worker" to match, same as parseMultilang requires)
       var isMulti = (code.getAttribute('data-lang') || '').toLowerCase() === 'multilang' ||
-        /\n\s*\/\/\s*START\s+[A-Za-z0-9_-]+/i.test(code.textContent)
+        /\/\/\s*START\s+([A-Za-z0-9_+#-]+)[\s\S]*\/\/\s*END\s+\1\b/i.test(code.textContent)
       if (!isMulti) return
       try { enhanceMultilangBlock(pre, code) } catch (e) { /* fail-safe */ }
     })

@@ -11,7 +11,8 @@ assignees: ''
 
 If you are reporting a problem with the *content* of docs.vulkan.org, please file that bug in the repository corresponding to the component the problem is in:
 
-* For the Vulkan Specification and Proposal components: Use the [Vulkan-Docs](https://github.com/KhronosGroup/Vulkan-Docs/issues/new) repository
+* For the Vulkan Specification, Features, and Reference Pages components: Use the [Vulkan-Docs](https://github.com/KhronosGroup/Vulkan-Docs/issues/new) repository
+* For the OpenGL Shading Language Specification and GLSL Extensions components: Use the [GLSL](https://github.com/KhronosGroup/GLSL/issues/new) repository
 * For the Khronos Vulkan Tutorial component: Use the [Vulkan-Tutorial](https://github.com/KhronosGroup/Vulkan-Tutorial/issues/new) repository
 * For the Vulkan Guide component: Use the [Vulkan-Guide](https://github.com/KhronosGroup/Vulkan-Guide/issues/new) repository
 * For the Vulkan Samples component: Use the [Vulkan-Samples](https://github.com/KhronosGroup/Vulkan-Samples/issues/new) repository
