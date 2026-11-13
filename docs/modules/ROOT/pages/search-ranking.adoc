@@ -1,0 +1,62 @@
+= Search Ranking
+
+This page describes how content is weighted in the site search, and how authors can influence the ranking from AsciiDoc markup.
+
+The search index is built by the `@antora/lunr-extension`.
+It gives extra weight to page names, page titles, `:keywords:` and section headings, so a match there ranks above a match in body text.
+
+== Anchored listing blocks
+
+Some content is searched for by name even though it isn't a section.
+The API declarations in the Vulkan specification are the main example: each is a source block with an anchor, such as `[[vkCreateInstance]]`.
+
+Every listing block that has an anchor is indexed as a section titled by that anchor.
+It ranks like a section heading, and the search result links directly to the block.
+No markup changes are needed for this.
+The content of the block stays in the page text.
+
+Listing blocks without an anchor are not indexed this way.
+
+== Raise the ranking of a block
+
+To rank any other anchored block (a table, a figure, an admonition) like a section heading, add the `search-boost` role.
+Blocks with this role are weighted higher than automatically indexed listing blocks.
+
+[,asciidoc]
+-----
+[#limits-table.search-boost]
+|===
+| Limit | Value
+|===
+-----
+
+The block needs an anchor (`#limits-table` above), because the anchor is what the search result links to and what is indexed.
+Use the role sparingly.
+If many blocks are boosted, none of them stand out.
+
+== Leave a block out
+
+To keep an anchored block, or anything inside it, out of the section entries, add the `search-exclude` role.
+The content of the block is still indexed as page text.
+
+[,asciidoc]
+-----
+[#generated-listing.search-exclude]
+[source]
+----
+long generated output
+----
+-----
+
+== Page-level terms
+
+To make a whole page easier to find by terms that don't appear in its text, use the `:keywords:` attribute in the AsciiDoc header.
+Keywords are weighted above body text.
+
+[,asciidoc]
+----
+= Memory Allocation
+:keywords: heap, allocator, malloc
+----
+
+To leave a page out of the index entirely, use `:noindex:`.

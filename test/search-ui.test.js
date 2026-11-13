@@ -27,6 +27,7 @@ const {
   getTermPosition,
   findTermPosition,
   search,
+  buildFilteredIndex,
   highlightHit,
 } = require('../src/static/js/search-ui.js')
 
@@ -244,5 +245,47 @@ describe('search index integration', () => {
     const rendered = highlighted.pageContentNodes.map((n) => n.text).join('')
     assert.equal(rendered, doc.text)
     assert.ok(!rendered.includes('SPIR-VV'), 'rendered highlight text must not duplicate "SPIR-V" into "SPIR-VV"')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// buildFilteredIndex (fallback path used when the trie narrows the documents)
+// ---------------------------------------------------------------------------
+
+describe('buildFilteredIndex', () => {
+  const docs = [
+    {
+      id: 1,
+      name: 'initialization',
+      title: 'Initialization',
+      text: 'To create an instance call vkCreateInstance.',
+      component: 'spec',
+      keyword: '',
+      titles: [{ text: 'vkCreateInstance', hash: 'vkCreateInstance', id: 1, kind: 'listing' }],
+    },
+  ]
+
+  it('indexes anchored block titles as their own entries, so a declaration can be found directly', () => {
+    const index = buildFilteredIndex(docs)
+    const [top] = index.search('vkCreateInstance')
+    assert.equal(top.ref, '1-1')
+  })
+
+  it('still indexes the page itself', () => {
+    const index = buildFilteredIndex(docs)
+    assert.ok(index.search('instance').some((r) => r.ref === '1'))
+  })
+
+  it('weights search-boost titles higher than plain anchored blocks', () => {
+    const score = (kind) =>
+      buildFilteredIndex([{ ...docs[0], titles: [{ ...docs[0].titles[0], kind }] }])
+        .search('vkCreateInstance')
+        .find((r) => r.ref === '1-1').score
+    assert.ok(score('boost') > score('listing'))
+  })
+
+  it('handles documents without titles', () => {
+    const index = buildFilteredIndex([{ ...docs[0], titles: undefined }])
+    assert.ok(index.search('instance').length > 0)
   })
 })

@@ -593,62 +593,93 @@
     return result
   }
 
+  // Weight given to titles marked with the `search-boost` role. Keep in sync with
+  // BOOSTED_TITLE_BOOST in the antora-lunr-extension index generator.
+  const BOOSTED_TITLE_BOOST = 3;
+
+  /**
+   * Build a temporary Lunr index for a subset of documents.
+   * Each document's section titles (including anchored blocks such as API declarations)
+   * are added as their own entries, as the generated index does, so they can be found
+   * and linked to directly.
+   * @param {Object[]} documents
+   * @returns {lunr.Index}
+   */
+  function buildFilteredIndex (documents) {
+    return globalThis.lunr(function () {
+      this.ref('id');
+      this.field('title', { boost: 10 });
+      this.field('name');
+      this.field('text');
+      this.field('component');
+      this.field('keyword', { boost: 5 });
+      documents.forEach((doc) => {
+        (doc.titles || []).forEach((title) => {
+          const entry = { id: `${doc.id}-${title.id}`, title: title.text };
+          if (title.kind === 'boost') this.add(entry, { boost: BOOSTED_TITLE_BOOST });
+          else this.add(entry);
+        });
+        this.add(doc);
+      });
+    });
+  }
+
+  /**
+   * Search, and when a multi-word query finds nothing, retry with the words joined by
+   * underscores. Section titles are also indexed in that form (see the title entries
+   * in the generated index), so this finds an exact heading the words alone missed.
+   * The plain search always wins when it has results.
+   * @param {lunr.Index} index
+   * @param {Object} documents - documents keyed by id
+   * @param {string} text
+   * @returns {Object[]} lunr results
+   */
+  function searchWithUnderscoreFallback (index, documents, text) {
+    const result = search(index, documents, text);
+    if (result.length === 0 && /\s/.test(text)) {
+      return search(index, documents, text.replace(/\s/g, '_'))
+    }
+    return result
+  }
+
+  /**
+   * Run a query against a loaded index. When the trie finds (fuzzy) title matches,
+   * the search is narrowed to those documents, using a temporary index.
+   * @param {lunr.Index} index
+   * @param {Object} trie - trie with searchWithLevenshteinWithData()
+   * @param {Object} store - the document store; store.documents is keyed by document id
+   * @param {string} text - the query
+   * @returns {Object[]} lunr results
+   */
+  function findResults (index, trie, store, text) {
+    const maxLevenshteinDistance = 3;
+    const trieResults = trie
+      .searchWithLevenshteinWithData(text.toLowerCase(), maxLevenshteinDistance);
+    if (!trieResults) {
+      return searchWithUnderscoreFallback(index, store.documents, text)
+    }
+    // Extract unique document IDs from Trie results
+    const trieDocIds = new Set();
+    trieResults.forEach((r) => r.data.forEach((d) => trieDocIds.add(d)));
+    const filteredDocuments = [];
+    trieDocIds.forEach((id) => {
+      if (store.documents[id]) filteredDocuments.push(store.documents[id]);
+    });
+    if (filteredDocuments.length === 0) {
+      return searchWithUnderscoreFallback(index, store.documents, text)
+    }
+    // Rebuild a temporary index only with the filtered documents. The documents
+    // passed to search() must stay keyed by id (store.documents), because filter()
+    // looks each hit up by the id in its ref.
+    return searchWithUnderscoreFallback(buildFilteredIndex(filteredDocuments), store.documents, text)
+  }
+
   function searchIndex (index, trie, store, text) {
     clearSearchResults(false);
     if (text.trim() === '') {
       return
     }
-    const maxLevenshteinDistance = 3;
-    const trieResults = trie
-      .searchWithLevenshteinWithData(text.toLowerCase(), maxLevenshteinDistance);
-    let result;
-    const recheck = /\s/.test(text);
-    if (!trieResults) {
-      result = search(index, store.documents, text);
-      if (recheck) {
-        result = search(index, store.documents, text.replace(/\s/g, '_'));
-      }
-    } else {
-      // Extract unique document IDs from Trie results
-      const trieDocIds = new Set();
-      trieResults.forEach((r) => r.data.forEach((d) => trieDocIds.add(d)));
-
-      let lunrResults = [];
-      if (trieDocIds.size > 0) {
-        // Filter documents for Lunr search
-        const filteredDocuments = [];
-        trieDocIds.forEach((id) => {
-          filteredDocuments.push(store.documents[id]);
-        });
-        if (filteredDocuments.length > 0) {
-          // Rebuild a temporary index only with the filtered documents
-          const tempLunrIndex = globalThis.lunr(function () {
-            this.ref('id');
-            this.field('title', { boost: 10 });
-            this.field('name');
-            this.field('text');
-            this.field('component');
-            this.field('keyword', { boost: 5 });
-            filteredDocuments.forEach((doc) => this.add(doc));
-          });
-          lunrResults = search(tempLunrIndex, filteredDocuments, text);
-          if (recheck) {
-            result = search(index, store.documents, text.replace(/\s/g, '_'));
-          }
-        } else {
-          lunrResults = search(index, store.documents, text);
-          if (recheck) {
-            result = search(index, store.documents, text.replace(/\s/g, '_'));
-          }
-        }
-      } else {
-        lunrResults = search(index, store.documents, text);
-        if (recheck) {
-          result = search(index, store.documents, text.replace(/\s/g, '_'));
-        }
-      }
-      result = lunrResults;
-    }
+    const result = findResults(index, trie, store, text);
     const searchResultDataset = document.createElement('div');
     searchResultDataset.classList.add('search-result-dataset');
     searchResultContainer.appendChild(searchResultDataset);
@@ -922,6 +953,30 @@
     return idx
   }
 
+  /**
+   * Order per-module result groups by the `order` the index generator wrote into each
+   * manifest entry, which comes from the `component_order` setting in the Antora playbook.
+   * Groups without an `order` come after those that have one. Groups with the same order
+   * (or none) keep their given order, so a manifest without `order` is not reordered.
+   * @param {{mod: {info: {order: number}}}[]} groups
+   * @returns {Object[]} a new array, highest priority first
+   */
+  function orderByManifestOrder (groups) {
+    const rank = (group) => {
+      const order = group.mod && group.mod.info && group.mod.info.order;
+      return typeof order === 'number' ? order : Infinity
+    };
+    return groups
+      .map((group, position) => ({ group, position }))
+      .sort((a, b) => {
+        const ra = rank(a.group);
+        const rb = rank(b.group);
+        if (ra === rb) return a.position - b.position
+        return ra < rb ? -1 : 1
+      })
+      .map(({ group }) => group)
+  }
+
   function multiExecuteSearch () {
     const query = searchInput.value;
     if (!query) return clearSearchResults()
@@ -934,11 +989,13 @@
     }
     let any = false;
     const frag = document.createDocumentFragment();
+    const groups = [];
     for (const mod of loadedModules) {
-      let result = search(mod.index, mod.store.documents, query);
-      if (result.length === 0 && /\s/.test(query)) {
-        result = search(mod.index, mod.store.documents, query.replace(/\s/g, '_'));
-      }
+      const result = searchWithUnderscoreFallback(mod.index, mod.store.documents, query);
+      groups.push({ mod, result });
+    }
+    // Show components in the order set by `component_order` in the playbook.
+    for (const { mod, result } of orderByManifestOrder(groups)) {
       const dataset = document.createElement('div');
       dataset.classList.add('search-result-dataset');
       if (result.length > 0) {
@@ -1040,6 +1097,10 @@
   exports.getTermPosition = getTermPosition;
   exports.findTermPosition = findTermPosition;
   exports.search = search;
+  exports.buildFilteredIndex = buildFilteredIndex;
+  exports.findResults = findResults;
+  exports.searchWithUnderscoreFallback = searchWithUnderscoreFallback;
+  exports.orderByManifestOrder = orderByManifestOrder;
   exports.filter = filter;
   exports.highlightHit = highlightHit;
   exports.highlightText = highlightText;
