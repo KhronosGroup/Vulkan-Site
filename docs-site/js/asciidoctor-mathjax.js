@@ -186,6 +186,10 @@ function makeCreateMathSrc () {
       containerWidth: 80 * 16,
     }).children[0]
     adaptor.setStyle(node, 'overflow', 'visible')
+    // The SVG has role="img" but no accessible name. Use the equation source
+    // as its text alternative.
+    adaptor.setAttribute(node, 'role', 'img')
+    adaptor.setAttribute(node, 'aria-label', math.replace(/\s+/g, ' ').trim())
     return adaptor.outerHTML(node)
   }
 }
