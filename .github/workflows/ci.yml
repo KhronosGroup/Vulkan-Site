@@ -93,6 +93,11 @@ on:
         default: ''
         required: false
         type: string
+      Generate_Man_Pages:
+        description: 'Generate LLM output manpages and markdown'
+        default: false
+        required: false
+        type: boolean
 
 jobs:
   build:
@@ -255,6 +260,12 @@ jobs:
           npx antora antora-playbook.yml --cache-dir .antora-cache --key "google_tag_manager=${GOOGLE_TAG_MANAGER_KEY}"
           touch build/site/.nojekyll
 
+      - name: "Remove site-docs when not generating man pages"
+        if: "${{ github.event.inputs.Generate_Man_Pages != 'true' }}"
+        working-directory: docs-site
+        run: |
+          rm -rf build/site/site-docs
+
       - name: 'Upload site artifact'
         uses: actions/upload-artifact@v7
         with:
@@ -280,7 +291,8 @@ jobs:
             "is_pr": "${IS_PR}",
             "pr_num": "${PR_NUM}",
             "pr_url": "${PR_URL}",
-            "publish_local": "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}"
+            "publish_local": "${{ (github.event.inputs.Publish_Local || 'true') != 'false' }}",
+            "generate_man_pages": "${{ github.event.inputs.Generate_Man_Pages == 'true' }}"
           }
           EOF
           cat deploy-metadata/metadata.json
@@ -290,4 +302,66 @@ jobs:
         with:
           name: deploy-metadata
           path: deploy-metadata/metadata.json
+
+  generate-man-pages:
+    runs-on: ubuntu-latest
+    if: "${{ github.event.inputs.Generate_Man_Pages == 'true' }}"
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: "Checkout mcp-Vulkan indexer"
+        uses: actions/checkout@v5
+        with:
+          repository: gpx1000/mcp-Vulkan
+          path: ./mcp-Vulkan
+          ref: main
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: "install indexer dependencies"
+        run: pip install -r mcp-Vulkan/docs-index/requirements.txt
+
+      - name: "Download site artifact"
+        uses: actions/download-artifact@v8
+        with:
+          name: fullSite
+          path: docs-site/build
+
+      - name: 'Collect the markdown corpus'
+        run: |
+          # docs-site/build/site/site-docs is written by
+          # khronosgroup/antora-lunr-extension's createMarkdownIndexFile()
+          # and already includes a refpages/ component (Vulkan-Docs man
+          # pages, HTML->Antora-xref converted) via the Vulkan-Docs
+          # component's start_paths in antora-playbook.yml -- no separate
+          # man-page build needed (see PR #232 review discussion: running
+          # `make manhtmlpages` a second time here was both redundant and
+          # slow).
+          mv docs-site/build/site/site-docs combined_output
+
+      - name: 'Upload LLM output artifact'
+        uses: actions/upload-artifact@v7
+        with:
+          name: combinedOutput
+          path: combined_output
+          retention-days: 5
+
+      - name: 'Build Vulkan docs MCP index'
+        env:
+          VULKAN_DOCS_INDEX_SOURCE_REF: ${{ github.sha }}
+        run: |
+          python3 mcp-Vulkan/docs-index/build_index.py \
+            --source combined_output \
+            --db vulkan-docs-index.db \
+            --source-ref "$VULKAN_DOCS_INDEX_SOURCE_REF"
+
+      - name: 'Upload Vulkan docs MCP index artifact'
+        uses: actions/upload-artifact@v7
+        with:
+          name: vulkanDocsIndex
+          path: vulkan-docs-index.db
           retention-days: 5
