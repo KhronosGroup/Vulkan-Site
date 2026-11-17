@@ -23,6 +23,11 @@ on:
         default: 'main'
         required: false
         type: string
+      SPIRV_Commit_Hash:
+        description: 'SPIRV-Docs Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'antora'
+        required: false
+        type: string
       GLSL_Commit_Hash:
         description: 'GLSL Commit hash (branch name or tag) to use passed from the caller workflow'
         default: 'main'
@@ -55,6 +60,11 @@ on:
         type: boolean
       Include_Guide:
         description: 'Should include the Vulkan-Guide module'
+        default: true
+        required: false
+        type: boolean
+      Include_SPIRV:
+        description: 'Should include the SPIRV-Docs module'
         default: true
         required: false
         type: boolean
@@ -123,6 +133,14 @@ jobs:
         with:
           path: build/ui-bundle.zip
           key: ${{ runner.os }}-ui-${{ hashFiles('src/**', 'package-lock.json', 'gulpfile.js') }}
+
+      - name: "checkout SPIR-V Specification"
+        if: ${{ (github.event.inputs.Include_SPIRV || 'true') != 'false' }}
+        uses: actions/checkout@v5
+        with:
+          repository: KhronosGroup/SPIRV-Docs
+          path: ./SPIRV-Docs
+          ref: ${{ inputs.SPIRV_Commit_Hash > '' && inputs.SPIRV_Commit_Hash || 'main' }}
 
       - name: "checkout GLSL"
         if: ${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}
@@ -217,6 +235,7 @@ jobs:
 
       - name: "prepare repos with make (parallel)"
         run: |
+          if [[ "${{ (github.event.inputs.Include_SPIRV || 'true') != 'false' }}" == "true" ]]; then make prep-spirv & fi
           if [[ "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" == "true" ]]; then make prep-glsl & fi
           if [[ "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" == "true" ]]; then make prep-guide & fi
           if [[ "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" == "true" ]]; then make prep-docs & fi
@@ -231,6 +250,7 @@ jobs:
         run: |
           python3 docs-site/prepare_playbook.py \
             --guide "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" \
+            --spirv "${{ (github.event.inputs.Include_SPIRV || 'true') != 'false' }}" \
             --glsl "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" \
             --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
             --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
