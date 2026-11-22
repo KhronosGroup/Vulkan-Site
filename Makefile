@@ -24,12 +24,13 @@
 #   'prep-glsl' - OpenGL Shading Language specification
 #   'prep-guide' - Vulkan Guide
 #   'prep-samples' - Vulkan Samples
+#   'prep-spirv' - SPIR-V Specification
 #   'prep-tutorials' - Vulkan Tutorials
 # 'build-site' - builds the Antora site after prep-sources.
 # 'clean' - cleans the Antora site
 
 # UI and component repositories which must exist as subdirectories to build
-REPONAMES = GLSL Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
+REPONAMES = GLSL SPIRV-Docs Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
 
 # Directories (mostly repos) with their own npm infrastructure
 DIRSWITHNODE = . docs-site Vulkan-Docs
@@ -66,7 +67,7 @@ build-ui:
 	cp build/ui-bundle.zip docs-site
 
 # Prepare component antora sources
-prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
+prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs prep-spirv
 
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
@@ -76,6 +77,10 @@ prep-docs:
 	   $(GENPATH)/pageMap.cjs \
 	   $(GENPATH)/xrefMap.cjs \
 	   docs-site/js/
+
+prep-spirv:
+	$(MAKE) -C SPIRV-Docs build-printspec
+	$(MAKE) -C SPIRV-Docs/specs clean setup_spirv_antora
 
 prep-glsl:
 	make -C GLSL clean setup_antora

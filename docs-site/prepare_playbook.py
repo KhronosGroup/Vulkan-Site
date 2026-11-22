@@ -57,6 +57,7 @@ def clean_attachments(attachments_arg):
 def main():
     parser = argparse.ArgumentParser(description='Prepare Antora playbook and optimize assets.')
     parser.add_argument('--guide', type=str, default='true')
+    parser.add_argument('--spirv', type=str, default='true')
     parser.add_argument('--glsl', type=str, default='true')
     parser.add_argument('--docs', type=str, default='true')
     parser.add_argument('--samples', type=str, default='true')
@@ -78,6 +79,7 @@ def main():
     # Define modules mapping to their URL substrings in the playbook
     modules = {
         'Vulkan-Guide': args.guide.lower() == 'true',
+        'SPIRV-Docs': args.spirv.lower() == 'true',
         'GLSL': args.glsl.lower() == 'true',
         'Vulkan-Docs': args.docs.lower() == 'true',
         'Vulkan-Samples': args.samples.lower() == 'true',
@@ -88,6 +90,7 @@ def main():
     # We use exactly the URLs from the original playbook file.
     all_sources = [
         {'url': '../Vulkan-Guide', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Guide'},
+        {'url': '../SPIRV-Docs', 'branches': 'HEAD', 'start_paths': 'specs/antora', 'name': 'SPIRV-Docs'},
         {'url': '../GLSL', 'branches': 'HEAD', 'start_paths': 'antora, antora/glslext', 'name': 'GLSL'},
         {'url': '../Vulkan-Docs', 'branches': 'HEAD', 'start_paths': 'antora/spec, antora/features, antora/refpages', 'name': 'Vulkan-Docs'},
         {'url': '../Vulkan-Samples', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Samples'},
