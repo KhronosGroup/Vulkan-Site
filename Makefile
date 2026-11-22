@@ -67,7 +67,7 @@ build-ui:
 	cp build/ui-bundle.zip docs-site
 
 # Prepare component antora sources
-prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
+prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs prep-spirv
 
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
