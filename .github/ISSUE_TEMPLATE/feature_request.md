@@ -16,6 +16,7 @@ If you have a request regarding the structure and content of a particular compon
 * For the Khronos Vulkan Tutorial component: Use the [Vulkan-Tutorial](https://github.com/KhronosGroup/Vulkan-Tutorial/issues/new) repository
 * For the Vulkan Guide component: Use the [Vulkan-Guide](https://github.com/KhronosGroup/Vulkan-Guide/issues/new) repository
 * For the Vulkan Samples component: Use the [Vulkan-Samples](https://github.com/KhronosGroup/Vulkan-Samples/issues/new) repository
+* For the OpenXR Specification and Reference Pages components: Use the [OpenXR-Docs](https://github.com/KhronosGroup/OpenXR-Docs/issues/new) repository
 * For problems with docs.vulkan.org navigation, style, search, and overall site structure, file an issue here
 
 **Is your feature request related to a problem? Please describe.**

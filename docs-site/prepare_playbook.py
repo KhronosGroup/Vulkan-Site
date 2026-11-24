@@ -61,6 +61,7 @@ def main():
     parser.add_argument('--docs', type=str, default='true')
     parser.add_argument('--samples', type=str, default='true')
     parser.add_argument('--tutorial', type=str, default='true')
+    parser.add_argument('--openxr', type=str, default='true')
     parser.add_argument('--attachments', type=str, default='true')
     parser.add_argument('--optimize', type=str, default='false')
     parser.add_argument('--cleanup-only', action='store_true', help='Only clean attachments')
@@ -82,6 +83,7 @@ def main():
         'Vulkan-Docs': args.docs.lower() == 'true',
         'Vulkan-Samples': args.samples.lower() == 'true',
         'Vulkan-Tutorial': args.tutorial.lower() == 'true'
+        'OpenXR-Docs': args.openxr.lower() == 'true',
     }
 
     # We need to handle both commented out and active sources.
@@ -92,6 +94,7 @@ def main():
         {'url': '../Vulkan-Docs', 'branches': 'HEAD', 'start_paths': 'antora/spec, antora/features, antora/refpages', 'name': 'Vulkan-Docs'},
         {'url': '../Vulkan-Samples', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Samples'},
         {'url': '../Vulkan-Tutorial', 'branches': 'HEAD', 'start_path': 'antora', 'name': 'Vulkan-Tutorial'}
+        {'url': '../OpenXR-Docs', 'branches': 'HEAD', 'start_paths': 'specification/antora/openxr', 'name': 'OpenXR-Docs'},
     ]
 
     new_sources = []
