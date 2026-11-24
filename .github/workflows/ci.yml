@@ -48,6 +48,11 @@ on:
         default: 'main'
         required: false
         type: string
+      OpenXR_Commit_Hash:
+        description: 'OpenXR Commit hash (branch name or tag) to use passed from the caller workflow'
+        default: 'main'
+        required: false
+        type: string
       Publish_Local:
         description: 'Should publish to the local github pages https://${GITHUB_REPOSITORY}.github.io'
         default: true
@@ -75,6 +80,11 @@ on:
         type: boolean
       Include_Tutorial:
         description: 'Should include the Vulkan-Tutorial module'
+        default: true
+        required: false
+        type: boolean
+      Include_OpenXR
+        description: 'Should include the OpenXR-Docs module'
         default: true
         required: false
         type: boolean
@@ -145,7 +155,7 @@ jobs:
           path: ./Vulkan-Guide
           ref: ${{ inputs.Guide_Commit_Hash > '' && inputs.Guide_Commit_Hash || 'main' }}
 
-      - name: "Checkout Vulkan Docs"
+      - name: "Checkout Vulkan-Docs"
         if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
         uses: actions/checkout@v5
         with:
@@ -168,6 +178,14 @@ jobs:
           repository: KhronosGroup/Vulkan-Tutorial
           path: ./Vulkan-Tutorial
           ref: ${{ inputs.Tutorial_Commit_Hash > '' && inputs.Tutorial_Commit_Hash || 'main' }}
+
+      - name: "Checkout OpenXR-Docs"
+        if: ${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}
+        uses: actions/checkout@v5
+        with:
+          repository: KhronosGroup/OpenXR-Docs
+          path: ./OpenXR-Docs
+          ref: ${{ inputs.OpenXR_Commit_Hash > '' && inputs.OpenXR_Commit_Hash || 'main' }}
 
       - name: "setup npm"
         uses: actions/setup-node@v6
@@ -225,6 +243,7 @@ jobs:
           if [[ "${{ (github.event.inputs.Include_GLSL || 'true') != 'false' }}" == "true" ]]; then make prep-glsl & fi
           if [[ "${{ (github.event.inputs.Include_Guide || 'true') != 'false' }}" == "true" ]]; then make prep-guide & fi
           if [[ "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" == "true" ]]; then make prep-docs & fi
+          if [[ "${{ (github.event.inputs.Include_OpenXR || 'true') != 'false' }}" == "true" ]]; then make prep-openxr & fi
           wait
 
       - name: "prepare samples"
@@ -240,6 +259,7 @@ jobs:
             --docs "${{ (github.event.inputs.Include_Docs || 'true') != 'false' }}" \
             --samples "${{ (github.event.inputs.Include_Samples || 'true') != 'false' }}" \
             --tutorial "${{ (github.event.inputs.Include_Tutorial || 'true') != 'false' }}" \
+            --openxr "${{ (github.event.inputs.Include_OpenXR || 'true') != 'false' }}" \
             --attachments "${{ (github.event.inputs.Include_Attachments || 'true') != 'false' }}" \
             --optimize "${{ github.event.inputs.Optimize_Images == 'true' }}"
 

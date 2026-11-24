@@ -25,11 +25,12 @@
 #   'prep-guide' - Vulkan Guide
 #   'prep-samples' - Vulkan Samples
 #   'prep-tutorials' - Vulkan Tutorials
+#   'prep-openxr' - OpenXR-Docs (specification and refpages components)
 # 'build-site' - builds the Antora site after prep-sources.
 # 'clean' - cleans the Antora site
 
 # UI and component repositories which must exist as subdirectories to build
-REPONAMES = GLSL Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs
+REPONAMES = GLSL Vulkan-Guide Vulkan-Samples Vulkan-Tutorial Vulkan-Docs OpenXR-Docs
 
 # Directories (mostly repos) with their own npm infrastructure
 DIRSWITHNODE = . docs-site Vulkan-Docs
@@ -66,7 +67,7 @@ build-ui:
 	cp build/ui-bundle.zip docs-site
 
 # Prepare component antora sources
-prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-docs
+prep-sources: prep-glsl prep-guide prep-samples prep-tutorial prep-openxr prep-docs
 
 # Prepare Vulkan-Docs
 GENPATH = Vulkan-Docs/antora/spec/modules/ROOT/partials/gen
@@ -88,6 +89,18 @@ prep-samples:
 
 prep-tutorial:
 	make -C Vulkan-Tutorial/antora setup_tutorial
+
+# Prepare OpenXR-Docs
+#@ TODO: if XR and Vulkan spec builds are to be combined, figure out how to
+#@ merge or select these identically-named JavaScript files used in custom
+#@ macros.
+OPENXR_GENPATH = OpenXR-Docs/specification/antora/openxr/modules/ROOT/partials/generated
+prep-openxr:
+	cd OpenXR-Docs/specification && ./makeSpec -clean -spec all setup_antora -j$(shell nproc)
+	cp $(OPENXR_GENPATH)/apimap.cjs \
+	   $(OPENXR_GENPATH)/pageMap.cjs \
+	   $(OPENXR_GENPATH)/xrefMap.cjs \
+	   docs-site/js/
 
 # Build Antora site
 # CI is needed as an environment variable which helps cause suppression
